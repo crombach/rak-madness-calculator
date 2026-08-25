@@ -121,7 +121,7 @@ GIT_OPTS_WITH_VALUE = ("-C", "-c", "--git-dir", "--work-tree", "--namespace",
 TICKET_IN_BRANCH = re.compile(
     r"(?:^|[^A-Za-z0-9])([A-Z][A-Z0-9]{1,9}-\d+)(?![A-Za-z0-9])")
 CODE_SPANS = re.compile(r"```.*?```|`[^`]*`", re.DOTALL)
-FENCE = re.compile(r"(?ms)^```.*?^```")
+FENCE = re.compile(r"(?ms)^ {0,3}```.*?^ {0,3}```")
 COMMENTS = re.compile(r"<!--.*?-->", re.DOTALL)
 
 
