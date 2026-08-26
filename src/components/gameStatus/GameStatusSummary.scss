@@ -87,16 +87,16 @@
   }
 }
 
-// One sheen over the whole wireframe rather than one per bar, which is how the
-// tables' wireframe is drawn and what keeps a wait looking the same everywhere.
+// A game holds a dozen or so bars at once, never the hundreds a wireframe table
+// does, so each bar carries its own sheen rather than one sweep standing in for
+// all of them. That keeps the shine over a bar rather than crossing the gaps
+// between them, where the wait has nothing to show yet.
 //
 // Every word under here is the week's own copy of the game, laid out by the rules the
 // answer will be laid out by and taken down to a bar. What is left showing is those
 // bars, the marks' own circles, and the dash the two scores meet at, which is the same
 // dash either way.
 .game-status.--skeleton {
-  @include skeleton-sheen;
-
   // Every word is still there, holding the room it will take, and none of it drawn.
   color: transparent;
 
@@ -115,11 +115,13 @@
   .game-status__down,
   .game-status__outcome {
     @include wireframe-bar;
+    @include skeleton-sheen;
   }
 
   // Thicker, standing in for the one line here set big enough to carry its own weight.
   .game-status__points {
     @include wireframe-bar(1.25rem);
+    @include skeleton-sheen;
 
     @include roomy-screen {
       @include wireframe-bar(2.25rem);
@@ -136,6 +138,7 @@
   // that size.
   .game-status__logo {
     @include skeleton-surface;
+    @include skeleton-sheen;
 
     border-radius: 50%;
   }
@@ -146,7 +149,8 @@
   // The strip under the scoreline names its own color as well, and the dot it puts
   // between two halves is drawn in it.
   .game-status__marker,
-  .game-status__meta {
+  .game-status__meta,
+  .game-status__spread-value {
     color: transparent;
   }
 }
