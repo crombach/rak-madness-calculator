@@ -20,8 +20,10 @@ const DEFAULT_THEME: Theme = "auto";
 /**
  * The navbar's own fill in each theme, for the browser chrome bar to match. Read
  * off `--rak-primary-500` in `index.scss`, whose light and dark values these are.
- * Written here rather than computed, because the bar has to be right on the first
- * paint, before any stylesheet has resolved a variable.
+ *
+ * Copied rather than read back off the document, because only one theme's value is
+ * resolved there at a time and this has to name the other one too. That makes them
+ * two literals to keep in step with the stylesheet by hand.
  */
 const THEME_COLOR: Record<"light" | "dark", string> = {
   light: "#eaeaea",

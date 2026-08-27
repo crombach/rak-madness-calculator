@@ -8,7 +8,8 @@ Home page at `/`, a week's results at `/:season/:week/scoreboard` and
 worth showing. `/settings` holds the reader's theme and their own name. Deployed to Cloudflare Pages (`wrangler`), which serves the picks
 API in `functions/` beside the built app.
 
-`index.html` at the repo root is the HTML shell Vite builds from.
+`index.html` at the repo root is the HTML shell Vite builds from. Its inline
+script sets `data-theme` from storage before the first paint.
 
 [`SCROLL-FLASH.md`](SCROLL-FLASH.md): an open bug, read before changing sticky.
 
