@@ -102,8 +102,7 @@ export default function SettingsPage() {
             )}
           </div>
           <p className="settings__hint">
-            Your row is marked in the scoreboard and the picks. Leave this empty
-            to mark nothing.
+            Your row is marked in the scoreboard and picks tables.
           </p>
         </section>
       </div>

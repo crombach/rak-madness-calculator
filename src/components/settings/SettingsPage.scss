@@ -86,15 +86,16 @@
   }
 }
 
-// Lit chrome rather than muted UI, which is what the selects set their chevron in
-// too. Square and as tall as the well, so the whole bay is inside the hit area.
+// The bay the home page's selects give their chevron, down to the side padding
+// that sets the glyph off the edge of the glass. Lit chrome rather than muted UI,
+// and as tall as the well, so the whole bay is inside the hit area.
 .settings__field-clear {
   display: flex;
   align-items: center;
   justify-content: center;
   align-self: stretch;
-  aspect-ratio: 1;
-  padding: 0;
+  padding-block: 0;
+  padding-inline: var(--rak-space-2);
   border: none;
   background: none;
   color: var(--rak-on-solid);
