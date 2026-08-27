@@ -1,6 +1,5 @@
 import { createContext, useContext } from "react";
-
-const doNothing = () => undefined;
+import doNothing from "../utils/doNothing";
 
 /**
  * A context for a single callback, a no-op with no provider above so whatever

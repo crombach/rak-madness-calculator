@@ -7,6 +7,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import doNothing from "../utils/doNothing";
 import { readSetting, writeSetting } from "../utils/settingsStore";
 
 export type Theme = "light" | "dark" | "auto";
@@ -40,8 +41,6 @@ type Settings = {
   playerName: string;
   setPlayerName: (name: string) => void;
 };
-
-const doNothing = () => undefined;
 
 // Defaults rather than a throw, following `PlayerAnalysisContext`: the tables read
 // this per row and both suites mount them on their own, with no provider above.
