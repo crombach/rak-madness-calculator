@@ -27,40 +27,27 @@
 }
 
 // What a week still being played gets: the refresh button and the divider after
-// it, collapsed together once the week is decided. A grid column from `1fr` to
-// `0fr` narrows them, because they measure whatever their padding and their icon
-// come to, and `auto` cannot be interpolated.
+// it, faded out together once the week is decided.
+//
+// Opacity alone, and the width goes at the unmount rather than on the way. The
+// navbar's right group is sized to its content and sits against the right edge,
+// so this block is the end that moves when it goes and the view switch beside it
+// holds its place either way. Nothing to the eye is standing on the width, which
+// leaves a fade in place as the whole of what there is to see.
+//
 // Ahead of the view switch, so those two buttons keep their place on the bar
 // whether or not the week is still live.
 // `--collapse-duration` comes from `ScoresNavbar`, which unmounts this after it.
 .scores-nav__live {
-  display: grid;
-  grid-template-columns: 1fr;
-  transition-property: grid-template-columns, margin-inline-end, opacity;
-  transition-duration: var(--collapse-duration);
-  transition-timing-function: var(--rak-ease-standard);
-
-  &.--collapsed {
-    grid-template-columns: 0fr;
-    opacity: 0;
-    // The navbar's gap sits to the right of this, and would be left behind on its
-    // own once the width is gone.
-    margin-inline-end: calc(-1 * var(--navbar-gap));
-
-    // Only while collapsing. Expanded, this would clip the button's focus outline.
-    .scores-nav__live-content {
-      overflow: hidden;
-    }
-  }
-}
-
-.scores-nav__live-content {
   display: flex;
   align-items: center;
   // The bar's own gap, so the divider sits as far from the refresh button beside
   // it as it does from the scoreboard button on its other side, which is
   // `.scores-nav`'s own gap and not this one.
   gap: var(--navbar-gap);
-  // So the column can narrow past what the divider and button measure.
-  min-width: 0;
+  transition: opacity var(--collapse-duration) var(--rak-ease-standard);
+
+  &.--collapsed {
+    opacity: 0;
+  }
 }
