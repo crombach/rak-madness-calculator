@@ -42,10 +42,22 @@
   }
 }
 
-// The controls stack is one control taller since the season picker joined it, so
-// the links have to give up sooner: 56px for the picker and 12px for the gap
-// above it.
-@media (max-height: 528px) {
+// Below this the links would sit under the home page's last button, so they give
+// up the screen instead. `position: fixed` keeps that from moving anything either
+// way, so this is only about overlap.
+//
+// The height it takes to clear the stack, worked from the pieces rather than
+// guessed. The stack stands 360px: five controls of `--rak-control-height` plus
+// four `--rak-control-gap` between them, inside its own 16px of padding. The
+// content box centers it, so half of whatever is left over falls below it. These
+// links stand 56px, and 16px more keeps them off the button rather than merely
+// clear of it.
+//
+//   360 + 2 * (56 + 16 - 16) + 68 = 540
+//
+// The last term is the navbar, at its tallest. 539px is the last height that
+// cannot fit that, so it is the last height with no links.
+@media (max-height: 539px) {
   .footer {
     display: none;
   }
