@@ -202,12 +202,16 @@
   // stops saying which of the two things it means. This is forty off that orange
   // and fifty off the green it also sits beside.
   --rak-warning-300: #edfaa0;
-  --rak-warning-500: #9a5b13;
-  // The pressed and hovered step of a solid warning button, which is the only
-  // thing on this ramp that needs one. Between the 500 and the 700, so the fill
-  // darkens by the same amount a success or a danger key does.
-  --rak-warning-600: #7d4a10;
-  --rak-warning-700: #492b08;
+  // Orange rather than the amber this step used to be, six degrees round the
+  // wheel and more saturated with it, so the key the home page exports from
+  // reads as a color rather than as a brown slab. 5.02:1 on the white ink that
+  // key is set in. The toast's warning border is the same step and follows.
+  --rak-warning-500: #b45309;
+  // The pressed and hovered step of a solid warning button, and the dark lip it
+  // stands on. Between the 500 and the 700, so the fill darkens by the same
+  // amount a success or a danger key does.
+  --rak-warning-600: #964507;
+  --rak-warning-700: #6b3105;
 
   // A blue for the things that point rather than judge: the key that opens a
   // week, the lamp that says which key in a row is chosen, and the rule around
@@ -219,33 +223,24 @@
   // `--rak-in-contention-on-light` to the digit.
   //
   // 200 is the light itself, and the one step fixed in both modes: the lamp's
-  // lens, the key the home page opens a week with, and the rule around the
-  // reader's row are all this one value, so every blue in the app is the same
-  // light. 500 and up are the dark solid fills, which only dark mode still
-  // stands a key in.
-  --rak-info-200: #7dd3fc;
-  --rak-info-500: #126287;
-  --rak-info-600: #0e5170;
-  --rak-info-700: #093a51;
-
-  // The two keys the home page ends on, which carry a hue each rather than a
-  // result. Pale here, so a key reads as lit rather than as a slab of ink on a
-  // light page, and dark enough only at its edge to keep a boundary: 3.42:1 and
-  // 3.69:1 against the page. That leaves the ink dark, unlike `--success` and
-  // `--danger`, whose fixed dark fills take white in both modes.
+  // lens and the key the home page opens a week with are both this value.
   //
-  // Blue is `--rak-info-200`, the same light the lamp is lit in. Orange is the
-  // knockout pastel the tables already spend, which is the app's own orange.
-  // Dark mode below takes all eight back to the solid ramp steps and white ink,
-  // where a page that dark has no pale left to read a key against.
-  --rak-key-info-face: var(--rak-info-200);
-  --rak-key-info-press: #4fc0f5;
-  --rak-key-info-edge: #1d94c9;
-  --rak-key-info-ink: var(--rak-text);
-  --rak-key-warning-face: #fac99e;
-  --rak-key-warning-press: #f0a869;
-  --rak-key-warning-edge: #b8763a;
-  --rak-key-warning-ink: var(--rak-text);
+  // 400 is that light taken down far enough to read on a cell, which is where
+  // the reader's own row is ruled. The lens cannot: laid on the pale blue an in
+  // contention name cell carries it is 1.11:1, and the cells either side of it
+  // are no better. This step clears 3:1 on every fill a picks row can hold,
+  // worst at 3.00 on the lost-pick red and 3.93 on the knockout orange. Dark
+  // mode has no such trouble and reads the lens back, below.
+  //
+  // 500 and up are the solid fills the home page's blue key stands in, one value
+  // in both modes and set in white the same way `--success` and `--danger` are.
+  // Saturated well past the 400 above it, since a key wearing a whole fill has
+  // to read as a color rather than as a dark slab: 5.45:1 on that white ink.
+  --rak-info-200: #7dd3fc;
+  --rak-info-400: #0369a1;
+  --rak-info-500: #0a6fa8;
+  --rak-info-600: #095c8c;
+  --rak-info-700: #063f60;
 
   --rak-neutral-100: #f3f3f3;
   --rak-neutral-500: #5d5d5d;
@@ -265,14 +260,11 @@
   --rak-in-contention-300: #9edbfa;
   --rak-in-contention-on-light: #126287;
 
-  // The reader's own row, ruled above and below every cell. The lamp's own lens
-  // to the digit, and bloomed like one, so the two marks the reader themselves
-  // control are one light rather than two blues a shade apart.
-  //
-  // It is faint on the table's white, at 1.67:1, which is what a light on paper
-  // looks like. The row is not the only thing saying whose it is: the name cell
-  // carries their status fill and the analysis opens on them by name.
-  --rak-my-row-accent: var(--rak-info-200);
+  // The reader's own row, ruled above and below every cell, and bloomed like the
+  // lamp so the two marks the reader themselves control read as one light. The
+  // 400 rather than the lamp's own lens, because a rule laid straight on a
+  // colored cell has no socket to be light against. Dark mode takes the lens.
+  --rak-my-row-accent: var(--rak-info-400);
 
   --rak-surface: #fff;
   // What a dialog stands on, one plane above the page. The same white here,
@@ -603,17 +595,9 @@ html {
   --rak-gold-700: #e8b84b;
   --rak-knocked-out-on-light: #ffb069;
   --rak-in-contention-on-light: #74c6f5;
-  // The two home keys, back to the solid ramp steps with white ink. A page this
-  // dark has no pale for a key to read against, so the pale fills light mode
-  // stands them in would sit on it as the brightest thing on the screen.
-  --rak-key-info-face: var(--rak-info-500);
-  --rak-key-info-press: var(--rak-info-600);
-  --rak-key-info-edge: var(--rak-info-700);
-  --rak-key-info-ink: #fff;
-  --rak-key-warning-face: var(--rak-warning-500);
-  --rak-key-warning-press: var(--rak-warning-600);
-  --rak-key-warning-edge: var(--rak-warning-700);
-  --rak-key-warning-ink: #fff;
+  // The reader's row, back to the lamp's own lens: a dark cell is something a
+  // light can be light against, which no light cell is.
+  --rak-my-row-accent: var(--rak-info-200);
 
   --rak-surface: #191919;
   // A dialog stands a plane above the page here, because neither thing that
