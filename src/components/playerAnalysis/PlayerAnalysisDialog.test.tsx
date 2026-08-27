@@ -218,6 +218,21 @@ describe("PlayerAnalysisDialog", () => {
     // with the name rather than standing over an empty search.
     expect(document.querySelector(".player-analysis__input-status")).toBeNull();
 
+    // The press is the whole field, not the input alone. The trigger stretched
+    // over it is what the chevron, the mark, and the padding around them all
+    // reach, and it opens the list the same way a press on the input does.
+    await user.keyboard("{Escape}");
+    const field = document.querySelector<HTMLElement>(
+      ".dialog__search-trigger",
+    );
+    expect(field).not.toBeNull();
+    await user.click(field!);
+
+    expect(
+      (await screen.findAllByRole("option")).map((it) => it.textContent),
+    ).toEqual(["Alice", "Bob", "Bobby"]);
+    expect(screen.getByRole("combobox", { name: "Player" })).toHaveValue("");
+
     // Dismissing puts the chosen name back, since the answer below is still that
     // player's.
     await user.keyboard("{Escape}");
