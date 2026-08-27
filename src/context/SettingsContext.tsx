@@ -57,9 +57,10 @@ function storedTheme(): Theme {
   return saved === "light" || saved === "dark" ? saved : DEFAULT_THEME;
 }
 
+const DARK_QUERY = "(prefers-color-scheme: dark)";
+
 /**
- * Which theme the document is in, as an attribute `index.scss` selects on, and as
- * the color the browser paints its own chrome in.
+ * Which theme the document is in, as an attribute `index.scss` selects on.
  *
  * `auto` clears the attribute rather than resolving the OS preference here, so the
  * media query stays the only thing reading that signal and a reader who changes it
@@ -72,16 +73,25 @@ function applyTheme(theme: Theme): void {
   } else {
     root.dataset.theme = theme;
   }
+}
 
+/**
+ * The color the browser paints its own chrome in, which no stylesheet can say.
+ *
+ * `auto` has to resolve the OS preference here, unlike the attribute above. The
+ * default is `auto`, so leaving this on the dark value stood a dark chrome bar over
+ * a light navbar for every reader who never opened the settings at all.
+ */
+function applyThemeColor(theme: Theme): void {
   const meta = document.querySelector('meta[name="theme-color"]');
   if (!(meta instanceof HTMLMetaElement)) return;
-  if (theme === "auto") {
-    // Back to the one value both schemes have always shared. A `media` attribute
-    // would say more, but only until an explicit choice contradicted it.
-    meta.content = THEME_COLOR.dark;
-  } else {
-    meta.content = THEME_COLOR[theme];
-  }
+  const resolved =
+    theme === "auto"
+      ? window.matchMedia(DARK_QUERY).matches
+        ? "dark"
+        : "light"
+      : theme;
+  meta.content = THEME_COLOR[resolved];
 }
 
 export function SettingsContextProvider({ children }: PropsWithChildren) {
@@ -92,6 +102,17 @@ export function SettingsContextProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     applyTheme(theme);
+  }, [theme]);
+
+  // Watched rather than read once, since on `auto` the answer changes with the OS
+  // and nothing else is reading that signal for the chrome bar.
+  useEffect(() => {
+    applyThemeColor(theme);
+    if (theme !== "auto") return;
+    const dark = window.matchMedia(DARK_QUERY);
+    const follow = () => applyThemeColor("auto");
+    dark.addEventListener("change", follow);
+    return () => dark.removeEventListener("change", follow);
   }, [theme]);
 
   const setTheme = useCallback((next: Theme) => {

@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useRef } from "react";
 import { Theme, useSettings } from "../../context/SettingsContext";
 import Button from "../button/Button";
 import DialogShell from "../dialog/DialogShell";
@@ -24,6 +24,7 @@ export default function SettingsDialog({
   const { theme, setTheme, playerName, setPlayerName } = useSettings();
   const themeLabelId = useId();
   const nameInputId = useId();
+  const nameInput = useRef<HTMLInputElement>(null);
 
   return (
     <DialogShell open={open} onOpenChange={onOpenChange} title="Settings">
@@ -37,6 +38,7 @@ export default function SettingsDialog({
               hold their chevron. */}
           <div className="settings__field">
             <input
+              ref={nameInput}
               id={nameInputId}
               className="settings__field-input"
               type="text"
@@ -47,13 +49,19 @@ export default function SettingsDialog({
               onChange={(event) => setPlayerName(event.target.value)}
             />
             {/* Nothing to clear while the field is empty, and a button that does
-                nothing is one more thing to tab past. */}
+                nothing is one more thing to tab past. Clearing therefore takes
+                this button off screen, so the focus on it has to go somewhere
+                first: left alone it falls to `<body>`, and the next tab restarts
+                from the top of the document with the dialog still open. */}
             {playerName !== "" && (
               <button
                 type="button"
                 className="settings__field-clear"
                 aria-label="Clear your player name"
-                onClick={() => setPlayerName("")}
+                onClick={() => {
+                  nameInput.current?.focus();
+                  setPlayerName("");
+                }}
               >
                 <CloseIcon />
               </button>

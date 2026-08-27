@@ -110,6 +110,18 @@ describe("SettingsDialog, the reader's own name", () => {
     expect(localStorage.getItem(PLAYER_NAME_KEY)).toBeNull();
   });
 
+  it("keeps the focus in the field it just emptied", async () => {
+    localStorage.setItem(PLAYER_NAME_KEY, "Linebacher");
+    const user = mountDialog();
+    await user.click(
+      screen.getByRole("button", { name: "Clear your player name" }),
+    );
+
+    // The button unmounts on the same click, so without this the focus lands on
+    // `<body>` and the next tab restarts from the top of the document.
+    expect(screen.getByLabelText("Your Player Name")).toHaveFocus();
+  });
+
   it("offers nothing to clear while the field is empty", () => {
     mountDialog();
 

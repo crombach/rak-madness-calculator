@@ -28,6 +28,27 @@ function Probe({ candidate = "Linebacher" }: { candidate?: string }) {
   );
 }
 
+/** The `<meta>` `applyThemeColor` writes, which no test fixture puts in the DOM. */
+function mountThemeColorMeta(): HTMLMetaElement {
+  const meta = document.createElement("meta");
+  meta.name = "theme-color";
+  document.head.append(meta);
+  return meta;
+}
+
+/** Answers the dark query, which `setupTests` otherwise answers no to. */
+function stubPrefersDark(prefersDark: boolean) {
+  const original = window.matchMedia;
+  window.matchMedia = (media: string) =>
+    ({
+      ...original(media),
+      matches: media.includes("prefers-color-scheme: dark") && prefersDark,
+    }) as MediaQueryList;
+  return () => {
+    window.matchMedia = original;
+  };
+}
+
 function mountProbe(candidate?: string) {
   const user = userEvent.setup();
   render(
@@ -104,5 +125,46 @@ describe("SettingsContext, the reader's own name", () => {
     mountProbe("Barb Wire");
 
     expect(screen.getByTestId("isMine")).toHaveTextContent("false");
+  });
+});
+
+describe("SettingsContext, the browser's own chrome bar", () => {
+  // The default is `auto`, so this is what a reader who never opens the settings
+  // gets. Left on the dark value it stood a dark bar over the light navbar.
+  it("follows the operating system while the theme is auto", () => {
+    const meta = mountThemeColorMeta();
+    const restore = stubPrefersDark(false);
+    try {
+      mountProbe();
+      expect(meta.content).toBe("#eaeaea");
+    } finally {
+      restore();
+      meta.remove();
+    }
+  });
+
+  it("takes the dark value on a dark operating system", () => {
+    const meta = mountThemeColorMeta();
+    const restore = stubPrefersDark(true);
+    try {
+      mountProbe();
+      expect(meta.content).toBe("#4f4f4f");
+    } finally {
+      restore();
+      meta.remove();
+    }
+  });
+
+  it("takes the chosen theme over the operating system", async () => {
+    const meta = mountThemeColorMeta();
+    const restore = stubPrefersDark(true);
+    try {
+      const user = mountProbe();
+      await user.click(screen.getByRole("button", { name: "light" }));
+      expect(meta.content).toBe("#eaeaea");
+    } finally {
+      restore();
+      meta.remove();
+    }
   });
 });

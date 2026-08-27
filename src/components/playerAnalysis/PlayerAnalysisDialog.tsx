@@ -98,8 +98,7 @@ export default function PlayerAnalysisDialog({
       open={open}
       onOpenChange={onOpenChange}
       title="Player Analysis"
-      busy={isSearching}
-      busyLabel="Working out the paths"
+      busy={isSearching && { label: "Working out the paths" }}
       search={
         <DialogCombobox<PlayerOption>
           ariaLabel="Player"

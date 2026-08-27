@@ -188,8 +188,7 @@ export default function GameStatusDialog({
       title="Game Status"
       // Every fetch, a poll of the game already on screen included, so a live game
       // being asked about again is said the way a first fetch is.
-      busy={isFetching}
-      busyLabel="Fetching the game"
+      busy={isFetching && { label: "Fetching the game" }}
       search={
         <DialogCombobox<WeekGame>
           ariaLabel="Game"

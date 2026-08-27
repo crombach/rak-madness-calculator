@@ -24,7 +24,6 @@ export default function DialogShell({
   title,
   search,
   busy = false,
-  busyLabel,
   children,
 }: PropsWithChildren<{
   open: boolean;
@@ -32,11 +31,14 @@ export default function DialogShell({
   title: string;
   /** The control that picks what the body is about. */
   search?: ReactNode;
-  /** Set while the next answer is being worked out. Draws the bar on the rule. */
-  busy?: boolean;
-  /** The bar's accessible name, which says what is being worked out. Required of
-      any dialog that can set `busy`. */
-  busyLabel?: string;
+  /**
+   * Set while the next answer is being worked out. Draws the bar on the rule,
+   * named by `label`, which says what is being worked out.
+   *
+   * The name travels with the flag rather than beside it, so a dialog cannot draw
+   * a bar with nothing to call it. A dialog that never waits passes nothing.
+   */
+  busy?: false | { label: string };
 }>) {
   // Tapping a search opens a keyboard over the bottom of the screen, which the
   // sheet is sized and padded against. Only while the dialog is up, since nothing
@@ -68,7 +70,7 @@ export default function DialogShell({
                 className="dialog__progress"
                 role="progressbar"
                 aria-busy="true"
-                aria-label={busyLabel}
+                aria-label={busy.label}
               />
             )}
             {/* Polite, so a new answer replacing the last one is read once the

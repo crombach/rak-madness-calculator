@@ -71,8 +71,11 @@
     outline: none;
   }
 
+  // The quiet ink, not `--rak-unlit`. That token is a combobox cell that could
+  // light, deliberately faint at 1.31:1 on this well, and a hint a reader is
+  // meant to read is text rather than a shape. This clears 6:1 in both modes.
   &::placeholder {
-    color: var(--rak-unlit);
+    color: var(--rak-text-tertiary);
   }
 }
 
