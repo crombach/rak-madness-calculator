@@ -135,7 +135,11 @@ export async function uploadSpreadsheet(
   await user.upload(fileInput(), file);
 }
 
-/** Scoreboard, Picks, Refresh, in the order ScoresNavbar renders them. */
+/**
+ * Refresh, Scoreboard, Picks, in the order `ScoresNavbar` renders them. Refresh is
+ * there only while the week is live, so index into this by name rather than by
+ * position.
+ */
 export function scoresHeaderButtons(): Array<HTMLElement> {
   return Array.from(
     document.querySelectorAll<HTMLElement>(".scores-nav__button"),

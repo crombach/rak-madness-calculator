@@ -87,6 +87,35 @@ export default function ScoresNavbar({
     // The two views are the only way through the results, so they are navigation
     // rather than a pair of loose buttons.
     <nav className="scores-nav" aria-label="Results view">
+      {isLiveMounted && (
+        <div
+          className={`scores-nav__live ${isWeekLive ? "" : "--collapsed"}`}
+          style={
+            {
+              "--collapse-duration": `${COLLAPSE_DURATION_MS}ms`,
+            } as CSSProperties
+          }
+          // On its way out it is still painted, so it has to stop being reachable
+          // by pointer, keyboard, and screen reader on its own.
+          inert={!isWeekLive}
+        >
+          <div className="scores-nav__live-content">
+            <Button
+              ariaLabel="Refresh"
+              // Also unavailable mid-refresh, so a second click while one is
+              // already running cannot queue another.
+              ariaDisabled={disabled || isRefreshing}
+              busy={isRefreshing}
+              compact
+              onClick={onRefresh}
+              className="scores-nav__button"
+            >
+              <UpdateIcon />
+            </Button>
+            <div className="scores-nav__divider" />
+          </div>
+        </div>
+      )}
       <ViewButton
         view="Scoreboard"
         icon={<LeaderboardIcon />}
@@ -105,35 +134,6 @@ export default function ScoresNavbar({
         disabled={disabled}
         onViewChange={onViewChange}
       />
-      {isLiveMounted && (
-        <div
-          className={`scores-nav__live ${isWeekLive ? "" : "--collapsed"}`}
-          style={
-            {
-              "--collapse-duration": `${COLLAPSE_DURATION_MS}ms`,
-            } as CSSProperties
-          }
-          // On its way out it is still painted, so it has to stop being reachable
-          // by pointer, keyboard, and screen reader on its own.
-          inert={!isWeekLive}
-        >
-          <div className="scores-nav__live-content">
-            <div className="scores-nav__divider" />
-            <Button
-              ariaLabel="Refresh"
-              // Also unavailable mid-refresh, so a second click while one is
-              // already running cannot queue another.
-              ariaDisabled={disabled || isRefreshing}
-              busy={isRefreshing}
-              compact
-              onClick={onRefresh}
-              className="scores-nav__button"
-            >
-              <UpdateIcon />
-            </Button>
-          </div>
-        </div>
-      )}
     </nav>
   );
 }
