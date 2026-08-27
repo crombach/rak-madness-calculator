@@ -2,9 +2,9 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import Footer from "./Footer";
 
-function renderFooter(path = "/") {
+function renderFooter() {
   render(
-    <MemoryRouter initialEntries={[path]}>
+    <MemoryRouter>
       <Footer />
     </MemoryRouter>,
   );
@@ -41,23 +41,6 @@ describe("Footer", () => {
 
     expect(screen.getByRole("link", { name: "Settings" })).not.toHaveAttribute(
       "target",
-    );
-  });
-
-  it("marks the settings link on the settings page", () => {
-    renderFooter("/settings");
-
-    expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
-  });
-
-  it("marks nothing on any other page", () => {
-    renderFooter("/");
-
-    expect(screen.getByRole("link", { name: "Settings" })).not.toHaveAttribute(
-      "aria-current",
     );
   });
 

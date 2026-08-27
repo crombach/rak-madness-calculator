@@ -3,7 +3,6 @@ import { useNavigate } from "react-router";
 import { Theme, useSettings } from "../../context/SettingsContext";
 import Button from "../button/Button";
 import { CloseIcon } from "../icon/Icon";
-import Footer from "../footer/Footer";
 import LogoButton, { APP_NAME } from "../navbar/LogoButton";
 import PageLayout from "../pageLayout/PageLayout";
 import "./SettingsPage.scss";
@@ -108,8 +107,6 @@ export default function SettingsPage() {
           </p>
         </section>
       </div>
-
-      <Footer />
     </PageLayout>
   );
 }

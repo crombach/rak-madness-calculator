@@ -10,8 +10,8 @@
   gap: var(--rak-space-6);
 }
 
-// The page's own name, since `PageLayout` hides its `<h1>` and every other route
-// says what it is with a table. Set the way a dialog sets its title, which is the
+// The page's own name, since `PageLayout` hides its `<h1>` and this route draws no
+// table to say what it is. Set the way a dialog sets its title, which is the
 // only other heading the app draws.
 .settings__title {
   margin: 0;

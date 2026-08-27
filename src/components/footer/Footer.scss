@@ -28,14 +28,6 @@
   align-items: center;
   gap: var(--rak-space-2);
 
-  // The page this link is already on. Set in the ink the app reads its own body
-  // copy in, a long way up from the quiet grey the other two keep, and bolder
-  // with it, so the mark does not rest on the color alone.
-  &[aria-current="page"] {
-    color: var(--rak-text);
-    font-weight: var(--rak-weight-bold);
-  }
-
   > svg {
     width: var(--rak-icon-sm);
     height: var(--rak-icon-sm);
