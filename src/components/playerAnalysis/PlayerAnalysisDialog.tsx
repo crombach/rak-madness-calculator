@@ -4,7 +4,9 @@ import { PlayerAnalysis } from "../../types/PlayerAnalysis";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import getClasses from "../../utils/getClasses";
 import matching from "../../utils/matching";
-import getPlayerAnalysis from "../../utils/scoring/getPlayerAnalysis";
+import getPlayerAnalysis, {
+  getSettledAnalysis,
+} from "../../utils/scoring/getPlayerAnalysis";
 import DialogCombobox from "../dialog/DialogCombobox";
 import DialogShell from "../dialog/DialogShell";
 import PlayerStatusIcon from "../table/playerName/PlayerStatusIcon";
@@ -67,10 +69,20 @@ export default function PlayerAnalysisDialog({
     setQuery(name);
   });
 
+  // The answers the week already holds: a knocked out player, and a week the
+  // knockouts have settled. Both are a walk of the players, so they are read here
+  // rather than waited for below, where the bar used to stand over an answer that
+  // was ready and then grow the dialog under it.
+  const settled = useMemo(() => {
+    if (scores == null || player == null) return undefined;
+    const paths = getSettledAnalysis(scores, player.name);
+    return paths == null ? undefined : { scores, name: player.name, paths };
+  }, [scores, player]);
+
   // The search is thousands of scenarios and holds the thread while it runs, so
   // it waits for the bar that says so to paint first.
   useEffect(() => {
-    if (scores == null || player == null) return;
+    if (scores == null || player == null || settled != null) return;
     let timer = 0;
     const frame = requestAnimationFrame(() => {
       timer = window.setTimeout(() =>
@@ -85,12 +97,13 @@ export default function PlayerAnalysisDialog({
       cancelAnimationFrame(frame);
       window.clearTimeout(timer);
     };
-  }, [scores, player]);
+  }, [scores, player, settled]);
 
   // The answer already on screen stays there while the next one is worked out, so
   // moving between players reads as one answer replacing another rather than as the
   // dialog emptying and filling again. Only a rescore takes it away.
-  const shown = found?.scores === scores ? found : undefined;
+  const searched = found?.scores === scores ? found : undefined;
+  const shown = settled ?? searched;
   const isSearching = player != null && shown?.name !== player.name;
 
   return (
