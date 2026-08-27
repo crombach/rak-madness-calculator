@@ -35,21 +35,60 @@
   flex: 1 1 0;
 }
 
+// The well the name is typed into. The shell rather than the input itself, so the
+// clear button stands inside it: `lcd-field` resets an `<input>` and a `<button>`
+// alike, and a ring around the shell is what the mixin's own `$on` is for.
 .settings__field {
   @include lcd-field;
-  @include focus-ring;
+  @include focus-ring(":focus-within");
 
+  display: flex;
+  align-items: center;
   min-height: var(--rak-touch-target);
-  padding-inline: var(--rak-space-3);
+  // None on the trailing edge: the clear button has a bay of its own there, the
+  // same shape the home page's selects give their chevron.
+  padding-inline: var(--rak-space-3) 0;
+}
+
+.settings__field-input {
+  flex: 1;
+  // Without this a long name widens the well past the column instead of scrolling
+  // inside it, since a flex item's floor is the content it holds.
+  min-width: 0;
+  align-self: stretch;
+  appearance: none;
+  border: none;
+  background: none;
+  color: inherit;
   // The face the tables set a player's name in, so what is typed here looks like
   // what it has to match.
   font-family: var(--rak-font-mono);
   font-size: var(--rak-text-md);
   line-height: var(--rak-line-height);
 
+  // The shell draws the one ring, so the input inside it draws none of its own.
+  &:focus {
+    outline: none;
+  }
+
   &::placeholder {
     color: var(--rak-unlit);
   }
+}
+
+// Lit chrome rather than muted UI, which is what the selects set their chevron in
+// too. Square and as tall as the well, so the whole bay is inside the hit area.
+.settings__field-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  aspect-ratio: 1;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--rak-on-solid);
+  cursor: pointer;
 }
 
 .settings__hint {

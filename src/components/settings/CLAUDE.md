@@ -1,8 +1,10 @@
 # settings
 
 `SettingsPage`: the `/settings` route, reached from the home page footer. Two
-sections. Appearance is three `Button`s with `selected`, the navbar's own
-switch idiom, over `SettingsContext`. Your name is an `lcd-field` text input
-whose value marks that player's row in both tables.
+sections. Theme is three `Button`s with `selected`, the navbar's own
+switch idiom, over `SettingsContext`. Your Player Name is an `lcd-field` shell
+holding a text input and a clear button. Its value marks that player's row in
+both tables.
 
-`SettingsPage.scss`: the column, its labels, and the field's well.
+`SettingsPage.scss`: the column, its labels, and the well the field and its
+clear button share. The well takes the focus ring, not the input.

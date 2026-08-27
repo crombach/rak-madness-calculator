@@ -62,7 +62,7 @@ describe("SettingsPage, the theme", () => {
 describe("SettingsPage, the reader's own name", () => {
   it("saves what is typed", async () => {
     const user = mountPage();
-    await user.type(screen.getByLabelText("Your name"), "Linebacher");
+    await user.type(screen.getByLabelText("Your Player Name"), "Linebacher");
 
     expect(localStorage.getItem(PLAYER_NAME_KEY)).toBe("Linebacher");
   });
@@ -71,14 +71,33 @@ describe("SettingsPage, the reader's own name", () => {
     localStorage.setItem(PLAYER_NAME_KEY, "Linebacher");
     mountPage();
 
-    expect(screen.getByLabelText("Your name")).toHaveValue("Linebacher");
+    expect(screen.getByLabelText("Your Player Name")).toHaveValue("Linebacher");
   });
 
   it("forgets the name once the field is cleared", async () => {
     localStorage.setItem(PLAYER_NAME_KEY, "Linebacher");
     const user = mountPage();
-    await user.clear(screen.getByLabelText("Your name"));
+    await user.clear(screen.getByLabelText("Your Player Name"));
 
     expect(localStorage.getItem(PLAYER_NAME_KEY)).toBeNull();
+  });
+
+  it("empties the field from the clear button", async () => {
+    localStorage.setItem(PLAYER_NAME_KEY, "Linebacher");
+    const user = mountPage();
+    await user.click(
+      screen.getByRole("button", { name: "Clear your player name" }),
+    );
+
+    expect(screen.getByLabelText("Your Player Name")).toHaveValue("");
+    expect(localStorage.getItem(PLAYER_NAME_KEY)).toBeNull();
+  });
+
+  it("offers nothing to clear while the field is empty", () => {
+    mountPage();
+
+    expect(
+      screen.queryByRole("button", { name: "Clear your player name" }),
+    ).not.toBeInTheDocument();
   });
 });

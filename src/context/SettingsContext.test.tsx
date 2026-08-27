@@ -52,7 +52,7 @@ describe("SettingsContext, the theme", () => {
   });
 
   it("names the chosen theme on the document, for index.scss to select on", async () => {
-    const user = await mountProbe();
+    const user = mountProbe();
     await user.click(screen.getByRole("button", { name: "dark" }));
 
     expect(document.documentElement.dataset.theme).toBe("dark");
@@ -60,7 +60,7 @@ describe("SettingsContext, the theme", () => {
   });
 
   it("takes the name back off the document on the way to auto", async () => {
-    const user = await mountProbe();
+    const user = mountProbe();
     await user.click(screen.getByRole("button", { name: "dark" }));
     await user.click(screen.getByRole("button", { name: "auto" }));
 
@@ -79,7 +79,7 @@ describe("SettingsContext, the theme", () => {
 
 describe("SettingsContext, the reader's own name", () => {
   it("saves what was typed, as it was typed", async () => {
-    const user = await mountProbe();
+    const user = mountProbe();
     await user.click(screen.getByRole("button", { name: "name me" }));
 
     expect(screen.getByTestId("playerName")).toHaveTextContent("Linebacher");

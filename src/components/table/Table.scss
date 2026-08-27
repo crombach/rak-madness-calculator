@@ -274,25 +274,30 @@
         --rak-cell-base: var(--rak-knocked-out-300);
       }
 
-      // The reader's own row, marked down the leading edge of this column rather
-      // than filled: the fill already says whether they can still win, and the
-      // pick cells beside it say how their week went. Marked here rather than on
-      // the rank cell because this column is the one that sticks, so the mark
-      // survives the sideways pan the picks table is read with.
-      //
-      // Border and shadow both, because `.table__cell-wipe` is opaque and covers
-      // the padding box a refresh flashes this cell. The border sits outside it.
-      &.--mine {
-        border-left-color: var(--rak-my-row-accent);
-        box-shadow: inset 4px 0 0 var(--rak-my-row-accent);
-      }
-
       // The one change a name cell can show is a player just being knocked out,
       // so the wipe always draws the fill they held before that, not the one
       // inherited from the `<td>`'s own, already-updated class above.
       .table__cell-wipe {
         --rak-cell-base: var(--rak-in-contention-300);
       }
+    }
+
+    // The reader's own row, ruled above and below rather than filled: the fill
+    // already says whether they can still win, and the pick cells say how their
+    // week went, so a fill here would take a hue off one of them.
+    //
+    // Read off the name cell, which is the one thing that knows whose row this
+    // is, rather than off a class on the `<tr>`, which both tables would have to
+    // set. Drawn on every cell rather than on the row, because a row draws no
+    // background of its own for a border to sit against.
+    //
+    // Inset, so the rule is inside the cell's own edges and no row grows by it.
+    // `.table__cell-wipe` is opaque and covers the padding box a refresh flashes,
+    // so a wiping cell drops its share of the rule until the flash is over.
+    tr:has(> .table__player-col.--mine) > td {
+      box-shadow:
+        inset 0 var(--rak-border-width) 0 var(--rak-my-row-accent),
+        inset 0 calc(-1 * var(--rak-border-width)) 0 var(--rak-my-row-accent);
     }
 
     td {

@@ -2,24 +2,24 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import Footer from "./Footer";
 
-function renderFooter() {
+function renderFooter(path = "/") {
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[path]}>
       <Footer />
     </MemoryRouter>,
   );
 }
 
 describe("Footer", () => {
-  it("links to the standings, the repo, and the settings page", () => {
+  it("links to the settings page, the standings, and the repo, in that order", () => {
     renderFooter();
     const hrefs = screen
       .getAllByRole("link")
       .map((link) => link.getAttribute("href"));
     expect(hrefs).toEqual([
+      "/settings",
       "https://rakmadness.net/standings-pickem",
       "https://github.com/crombach/rak-madness-calculator",
-      "/settings",
     ]);
   });
 
@@ -41,6 +41,23 @@ describe("Footer", () => {
 
     expect(screen.getByRole("link", { name: "Settings" })).not.toHaveAttribute(
       "target",
+    );
+  });
+
+  it("marks the settings link on the settings page", () => {
+    renderFooter("/settings");
+
+    expect(screen.getByRole("link", { name: "Settings" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+  });
+
+  it("marks nothing on any other page", () => {
+    renderFooter("/");
+
+    expect(screen.getByRole("link", { name: "Settings" })).not.toHaveAttribute(
+      "aria-current",
     );
   });
 
