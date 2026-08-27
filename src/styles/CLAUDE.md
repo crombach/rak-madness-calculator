@@ -6,7 +6,8 @@ keyframes. Design tokens live in `src/index.scss` instead.
 
 - `_breakpoints.scss`: `roomy-screen`, `labelled-navbar`, `wide-screen`,
   `can-hover`, `phone-landscape`, `reduced-motion`
-- `_focus.scss`: `focus-ring`, the app's one focus ring
+- `_focus.scss`: `focus-ring`, the app's one focus ring, and `$focus-ring-reach`,
+  the room it needs outside a control a scrolling ancestor would clip it against
 - `_ink.scss`: `ink-height`, an icon drawn as tall as the text beside it
 - `_a11y.scss`: `visually-hidden`
 - `_label.scss`: `micro-label`, the tracked capitals every small label is set in

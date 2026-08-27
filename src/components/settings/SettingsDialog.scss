@@ -3,11 +3,14 @@
 @use "../../styles/lcd" as *;
 
 // The dialog body owns the padding around this and the width it stands in, so this
-// is the column and the air between its sections and nothing else.
+// is the column, the air between its sections, and the room a focus ring needs.
+// That last is here rather than on the body: the body's own progress bar spans the
+// rule above it, and padding there would hold the bar off both ends of it.
 .settings {
   display: flex;
   flex-direction: column;
   gap: var(--rak-space-6);
+  padding-inline: $focus-ring-reach;
 }
 
 .settings__section {
