@@ -21,9 +21,9 @@
   @include focus-ring(":focus-within");
 }
 
-// The whole field, under everything drawn on it. Positioned, so it paints over the
-// icon and the adornment, which are not, and a press on either reaches it. The input
-// is lifted back over it below.
+// Fills the field. Positioned, so it sits above the icon and the adornment,
+// neither of which is, and a press on either reaches it. The input is lifted
+// back above it below.
 .dialog__search-trigger {
   position: absolute;
   inset: 0;
