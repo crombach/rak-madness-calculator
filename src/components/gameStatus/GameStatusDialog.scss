@@ -63,6 +63,9 @@ $check-icon-ratio: math.div(451, 333);
   display: flex;
   align-items: center;
   justify-content: center;
+  // Out of any selection dragged over the list. The four words are the mark's
+  // shape, not text worth copying, and highlighted they read as picked out.
+  user-select: none;
 
   &.--live {
     @include mark-pill(var(--rak-mark-live-bg), var(--rak-mark-live-text));

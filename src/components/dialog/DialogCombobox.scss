@@ -9,6 +9,8 @@
 .dialog__search {
   @include lcd-field;
 
+  // The box the trigger below is stretched over.
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--rak-space-2);
@@ -19,7 +21,21 @@
   @include focus-ring(":focus-within");
 }
 
+// Fills the field. Positioned, so it sits above the icon and the adornment,
+// neither of which is, and a press on either reaches it. The input is lifted
+// back above it below.
+.dialog__search-trigger {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
 .dialog__input {
+  // Over the trigger, since a press here is the input's own: it is what opens a
+  // phone's keyboard, and it places the caret.
+  position: relative;
   flex: 1;
   min-width: 0;
   padding: 3px 0;
