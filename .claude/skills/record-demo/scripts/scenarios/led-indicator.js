@@ -8,6 +8,9 @@ import {
 const SEASON = 2024;
 const WEEK = 5;
 const THEME_KEY = "rak-madness:settings:theme";
+const PLAYER_NAME_KEY = "rak-madness:settings:playerName";
+// One of the names in ROWS below, so the scoreboard has a row to rule.
+const MY_NAME = "Carol";
 
 const ROWS = [
   { Name: "Alice", P1: "KC", P2: "SF", P3: "MIA" },
@@ -46,12 +49,15 @@ async function crop(page, locator, name) {
   });
 }
 
-/** Loads a route with one theme already saved, the way a returning reader would. */
+/** Loads a route with one theme and one name saved, the way a returning reader would. */
 async function openIn(page, baseUrl, theme, route) {
   await page.goto(`${baseUrl}/`);
   await page.evaluate(
-    ([key, value]) => localStorage.setItem(key, value),
-    [THEME_KEY, theme],
+    ([themeKey, theme, nameKey, name]) => {
+      localStorage.setItem(themeKey, theme);
+      localStorage.setItem(nameKey, name);
+    },
+    [THEME_KEY, theme, PLAYER_NAME_KEY, MY_NAME],
   );
   await page.goto(`${baseUrl}${route}`);
   // A toast stands over the footer, and the settings button is under it.
@@ -81,11 +87,35 @@ export default async function run({ page, context, baseUrl }) {
     await page.waitForTimeout(600);
     await crop(page, nav, `navbar-${theme}`);
 
+    // The reader's own row, ruled in the same blue the lamp is lit in.
+    const mine = page.locator("tr:has(.table__player-col.--mine)");
+    await mine.first().waitFor({ timeout: 20000 });
+    await crop(page, mine.first(), `my-row-${theme}`);
+
     await openIn(page, baseUrl, theme, "/");
     await page.getByRole("button", { name: "Settings" }).click();
     const choices = page.locator(".settings__choices");
     await choices.waitFor({ timeout: 20000 });
     await page.waitForTimeout(600);
     await crop(page, choices, `theme-${theme}`);
+
+    // The two keys the home page ends on, which now carry a hue each. Both are
+    // disabled until a week has been scored, so the mocked week is picked first.
+    await page.keyboard.press("Escape");
+    await page
+      .locator(".home__week-input.select__trigger:not(.home__season-input)")
+      .click();
+    await page
+      .getByRole("option", { name: `Week ${WEEK}`, exact: true })
+      .click();
+    const controls = page.locator(".home__controls");
+    await controls.waitFor({ timeout: 20000 });
+    // Both keys stay grey until the week has been scored, so wait for the last
+    // of them to come up rather than for a fixed delay.
+    await page
+      .locator(".home__button:not([disabled])", { hasText: "Export Results" })
+      .waitFor({ timeout: 20000 });
+    await page.waitForTimeout(600);
+    await crop(page, controls, `home-${theme}`);
   }
 }
