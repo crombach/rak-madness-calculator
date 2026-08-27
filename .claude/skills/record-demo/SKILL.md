@@ -40,6 +40,9 @@ instead of recording the whole run.
 
 - `scenarios/scroll-overlap.js` — pans the picks table right across its
   colored columns, player column pinned left the whole way.
+- `scenarios/led-indicator.js` — crops the navbar view switch and the settings
+  dialog theme switch, in both themes, to show the lamp that says which key is
+  chosen. Writes its crops to `$LED_SHOT_DIR`, so `--out` is a throwaway.
 - `scenarios/live-refresh.js` — opens the Game Status dialog on a live pick,
   waits out its real poll interval, and shows the table update on its own
   once the mocked game goes final.
