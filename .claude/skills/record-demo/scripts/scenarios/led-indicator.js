@@ -38,6 +38,10 @@ const PAD = 10;
  */
 async function crop(page, locator, name) {
   const box = await locator.boundingBox();
+  // Null for an element that is detached or laid out at no size. Named here, so
+  // the run says which crop had nothing to measure rather than throwing on a
+  // property of null.
+  if (!box) throw new Error(`Nothing to crop for ${name}`);
   await page.screenshot({
     path: path.join(process.env.LED_SHOT_DIR ?? ".", `${name}.png`),
     clip: {

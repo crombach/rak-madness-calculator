@@ -273,6 +273,9 @@ describe("SettingsContext, the transitions a theme change would ease", () => {
 
       dark.flip();
       expect(document.documentElement.dataset.themeSwitching).toBe("");
+
+      frames.flush();
+      expect(document.documentElement.dataset.themeSwitching).toBeUndefined();
     } finally {
       dark.restore();
     }
