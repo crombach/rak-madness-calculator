@@ -450,9 +450,13 @@
   // lit by nothing. The spread is the blur negated, which pulls each shadow's
   // own left and right edges clear of the cell so the blur cannot bleed down
   // them.
+  //
+  // Faint on purpose. The rule is what marks the row, and a bloom strong enough
+  // to be looked at is one more thing over a cell already carrying a fill, a
+  // stripe and a pick.
   --rak-led-bloom:
-    inset 0 8px 6px -6px rgb(2 132 199 / 45%),
-    inset 0 -8px 6px -6px rgb(2 132 199 / 45%);
+    inset 0 8px 6px -6px rgb(2 132 199 / 14%),
+    inset 0 -8px 6px -6px rgb(2 132 199 / 14%);
   --rak-bezel:
     inset 0 1px 0 rgb(255 255 255 / 10%), inset 0 -1px 0 rgb(0 0 0 / 30%);
   // A shadow that reads as a hole against black is a bruise against white, so
@@ -723,8 +727,8 @@ html {
   --rak-led-glow:
     0 0 6px rgb(125 211 252 / 55%), 0 0 12px rgb(125 211 252 / 25%);
   --rak-led-bloom:
-    inset 0 8px 7px -6px rgb(125 211 252 / 45%),
-    inset 0 -8px 7px -6px rgb(125 211 252 / 45%);
+    inset 0 8px 7px -6px rgb(125 211 252 / 15%),
+    inset 0 -8px 7px -6px rgb(125 211 252 / 15%);
   --rak-state-hover: rgb(255 255 255 / 8%);
   --rak-state-press: rgb(255 255 255 / 16%);
 }
