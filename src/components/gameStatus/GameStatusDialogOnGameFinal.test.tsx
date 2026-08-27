@@ -57,7 +57,7 @@ describe("GameStatusDialog onGameFinal", () => {
     vi.useRealTimers();
   });
 
-  it("does not call onGameFinal for a game already final when opened", async () => {
+  it("shows a game already final on the first render, without fetching it", async () => {
     vi.useFakeTimers();
     const onGameFinal = vi.fn();
     const settledGame: WeekGame = {
@@ -78,6 +78,12 @@ describe("GameStatusDialog onGameFinal", () => {
       dialog(undefined, false, settledScores, onGameFinal),
     );
     rerender(dialog("P1", true, settledScores, onGameFinal));
+
+    // Nothing about it can have changed, so the week's own copy is the answer and
+    // goes up on the render that opens the dialog. No wait, and nothing asked for.
+    expect(screen.getByText("24")).toBeInTheDocument();
+    expect(screen.queryByRole("progressbar")).toBeNull();
+    expect(getGameResultMock).not.toHaveBeenCalled();
     expect(
       await screen.findByRole("img", { name: "Final" }),
     ).toBeInTheDocument();

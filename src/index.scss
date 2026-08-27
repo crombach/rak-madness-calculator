@@ -521,14 +521,14 @@ html {
   // `--rak-scrim` is 45% of `--rak-shadow-color`, which is #151515: laid over
   // this surface it lands on #171717, a 1.02 step. `--rak-shadow-modal` is the
   // same near-black, so it draws nothing either. Lifting the fill is the only
-  // separation left, and it is a 1.11 step, which the edge below then makes
-  // measurable.
-  --rak-surface-raised: #212121;
+  // separation left, and it is a 1.04 step. Too small to read on its own, so the
+  // edge below is what actually separates the two planes.
+  --rak-surface-raised: #1d1d1d;
   --rak-fill-subtle: #212121;
   --rak-fill-muted: #292929;
   --rak-border: #747474;
   --rak-panel-border: var(--rak-border);
-  // 3.45:1 against the raised fill, which two planes this dark can never reach
+  // 3.61:1 against the raised fill, which two planes this dark can never reach
   // against each other. The edge is what carries the requirement.
   --rak-dialog-edge: var(--rak-panel-border);
 

@@ -1,4 +1,3 @@
-import { fireEvent } from "@testing-library/react";
 import { MockedFunction } from "vitest";
 import { WeekInfo } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
@@ -27,18 +26,6 @@ export const WEEK: WeekInfo = {
   endDate: new Date("2024-10-08T00:00:00Z"),
 };
 export const SEASON = 2024;
-
-/**
- * jsdom never actually fetches an image, so a game's marks would sit forever
- * unloaded behind `GameStatusSummary`'s own wireframe. Settles them for the game
- * on screen, standing in for the common case the wait is for: the browser's
- * image cache already warm from the dialog's own prefetch.
- */
-export function settleLogos() {
-  document
-    .querySelectorAll<HTMLImageElement>("img[hidden]")
-    .forEach((img) => fireEvent.load(img));
-}
 
 export function dialog(
   gameLabel: string | undefined,
