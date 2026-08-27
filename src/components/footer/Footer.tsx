@@ -1,16 +1,24 @@
-import { Link } from "react-router";
+import { useState } from "react";
 import { EmojiEventsIcon, GitHubIcon, SettingsIcon } from "../icon/Icon";
+import SettingsDialog from "../settings/SettingsDialog";
 import "./Footer.scss";
 
 export default function Footer() {
+  const [isSettingsOpen, setSettingsOpen] = useState(false);
+
   return (
     <div className="footer">
-      {/* The one link here that stays in the app, so a router link rather than
-          an `<a>`: the others leave it, and a reload would cost the loaded week. */}
-      <Link className="footer__link" to="/settings">
+      {/* The one thing here that goes nowhere, so a button beside two links. The
+          settings open over the page rather than replacing it, which is what the
+          player analysis and the game status do too. */}
+      <button
+        type="button"
+        className="footer__link"
+        onClick={() => setSettingsOpen(true)}
+      >
         <SettingsIcon />
         Settings
-      </Link>
+      </button>
       |
       <a
         className="footer__link"
@@ -31,6 +39,7 @@ export default function Footer() {
         <GitHubIcon />
         GitHub
       </a>
+      <SettingsDialog open={isSettingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
 }

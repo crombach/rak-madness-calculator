@@ -5,7 +5,7 @@ TypeScript, react-router, Base UI, SCSS. Vitest for tests, ESLint flat config.
 Scores an uploaded weekly picks spreadsheet against ESPN game results, exports XLSX.
 Home page at `/`, a week's results at `/:season/:week/scoreboard` and
 `/:season/:week/picks`, and `/scoreboard` and `/picks` redirect to the latest week
-worth showing. `/settings` holds the reader's theme and their own name. Deployed to Cloudflare Pages (`wrangler`), which serves the picks
+worth showing. A dialog off the home page footer holds the reader's theme and own name. Deployed to Cloudflare Pages (`wrangler`), which serves the picks
 API in `functions/` beside the built app.
 
 `index.html` at the repo root is the HTML shell Vite builds from. Its inline

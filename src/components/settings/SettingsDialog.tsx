@@ -1,11 +1,9 @@
 import { useId } from "react";
-import { useNavigate } from "react-router";
 import { Theme, useSettings } from "../../context/SettingsContext";
 import Button from "../button/Button";
+import DialogShell from "../dialog/DialogShell";
 import { CloseIcon } from "../icon/Icon";
-import LogoButton, { APP_NAME } from "../navbar/LogoButton";
-import PageLayout from "../pageLayout/PageLayout";
-import "./SettingsPage.scss";
+import "./SettingsDialog.scss";
 
 // Alphabetical, so the row has an order a reader can predict rather than one that
 // ranks the choices.
@@ -15,31 +13,21 @@ const THEMES: Array<{ value: Theme; label: string }> = [
   { value: "light", label: "Light" },
 ];
 
-/** The `/settings` route: how the app looks, and who the reader is. */
-export default function SettingsPage() {
-  const navigate = useNavigate();
+/** How the app looks, and who the reader is. */
+export default function SettingsDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const { theme, setTheme, playerName, setPlayerName } = useSettings();
   const themeLabelId = useId();
   const nameInputId = useId();
 
   return (
-    <PageLayout
-      title={`${APP_NAME} Settings`}
-      navbarLeft={<LogoButton onClick={() => navigate("/")} />}
-      /* The way out. The logo goes home from every page, but nothing on this one
-         says so, and a page of preferences reads as something a reader closes. */
-      navbarRight={
-        <Button
-          iconOnly
-          ariaLabel="Close settings"
-          onClick={() => navigate("/")}
-        >
-          <CloseIcon />
-        </Button>
-      }
-    >
+    <DialogShell open={open} onOpenChange={onOpenChange} title="Settings">
       <div className="settings">
-        <h2 className="settings__title">Settings</h2>
         <section className="settings__section">
           <h3 className="settings__label" id={themeLabelId}>
             Theme
@@ -106,6 +94,6 @@ export default function SettingsPage() {
           </p>
         </section>
       </div>
-    </PageLayout>
+    </DialogShell>
   );
 }

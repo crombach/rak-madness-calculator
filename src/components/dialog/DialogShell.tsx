@@ -34,8 +34,9 @@ export default function DialogShell({
   search?: ReactNode;
   /** Set while the next answer is being worked out. Draws the bar on the rule. */
   busy?: boolean;
-  /** The bar's accessible name, which says what is being worked out. */
-  busyLabel: string;
+  /** The bar's accessible name, which says what is being worked out. Required of
+      any dialog that can set `busy`. */
+  busyLabel?: string;
 }>) {
   // Tapping a search opens a keyboard over the bottom of the screen, which the
   // sheet is sized and padded against. Only while the dialog is up, since nothing

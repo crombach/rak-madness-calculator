@@ -27,6 +27,13 @@
   display: flex;
   align-items: center;
   gap: var(--rak-space-2);
+  // For the settings button, which is a `<button>` among two `<a>`s and has to
+  // read as the third of three. Costs the two links nothing.
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
 
   > svg {
     width: var(--rak-icon-sm);

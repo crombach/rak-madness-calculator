@@ -18,7 +18,7 @@ under an opening dialog. Base UI is unstyled, so tokens plus SCSS carry the whol
 - [`components/pageLayout/`](components/pageLayout/CLAUDE.md) — the chrome every page shares
 - [`components/playerAnalysis/`](components/playerAnalysis/CLAUDE.md) — where a player stands, and why
 - [`components/results/`](components/results/CLAUDE.md) — results routes, layout, redirect
-- [`components/settings/`](components/settings/CLAUDE.md) — theme and the reader's own name
+- [`components/settings/`](components/settings/CLAUDE.md) — theme and own name, in a dialog
 - [`components/table/`](components/table/CLAUDE.md) — shared frame and the results tables
 - [`components/toaster/`](components/toaster/CLAUDE.md) — toast notification renderer
 - [`context/`](context/CLAUDE.md) — app data, toast, and analysis providers

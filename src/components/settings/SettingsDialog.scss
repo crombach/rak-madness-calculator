@@ -2,22 +2,12 @@
 @use "../../styles/label" as *;
 @use "../../styles/lcd" as *;
 
+// The dialog body owns the padding around this and the width it stands in, so this
+// is the column and the air between its sections and nothing else.
 .settings {
   display: flex;
   flex-direction: column;
-  width: min(340px, 100%);
-  padding: var(--rak-space-4);
   gap: var(--rak-space-6);
-}
-
-// The page's own name, since `PageLayout` hides its `<h1>` and this route draws no
-// table to say what it is. Set the way a dialog sets its title, which is the
-// only other heading the app draws.
-.settings__title {
-  margin: 0;
-  color: var(--rak-text);
-  font-size: var(--rak-text-lg);
-  font-weight: 700;
 }
 
 .settings__section {

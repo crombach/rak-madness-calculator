@@ -1,33 +1,31 @@
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router";
+import { userEvent } from "@testing-library/user-event";
+import { SettingsContextProvider } from "../../context/SettingsContext";
 import Footer from "./Footer";
 
-function renderFooter() {
+function mountFooter() {
+  const user = userEvent.setup();
   render(
-    <MemoryRouter>
+    <SettingsContextProvider>
       <Footer />
-    </MemoryRouter>,
+    </SettingsContextProvider>,
   );
+  return user;
 }
 
 describe("Footer", () => {
-  it("links to the settings page, the standings, and the repo, in that order", () => {
-    renderFooter();
-    const hrefs = screen
-      .getAllByRole("link")
-      .map((link) => link.getAttribute("href"));
-    expect(hrefs).toEqual([
-      "/settings",
-      "https://rakmadness.net/standings-pickem",
-      "https://github.com/crombach/rak-madness-calculator",
-    ]);
+  it("offers the settings, the standings, and the repo, in that order", () => {
+    mountFooter();
+    const labels = Array.from(document.querySelectorAll(".footer__link")).map(
+      (control) => control.textContent,
+    );
+
+    expect(labels).toEqual(["Settings", "Standings", "GitHub"]);
   });
 
   it("opens every link that leaves the app in a new tab, without the referrer", () => {
-    renderFooter();
-    const leaving = screen
-      .getAllByRole("link")
-      .filter((link) => link.getAttribute("href")?.startsWith("http"));
+    mountFooter();
+    const leaving = screen.getAllByRole("link");
 
     expect(leaving).toHaveLength(2);
     leaving.forEach((link) => {
@@ -36,18 +34,20 @@ describe("Footer", () => {
     });
   });
 
-  it("keeps the settings link in the app", () => {
-    renderFooter();
+  it("opens the settings over the page, rather than linking away to them", async () => {
+    const user = mountFooter();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 
-    expect(screen.getByRole("link", { name: "Settings" })).not.toHaveAttribute(
-      "target",
-    );
+    await user.click(screen.getByRole("button", { name: "Settings" }));
+
+    expect(
+      screen.getByRole("dialog", { name: "Settings" }),
+    ).toBeInTheDocument();
   });
 
   it("names each link by its text, not the decorative icon beside it", () => {
-    renderFooter();
+    mountFooter();
     expect(screen.getByRole("link", { name: "Standings" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "GitHub" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Settings" })).toBeInTheDocument();
   });
 });

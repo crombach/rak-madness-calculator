@@ -4,7 +4,6 @@ import CurrentWeekRedirect from "./components/results/CurrentWeekRedirect";
 import PicksRoute from "./components/results/PicksRoute";
 import ResultsLayout from "./components/results/ResultsLayout";
 import ScoreboardRoute from "./components/results/ScoreboardRoute";
-import SettingsPage from "./components/settings/SettingsPage";
 
 export default function App() {
   return (
@@ -16,7 +15,6 @@ export default function App() {
         element={<CurrentWeekRedirect view="Scoreboard" />}
       />
       <Route path="/picks" element={<CurrentWeekRedirect view="Picks" />} />
-      <Route path="/settings" element={<SettingsPage />} />
       <Route path="/:season/:week" element={<ResultsLayout />}>
         <Route index element={<Navigate to="scoreboard" replace />} />
         <Route path="scoreboard" element={<ScoreboardRoute />} />
