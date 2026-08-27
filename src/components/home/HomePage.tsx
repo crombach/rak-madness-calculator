@@ -216,7 +216,7 @@ export default function HomePage() {
               className="home__button"
               busy={isBusy}
               disabled={hasNoScoresYet}
-              color="success"
+              color="info"
               onClick={() =>
                 navigate(`/${seasonYear}/${selectedWeek?.value}/scoreboard`)
               }
@@ -227,7 +227,7 @@ export default function HomePage() {
               className="home__button"
               busy={isBusy || isExportLoading}
               disabled={hasNoScoresYet || isExportLoading}
-              color="danger"
+              color="warning"
               onClick={exportResults}
             >
               Export Results

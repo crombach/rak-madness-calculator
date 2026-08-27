@@ -193,6 +193,34 @@
       color: #fff;
       --rak-focus-ring: #fff;
     }
+
+    // The key that goes somewhere rather than reports something, off the same
+    // blue the lamp is lit in. Fixed ink again, for the same reason as the two
+    // above: this fill is one dark blue in both modes, at 6.73:1 on white ink.
+    &.--info {
+      @include button-color(
+        var(--rak-info-700),
+        var(--rak-info-500),
+        var(--rak-info-600)
+      );
+
+      color: #fff;
+      --rak-focus-ring: #fff;
+    }
+
+    // The key that hands the week to something outside the app. Off the warning
+    // ramp's orange, which is the hue the tables already spend on a knockout, so
+    // it reads as neither a result nor a route. 5.41:1 on white ink.
+    &.--warning {
+      @include button-color(
+        var(--rak-warning-700),
+        var(--rak-warning-500),
+        var(--rak-warning-600)
+      );
+
+      color: #fff;
+      --rak-focus-ring: #fff;
+    }
   }
 
   // Which one is chosen, said in something other than a fill one step from its
