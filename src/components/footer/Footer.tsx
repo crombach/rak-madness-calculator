@@ -1,4 +1,5 @@
-import { EmojiEventsIcon, GitHubIcon } from "../icon/Icon";
+import { Link } from "react-router";
+import { EmojiEventsIcon, GitHubIcon, SettingsIcon } from "../icon/Icon";
 import "./Footer.scss";
 
 export default function Footer() {
@@ -23,6 +24,13 @@ export default function Footer() {
         <GitHubIcon />
         GitHub
       </a>
+      |
+      {/* The one link here that stays in the app, so a `Link` rather than an
+          `<a>`: the others leave it, and a reload would cost the loaded week. */}
+      <Link className="footer__link" to="/settings">
+        <SettingsIcon />
+        Settings
+      </Link>
     </div>
   );
 }

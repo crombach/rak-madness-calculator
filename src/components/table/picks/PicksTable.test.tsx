@@ -10,6 +10,7 @@ import {
 import { useScoreChanges } from "../../../context/AppDataContext";
 import { GameStatusContextProvider } from "../../../context/GameStatusContext";
 import { PlayerAnalysisContextProvider } from "../../../context/PlayerAnalysisContext";
+import { SettingsContextProvider } from "../../../context/SettingsContext";
 import { pickChangeKey } from "../../../utils/scoring/gameColumns";
 import PicksTable from "./PicksTable";
 
@@ -77,6 +78,7 @@ function renderPicks(showGameStatus = vi.fn()) {
 }
 
 beforeEach(() => {
+  localStorage.clear();
   mockScoreChanges.mockReturnValue({ picks: new Map(), players: new Map() });
 });
 
@@ -289,5 +291,34 @@ describe("PicksTable, a refresh's changes", () => {
 
     const cell = screen.getByText("Alice").closest("button");
     expect(cell?.querySelector(".table__cell-wipe")).toBeInTheDocument();
+  });
+});
+
+describe("PicksTable, the reader's own row", () => {
+  // The provider seeds itself from storage as it mounts, so a name written here
+  // is the reader's by the time the table renders.
+  function renderAs(name: string) {
+    localStorage.setItem("rak-madness:settings:playerName", name);
+    render(
+      <SettingsContextProvider>
+        <PicksTable scores={scores} />
+      </SettingsContextProvider>,
+    );
+  }
+
+  it("marks their name cell, whatever case they saved their name in", () => {
+    renderAs("  alice ");
+
+    expect(screen.getByText("Alice").closest("td")).toHaveClass("--mine");
+    expect(screen.getByText("Bob").closest("td")).not.toHaveClass("--mine");
+  });
+
+  it("leaves every pick cell's own status class alone", () => {
+    renderAs("Alice");
+
+    expect(screen.getByText("MICH").closest("td")).toHaveClass("--yes");
+    expect(screen.getByText("OSU").closest("td")).toHaveClass("--no");
+    expect(screen.getByText("KC").closest("td")).toHaveClass("--incomplete");
+    expect(screen.getByText("MIA").closest("td")).toHaveClass("--unscoreable");
   });
 });

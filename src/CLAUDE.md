@@ -1,10 +1,10 @@
 # src
 
-`index.tsx`: Vite entry, loaded by the root `index.html`. React 19 `createRoot` mount into `#root`, wraps `App` in `BrowserRouter`, `ToastContextProvider`, and `AppDataContextProvider`, with `Toaster` beside it. `App.tsx`: the route table, which the root `CLAUDE.md` lists. `index.scss`: global resets, the body baseline, every `--rak-*` design token, and
-a `prefers-color-scheme: dark` override for the color ones. It
+`index.tsx`: Vite entry, loaded by the root `index.html`. React 19 `createRoot` mount into `#root`, wraps `App` in `BrowserRouter`, `SettingsContextProvider`, `ToastContextProvider`, and `AppDataContextProvider`, with `Toaster` beside it. `App.tsx`: the route table, which the root `CLAUDE.md` lists. `index.scss`: global resets, the body baseline, every `--rak-*` design token, and
+a `dark-tokens` mixin the OS or a saved `data-theme` applies. It
 hides `<html>`'s overflow, because no route scrolls the page itself and saying so
 keeps Base UI's scroll lock from reserving a scrollbar gutter that shifts everything
-under an opening dialog. No theme provider: Base UI is unstyled, so tokens plus SCSS carry the whole look. `setupTests.ts`: Vitest setup, jest-dom plus a `jest` global shim that @testing-library/dom needs to drive fake timers.
+under an opening dialog. Base UI is unstyled, so tokens plus SCSS carry the whole look. `setupTests.ts`: Vitest setup, jest-dom plus a `jest` global shim that @testing-library/dom needs to drive fake timers.
 
 ## Subdirectories
 
@@ -18,6 +18,7 @@ under an opening dialog. No theme provider: Base UI is unstyled, so tokens plus 
 - [`components/pageLayout/`](components/pageLayout/CLAUDE.md) — the chrome every page shares
 - [`components/playerAnalysis/`](components/playerAnalysis/CLAUDE.md) — where a player stands, and why
 - [`components/results/`](components/results/CLAUDE.md) — results routes, layout, redirect
+- [`components/settings/`](components/settings/CLAUDE.md) — theme and the reader's own name
 - [`components/table/`](components/table/CLAUDE.md) — shared frame and the results tables
 - [`components/toaster/`](components/toaster/CLAUDE.md) — toast notification renderer
 - [`context/`](context/CLAUDE.md) — app data, toast, and analysis providers

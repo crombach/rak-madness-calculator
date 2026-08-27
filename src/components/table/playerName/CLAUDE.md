@@ -10,5 +10,8 @@ color.
 player analysis search renders it too, so the same player wears the same icon in
 both places.
 
+The reader's own row, by `useIsMyPlayer`, takes `--mine`: an accent down this
+column's leading edge, which sticks, so it survives a sideways pan.
+
 A player a refresh just knocked out renders a `.table__cell-wipe`, from
 `useScoreChanges()`, over the fill they held before that.

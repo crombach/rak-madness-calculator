@@ -1,0 +1,59 @@
+@use "../../styles/focus" as *;
+@use "../../styles/label" as *;
+@use "../../styles/lcd" as *;
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  width: min(340px, 100%);
+  padding: var(--rak-space-4);
+  gap: var(--rak-space-6);
+}
+
+.settings__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+}
+
+.settings__label {
+  @include micro-label;
+
+  margin: 0;
+  font-size: var(--rak-text-sm);
+  color: var(--rak-text-secondary);
+}
+
+.settings__choices {
+  display: flex;
+  flex-direction: row;
+  gap: var(--rak-space-2);
+}
+
+.settings__choice {
+  // Even thirds, so which one is chosen is the only thing telling them apart.
+  flex: 1 1 0;
+}
+
+.settings__field {
+  @include lcd-field;
+  @include focus-ring;
+
+  min-height: var(--rak-touch-target);
+  padding-inline: var(--rak-space-3);
+  // The face the tables set a player's name in, so what is typed here looks like
+  // what it has to match.
+  font-family: var(--rak-font-mono);
+  font-size: var(--rak-text-md);
+  line-height: var(--rak-line-height);
+
+  &::placeholder {
+    color: var(--rak-unlit);
+  }
+}
+
+.settings__hint {
+  margin: 0;
+  font-size: var(--rak-text-sm);
+  color: var(--rak-text-tertiary);
+}

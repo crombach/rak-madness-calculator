@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { PlayerScore, RakMadnessScores } from "../../../types/RakMadnessScores";
 import { PlayerAnalysisContextProvider } from "../../../context/PlayerAnalysisContext";
+import { SettingsContextProvider } from "../../../context/SettingsContext";
 import ScoresTable from "./ScoresTable";
 
 const showPlayerAnalysis = vi.fn();
@@ -31,11 +32,23 @@ const knockedOutBob = player({
 
 function mountTable(scores?: RakMadnessScores) {
   return render(
-    <PlayerAnalysisContextProvider showPlayerAnalysis={showPlayerAnalysis}>
-      <ScoresTable scores={scores} />
-    </PlayerAnalysisContextProvider>,
+    <SettingsContextProvider>
+      <PlayerAnalysisContextProvider showPlayerAnalysis={showPlayerAnalysis}>
+        <ScoresTable scores={scores} />
+      </PlayerAnalysisContextProvider>
+    </SettingsContextProvider>,
   );
 }
+
+// The provider seeds itself from storage as it mounts, so a name written here is
+// the reader's by the time the table renders.
+function saveMyName(name: string) {
+  localStorage.setItem("rak-madness:settings:playerName", name);
+}
+
+beforeEach(() => {
+  localStorage.clear();
+});
 
 const bothPlayers: RakMadnessScores = {
   tiebreaker: 41,
@@ -130,5 +143,29 @@ describe("ScoresTable", () => {
     const [alice, bob] = screen.getAllByRole("button");
     expect(alice).toHaveTextContent("Still in contention");
     expect(bob).toHaveTextContent("Knocked out");
+  });
+
+  it("marks the reader's own row, whatever case they saved their name in", () => {
+    saveMyName("  alice ");
+    mountTable(bothPlayers);
+    const [alice, bob] = screen.getAllByRole("button");
+    expect(alice.closest("td")?.className).toContain("--mine");
+    expect(alice.closest("td")?.className).not.toContain("--knocked-out");
+    expect(bob.closest("td")?.className).not.toContain("--mine");
+  });
+
+  it("marks nobody's row where no name is saved", () => {
+    mountTable(bothPlayers);
+    screen.getAllByRole("button").forEach((cellButton) => {
+      expect(cellButton.closest("td")?.className).not.toContain("--mine");
+    });
+  });
+
+  it("announces the reader's own row for a screen reader", () => {
+    saveMyName("Alice");
+    mountTable(bothPlayers);
+    const [alice, bob] = screen.getAllByRole("button");
+    expect(alice).toHaveTextContent("Your row");
+    expect(bob).not.toHaveTextContent("Your row");
   });
 });

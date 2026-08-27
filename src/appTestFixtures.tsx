@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { AppDataContextProvider } from "./context/AppDataContext";
+import { SettingsContextProvider } from "./context/SettingsContext";
 import { ToastContextProvider } from "./context/ToastContext";
 import { League, LeagueInfo, SeasonType } from "./types/League";
 import { SEASON, week } from "./weekFixtures";
@@ -100,12 +101,14 @@ export function mountApp(path = "/") {
   const user = userEvent.setup();
   render(
     <MemoryRouter initialEntries={[path]}>
-      <ToastContextProvider>
-        <AppDataContextProvider>
-          <App />
-        </AppDataContextProvider>
-        <Toaster />
-      </ToastContextProvider>
+      <SettingsContextProvider>
+        <ToastContextProvider>
+          <AppDataContextProvider>
+            <App />
+          </AppDataContextProvider>
+          <Toaster />
+        </ToastContextProvider>
+      </SettingsContextProvider>
     </MemoryRouter>,
   );
   return user;

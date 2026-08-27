@@ -33,6 +33,20 @@
     -->
     <link rel="manifest" href="/manifest.json" />
     <title>Rakulator</title>
+    <!-- The saved theme, before the first paint. src/context/SettingsContext.tsx
+         sets the same attribute once React is up, which is too late: a reader who
+         chose dark on a light OS would see a light flash on every load. The key is
+         the one src/utils/settingsStore.ts writes. -->
+    <script>
+      try {
+        var theme = localStorage.getItem("rak-madness:settings:theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch (error) {
+        // A browser refusing storage has no saved theme to honour anyway.
+      }
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

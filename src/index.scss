@@ -222,6 +222,11 @@
   --rak-in-contention-300: #9edbfa;
   --rak-in-contention-on-light: #126287;
 
+  // The reader's own row, marked down the leading edge of the frozen player
+  // column. Gold because it is the one hue the tables do not already spend, so
+  // the mark cannot be mistaken for a pick result or a knockout.
+  --rak-my-row-accent: var(--rak-gold-500);
+
   --rak-surface: #fff;
   --rak-fill-subtle: #f3f3f3;
   --rak-fill-muted: #e5e5e5;
@@ -452,133 +457,150 @@ html {
   }
 }
 
-// The OS signal alone: no toggle, no stored override. The instrument-panel chrome
-// (navbar, keys, table header, the readout glass) is a light panel with dark ink
-// in light mode above, and this is where it becomes the dark device it was
-// before: every token that pairs with it inverts here too, so the panel and its
-// ink move together. Every value below was chosen to clear WCAG AA against the
-// surface it pairs with.
+// The dark half of the palette. The instrument-panel chrome (navbar, keys, table
+// header, the readout glass) is a light panel with dark ink in light mode above,
+// and this is where it becomes the dark device it was before: every token that
+// pairs with it inverts here too, so the panel and its ink move together. Every
+// value below was chosen to clear WCAG AA against the surface it pairs with.
+//
+// A mixin rather than a rule, because the two ways in need the same body: the OS
+// signal, and the reader's own choice saved in `settingsStore`. Written out twice
+// they would drift.
+@mixin dark-tokens {
+  color-scheme: dark;
+
+  // The primary ramp and its header divider, back to the dark, achromatic
+  // values the instrument-panel chrome this ramp draws always stood on in
+  // this mode.
+  --rak-primary-400: #5e5e5e;
+  --rak-primary-500: #4f4f4f;
+  --rak-primary-600: #404040;
+  --rak-primary-700: #333333;
+  --rak-primary-800: #262626;
+  // The combobox field, back to the same dark fill this step always stood on
+  // in this mode. The readout glass needs no override: `--rak-glass-fill`
+  // above is fixed to this same value in both modes already.
+  --rak-well-fill: #262626;
+  --rak-table-header-divider: #757575;
+  // The chrome's own ink, light again against the dark fill above.
+  --rak-on-solid: #fff;
+  // The stronger cut, for the dark fill the field sinks into here. Same as
+  // `--rak-glass-well` above, since the field's own fill now matches the
+  // glass's fixed one in this mode.
+  --rak-well: inset 0 1px 2px rgb(0 0 0 / 35%);
+  // Light again, against the dark fill it reads a cell of the field on here.
+  --rak-unlit: rgb(255 255 255 / 12%);
+
+  --rak-brand-light: #262626;
+
+  --rak-success-400: #4ade80;
+  --rak-danger-400: #f87171;
+  --rak-gold-700: #e8b84b;
+  --rak-knocked-out-on-light: #ffb069;
+  --rak-in-contention-on-light: #74c6f5;
+  // The brighter gold, since this one is read against a dark cell.
+  --rak-my-row-accent: var(--rak-gold-700);
+
+  --rak-surface: #191919;
+  --rak-fill-subtle: #212121;
+  --rak-fill-muted: #292929;
+  --rak-border: #747474;
+  --rak-panel-border: var(--rak-border);
+
+  --rak-text: #f6f6f6;
+  --rak-text-secondary: #d1d1d1;
+  --rak-text-tertiary: #a1a1a1;
+
+  --rak-disabled-bg: #262626;
+  --rak-disabled-text: #939393;
+  --rak-disabled-edge: #121212;
+
+  --rak-selected-fill: #383838;
+
+  // The colorful table cells: a player's status and a pick's outcome. Same hue
+  // as the light-mode pastel, taken darker and more saturated, so a chip built
+  // to sit on a white page does not glare against this one. `--rak-text-on-pale`
+  // inverts to light ink alongside them, below.
+  --rak-success-300: #1b5719;
+  --rak-danger-300: #571919;
+  --rak-knocked-out-300: #573619;
+  --rak-in-contention-300: #194257;
+  --rak-cell-unscoreable: #4e5719;
+  --rak-text-on-pale: var(--rak-text);
+
+  // The game dialog's marks, off the same darkened hues as the cells above:
+  // `--live` off the danger cell's red, `--invalid` off the unscoreable cell's
+  // yellow-green, `--final` off the success cell's green. `--upcoming` has no
+  // cell to match, so it takes the neutral panel fill already this dark.
+  --rak-mark-live-bg: var(--rak-danger-300);
+  --rak-mark-live-text: var(--rak-text);
+  --rak-mark-invalid-bg: var(--rak-cell-unscoreable);
+  --rak-mark-invalid-text: var(--rak-text);
+  --rak-mark-final-bg: var(--rak-success-300);
+  --rak-mark-final-text: var(--rak-text);
+  --rak-mark-upcoming-bg: var(--rak-fill-muted);
+  --rak-mark-upcoming-text: var(--rak-text);
+
+  // The toast's own darkened fills, off the same hues as their light
+  // pastel. `primary` and `neutral` are both grey chrome, so they take the
+  // selected-row and muted-panel fills already this dark; `success` and
+  // `danger` reuse the table cell's own darkened green/red. `warning` gets
+  // its own: its hue is the orange the rest of its ramp runs on, not the
+  // yellow-green `--rak-cell-unscoreable` took.
+  --rak-toast-primary-bg: var(--rak-selected-fill);
+  --rak-toast-neutral-bg: var(--rak-fill-muted);
+  --rak-toast-success-bg: var(--rak-success-300);
+  --rak-toast-warning-bg: #573a19;
+  --rak-toast-danger-bg: var(--rak-danger-300);
+  --rak-toast-primary-text: var(--rak-text);
+  --rak-toast-neutral-text: var(--rak-text);
+  --rak-toast-success-text: var(--rak-text);
+  --rak-toast-warning-text: var(--rak-text);
+  --rak-toast-danger-text: var(--rak-text);
+  // Told from the page regardless of its own colors, so a navy helmet on a navy
+  // background still has an edge against a page it did not draw itself for. The
+  // same boundary any control's own edge is told from its surface with. Four
+  // hard-edged shadows, one per side, rather than one soft `drop-shadow` blur:
+  // this follows the crest's own alpha channel like a blur would, but reads as
+  // a 1px line around the ink instead of a glow past it.
+  --rak-logo-outline: drop-shadow(1px 0 0 var(--rak-border))
+    drop-shadow(-1px 0 0 var(--rak-border))
+    drop-shadow(0 1px 0 var(--rak-border))
+    drop-shadow(0 -1px 0 var(--rak-border));
+  // An even row is mixed toward this. `--rak-primary-800` is nearly the fill's
+  // own darkness once the fill goes dark too, so mixing toward it stopped
+  // reading as a row apart from its neighbor. Light instead, the same distance
+  // the other way, so the two rows part again.
+  --rak-stripe-with: var(--rak-text);
+
+  // The dialog's busy sweep. Black-on-a-key reads against the light-mode
+  // `--rak-disabled-bg`, and blends into it once that token goes dark.
+  --rak-loading-sheen-on-light: rgb(255 255 255 / 10%);
+  // The dialog progress bar's own sweep, off the primary ramp's dark chrome
+  // step in light mode. That step stays dark in both modes, and the track it
+  // sweeps over (`--rak-fill-subtle`) goes dark too, so the sweep needs to
+  // lighten here instead.
+  --rak-progress-fill: var(--rak-border);
+
+  --rak-well-light: inset 0 1px 2px rgb(0 0 0 / 42%);
+  // The key's own moulding, back to the cut it always dished by against this
+  // mode's dark fills.
+  --rak-key-top: inset 0 1px 0 rgb(255 255 255 / 18%);
+  --rak-key-dish: inset 0 -2px 3px rgb(0 0 0 / 14%);
+  --rak-state-hover: rgb(255 255 255 / 8%);
+  --rak-state-press: rgb(255 255 255 / 16%);
+}
+
+// Auto, which is the default: the OS decides, unless the reader has asked for
+// light outright.
 @media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-
-    // The primary ramp and its header divider, back to the dark, achromatic
-    // values the instrument-panel chrome this ramp draws always stood on in
-    // this mode.
-    --rak-primary-400: #5e5e5e;
-    --rak-primary-500: #4f4f4f;
-    --rak-primary-600: #404040;
-    --rak-primary-700: #333333;
-    --rak-primary-800: #262626;
-    // The combobox field, back to the same dark fill this step always stood on
-    // in this mode. The readout glass needs no override: `--rak-glass-fill`
-    // above is fixed to this same value in both modes already.
-    --rak-well-fill: #262626;
-    --rak-table-header-divider: #757575;
-    // The chrome's own ink, light again against the dark fill above.
-    --rak-on-solid: #fff;
-    // The stronger cut, for the dark fill the field sinks into here. Same as
-    // `--rak-glass-well` above, since the field's own fill now matches the
-    // glass's fixed one in this mode.
-    --rak-well: inset 0 1px 2px rgb(0 0 0 / 35%);
-    // Light again, against the dark fill it reads a cell of the field on here.
-    --rak-unlit: rgb(255 255 255 / 12%);
-
-    --rak-brand-light: #262626;
-
-    --rak-success-400: #4ade80;
-    --rak-danger-400: #f87171;
-    --rak-gold-700: #e8b84b;
-    --rak-knocked-out-on-light: #ffb069;
-    --rak-in-contention-on-light: #74c6f5;
-
-    --rak-surface: #191919;
-    --rak-fill-subtle: #212121;
-    --rak-fill-muted: #292929;
-    --rak-border: #747474;
-    --rak-panel-border: var(--rak-border);
-
-    --rak-text: #f6f6f6;
-    --rak-text-secondary: #d1d1d1;
-    --rak-text-tertiary: #a1a1a1;
-
-    --rak-disabled-bg: #262626;
-    --rak-disabled-text: #939393;
-    --rak-disabled-edge: #121212;
-
-    --rak-selected-fill: #383838;
-
-    // The colorful table cells: a player's status and a pick's outcome. Same hue
-    // as the light-mode pastel, taken darker and more saturated, so a chip built
-    // to sit on a white page does not glare against this one. `--rak-text-on-pale`
-    // inverts to light ink alongside them, below.
-    --rak-success-300: #1b5719;
-    --rak-danger-300: #571919;
-    --rak-knocked-out-300: #573619;
-    --rak-in-contention-300: #194257;
-    --rak-cell-unscoreable: #4e5719;
-    --rak-text-on-pale: var(--rak-text);
-
-    // The game dialog's marks, off the same darkened hues as the cells above:
-    // `--live` off the danger cell's red, `--invalid` off the unscoreable cell's
-    // yellow-green, `--final` off the success cell's green. `--upcoming` has no
-    // cell to match, so it takes the neutral panel fill already this dark.
-    --rak-mark-live-bg: var(--rak-danger-300);
-    --rak-mark-live-text: var(--rak-text);
-    --rak-mark-invalid-bg: var(--rak-cell-unscoreable);
-    --rak-mark-invalid-text: var(--rak-text);
-    --rak-mark-final-bg: var(--rak-success-300);
-    --rak-mark-final-text: var(--rak-text);
-    --rak-mark-upcoming-bg: var(--rak-fill-muted);
-    --rak-mark-upcoming-text: var(--rak-text);
-
-    // The toast's own darkened fills, off the same hues as their light
-    // pastel. `primary` and `neutral` are both grey chrome, so they take the
-    // selected-row and muted-panel fills already this dark; `success` and
-    // `danger` reuse the table cell's own darkened green/red. `warning` gets
-    // its own: its hue is the orange the rest of its ramp runs on, not the
-    // yellow-green `--rak-cell-unscoreable` took.
-    --rak-toast-primary-bg: var(--rak-selected-fill);
-    --rak-toast-neutral-bg: var(--rak-fill-muted);
-    --rak-toast-success-bg: var(--rak-success-300);
-    --rak-toast-warning-bg: #573a19;
-    --rak-toast-danger-bg: var(--rak-danger-300);
-    --rak-toast-primary-text: var(--rak-text);
-    --rak-toast-neutral-text: var(--rak-text);
-    --rak-toast-success-text: var(--rak-text);
-    --rak-toast-warning-text: var(--rak-text);
-    --rak-toast-danger-text: var(--rak-text);
-    // Told from the page regardless of its own colors, so a navy helmet on a navy
-    // background still has an edge against a page it did not draw itself for. The
-    // same boundary any control's own edge is told from its surface with. Four
-    // hard-edged shadows, one per side, rather than one soft `drop-shadow` blur:
-    // this follows the crest's own alpha channel like a blur would, but reads as
-    // a 1px line around the ink instead of a glow past it.
-    --rak-logo-outline: drop-shadow(1px 0 0 var(--rak-border))
-      drop-shadow(-1px 0 0 var(--rak-border))
-      drop-shadow(0 1px 0 var(--rak-border))
-      drop-shadow(0 -1px 0 var(--rak-border));
-    // An even row is mixed toward this. `--rak-primary-800` is nearly the fill's
-    // own darkness once the fill goes dark too, so mixing toward it stopped
-    // reading as a row apart from its neighbor. Light instead, the same distance
-    // the other way, so the two rows part again.
-    --rak-stripe-with: var(--rak-text);
-
-    // The dialog's busy sweep. Black-on-a-key reads against the light-mode
-    // `--rak-disabled-bg`, and blends into it once that token goes dark.
-    --rak-loading-sheen-on-light: rgb(255 255 255 / 10%);
-    // The dialog progress bar's own sweep, off the primary ramp's dark chrome
-    // step in light mode. That step stays dark in both modes, and the track it
-    // sweeps over (`--rak-fill-subtle`) goes dark too, so the sweep needs to
-    // lighten here instead.
-    --rak-progress-fill: var(--rak-border);
-
-    --rak-well-light: inset 0 1px 2px rgb(0 0 0 / 42%);
-    // The key's own moulding, back to the cut it always dished by against this
-    // mode's dark fills.
-    --rak-key-top: inset 0 1px 0 rgb(255 255 255 / 18%);
-    --rak-key-dish: inset 0 -2px 3px rgb(0 0 0 / 14%);
-    --rak-state-hover: rgb(255 255 255 / 8%);
-    --rak-state-press: rgb(255 255 255 / 16%);
+  :root:not([data-theme="light"]) {
+    @include dark-tokens;
   }
+}
+
+// A reader who chose dark, on any OS. After the query above rather than before it,
+// so it wins on source order as well as on specificity.
+:root[data-theme="dark"] {
+  @include dark-tokens;
 }

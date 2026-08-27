@@ -7,6 +7,7 @@
 - `pickStatusFill`: pick colors for the export
 - `picksCache` / `espnCache`: an uploaded workbook, and ESPN's fixed answers,
   on `localStorageCache`, a capped store under one prefix
+- `settingsStore`: the reader's own preferences, kept whatever the caches drop
 - `loadStoredPicks`: a week's workbook from the API, or cache
 - `debugLog`: scoring traces, silent outside a dev server
 - `latestOnly`: drops an async result its effect outlived

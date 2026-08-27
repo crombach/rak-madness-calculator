@@ -148,4 +148,13 @@ describe("the app: the URL decides which week is fetched, and what shows while i
 
     expect(screen.getByText("Use Local Spreadsheet")).toBeInTheDocument();
   });
+
+  it("opens the settings page on /settings", async () => {
+    mountApp("/settings");
+
+    expect(
+      await screen.findByRole("group", { name: "Theme" }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Your name")).toBeInTheDocument();
+  });
 });

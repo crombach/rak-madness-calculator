@@ -25,3 +25,9 @@
     white-space: nowrap;
   }
 }
+
+// Set heavier beside the accent down the cell's leading edge, so the reader's own
+// row is told from its neighbours by weight as well as by that mark.
+.--mine .player-name__name {
+  font-weight: var(--rak-weight-bold);
+}
