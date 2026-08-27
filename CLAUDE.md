@@ -1,22 +1,22 @@
 # rak-madness-calculator
 
 Auto-scoring web app for the Rak Madness football pool. Vite + React 19 +
-TypeScript, react-router, Base UI, SCSS. Vitest for tests, ESLint flat config.
-Scores an uploaded weekly picks spreadsheet against ESPN game results, exports XLSX.
+TypeScript, react-router, Base UI, SCSS. Vitest and ESLint flat config.
+Scores an uploaded picks spreadsheet against ESPN results, exports XLSX.
 Home page at `/`, a week's results at `/:season/:week/scoreboard` and
 `/:season/:week/picks`, and `/scoreboard` and `/picks` redirect to the latest week
 worth showing. A dialog off the home page footer holds the reader's theme and own name. Deployed to Cloudflare Pages (`wrangler`), which serves the picks
 API in `functions/` beside the built app.
 
-`index.html` at the repo root is the HTML shell Vite builds from. Its inline
-script sets `data-theme` from storage before the first paint.
+`index.html` at the repo root is the HTML shell Vite builds from. Before the
+first paint it sets `data-theme` from storage and preloads the logo's face.
 
 [`SCROLL-FLASH.md`](SCROLL-FLASH.md): an open bug, read before changing sticky.
 
 ## Subdirectories
 
 - [`functions/`](functions/CLAUDE.md) — the picks routes, on Pages and R2
-- [`public/`](public/CLAUDE.md) — icons, manifest, robots.txt
+- [`public/`](public/CLAUDE.md) — icons, manifest, robots, the logo's font
 - [`src/`](src/CLAUDE.md) — application source
 
 ## Maintaining this tree
