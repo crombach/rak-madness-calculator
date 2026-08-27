@@ -22,6 +22,15 @@ beforeEach(() => {
 });
 
 describe("SettingsDialog", () => {
+  it("asks for the name first, then the theme", () => {
+    mountDialog();
+    const headings = screen
+      .getAllByRole("heading", { level: 3 })
+      .map((heading) => heading.textContent);
+
+    expect(headings).toEqual(["Your Player Name", "Theme"]);
+  });
+
   it("closes from the shell's own close button", async () => {
     const onOpenChange = vi.fn();
     const user = mountDialog(onOpenChange);

@@ -29,36 +29,6 @@ export default function SettingsDialog({
     <DialogShell open={open} onOpenChange={onOpenChange} title="Settings">
       <div className="settings">
         <section className="settings__section">
-          <h3 className="settings__label" id={themeLabelId}>
-            Theme
-          </h3>
-          {/* Buttons that show which one is chosen, the same shape the navbar's
-              own view switch is. Not a `radiogroup`, which wants `aria-checked`
-              where `Button` gives `aria-pressed`. Named by the heading above it
-              rather than by a label of its own, which would say `Theme` twice. */}
-          <div
-            className="settings__choices"
-            role="group"
-            aria-labelledby={themeLabelId}
-          >
-            {THEMES.map(({ value, label }) => (
-              <Button
-                key={value}
-                compact
-                selected={theme === value}
-                onClick={() => setTheme(value)}
-                className="settings__choice"
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-          <p className="settings__hint">
-            Auto mode honors your device settings.
-          </p>
-        </section>
-
-        <section className="settings__section">
           <h3 className="settings__label">
             <label htmlFor={nameInputId}>Your Player Name</label>
           </h3>
@@ -91,6 +61,36 @@ export default function SettingsDialog({
           </div>
           <p className="settings__hint">
             Your row is marked in the scoreboard and picks tables.
+          </p>
+        </section>
+
+        <section className="settings__section">
+          <h3 className="settings__label" id={themeLabelId}>
+            Theme
+          </h3>
+          {/* Buttons that show which one is chosen, the same shape the navbar's
+              own view switch is. Not a `radiogroup`, which wants `aria-checked`
+              where `Button` gives `aria-pressed`. Named by the heading above it
+              rather than by a label of its own, which would say `Theme` twice. */}
+          <div
+            className="settings__choices"
+            role="group"
+            aria-labelledby={themeLabelId}
+          >
+            {THEMES.map(({ value, label }) => (
+              <Button
+                key={value}
+                compact
+                selected={theme === value}
+                onClick={() => setTheme(value)}
+                className="settings__choice"
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+          <p className="settings__hint">
+            Auto mode honors your device settings.
           </p>
         </section>
       </div>
