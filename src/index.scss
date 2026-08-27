@@ -135,9 +135,10 @@
   // The page behind the tiled logo, and the largest surface on a phone.
   --rak-brand-light: #a4a4a4;
   // What the app is mounted in on a screen too wide for the tiles to be its
-  // ground. A shade over the frame around the table so that frame still has an
-  // edge to be read against, on the same grey ramp as the rest of the app now.
-  --rak-case: var(--rak-neutral-700);
+  // ground. A shade under the navbar it runs down from and a shade over the
+  // white column it frames, so the column keeps an edge without the case
+  // reading as a dark bezel around a light page.
+  --rak-case: #dcdcdc;
 
   // Primary scale: the navbar, table header, and key chrome. Light here, so that
   // chrome reads as a light panel with dark ink on it, the same as the rest of
@@ -228,6 +229,10 @@
   --rak-my-row-accent: var(--rak-gold-500);
 
   --rak-surface: #fff;
+  // What a dialog stands on, one plane above the page. The same white here,
+  // where the scrim already takes the page to grey under it. Dark mode has no
+  // such room and lifts the plane instead.
+  --rak-surface-raised: var(--rak-surface);
   --rak-fill-subtle: #f3f3f3;
   --rak-fill-muted: #e5e5e5;
   // A control's own boundary, which has to be told from the surface behind it.
@@ -241,6 +246,10 @@
   // both modes. Dark mode moves this to `--rak-border` below, against the dark
   // surface that step pairs with there.
   --rak-panel-border: #2e2e2e;
+  // A dialog's own edge, drawn only where the plane it stands on cannot carry
+  // the separation alone. Nothing here: the scrim under a white dialog is a
+  // 2.96:1 step already, and a dark outline around a modal reads as a mistake.
+  --rak-dialog-edge: transparent;
   // The rule between header cells. Not a step on the primary ramp: that ramp
   // is light here and dark in dark mode, and a line has to clear 3:1 against
   // both. Dark mode pins it to its own old value below, against the header's
@@ -492,6 +501,11 @@ html {
   --rak-unlit: rgb(255 255 255 / 12%);
 
   --rak-brand-light: #262626;
+  // Between the navbar above it and the surface it frames, the same place the
+  // light case sits. Stays where it was: a dark app in a dark case needs no
+  // moving, and the light one only moved to stop framing a light page in near
+  // black.
+  --rak-case: #373737;
 
   --rak-success-400: #4ade80;
   --rak-danger-400: #f87171;
@@ -502,10 +516,21 @@ html {
   --rak-my-row-accent: var(--rak-gold-700);
 
   --rak-surface: #191919;
+  // A dialog stands a plane above the page here, because neither thing that
+  // separates the two in light mode works at this end of the ramp.
+  // `--rak-scrim` is 45% of `--rak-shadow-color`, which is #151515: laid over
+  // this surface it lands on #171717, a 1.02 step. `--rak-shadow-modal` is the
+  // same near-black, so it draws nothing either. Lifting the fill is the only
+  // separation left, and it is a 1.23 step, which the edge below then makes
+  // measurable.
+  --rak-surface-raised: #292929;
   --rak-fill-subtle: #212121;
   --rak-fill-muted: #292929;
   --rak-border: #747474;
   --rak-panel-border: var(--rak-border);
+  // 3.11:1 against the raised fill, which two planes this dark can never reach
+  // against each other. The edge is what carries the requirement.
+  --rak-dialog-edge: var(--rak-panel-border);
 
   --rak-text: #f6f6f6;
   --rak-text-secondary: #d1d1d1;

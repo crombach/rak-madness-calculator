@@ -67,7 +67,12 @@ $keyboard-gap: 12px;
       min(var(--rak-keyboard-inset, 0px), #{$keyboard-gap})
   );
   border-radius: var(--rak-radius-lg) var(--rak-radius-lg) 0 0;
-  background-color: var(--rak-surface);
+  // The one edge the sheet meets the page on. Its other three run off the sides
+  // and the bottom of the screen, where a line would read as an artifact rather
+  // than as an edge. Transparent in light mode, so the box measures the same
+  // either way and a theme switched with the dialog open moves nothing.
+  border-top: var(--rak-border-width-hairline) solid var(--rak-dialog-edge);
+  background-color: var(--rak-surface-raised);
   box-shadow: var(--rak-shadow-modal);
   transition:
     opacity 200ms ease,
@@ -189,6 +194,8 @@ $bar-height: 2px;
     // phone's sheet does not, so it never needed the mobile-only 18px above.
     padding-inline: 20px;
     border-radius: var(--rak-radius-lg);
+    // All four, since a centered window meets the page on every side.
+    border: var(--rak-border-width-hairline) solid var(--rak-dialog-edge);
     transform: translate(-50%, -50%);
 
     // The fade alone, at the transform it rests at, so the window opens where it
