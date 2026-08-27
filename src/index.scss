@@ -377,6 +377,19 @@
   // the same cut this key always dished by read as a dent rather than a curve,
   // and the lit rim above needs the same lift to still win the read.
   --rak-key-dish: inset 0 -2px 3px rgb(0 0 0 / 5%);
+  // The lamp in a key's bottom lip, which says which key in a row is chosen.
+  // Unlit it stays visible as a dark lens in its socket, so a row reads as lamps
+  // with one of them on rather than as one key wearing a rule. The socket is a
+  // line drawn above the lens rather than an inset shadow, because a lens this
+  // thin has no room inside itself for one.
+  //
+  // The lit halo is dark in this mode rather than light spilling out. These key
+  // faces are light, so a lit lens is the darkest thing on them. That is how an
+  // indicator lamp reads in daylight anyway.
+  --rak-led-on: var(--rak-on-solid);
+  --rak-led-off: #b0b0b0;
+  --rak-led-socket: 0 -1px 0 rgb(0 0 0 / 18%);
+  --rak-led-glow: 0 0 4px rgb(26 26 26 / 35%);
   --rak-bezel:
     inset 0 1px 0 rgb(255 255 255 / 10%), inset 0 -1px 0 rgb(0 0 0 / 30%);
   // A shadow that reads as a hole against black is a bruise against white, so
@@ -464,6 +477,21 @@ html {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+// A theme change repaints every token in one recalc, and most of the app eases
+// its fill and its ink. Left alone that lands as the whole page crossfading a
+// shade at a time, which reads as the app deciding something rather than as the
+// reader flipping a switch. `SettingsContext` holds this attribute across the
+// one frame the new values land in.
+//
+// The whole page rather than the chrome that prompted it, since a theme is the
+// one change every surface answers at once.
+:root[data-theme-switching],
+:root[data-theme-switching] *,
+:root[data-theme-switching] *::before,
+:root[data-theme-switching] *::after {
+  transition: none !important;
 }
 
 // The dark half of the palette. The instrument-panel chrome (navbar, keys, table
@@ -612,6 +640,14 @@ html {
   // mode's dark fills.
   --rak-key-top: inset 0 1px 0 rgb(255 255 255 / 18%);
   --rak-key-dish: inset 0 -2px 3px rgb(0 0 0 / 14%);
+  // The lamp's own values against this mode's dark faces. The halo is light
+  // spilling off the lens here, which is what a lamp does in the dark, so it
+  // carries further and takes two stops. The unlit lens goes darker than the
+  // face rather than lighter, which keeps it a hole and not a highlight.
+  --rak-led-off: #262626;
+  --rak-led-socket: 0 -1px 0 rgb(0 0 0 / 40%);
+  --rak-led-glow:
+    0 0 6px rgb(255 255 255 / 55%), 0 0 12px rgb(255 255 255 / 25%);
   --rak-state-hover: rgb(255 255 255 / 8%);
   --rak-state-press: rgb(255 255 255 / 16%);
 }

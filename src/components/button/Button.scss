@@ -196,11 +196,19 @@
   }
 
   // Which one is chosen, said in something other than a fill one step from its
-  // neighbours': a rule under the button, on the edge it shares with the page.
+  // neighbours': a lamp set into the key's bottom lip, on the edge it shares
+  // with the page. A key that could be chosen carries the lamp unlit, so the
+  // row reads as lamps with one of them on rather than as one key wearing a
+  // rule under it.
   //
-  // Always generated, faded by opacity rather than added on `--selected`, so it
+  // Always generated, and lit by color rather than added on `--selected`, so it
   // eases in step with the fill and the key's travel instead of popping in and
-  // out a render ahead of them.
+  // out a render ahead of them. The socket stays put through that, which is what
+  // holds the lens in the same hole lit or not.
+  //
+  // `overflow: hidden` above clips the halo at the key's own box, so it only
+  // spills up and to the sides. That is where a lamp in the bottom lip would
+  // throw it, and the `--rak-space-2` inset gives the blur its room sideways.
   &::before {
     content: "";
     position: absolute;
@@ -209,13 +217,26 @@
     bottom: 0;
     height: var(--rak-border-width);
     border-radius: var(--rak-border-width) var(--rak-border-width) 0 0;
-    background-color: var(--rak-on-solid);
-    opacity: 0;
-    transition: opacity var(--rak-duration-fast) var(--rak-ease-standard);
+    background-color: transparent;
+    box-shadow: none;
+    transition:
+      background-color var(--rak-duration-fast) var(--rak-ease-standard),
+      box-shadow var(--rak-duration-fast) var(--rak-ease-standard);
   }
 
+  // Only a key that can be chosen has a lamp to be unlit. Every other button
+  // generates the same pseudo-element and leaves it blank, since `::before` is
+  // drawn on all of them.
+  &.--selectable::before {
+    background-color: var(--rak-led-off);
+    box-shadow: var(--rak-led-socket);
+  }
+
+  // `--selected` implies `--selectable`, and both are one class, so this wins on
+  // source order alone.
   &.--selected::before {
-    opacity: 1;
+    background-color: var(--rak-led-on);
+    box-shadow: var(--rak-led-socket), var(--rak-led-glow);
   }
 
   // Soft buttons inherit the surrounding tint, which is how the toast close

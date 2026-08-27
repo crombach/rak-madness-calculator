@@ -62,6 +62,7 @@ function mountProbe(candidate?: string) {
 beforeEach(() => {
   localStorage.clear();
   delete document.documentElement.dataset.theme;
+  delete document.documentElement.dataset.themeSwitching;
 });
 
 describe("SettingsContext, the theme", () => {
@@ -165,6 +166,80 @@ describe("SettingsContext, the browser's own chrome bar", () => {
     } finally {
       restore();
       meta.remove();
+    }
+  });
+});
+
+/**
+ * Holds the frame callbacks instead of running them, so the attribute the theme
+ * change sets can be read while it is still up.
+ */
+function holdFrames() {
+  const original = window.requestAnimationFrame;
+  const queued: Array<FrameRequestCallback> = [];
+  window.requestAnimationFrame = ((next: FrameRequestCallback) =>
+    queued.push(next)) as typeof window.requestAnimationFrame;
+  return {
+    /** Runs every frame queued so far, and every frame those queue in turn. */
+    flush() {
+      while (queued.length) {
+        queued.shift()?.(0);
+      }
+    },
+    restore() {
+      window.requestAnimationFrame = original;
+    },
+  };
+}
+
+/** Catches the listener the auto theme installs, so an OS flip can be played. */
+function captureDarkListener() {
+  const original = window.matchMedia;
+  let flip: (() => void) | undefined;
+  window.matchMedia = (media: string) =>
+    ({
+      ...original(media),
+      addEventListener: (_name: string, next: () => void) => {
+        flip = next;
+      },
+    }) as MediaQueryList;
+  return {
+    flip: () => flip?.(),
+    restore: () => {
+      window.matchMedia = original;
+    },
+  };
+}
+
+describe("SettingsContext, the transitions a theme change would ease", () => {
+  it("holds them still across the frame the new colors land in", async () => {
+    const frames = holdFrames();
+    try {
+      const user = mountProbe();
+      await user.click(screen.getByRole("button", { name: "dark" }));
+
+      expect(document.documentElement.dataset.themeSwitching).toBe("");
+
+      frames.flush();
+      expect(document.documentElement.dataset.themeSwitching).toBeUndefined();
+    } finally {
+      frames.restore();
+    }
+  });
+
+  it("holds them still when the operating system flips under auto", () => {
+    const dark = captureDarkListener();
+    const frames = holdFrames();
+    try {
+      mountProbe();
+      frames.flush();
+      expect(document.documentElement.dataset.themeSwitching).toBeUndefined();
+
+      dark.flip();
+      expect(document.documentElement.dataset.themeSwitching).toBe("");
+    } finally {
+      frames.restore();
+      dark.restore();
     }
   });
 });

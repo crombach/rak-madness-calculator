@@ -59,6 +59,29 @@ function storedTheme(): Theme {
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
 /**
+ * Hold every transition still across the frame a theme change repaints in.
+ *
+ * Set before the change and in the same synchronous block, so the browser never
+ * computes a style between the old token values and the new ones, and nothing
+ * has an old value to ease away from. Cleared a frame later, after the new
+ * values are the resting style and there is nothing left to animate.
+ *
+ * Two frames rather than one, because the first only guarantees the change was
+ * taken, not that it was painted.
+ *
+ * `index.scss` holds the rule this attribute turns on.
+ */
+function freezeTransitions(): void {
+  const root = document.documentElement;
+  root.dataset.themeSwitching = "";
+  window.requestAnimationFrame(() =>
+    window.requestAnimationFrame(() => {
+      delete root.dataset.themeSwitching;
+    }),
+  );
+}
+
+/**
  * Which theme the document is in, as an attribute `index.scss` selects on.
  *
  * `auto` clears the attribute rather than resolving the OS preference here, so the
@@ -67,6 +90,7 @@ const DARK_QUERY = "(prefers-color-scheme: dark)";
  */
 function applyTheme(theme: Theme): void {
   const root = document.documentElement;
+  freezeTransitions();
   if (theme === "auto") {
     delete root.dataset.theme;
   } else {
@@ -109,7 +133,13 @@ export function SettingsContextProvider({ children }: PropsWithChildren) {
     applyThemeColor(theme);
     if (theme !== "auto") return;
     const dark = window.matchMedia(DARK_QUERY);
-    const follow = () => applyThemeColor("auto");
+    // The OS flip repaints the same tokens `applyTheme` does, by media query
+    // rather than by attribute, so it needs the same hold. Styles recalc before
+    // the next paint, so setting the attribute here still lands in that recalc.
+    const follow = () => {
+      freezeTransitions();
+      applyThemeColor("auto");
+    };
     dark.addEventListener("change", follow);
     return () => dark.removeEventListener("change", follow);
   }, [theme]);
