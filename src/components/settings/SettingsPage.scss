@@ -10,6 +10,16 @@
   gap: var(--rak-space-6);
 }
 
+// The page's own name, since `PageLayout` hides its `<h1>` and every other route
+// says what it is with a table. Set the way a dialog sets its title, which is the
+// only other heading the app draws.
+.settings__title {
+  margin: 0;
+  color: var(--rak-text);
+  font-size: var(--rak-text-lg);
+  font-weight: 700;
+}
+
 .settings__section {
   display: flex;
   flex-direction: column;

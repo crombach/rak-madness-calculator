@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import { MemoryRouter } from "react-router";
+import { MemoryRouter, Route, Routes } from "react-router";
 import { SettingsContextProvider } from "../../context/SettingsContext";
 import SettingsPage from "./SettingsPage";
 
@@ -24,14 +24,42 @@ beforeEach(() => {
   delete document.documentElement.dataset.theme;
 });
 
-describe("SettingsPage, the theme", () => {
-  it("offers a light, a dark, and an auto", () => {
+describe("SettingsPage, the page itself", () => {
+  it("names itself above the settings", () => {
     mountPage();
-    const themes = screen.getByRole("group", { name: "Theme" });
 
-    expect(themes).toHaveTextContent("Light");
-    expect(themes).toHaveTextContent("Dark");
-    expect(themes).toHaveTextContent("Auto");
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Settings" }),
+    ).toBeInTheDocument();
+  });
+
+  it("leaves for the home page from the close button", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={["/settings"]}>
+        <SettingsContextProvider>
+          <Routes>
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/" element={<p>Home</p>} />
+          </Routes>
+        </SettingsContextProvider>
+      </MemoryRouter>,
+    );
+    await user.click(screen.getByRole("button", { name: "Close settings" }));
+
+    expect(screen.getByText("Home")).toBeInTheDocument();
+  });
+});
+
+describe("SettingsPage, the theme", () => {
+  it("offers auto, dark, and light, in that order", () => {
+    mountPage();
+    const labels = screen
+      .getAllByRole("button")
+      .filter((button) => button.classList.contains("settings__choice"))
+      .map((button) => button.textContent);
+
+    expect(labels).toEqual(["Auto", "Dark", "Light"]);
   });
 
   it("starts on auto", () => {

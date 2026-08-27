@@ -8,10 +8,12 @@ import LogoButton, { APP_NAME } from "../navbar/LogoButton";
 import PageLayout from "../pageLayout/PageLayout";
 import "./SettingsPage.scss";
 
+// Alphabetical, so the row has an order a reader can predict rather than one that
+// ranks the choices.
 const THEMES: Array<{ value: Theme; label: string }> = [
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
   { value: "auto", label: "Auto" },
+  { value: "dark", label: "Dark" },
+  { value: "light", label: "Light" },
 ];
 
 /** The `/settings` route: how the app looks, and who the reader is. */
@@ -25,12 +27,24 @@ export default function SettingsPage() {
     <PageLayout
       title={`${APP_NAME} Settings`}
       navbarLeft={<LogoButton onClick={() => navigate("/")} />}
+      /* The way out. The logo goes home from every page, but nothing on this one
+         says so, and a page of preferences reads as something a reader closes. */
+      navbarRight={
+        <Button
+          iconOnly
+          ariaLabel="Close settings"
+          onClick={() => navigate("/")}
+        >
+          <CloseIcon />
+        </Button>
+      }
     >
       <div className="settings">
+        <h2 className="settings__title">Settings</h2>
         <section className="settings__section">
-          <h2 className="settings__label" id={themeLabelId}>
+          <h3 className="settings__label" id={themeLabelId}>
             Theme
-          </h2>
+          </h3>
           {/* Buttons that show which one is chosen, the same shape the navbar's
               own view switch is. Not a `radiogroup`, which wants `aria-checked`
               where `Button` gives `aria-pressed`. Named by the heading above it
@@ -58,9 +72,9 @@ export default function SettingsPage() {
         </section>
 
         <section className="settings__section">
-          <h2 className="settings__label">
+          <h3 className="settings__label">
             <label htmlFor={nameInputId}>Your Player Name</label>
-          </h2>
+          </h3>
           {/* The well is the shell rather than the input, so the clear button
               sits inside it in a bay of its own, the way the home page's selects
               hold their chevron. */}
