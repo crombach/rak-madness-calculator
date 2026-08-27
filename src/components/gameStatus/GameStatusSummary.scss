@@ -236,6 +236,11 @@
 // As big as the three lines of text beside it are tall, which is as much as either
 // can take without the name it stands over having to wrap sooner.
 //
+// Laid in the name's own row rather than across all three. Across them it centers on
+// the grid, whose first row is as tall as the line over the scores rather than as
+// tall as a side's label, which stood the mark above the name, the record block and
+// the glass alike. In this row it is level with all three.
+//
 // Whether there is room for it at all is `useScorelineFit`'s to say, since what it costs
 // the name beside it is what that name is. The last thing that hook gives up, and only
 // where cutting the name to its abbreviation left the two still short. The wireframe
@@ -290,7 +295,7 @@
   text-align: left;
 
   .game-status__logo {
-    grid-row: 1 / 4;
+    grid-row: 2;
     grid-column: 1;
   }
 
@@ -314,7 +319,7 @@
   text-align: right;
 
   .game-status__logo {
-    grid-row: 1 / 4;
+    grid-row: 2;
     grid-column: 5;
   }
 

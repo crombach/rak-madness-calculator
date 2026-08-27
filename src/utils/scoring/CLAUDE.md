@@ -18,5 +18,6 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 - `isWeekOver`: whether the week finished
 - `applyKnockouts`: who can still win, why not
 - `scoreChanges`: what a refresh changed
-- `getPlayerAnalysis`: what a player must do
+- `getPlayerAnalysis`: what a player must do, plus `getSettledAnalysis`,
+  the answers a week already holds, which the dialog asks before it waits
 - `leagueResultFixtures`: test game builders

@@ -148,4 +148,12 @@ describe("the app: the URL decides which week is fetched, and what shows while i
 
     expect(screen.getByText("Use Local Spreadsheet")).toBeInTheDocument();
   });
+
+  it("opens the settings over the home page, from the footer", async () => {
+    const user = mountApp("/");
+    await user.click(await screen.findByRole("button", { name: "Settings" }));
+
+    expect(screen.getByRole("group", { name: "Theme" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Your Player Name")).toBeInTheDocument();
+  });
 });

@@ -506,7 +506,19 @@ function reduceRoutes(
  * well as one being played. Undefined where the sheet holds nobody by that name,
  * which is the only way the question has no answer at all.
  */
-export default function getPlayerAnalysis(
+/**
+ * The answer where the week already holds one, and undefined where the search below
+ * is what has to find it.
+ *
+ * Split out so a caller can ask before it puts a progress bar up. Every branch here
+ * is a walk of the players, which is why `getPlayerAnalysis` opens with the same
+ * call rather than keeping two copies of them.
+ *
+ * A name the sheet does not hold answers undefined too. `getPlayerAnalysis` answers
+ * the same undefined for it, so a caller falling through to the search on this needs
+ * no third case.
+ */
+export function getSettledAnalysis(
   scores: RakMadnessScores,
   playerName: string,
 ): PlayerAnalysis | undefined {
@@ -529,12 +541,37 @@ export default function getPlayerAnalysis(
 
   // A knocked out player cannot take the week off anyone, so they are not measured
   // against. That is what keeps the search small late in a week.
-  const rivals = players
-    .map((it, index) => ({ player: it, index }))
-    .filter((it) => it.index !== playerIndex && !it.player.status.isKnockedOut);
+  const rivals = liveRivals(players, playerIndex);
   if (rivals.length === 0) {
     return { kind: "clinched", player: player.name };
   }
+
+  return undefined;
+}
+
+/** Everyone still able to take the week off this player. */
+function liveRivals(
+  players: RakMadnessScores["scores"],
+  playerIndex: number,
+): Array<{ player: RakMadnessScores["scores"][number]; index: number }> {
+  return players
+    .map((it, index) => ({ player: it, index }))
+    .filter((it) => it.index !== playerIndex && !it.player.status.isKnockedOut);
+}
+
+export default function getPlayerAnalysis(
+  scores: RakMadnessScores,
+  playerName: string,
+): PlayerAnalysis | undefined {
+  const settled = getSettledAnalysis(scores, playerName);
+  if (settled != null) return settled;
+
+  const players = scores.scores;
+  const playerIndex = players.findIndex((it) => it.name === playerName);
+  if (playerIndex < 0) return undefined;
+
+  const player = players[playerIndex];
+  const rivals = liveRivals(players, playerIndex);
 
   // A game every live player picked the same way moves all their scores together,
   // in the total and in both tiebreaker tiers, so it cannot change the order.

@@ -15,7 +15,6 @@ import {
   mountLoadedApp,
   uploadSpreadsheet,
   resultsCaption,
-  scoresHeaderButtons,
   setUpAppTest,
 } from "./appTestFixtures";
 
@@ -49,9 +48,8 @@ describe("the app, results views", () => {
     const user = await mountWithScores();
     await user.click(screen.getByText("View Results"));
 
-    const [scoreboard, picks] = scoresHeaderButtons();
-    expect(scoreboard).toHaveTextContent("Scoreboard");
-    expect(picks).toHaveTextContent("Picks");
+    const scoreboard = screen.getByRole("button", { name: "Scoreboard" });
+    const picks = screen.getByRole("button", { name: "Picks" });
     expect(scoreboard).toHaveAttribute("aria-pressed", "true");
     expect(picks).toHaveAttribute("aria-pressed", "false");
 
@@ -75,8 +73,7 @@ describe("the app, results views", () => {
     const expected = `Rak Madness · ${SEASON} Season · Week ${CURRENT_WEEK}`;
     expect(resultsCaption()).toHaveTextContent(expected);
 
-    const [, picks] = scoresHeaderButtons();
-    await user.click(picks);
+    await user.click(screen.getByRole("button", { name: "Picks" }));
     expect(resultsCaption()).toHaveTextContent(expected);
   });
 

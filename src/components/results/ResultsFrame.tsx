@@ -5,6 +5,7 @@ import { GameStatusContextProvider } from "../../context/GameStatusContext";
 import { PlayerAnalysisContextProvider } from "../../context/PlayerAnalysisContext";
 import { WeekInfo } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
+import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import GameStatusDialog from "../gameStatus/GameStatusDialog";
 import LogoButton, { APP_NAME } from "../navbar/LogoButton";
@@ -13,8 +14,6 @@ import PageLayout from "../pageLayout/PageLayout";
 import PlayerAnalysisDialog from "../playerAnalysis/PlayerAnalysisDialog";
 import SkeletonTable from "../table/SkeletonTable";
 import "./ResultsFrame.scss";
-
-const doNothing = () => undefined;
 
 /** The pool the app scores, which is not the app's own name. */
 const POOL_NAME = "Rak Madness";

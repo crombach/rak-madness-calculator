@@ -31,6 +31,7 @@ import ibmPlexMono700Url from "@fontsource/ibm-plex-mono/files/ibm-plex-mono-lat
 import dseg14Url from "@fontsource/dseg14-classic/files/dseg14-classic-latin-700-normal.woff2?url";
 import dseg7Url from "@fontsource/dseg7-classic/files/dseg7-classic-latin-700-normal.woff2?url";
 import { AppDataContextProvider } from "./context/AppDataContext";
+import { SettingsContextProvider } from "./context/SettingsContext";
 import { ToastContextProvider } from "./context/ToastContext";
 import Toaster from "./components/toaster/Toaster";
 import prefetchLink from "./utils/prefetchLink";
@@ -81,12 +82,14 @@ const root = createRoot(container);
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <ToastContextProvider>
-        <AppDataContextProvider>
-          <App />
-        </AppDataContextProvider>
-        <Toaster />
-      </ToastContextProvider>
+      <SettingsContextProvider>
+        <ToastContextProvider>
+          <AppDataContextProvider>
+            <App />
+          </AppDataContextProvider>
+          <Toaster />
+        </ToastContextProvider>
+      </SettingsContextProvider>
     </BrowserRouter>
   </React.StrictMode>,
 );

@@ -1,5 +1,14 @@
-// The one focus ring. Mixins only, so this emits no CSS of its own however many
-// files pull it in.
+// The one focus ring. Mixins and a number, so this emits no CSS of its own however
+// many files pull it in.
+
+/**
+ * How far outside its box a ring reaches: the offset below, and then its width.
+ *
+ * What a control flush with the edge of a clipping ancestor has to be held off that
+ * edge by. Anything scrolling computes `overflow-x: auto` from its own `overflow-y`,
+ * so it clips sideways as well, and takes the ring with it.
+ */
+$focus-ring-reach: 4px;
 
 /**
  * Drawn in `--rak-focus-ring`, which every surface that is not the page sets for

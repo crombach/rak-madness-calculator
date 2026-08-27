@@ -10,5 +10,8 @@ color.
 player analysis search renders it too, so the same player wears the same icon in
 both places.
 
+`--mine`, from `useIsMyPlayer`, marks the reader's own. `Table.scss` reads it
+off the row and rules every cell above and below.
+
 A player a refresh just knocked out renders a `.table__cell-wipe`, from
 `useScoreChanges()`, over the fill they held before that.

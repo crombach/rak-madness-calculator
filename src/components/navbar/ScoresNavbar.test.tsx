@@ -30,6 +30,15 @@ describe("ScoresNavbar", () => {
     expect(liveWrapper()).not.toHaveClass("--collapsed");
   });
 
+  it("puts refresh ahead of the switch, so the switch keeps its place", () => {
+    render(<ScoresNavbar {...props} isWeekLive />);
+    const names = Array.from(
+      document.querySelectorAll<HTMLElement>(".scores-nav__button"),
+    ).map((button) => button.getAttribute("aria-label") ?? button.textContent);
+
+    expect(names).toEqual(["Refresh", "Scoreboard", "Picks"]);
+  });
+
   it("marks them collapsed, and keeps them mounted, while they animate out", () => {
     const { rerender } = render(<ScoresNavbar {...props} isWeekLive />);
 

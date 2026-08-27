@@ -1,0 +1,105 @@
+@use "../../styles/focus" as *;
+@use "../../styles/label" as *;
+@use "../../styles/lcd" as *;
+
+// The dialog body owns the padding around this and the width it stands in, so this
+// is the column, the air between its sections, and the room a focus ring needs.
+// That last is here rather than on the body: the body's own progress bar spans the
+// rule above it, and padding there would hold the bar off both ends of it.
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-6);
+  padding-inline: $focus-ring-reach;
+}
+
+.settings__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+}
+
+.settings__label {
+  @include micro-label;
+
+  margin: 0;
+  font-size: var(--rak-text-sm);
+  color: var(--rak-text-secondary);
+}
+
+.settings__choices {
+  display: flex;
+  flex-direction: row;
+  gap: var(--rak-space-2);
+}
+
+.settings__choice {
+  // Even thirds, so which one is chosen is the only thing telling them apart.
+  flex: 1 1 0;
+}
+
+// The well the name is typed into. The shell rather than the input itself, so the
+// clear button stands inside it: `lcd-field` resets an `<input>` and a `<button>`
+// alike, and a ring around the shell is what the mixin's own `$on` is for.
+.settings__field {
+  @include lcd-field;
+  @include focus-ring(":focus-within");
+
+  display: flex;
+  align-items: center;
+  min-height: var(--rak-touch-target);
+  // None on the trailing edge: the clear button has a bay of its own there, the
+  // same shape the home page's selects give their chevron.
+  padding-inline: var(--rak-space-3) 0;
+}
+
+.settings__field-input {
+  flex: 1;
+  // Without this a long name widens the well past the column instead of scrolling
+  // inside it, since a flex item's floor is the content it holds.
+  min-width: 0;
+  align-self: stretch;
+  appearance: none;
+  border: none;
+  background: none;
+  color: inherit;
+  // The face the tables set a player's name in, so what is typed here looks like
+  // what it has to match.
+  font-family: var(--rak-font-mono);
+  font-size: var(--rak-text-md);
+  line-height: var(--rak-line-height);
+
+  // The shell draws the one ring, so the input inside it draws none of its own.
+  &:focus {
+    outline: none;
+  }
+
+  // The quiet ink, not `--rak-unlit`. That token is a combobox cell that could
+  // light, deliberately faint at 1.31:1 on this well, and a hint a reader is
+  // meant to read is text rather than a shape. This clears 6:1 in both modes.
+  &::placeholder {
+    color: var(--rak-text-tertiary);
+  }
+}
+
+// The bay the home page's selects give their chevron, down to the side padding
+// that sets the glyph off the edge of the glass. Lit chrome rather than muted UI,
+// and as tall as the well, so the whole bay is inside the hit area.
+.settings__field-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  padding-block: 0;
+  padding-inline: var(--rak-space-2);
+  border: none;
+  background: none;
+  color: var(--rak-on-solid);
+  cursor: pointer;
+}
+
+.settings__hint {
+  margin: 0;
+  font-size: var(--rak-text-sm);
+  color: var(--rak-text-tertiary);
+}

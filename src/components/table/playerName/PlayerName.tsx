@@ -3,6 +3,7 @@ import { useScoreChanges } from "../../../context/AppDataContext";
 import { PlayerScore } from "../../../types/RakMadnessScores";
 import getClasses from "../../../utils/getClasses";
 import { useShowPlayerAnalysis } from "../../../context/PlayerAnalysisContext";
+import { useIsMyPlayer } from "../../../context/SettingsContext";
 import { PLAYER_COL_CLASS } from "../TableShell";
 import PlayerStatusIcon from "./PlayerStatusIcon";
 import "./PlayerName.scss";
@@ -11,11 +12,13 @@ function PlayerName({ player }: { player: PlayerScore }) {
   const showPlayerAnalysis = useShowPlayerAnalysis();
   const { players: playerChanges } = useScoreChanges();
   const justKnockedOut = playerChanges.has(player.name);
+  const isMine = useIsMyPlayer(player.name);
 
   return (
     <td
       className={getClasses(PLAYER_COL_CLASS, {
         "--knocked-out": player.status.isKnockedOut,
+        "--mine": isMine,
       })}
     >
       <button
@@ -27,6 +30,7 @@ function PlayerName({ player }: { player: PlayerScore }) {
           <span className="player-name__name">{player.name}</span>
           <PlayerStatusIcon isKnockedOut={player.status.isKnockedOut} />
         </span>
+        {isMine && <span className="table__sr-only">Your row</span>}
         <span className="table__sr-only">
           {player.status.isKnockedOut ? "Knocked out" : "Still in contention"}
         </span>

@@ -5,7 +5,7 @@ import {
   RakMadnessScores,
   Status,
 } from "../../types/RakMadnessScores";
-import getPlayerAnalysis from "./getPlayerAnalysis";
+import getPlayerAnalysis, { getSettledAnalysis } from "./getPlayerAnalysis";
 
 /** A game still to be played unless a status says otherwise. */
 function pick(text: string, status: Status = "incomplete"): PickResult {
@@ -165,6 +165,78 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
       player: "Bob",
       explanation: "Knocked out on Total Score by Alice.",
     });
+  });
+});
+
+// What the dialog asks before it puts a progress bar up, so a week that needs no
+// search never stands one over an answer that is already there.
+describe("getSettledAnalysis, the answers that need no search", () => {
+  it("gives a knocked out player their reason", () => {
+    const scores = week([
+      player({ name: "Alice", total: 5 }),
+      player({ name: "Bob", total: 0, isKnockedOut: true }),
+    ]);
+    scores.scores[1].status.explanation =
+      "Knocked out on Total Score by Alice.";
+
+    expect(getSettledAnalysis(scores, "Bob")).toEqual({
+      kind: "knockedOut",
+      player: "Bob",
+      explanation: "Knocked out on Total Score by Alice.",
+    });
+  });
+
+  // The case that sent a reader here: a week whose games are all in, where the
+  // bar used to run over an answer the knockouts had already given.
+  it("clinches a week whose games are all played", () => {
+    const scores = week(
+      [
+        player({ name: "Alice", total: 5, pro: [pick("KC -3", "yes")] }),
+        player({ name: "Bob", total: 3, pro: [pick("DEN +3", "no")] }),
+      ],
+      41,
+    );
+
+    expect(getSettledAnalysis(scores, "Alice")).toEqual({
+      kind: "clinched",
+      player: "Alice",
+    });
+  });
+
+  it("clinches once every rival left is knocked out", () => {
+    const scores = week([
+      player({ name: "Alice", total: 5, pro: [pick("KC -3")] }),
+      player({
+        name: "Bob",
+        total: 0,
+        pro: [pick("DEN +3")],
+        isKnockedOut: true,
+      }),
+    ]);
+
+    expect(getSettledAnalysis(scores, "Alice")).toEqual({
+      kind: "clinched",
+      player: "Alice",
+    });
+  });
+
+  it("sends a week still open to the search", () => {
+    // Opposite picks on the one game left, so which of them takes it is exactly
+    // what the search is for.
+    const scores = week([
+      player({ name: "Alice", total: 3, pro: [pick("KC -3")] }),
+      player({ name: "Bob", total: 3, pro: [pick("DEN +3")] }),
+    ]);
+
+    expect(getSettledAnalysis(scores, "Alice")).toBeUndefined();
+    expect(getPlayerAnalysis(scores, "Alice")).toBeDefined();
+  });
+
+  it("sends a name the sheet does not hold to the search, which has no answer either", () => {
+    const scores = week([player({ name: "Alice" })]);
+
+    expect(getSettledAnalysis(scores, "Nobody")).toBeUndefined();
+    expect(getPlayerAnalysis(scores, "Nobody")).toBeUndefined();
   });
 });
 
