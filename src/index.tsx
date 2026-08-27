@@ -57,9 +57,8 @@ for (const href of PREFETCH_FONT_URLS) {
   });
 }
 // A cache warm alone still shows the fallback face until something decodes the
-// font outright. Weights below are all ones a route paints immediately, before
-// a reader has clicked anything, so each is asked for here rather than left to
-// arrive after that first paint has already committed to the fallback.
+// font outright. Every weight below is decoded up front rather than left to
+// arrive after the paint that needs it has already committed to the fallback.
 const FIRST_PAINT_FONTS = [
   ["400", "Chakra Petch"], // body copy
   ["600", "Chakra Petch"], // buttons, e.g. the home page's own
@@ -68,6 +67,11 @@ const FIRST_PAINT_FONTS = [
   ["600", "IBM Plex Mono"], // the home page's selected season row
   ["700", "IBM Plex Mono"], // a table's bold rank column
   ["700", "DSEG14 Classic"], // the navbar logo's name, on every route
+  // The scoreline's readout. Nothing paints it until the game status dialog
+  // opens, so a decode left until then swaps the face under a dialog already on
+  // screen. `useScorelineFit` measures that dialog, and it measures the fallback
+  // when the swap has yet to land.
+  ["700", "DSEG7 Classic"],
 ];
 for (const [weight, family] of FIRST_PAINT_FONTS) {
   document.fonts.load(`${weight} 1em "${family}"`).catch(() => {});
