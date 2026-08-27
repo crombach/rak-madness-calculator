@@ -218,16 +218,34 @@
   // The hue is the one the tables already call in contention: 500 is
   // `--rak-in-contention-on-light` to the digit.
   //
-  // 200 is the lit lamp, which is light because a lamp is, and is the one step
-  // fixed in both modes. 400 is the step that reads on the app's white and on
-  // the dark a readout is sunk into, the same job that step does on every ramp
-  // above: 4.10:1 on white, 3.69:1 on a striped row, 3.70:1 on the glass. Dark
-  // mode takes 400 lighter, below.
+  // 200 is the light itself, and the one step fixed in both modes: the lamp's
+  // lens, the key the home page opens a week with, and the rule around the
+  // reader's row are all this one value, so every blue in the app is the same
+  // light. 500 and up are the dark solid fills, which only dark mode still
+  // stands a key in.
   --rak-info-200: #7dd3fc;
-  --rak-info-400: #0284c7;
   --rak-info-500: #126287;
   --rak-info-600: #0e5170;
   --rak-info-700: #093a51;
+
+  // The two keys the home page ends on, which carry a hue each rather than a
+  // result. Pale here, so a key reads as lit rather than as a slab of ink on a
+  // light page, and dark enough only at its edge to keep a boundary: 3.42:1 and
+  // 3.69:1 against the page. That leaves the ink dark, unlike `--success` and
+  // `--danger`, whose fixed dark fills take white in both modes.
+  //
+  // Blue is `--rak-info-200`, the same light the lamp is lit in. Orange is the
+  // knockout pastel the tables already spend, which is the app's own orange.
+  // Dark mode below takes all eight back to the solid ramp steps and white ink,
+  // where a page that dark has no pale left to read a key against.
+  --rak-key-info-face: var(--rak-info-200);
+  --rak-key-info-press: #4fc0f5;
+  --rak-key-info-edge: #1d94c9;
+  --rak-key-info-ink: var(--rak-text);
+  --rak-key-warning-face: #fac99e;
+  --rak-key-warning-press: #f0a869;
+  --rak-key-warning-edge: #b8763a;
+  --rak-key-warning-ink: var(--rak-text);
 
   --rak-neutral-100: #f3f3f3;
   --rak-neutral-500: #5d5d5d;
@@ -247,13 +265,14 @@
   --rak-in-contention-300: #9edbfa;
   --rak-in-contention-on-light: #126287;
 
-  // The reader's own row, ruled above and below every cell. The same blue the
-  // lamp in a key's lip is lit in, and the rule is bloomed like one, so the two
-  // marks the reader themselves control read as one thing. 400 rather than the
-  // lamp's own 200, because this rule is drawn on the table's white rather than
-  // in a socket, where a lens that light says nothing: 4.10:1 here against the
-  // 2.33:1 the gold it replaces managed.
-  --rak-my-row-accent: var(--rak-info-400);
+  // The reader's own row, ruled above and below every cell. The lamp's own lens
+  // to the digit, and bloomed like one, so the two marks the reader themselves
+  // control are one light rather than two blues a shade apart.
+  //
+  // It is faint on the table's white, at 1.67:1, which is what a light on paper
+  // looks like. The row is not the only thing saying whose it is: the name cell
+  // carries their status fill and the analysis opens on them by name.
+  --rak-my-row-accent: var(--rak-info-200);
 
   --rak-surface: #fff;
   // What a dialog stands on, one plane above the page. The same white here,
@@ -417,15 +436,17 @@
   // A light lens cannot also carry the boundary against a light key: it is
   // 1.22:1 on the face a chosen key wears. The socket does that instead, and is
   // deep enough here to be a bezel rather than a seam, at 3.17:1 on that same
-  // face. The halo is `--rak-info-400` rather than the lens color, since a bloom
-  // lighter than the face it spills onto draws nothing: on this ramp the light
-  // reads as saturation rather than as brightness.
+  // face. The halo is the hue's saturated step rather than the lens color, since
+  // a bloom lighter than the face it spills onto draws nothing: on this ramp the
+  // light reads as saturation rather than as brightness.
   //
-  // Off is the same hue run down to a slate, and it is what actually says which
-  // key is chosen: 3.82:1 against the lit lens, and 5.70 and 5.30 against the
-  // two faces it lands on, `--rak-primary-400` and `--rak-primary-500`.
+  // Off is grey rather than a dark blue, so the row reads as one lamp lit among
+  // dark ones rather than as a row of blue lamps at different brightnesses. It
+  // is what actually says which key is chosen: 3.89:1 against the lit lens, and
+  // 5.79 and 5.39 against the two faces it lands on, `--rak-primary-400` and
+  // `--rak-primary-500`.
   --rak-led-on: var(--rak-info-200);
-  --rak-led-off: #556070;
+  --rak-led-off: #5e5e5e;
   --rak-led-socket: 0 -1px 0 rgb(0 0 0 / 45%);
   --rak-led-glow: 0 0 4px rgb(2 132 199 / 55%);
   // The same lamp where it is drawn as a rule inside something rather than as a
@@ -582,10 +603,17 @@ html {
   --rak-gold-700: #e8b84b;
   --rak-knocked-out-on-light: #ffb069;
   --rak-in-contention-on-light: #74c6f5;
-  // The lighter blue, since this one is read against a dark cell. The lamp's
-  // own lens is already this light, so `--rak-led-on` needs no override and
-  // `--rak-my-row-accent` needs none either: it reads this step back.
-  --rak-info-400: #74c6f5;
+  // The two home keys, back to the solid ramp steps with white ink. A page this
+  // dark has no pale for a key to read against, so the pale fills light mode
+  // stands them in would sit on it as the brightest thing on the screen.
+  --rak-key-info-face: var(--rak-info-500);
+  --rak-key-info-press: var(--rak-info-600);
+  --rak-key-info-edge: var(--rak-info-700);
+  --rak-key-info-ink: #fff;
+  --rak-key-warning-face: var(--rak-warning-500);
+  --rak-key-warning-press: var(--rak-warning-600);
+  --rak-key-warning-edge: var(--rak-warning-700);
+  --rak-key-warning-ink: #fff;
 
   --rak-surface: #191919;
   // A dialog stands a plane above the page here, because neither thing that
@@ -695,7 +723,7 @@ html {
   // `--rak-primary-500` is 2.56, so no lens darker than this face can clear the
   // bar. The lit lens carries the state instead, and `aria-pressed` carries it
   // for anyone reading no color at all.
-  --rak-led-off: #0f2733;
+  --rak-led-off: #232323;
   --rak-led-socket: 0 -1px 0 rgb(0 0 0 / 40%);
   --rak-led-glow:
     0 0 6px rgb(125 211 252 / 55%), 0 0 12px rgb(125 211 252 / 25%);

@@ -195,31 +195,34 @@
     }
 
     // The key that goes somewhere rather than reports something, off the same
-    // blue the lamp is lit in. Fixed ink again, for the same reason as the two
-    // above: this fill is one dark blue in both modes, at 6.73:1 on white ink.
+    // blue the lamp is lit in.
+    //
+    // Mode-aware ink, unlike `--success` and `--danger` above: those two hold
+    // one dark fill in both modes, and this one is pale in light mode and solid
+    // in dark. `index.scss` names all four values for each mode.
     &.--info {
       @include button-color(
-        var(--rak-info-700),
-        var(--rak-info-500),
-        var(--rak-info-600)
+        var(--rak-key-info-edge),
+        var(--rak-key-info-face),
+        var(--rak-key-info-press)
       );
 
-      color: #fff;
-      --rak-focus-ring: #fff;
+      color: var(--rak-key-info-ink);
+      --rak-focus-ring: var(--rak-key-info-ink);
     }
 
-    // The key that hands the week to something outside the app. Off the warning
-    // ramp's orange, which is the hue the tables already spend on a knockout, so
-    // it reads as neither a result nor a route. 5.41:1 on white ink.
+    // The key that hands the week to something outside the app, in the orange
+    // the tables already spend on a knockout, so it reads as neither a result
+    // nor a route. Same mode-aware ink as `--info` above.
     &.--warning {
       @include button-color(
-        var(--rak-warning-700),
-        var(--rak-warning-500),
-        var(--rak-warning-600)
+        var(--rak-key-warning-edge),
+        var(--rak-key-warning-face),
+        var(--rak-key-warning-press)
       );
 
-      color: #fff;
-      --rak-focus-ring: #fff;
+      color: var(--rak-key-warning-ink);
+      --rak-focus-ring: var(--rak-key-warning-ink);
     }
   }
 
