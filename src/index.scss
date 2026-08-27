@@ -225,19 +225,20 @@
   // 200 is the light itself, and the one step fixed in both modes: the lamp's
   // lens and the key the home page opens a week with are both this value.
   //
-  // 400 is that light taken down far enough to read on a cell, which is where
-  // the reader's own row is ruled. The lens cannot: laid on the pale blue an in
-  // contention name cell carries it is 1.11:1, and the cells either side of it
-  // are no better. This step clears 3:1 on every fill a picks row can hold,
-  // worst at 3.00 on the lost-pick red and 3.93 on the knockout orange. Dark
-  // mode has no such trouble and reads the lens back, below.
+  // 400 is that light taken down far enough to read on a light surface, and is
+  // every blue mark light mode draws: the lit lamp and the rule around the
+  // reader's own row are this one value. The lens cannot serve both, since laid
+  // on the pale blue an in contention name cell carries it is 1.11:1. This step
+  // is 4.10:1 on the table's white and 2.72 on that same cell, against the
+  // 2.33 and 1.55 the gold it replaces managed. Dark mode has no such trouble
+  // and unifies on the lens instead, below.
   //
   // 500 and up are the solid fills the home page's blue key stands in, one value
   // in both modes and set in white the same way `--success` and `--danger` are.
   // Saturated well past the 400 above it, since a key wearing a whole fill has
   // to read as a color rather than as a dark slab: 5.45:1 on that white ink.
   --rak-info-200: #7dd3fc;
-  --rak-info-400: #0369a1;
+  --rak-info-400: #0284c7;
   --rak-info-500: #0a6fa8;
   --rak-info-600: #095c8c;
   --rak-info-700: #063f60;
@@ -421,30 +422,37 @@
   // line drawn above the lens rather than an inset shadow, because a lens this
   // thin has no room inside itself for one.
   //
-  // Lit is `--rak-info-200`, the same light blue in both modes, because a lamp
-  // that is on is light. Blue over the ramp green and red, which the results
-  // tables spend on a correct pick and a lost one, and over the knockout orange.
+  // Lit is `--rak-info-400`, the step the reader's own row is ruled in, so the
+  // two marks the reader themselves control are one blue rather than two a
+  // shade apart. Dark mode reads `--rak-info-200` for both instead, which is the
+  // same unification at the other end of the ramp. Blue over the ramp green and
+  // red, which the results tables spend on a correct pick and a lost one, and
+  // over the knockout orange.
   //
-  // A light lens cannot also carry the boundary against a light key: it is
-  // 1.22:1 on the face a chosen key wears. The socket does that instead, and is
-  // deep enough here to be a bezel rather than a seam, at 3.17:1 on that same
-  // face. The halo is the hue's saturated step rather than the lens color, since
-  // a bloom lighter than the face it spills onto draws nothing: on this ramp the
-  // light reads as saturation rather than as brightness.
+  // Darker here than a lamp wants to be, since this one step also has to read
+  // as a rule on a table cell, where nothing light does. It still carries the
+  // boundary itself, at 2.99:1 on the face a chosen key wears, so the socket
+  // stays a seam rather than the bezel a light lens needed.
   //
-  // Off is grey rather than a dark blue, so the row reads as one lamp lit among
-  // dark ones rather than as a row of blue lamps at different brightnesses. It
-  // is what actually says which key is chosen: 3.89:1 against the lit lens, and
-  // 5.79 and 5.39 against the two faces it lands on, `--rak-primary-400` and
-  // `--rak-primary-500`.
-  --rak-led-on: var(--rak-info-200);
-  --rak-led-off: #5e5e5e;
-  --rak-led-socket: 0 -1px 0 rgb(0 0 0 / 45%);
+  // Off is grey, and dark enough to leave the lit lens somewhere to be brighter
+  // than: 3.32:1 between the two, which is what says which key is chosen.
+  --rak-led-on: var(--rak-info-400);
+  --rak-led-off: #2e2e2e;
+  --rak-led-socket: 0 -1px 0 rgb(0 0 0 / 22%);
   --rak-led-glow: 0 0 4px rgb(2 132 199 / 55%);
   // The same lamp where it is drawn as a rule inside something rather than as a
   // lens in a lip: the reader's own row in `Table.scss`. Inset, because the rule
   // is inset and a halo outside the cell would fall under the cell beside it.
-  --rak-led-bloom: inset 0 0 6px -1px rgb(2 132 199 / 28%);
+  //
+  // Two shadows, one off each lit edge, rather than one halo all the way round.
+  // The rule runs along the top and the bottom only, so those are the two edges
+  // with a light behind them, and a cell that also glowed at its sides would be
+  // lit by nothing. The spread is the blur negated, which pulls each shadow's
+  // own left and right edges clear of the cell so the blur cannot bleed down
+  // them.
+  --rak-led-bloom:
+    inset 0 8px 6px -6px rgb(2 132 199 / 45%),
+    inset 0 -8px 6px -6px rgb(2 132 199 / 45%);
   --rak-bezel:
     inset 0 1px 0 rgb(255 255 255 / 10%), inset 0 -1px 0 rgb(0 0 0 / 30%);
   // A shadow that reads as a hole against black is a bruise against white, so
@@ -595,8 +603,9 @@ html {
   --rak-gold-700: #e8b84b;
   --rak-knocked-out-on-light: #ffb069;
   --rak-in-contention-on-light: #74c6f5;
-  // The reader's row, back to the lamp's own lens: a dark cell is something a
-  // light can be light against, which no light cell is.
+  // The reader's row back to the lens, which is the same unification light mode
+  // makes on the 400: a dark cell is something a light can be light against,
+  // which no light cell is. The lamp follows it, below.
   --rak-my-row-accent: var(--rak-info-200);
 
   --rak-surface: #191919;
@@ -696,22 +705,26 @@ html {
   // mode's dark fills.
   --rak-key-top: inset 0 1px 0 rgb(255 255 255 / 18%);
   --rak-key-dish: inset 0 -2px 3px rgb(0 0 0 / 14%);
-  // The lamp against this mode's dark faces. `--rak-led-on` needs no override,
-  // since the lens is one light blue in both modes. What changes is what is
-  // around it: the face is dark enough for the lens to carry the boundary
-  // itself, at 6.22:1, so the socket goes back to a seam. The halo takes the
-  // lens color and two stops, which is what a lamp does in the dark.
+  // The lamp against this mode's dark faces. Lit takes `--rak-info-200`, the
+  // step the reader's row is ruled in here, the same way light mode above puts
+  // both marks on its own 400. A face this dark leaves the lens somewhere to be
+  // light, at 6.22:1, so it carries the boundary itself and the socket stays a
+  // seam. The halo takes the lens color and two stops, which is what a lamp
+  // does in the dark.
   //
   // The unlit lens stays darker than the face, so it reads as a hole and not as
   // a highlight. That caps it under 3:1 whatever value it takes: pure black on
   // `--rak-primary-500` is 2.56, so no lens darker than this face can clear the
   // bar. The lit lens carries the state instead, and `aria-pressed` carries it
   // for anyone reading no color at all.
+  --rak-led-on: var(--rak-info-200);
   --rak-led-off: #232323;
   --rak-led-socket: 0 -1px 0 rgb(0 0 0 / 40%);
   --rak-led-glow:
     0 0 6px rgb(125 211 252 / 55%), 0 0 12px rgb(125 211 252 / 25%);
-  --rak-led-bloom: inset 0 0 8px -1px rgb(125 211 252 / 32%);
+  --rak-led-bloom:
+    inset 0 8px 7px -6px rgb(125 211 252 / 45%),
+    inset 0 -8px 7px -6px rgb(125 211 252 / 45%);
   --rak-state-hover: rgb(255 255 255 / 8%);
   --rak-state-press: rgb(255 255 255 / 16%);
 }
