@@ -286,6 +286,11 @@
     // already says whether they can still win, and the pick cells say how their
     // week went, so a fill here would take a hue off one of them.
     //
+    // Lit like the lamp in a key's lip, since both marks are the reader's own
+    // doing and the settings dialog is where they set each of them. The bloom is
+    // the lamp's, in the inset cut `index.scss` keeps for a rule drawn inside
+    // something: a halo outside the cell would fall under the cell beside it.
+    //
     // Read off the name cell, which is the one thing that knows whose row this
     // is, rather than off a class on the `<tr>`, which both tables would have to
     // set. Drawn on every cell rather than on the row, because a row draws no
@@ -297,7 +302,8 @@
     tr:has(> .table__player-col.--mine) > td {
       box-shadow:
         inset 0 var(--rak-border-width) 0 var(--rak-my-row-accent),
-        inset 0 calc(-1 * var(--rak-border-width)) 0 var(--rak-my-row-accent);
+        inset 0 calc(-1 * var(--rak-border-width)) 0 var(--rak-my-row-accent),
+        var(--rak-led-bloom);
     }
 
     td {
