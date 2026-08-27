@@ -8,3 +8,7 @@ names them by absolute path.
   shell point at
 - `robots.txt`: denies every crawler, because a private pool's results are not
   for one
+- `fonts/dseg14-classic-700.woff2`: the logo's face, copied from
+  `@fontsource/dseg14-classic` 5.3.0. Here rather than bundled, so `index.html`
+  can name a path Vite does not hash and preload it before the first paint.
+  Update the package and copy the file again to change it.
