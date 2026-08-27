@@ -66,7 +66,7 @@ export default function SettingsPage() {
             ))}
           </div>
           <p className="settings__hint">
-            Auto follows whatever your device is set to.
+            Auto mode honors your device settings.
           </p>
         </section>
 
