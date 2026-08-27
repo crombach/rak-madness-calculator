@@ -718,10 +718,10 @@ export default function GameStatusSummary({
                   // The team's name is beside it, so the mark says nothing a
                   // reader of the page in words is missing.
                   alt=""
-                  // `GameStatusDialog` has already asked the browser to warm every
-                  // logo the week could show, so this is normally a cache hit, and
-                  // decoding it before the frame goes up puts the mark on screen
-                  // with the name beside it rather than a frame behind it.
+                  // `GameStatusDialog` has already warmed every logo the week could
+                  // show, so this is normally a cache hit, and decoding it before
+                  // the frame goes up puts the mark on screen with the name beside
+                  // it rather than a frame behind it.
                   decoding="sync"
                   onError={() => setLogolessId(shown.id)}
                 />

@@ -6,7 +6,7 @@ import { WeekInfo } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
 import matching from "../../utils/matching";
-import prefetchLink from "../../utils/prefetchLink";
+import warmImage from "../../utils/warmImage";
 import DialogCombobox from "../dialog/DialogCombobox";
 import DialogShell from "../dialog/DialogShell";
 import { CheckIcon, EventIcon, WarningIcon } from "../icon/Icon";
@@ -22,19 +22,6 @@ import "./GameStatusDialog.scss";
  */
 function gameSearchText(game: WeekGame): string {
   return `${game.label}  ${game.name}`;
-}
-
-/**
- * Every URL this session has already asked the browser to warm, so a week with
- * marks fetched twice, or a game reopened later, never asks for the same logo
- * twice.
- */
-const prefetchedLogoUrls = new Set<string>();
-
-function prefetchLogo(url: string) {
-  if (prefetchedLogoUrls.has(url)) return;
-  prefetchedLogoUrls.add(url);
-  prefetchLink(url, { as: "image" });
 }
 
 /** The games a query offers, in picks table column order. */
@@ -162,7 +149,7 @@ export default function GameStatusDialog({
   games.forEach((it) => {
     [it.result?.home.team.logoUrl, it.result?.away.team.logoUrl].forEach(
       (url) => {
-        if (url != null) prefetchLogo(url);
+        if (url != null) warmImage(url);
       },
     );
   });
