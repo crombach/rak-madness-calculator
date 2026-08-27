@@ -6,8 +6,8 @@ import "./ScoresNavbar.scss";
 export type ScoresView = "Scoreboard" | "Picks";
 
 /**
- * How long the refresh button takes to fade and narrow away. Held here because it
- * has to stay mounted for exactly that long. The stylesheet reads it back as
+ * How long the refresh button takes to fade away. Held here because it has to
+ * stay mounted for exactly that long. The stylesheet reads it back as
  * `--collapse-duration`, so the two cannot drift apart.
  */
 export const COLLAPSE_DURATION_MS = 300;
@@ -99,21 +99,19 @@ export default function ScoresNavbar({
           // by pointer, keyboard, and screen reader on its own.
           inert={!isWeekLive}
         >
-          <div className="scores-nav__live-content">
-            <Button
-              ariaLabel="Refresh"
-              // Also unavailable mid-refresh, so a second click while one is
-              // already running cannot queue another.
-              ariaDisabled={disabled || isRefreshing}
-              busy={isRefreshing}
-              compact
-              onClick={onRefresh}
-              className="scores-nav__button"
-            >
-              <UpdateIcon />
-            </Button>
-            <div className="scores-nav__divider" />
-          </div>
+          <Button
+            ariaLabel="Refresh"
+            // Also unavailable mid-refresh, so a second click while one is
+            // already running cannot queue another.
+            ariaDisabled={disabled || isRefreshing}
+            busy={isRefreshing}
+            compact
+            onClick={onRefresh}
+            className="scores-nav__button"
+          >
+            <UpdateIcon />
+          </Button>
+          <div className="scores-nav__divider" />
         </div>
       )}
       <ViewButton

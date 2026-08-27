@@ -47,12 +47,6 @@ $keyboard-gap: 12px;
     min(85dvh, var(--rak-viewport-height, 85dvh)) +
       var(--rak-keyboard-inset, 0px)
   );
-  padding-block: 20px;
-  // 2px tighter than the block padding: room enough for a game dialog's crest to
-  // carry its dark-mode rim light without the sheet's own edge cutting it off.
-  // `wide-screen` below restores the full 20px, since a centered window has room
-  // to spare on the sides a phone's sheet does not.
-  padding-inline: 18px;
   // The keyboard's room, so everything in the sheet stands above it while the sheet
   // itself runs on to the bottom edge of the screen behind it. Held there rather than
   // stood on top of the keyboard, so dismissing one never shows the sheet's lower edge
@@ -61,11 +55,25 @@ $keyboard-gap: 12px;
   // Room for the home indicator on top of that, given back once the sheet is standing
   // on a keyboard rather than on the bottom edge the indicator is drawn over, which
   // takes the gap above the keyboard in its place.
-  padding-bottom: calc(
+  //
+  // Named rather than set here, because the sheet is not what carries it.
+  // `.dialog__body` is, on the inside of its own scroll area, so the last thing
+  // in a body can be scrolled clear of the keyboard. Carried by the sheet, the
+  // same room is a floor no scroll reaches past, and a body squeezed by an open
+  // keyboard ends with its last control cut off against it.
+  --rak-dialog-floor: calc(
     20px + var(--rak-keyboard-inset, 0px) +
       max(0px, env(safe-area-inset-bottom) - var(--rak-keyboard-inset, 0px)) +
       min(var(--rak-keyboard-inset, 0px), #{$keyboard-gap})
   );
+
+  padding-top: 20px;
+  padding-bottom: 0;
+  // 2px tighter than the top padding: room enough for a game dialog's crest to
+  // carry its dark-mode rim light without the sheet's own edge cutting it off.
+  // `wide-screen` below restores the full 20px, since a centered window has room
+  // to spare on the sides a phone's sheet does not.
+  padding-inline: 18px;
   border-radius: var(--rak-radius-lg) var(--rak-radius-lg) 0 0;
   // The one edge the sheet meets the page on. Its other three run off the sides
   // and the bottom of the screen, where a line would read as an artifact rather
@@ -119,6 +127,10 @@ $keyboard-gap: 12px;
   flex: 0 1 auto;
   min-height: 0;
   padding-top: var(--rak-dialog-inset);
+  // The sheet's own floor, taken inside the scroll area rather than under it, so
+  // it scrolls away with the answer and the last control in a body can be
+  // brought clear of an open keyboard. `.dialog__popup` names the value.
+  padding-bottom: var(--rak-dialog-floor);
   // Everything under here scrolls. Only the search above it holds still.
   border-top: var(--rak-border-width-hairline) solid var(--rak-divider);
   overflow-y: auto;
@@ -189,8 +201,10 @@ $bar-height: 2px;
     bottom: auto;
     width: min(640px, calc(100vw - 32px));
     max-height: min(680px, calc(var(--rak-viewport-height, 100dvh) - 64px));
-    padding-bottom: 20px;
-    // Back to the block padding: a centered window has room on its sides a
+    // No keyboard to stand over and no home indicator to clear: a centered
+    // window is off both edges already. The body still carries it.
+    --rak-dialog-floor: 20px;
+    // Back to the top padding: a centered window has room on its sides a
     // phone's sheet does not, so it never needed the mobile-only 18px above.
     padding-inline: 20px;
     border-radius: var(--rak-radius-lg);

@@ -33,6 +33,40 @@
     -->
     <link rel="manifest" href="/manifest.json" />
     <title>Rakulator</title>
+    <!-- The logo's own face, before the first paint, for the same reason the theme
+         script below runs here. Every other font in this app is reached through
+         src/index.tsx, which imports the @fontsource stylesheet that declares it.
+         Nothing asks for the file until that bundle has loaded and run, so the
+         navbar paints the name in the fallback mono and swaps it once the real
+         face lands. On a wordmark drawn as a segment display, that swap is the
+         whole logo changing shape.
+
+         Declared here rather than in src/index.scss, which the same bundle
+         carries. The preload starts the fetch while the HTML is still parsing,
+         and the rule under it is what the fetch is for.
+
+         A copy at a fixed path under public/, not the hashed one Vite emits from
+         node_modules, since this file cannot know that name. public/CLAUDE.md
+         says where it came from. -->
+    <link
+      rel="preload"
+      href="/fonts/dseg14-classic-700.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <style>
+      /* `block` rather than `swap`: with the preload above, the face is here
+         before anything paints, so the block period costs nothing and no
+         fallback is ever shown. `swap` is what draws the name twice. */
+      @font-face {
+        font-family: "DSEG14 Classic";
+        font-style: normal;
+        font-weight: 700;
+        font-display: block;
+        src: url("/fonts/dseg14-classic-700.woff2") format("woff2");
+      }
+    </style>
     <!-- The saved theme, before the first paint. src/context/SettingsContext.tsx
          sets the same attribute once React is up, which is too late: a reader who
          chose dark on a light OS would see a light flash on every load. The key is

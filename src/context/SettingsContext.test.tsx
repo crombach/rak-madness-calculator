@@ -59,9 +59,60 @@ function mountProbe(candidate?: string) {
   return user;
 }
 
+/**
+ * Holds the frame callbacks instead of running them, so the attribute the theme
+ * change sets can be read while it is still up.
+ */
+function holdFrames() {
+  const originalRequest = window.requestAnimationFrame;
+  const originalCancel = window.cancelAnimationFrame;
+  const queued = new Map<number, FrameRequestCallback>();
+  let handle = 0;
+  window.requestAnimationFrame = ((next: FrameRequestCallback) => {
+    handle += 1;
+    queued.set(handle, next);
+    return handle;
+  }) as typeof window.requestAnimationFrame;
+  window.cancelAnimationFrame = ((id: number) => {
+    queued.delete(id);
+  }) as typeof window.cancelAnimationFrame;
+  return {
+    /** Runs every frame queued so far, and every frame those queue in turn. */
+    flush() {
+      while (queued.size) {
+        const [id, next] = [...queued][0];
+        queued.delete(id);
+        next(0);
+      }
+    },
+    /** How many frames are waiting, which a cancelled one is not. */
+    pending: () => queued.size,
+    restore() {
+      window.requestAnimationFrame = originalRequest;
+      window.cancelAnimationFrame = originalCancel;
+    },
+  };
+}
+
+/**
+ * The queue every test in this file runs its frames on.
+ *
+ * Every test mounts the provider, and every mount queues the frames that clear
+ * the theme freeze. Left on the real clock those fire during a later test's
+ * `await`, and clear an attribute that test had just set. Nothing restores a
+ * frame already queued on the real clock, so no test may queue one.
+ */
+let frames: ReturnType<typeof holdFrames>;
+
 beforeEach(() => {
   localStorage.clear();
   delete document.documentElement.dataset.theme;
+  delete document.documentElement.dataset.themeSwitching;
+  frames = holdFrames();
+});
+
+afterEach(() => {
+  frames.restore();
 });
 
 describe("SettingsContext, the theme", () => {
@@ -165,6 +216,68 @@ describe("SettingsContext, the browser's own chrome bar", () => {
     } finally {
       restore();
       meta.remove();
+    }
+  });
+});
+
+/** Catches the listener the auto theme installs, so an OS flip can be played. */
+function captureDarkListener() {
+  const original = window.matchMedia;
+  let flip: (() => void) | undefined;
+  window.matchMedia = (media: string) =>
+    ({
+      ...original(media),
+      addEventListener: (_name: string, next: () => void) => {
+        flip = next;
+      },
+    }) as MediaQueryList;
+  return {
+    flip: () => flip?.(),
+    restore: () => {
+      window.matchMedia = original;
+    },
+  };
+}
+
+describe("SettingsContext, the transitions a theme change would ease", () => {
+  it("holds them still across the frame the new colors land in", async () => {
+    const user = mountProbe();
+    await user.click(screen.getByRole("button", { name: "dark" }));
+
+    expect(document.documentElement.dataset.themeSwitching).toBe("");
+
+    frames.flush();
+    expect(document.documentElement.dataset.themeSwitching).toBeUndefined();
+  });
+
+  // Without the cancel, the first change's clear stays queued and fires two
+  // frames in, which lifts the hold the second change is still standing on.
+  it("keeps only one clear waiting when changes come back to back", async () => {
+    const user = mountProbe();
+    expect(frames.pending()).toBe(1);
+
+    await user.click(screen.getByRole("button", { name: "dark" }));
+    expect(frames.pending()).toBe(1);
+
+    await user.click(screen.getByRole("button", { name: "light" }));
+    expect(frames.pending()).toBe(1);
+    expect(document.documentElement.dataset.themeSwitching).toBe("");
+  });
+
+  it("holds them still when the operating system flips under auto", () => {
+    const dark = captureDarkListener();
+    try {
+      mountProbe();
+      frames.flush();
+      expect(document.documentElement.dataset.themeSwitching).toBeUndefined();
+
+      dark.flip();
+      expect(document.documentElement.dataset.themeSwitching).toBe("");
+
+      frames.flush();
+      expect(document.documentElement.dataset.themeSwitching).toBeUndefined();
+    } finally {
+      dark.restore();
     }
   });
 });

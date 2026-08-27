@@ -20,7 +20,9 @@ import "@fontsource/chakra-petch/latin-700.css";
 import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/600.css";
 import "@fontsource/ibm-plex-mono/700.css";
-import "@fontsource/dseg14-classic/700.css";
+// DSEG14 Classic is missing on purpose. The logo paints it on every route and
+// before anything else, so index.html declares that one face itself and preloads
+// it, rather than wait on this bundle. Its file lives in public/ for that.
 import "@fontsource/dseg7-classic/700.css";
 import chakraPetch400Url from "@fontsource/chakra-petch/files/chakra-petch-latin-400-normal.woff2?url";
 import chakraPetch500Url from "@fontsource/chakra-petch/files/chakra-petch-latin-500-normal.woff2?url";
@@ -28,7 +30,6 @@ import chakraPetch600Url from "@fontsource/chakra-petch/files/chakra-petch-latin
 import chakraPetch700Url from "@fontsource/chakra-petch/files/chakra-petch-latin-700-normal.woff2?url";
 import ibmPlexMono400Url from "@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url";
 import ibmPlexMono700Url from "@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-700-normal.woff2?url";
-import dseg14Url from "@fontsource/dseg14-classic/files/dseg14-classic-latin-700-normal.woff2?url";
 import dseg7Url from "@fontsource/dseg7-classic/files/dseg7-classic-latin-700-normal.woff2?url";
 import { AppDataContextProvider } from "./context/AppDataContext";
 import { SettingsContextProvider } from "./context/SettingsContext";
@@ -46,7 +47,6 @@ const PREFETCH_FONT_URLS = [
   chakraPetch700Url,
   ibmPlexMono400Url,
   ibmPlexMono700Url,
-  dseg14Url,
   dseg7Url,
 ];
 for (const href of PREFETCH_FONT_URLS) {
@@ -59,6 +59,10 @@ for (const href of PREFETCH_FONT_URLS) {
 // A cache warm alone still shows the fallback face until something decodes the
 // font outright. Every weight below is decoded up front rather than left to
 // arrive after the paint that needs it has already committed to the fallback.
+//
+// DSEG14 Classic is not here. index.html declares that face and preloads it, and
+// `font-display: block` there holds the paint until it lands, so a decode asked
+// for from this bundle would only repeat what the shell already guarantees.
 const FIRST_PAINT_FONTS = [
   ["400", "Chakra Petch"], // body copy
   ["600", "Chakra Petch"], // buttons, e.g. the home page's own
@@ -66,7 +70,6 @@ const FIRST_PAINT_FONTS = [
   ["400", "IBM Plex Mono"], // table cells
   ["600", "IBM Plex Mono"], // the home page's selected season row
   ["700", "IBM Plex Mono"], // a table's bold rank column
-  ["700", "DSEG14 Classic"], // the navbar logo's name, on every route
   // The scoreline's readout. Nothing paints it until the game status dialog
   // opens, so a decode left until then swaps the face under a dialog already on
   // screen. `useScorelineFit` measures that dialog, and it measures the fallback

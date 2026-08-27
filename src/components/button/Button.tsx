@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 import getClasses from "../../utils/getClasses";
 import "./Button.scss";
 
-export type ButtonColor = "primary" | "success" | "danger";
+export type ButtonColor = "primary" | "success" | "danger" | "info" | "warning";
 
 export default function Button({
   children,

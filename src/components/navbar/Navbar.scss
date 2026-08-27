@@ -57,8 +57,9 @@
   flex-direction: row;
   align-items: center;
   flex: 0 0 auto;
-  // Named because `ScoresNavbar` cancels it with a negative margin while the
-  // refresh button collapses, and a gap around nothing would otherwise remain.
+  // Named because `ScoresNavbar` reads it back for the gap inside its own live
+  // group, so the divider there stands as far from the refresh button as it does
+  // from the switch on its other side.
   //
   // Tighter than a desktop's but not the smallest step: with the name plate drawn
   // as one key the bar is three keys and a screen, and at 4px the three ran

@@ -11,7 +11,7 @@ player analysis search renders it too, so the same player wears the same icon in
 both places.
 
 `--mine`, from `useIsMyPlayer`, marks the reader's own. `Table.scss` reads it
-off the row and rules every cell above and below.
+off the row and rules every cell, lit like the navbar's lamp.
 
 A player a refresh just knocked out renders a `.table__cell-wipe`, from
 `useScoreChanges()`, over the fill they held before that.
