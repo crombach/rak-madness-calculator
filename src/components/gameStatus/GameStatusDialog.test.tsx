@@ -23,7 +23,6 @@ import {
   dialog,
   getGameResultMock,
   SEASON,
-  settleLogos,
   WEEK,
 } from "./gameStatusDialogTestSupport";
 
@@ -170,19 +169,16 @@ describe("GameStatusDialog", () => {
       "https://espn.com/DAL.png",
     ]);
 
-    // The game, not the column the cell that opened it was in, and a wireframe
-    // rather than the score the week was scored at.
+    // The game, not the column the cell that opened it was in, and the week's own
+    // copy of it already up rather than a wait for the fetch that is out.
     expect(screen.getByRole("combobox", { name: "Game" })).toHaveValue(
       "KC @ BUF",
     );
-    expect(screen.getByRole("status")).toHaveTextContent("Loading the game");
+    expect(screen.getByText("BUF Team")).toBeInTheDocument();
     // In words as well as in a dot, a red dot alone reading as a decoration.
     expect(screen.getByRole("img", { name: "Live" })).toHaveTextContent("LIVE");
 
-    // The score the fetch came back with, not the one the week was scored at. Waited
-    // on by the bar, since the wireframe carries the week's own copy of the game and
-    // so already reads the same in places.
-    settleLogos();
+    // The score the fetch came back with, in place of the one the week was scored at.
     await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
     expect(screen.getByText("8:42 - 3rd Quarter")).toBeInTheDocument();
     expect(screen.getByText("BUF Team")).toBeInTheDocument();
@@ -200,7 +196,7 @@ describe("GameStatusDialog", () => {
     expect(await screen.findByText("14")).toBeInTheDocument();
 
     // A poll says it is out the way a first fetch does, and the game already on
-    // screen stays up behind the bar rather than a wireframe standing in for it.
+    // screen stays up behind the bar.
     const held = deferred();
     getGameResultMock.mockReturnValue(held.promise);
     await vi.advanceTimersByTimeAsync(POLL_MS);
@@ -272,15 +268,15 @@ describe("GameStatusDialog", () => {
     expect(
       screen.getByRole("progressbar", { name: "Fetching the game" }),
     ).toBeInTheDocument();
+    // The game being switched to, from the week's own copy of it, rather than the
+    // live one whose result is still the last one fetched.
     expect(screen.queryByText("BUF Team")).toBeNull();
-    // The game being switched to, which has yet to kick off, rather than the live one
-    // whose result is still the last one fetched.
+    expect(screen.getByText("PHI Team")).toBeInTheDocument();
     expect(
       screen.getByRole("img", { name: "Yet to kick off" }),
     ).toBeInTheDocument();
 
     pending.settle(upcomingGame);
-    settleLogos();
     await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
     expect(screen.getByText("PHI Team")).toBeInTheDocument();
     // Not started, so the search says so rather than that there is something to watch.
@@ -292,7 +288,6 @@ describe("GameStatusDialog", () => {
     const askedBeforeFinal = getGameResultMock.mock.calls.length;
     await user.click(screen.getByRole("combobox", { name: "Game" }));
     await user.click(await screen.findByRole("option", { name: /MICH @ OSU/ }));
-    settleLogos();
     expect(screen.getByText("OSU Team")).toBeInTheDocument();
     expect(screen.queryByRole("progressbar")).toBeNull();
     expect(screen.getByRole("img", { name: "Final" })).toBeInTheDocument();

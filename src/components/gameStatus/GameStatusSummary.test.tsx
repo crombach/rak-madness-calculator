@@ -1,29 +1,9 @@
-import {
-  fireEvent,
-  render as rtlRender,
-  screen,
-  type RenderResult,
-} from "@testing-library/react";
-import { ReactElement } from "react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { GameStatus, HomeAway } from "../../types/ESPN";
 import { LeagueResult } from "../../types/LeagueResult";
 import { League } from "../../types/League";
 import { WeekGame } from "../../types/WeekGame";
 import GameStatusSummary from "./GameStatusSummary";
-
-/**
- * jsdom never actually fetches an image, so the logos `GameStatusSummary` waits
- * on before it leaves its wireframe would sit forever unloaded. Settling every
- * one straight after render stands in for the common case the wait is for: the
- * browser's image cache already warm from the dialog's own prefetch.
- */
-function render(ui: ReactElement): RenderResult {
-  const view = rtlRender(ui);
-  document
-    .querySelectorAll<HTMLImageElement>("img[hidden]")
-    .forEach((img) => fireEvent.load(img));
-  return view;
-}
 
 const KICKOFF = new Date("2024-10-06T17:00:00Z");
 
@@ -84,17 +64,12 @@ function result(over: Partial<LeagueResult> = {}): LeagueResult {
 }
 
 /*
- * The wireframe and the teams' marks, neither of which any query reaches: every word
- * under a wireframe is drawn as a bar, and a mark is decorative beside the name it
- * stands next to.
+ * The scoreline and the teams' marks, neither of which any query reaches: a mark is
+ * decorative beside the name it stands next to, and the scoreline is read whole rather
+ * than a line at a time.
  */
-function wireframe(): Element | null {
-  return document.querySelector(".game-status.--skeleton");
-}
-
-function scoreline(selector: string): string | undefined {
-  return document.querySelector(`${selector} .game-status__scoreline`)
-    ?.textContent;
+function scoreline(): string | undefined {
+  return document.querySelector(".game-status__scoreline")?.textContent;
 }
 
 function logos(): Array<string | null> {
@@ -103,66 +78,61 @@ function logos(): Array<string | null> {
   );
 }
 
-describe("GameStatusSummary, before there is anything to show", () => {
+describe("GameStatusSummary, the game it is given", () => {
   it("draws nothing with no game chosen", () => {
     const { container } = render(<GameStatusSummary />);
     expect(container).toBeEmptyDOMElement();
   });
 
-  it("stands a wireframe in until the game has been fetched", () => {
+  it("shows the week's own copy of the game with nothing fetched yet", () => {
     render(<GameStatusSummary game={game(result())} />);
-    expect(screen.getByRole("status")).toHaveTextContent("Loading the game");
-    expect(wireframe()).not.toBeNull();
+    // The game itself rather than a wait for it, marks and all.
+    expect(
+      litDigits(
+        document.querySelector(
+          ".game-status__score.--home .game-status__points",
+        ) as Element,
+      ),
+    ).toEqual("30");
+    expect(logos()).toHaveLength(2);
   });
 
-  it("stands a wireframe in over the game before it while one is fetched", () => {
-    render(
-      <GameStatusSummary game={game(result())} result={result()} isLoading />,
-    );
-    // The wireframe carries the week's own copy of the game, so it comes out the
-    // size the answer will be. What is on screen is still only the wireframe.
-    expect(document.querySelector(".game-status:not(.--skeleton)")).toBeNull();
-    expect(wireframe()).not.toBeNull();
-  });
-
-  it("lays the wireframe out as the game it stands in for", () => {
-    const final = result();
-    const { unmount } = render(
-      <GameStatusSummary game={game(final)} result={final} />,
-    );
-    const shown = scoreline(".game-status:not(.--skeleton)");
+  it("lays the week's own copy out as the answer that replaces it", () => {
+    const week = result();
+    const { unmount } = render(<GameStatusSummary game={game(week)} />);
+    const before = scoreline();
     unmount();
 
-    // The same lines, in the same places, drawn from the week's own copy of the
-    // game, so nothing under the dialog moves when the answer lands.
-    render(<GameStatusSummary game={game(final)} />);
-    expect(scoreline(".game-status.--skeleton")).toEqual(shown);
+    // The same lines, in the same places, so nothing under the dialog moves when
+    // the answer lands on a game that has not moved either.
+    render(<GameStatusSummary game={game(week)} result={week} />);
+    expect(scoreline()).toEqual(before);
   });
 
-  it("holds the wireframe until both marks have loaded, even once the game has", () => {
-    // `rtlRender` rather than this file's own settling `render`, since this is
-    // what that settling stands in for.
-    rtlRender(<GameStatusSummary game={game(result())} result={result()} />);
-    expect(document.querySelector(".game-status:not(.--skeleton)")).toBeNull();
+  it("puts a fetched score up in place of the week's own", () => {
+    const home = (): string =>
+      litDigits(
+        document.querySelector(
+          ".game-status__score.--home .game-status__points",
+        ) as Element,
+      );
+    const week = result({
+      status: GameStatus.LIVE,
+      home: { ...result().home, score: 7 },
+    });
+    const { rerender } = render(<GameStatusSummary game={game(week)} />);
+    expect(home()).toEqual("7");
 
-    const [away, home] = document.querySelectorAll("img[hidden]");
-    fireEvent.load(away);
-    // One of the two loaded is not both of them.
-    expect(document.querySelector(".game-status:not(.--skeleton)")).toBeNull();
-
-    fireEvent.load(home);
-    expect(
-      document.querySelector(".game-status:not(.--skeleton)"),
-    ).not.toBeNull();
+    // The same game, one poll later. The score moves and nothing else does.
+    rerender(<GameStatusSummary game={game(week)} result={result()} />);
+    expect(home()).toEqual("30");
   });
 
-  it("shows the game without its marks rather than wait on one that never loads", () => {
-    rtlRender(<GameStatusSummary game={game(result())} result={result()} />);
-    fireEvent.error(document.querySelectorAll("img[hidden]")[0]);
+  it("shows the game without its marks rather than one that never loads", () => {
+    render(<GameStatusSummary game={game(result())} result={result()} />);
+    fireEvent.error(document.querySelectorAll("img")[0]);
 
-    expect(
-      document.querySelector(".game-status:not(.--skeleton)"),
-    ).not.toBeNull();
+    expect(document.querySelector(".game-status")).not.toBeNull();
     expect(logos()).toEqual([]);
   });
 
@@ -171,7 +141,7 @@ describe("GameStatusSummary, before there is anything to show", () => {
     expect(screen.getByText(/No game was found for P1/)).toHaveTextContent(
       "KC / BUF",
     );
-    expect(wireframe()).toBeNull();
+    expect(document.querySelector(".game-status")).toBeNull();
   });
 });
 

@@ -117,9 +117,11 @@ function GameMark({
  * How a game in the week on screen is going, opened from a pick cell in the picks
  * table.
  *
- * A game that has not finished is fetched again on the way in and every twenty seconds
- * after that, so a live game on screen is the game as it stands rather than as the
- * week was last scored. One already final is shown as the week scored it.
+ * The week's own copy of the game is on screen the moment the dialog opens. A game
+ * that has not finished is fetched again as it appears and every twenty seconds after
+ * that, and each answer replaces the score in place, so a live game catches up rather
+ * than making the reader wait. One already final is never fetched, because the week
+ * scored it at the only score it can have.
  */
 export default function GameStatusDialog({
   open,
@@ -172,7 +174,7 @@ export default function GameStatusDialog({
     setQuery(arrived?.name ?? label);
   });
 
-  const { shown, isLoading, isFetching } = useLiveGame({
+  const { shown, isFetching } = useLiveGame({
     open,
     game,
     games: scores?.games,
@@ -205,16 +207,13 @@ export default function GameStatusDialog({
           itemToStringLabel={(option) => option.name}
           itemKey={(option) => option.label}
           // The chosen game's own mark, on the freshest status rather than the one
-          // the week was scored at, so a game going final stops pulsing. While a
-          // fetch is out, `shown` is still the game before it, whose status is not
-          // this game's, so the week's own is what stands until the answer lands.
+          // the week was scored at, so a game going final stops pulsing. The week's
+          // own stands until the first answer lands.
           adornment={
             game != null && (
               <GameMark
                 game={game}
-                status={
-                  (isLoading ? undefined : shown?.status) ?? game.result?.status
-                }
+                status={shown?.status ?? game.result?.status}
               />
             )
           }
@@ -228,7 +227,7 @@ export default function GameStatusDialog({
         />
       }
     >
-      <GameStatusSummary game={game} result={shown} isLoading={isLoading} />
+      <GameStatusSummary game={game} result={shown} />
     </DialogShell>
   );
 }

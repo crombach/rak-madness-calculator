@@ -13,14 +13,16 @@ export const POLL_MS = 20_000;
  * One game, kept up to date for as long as it is being looked at.
  *
  * The week's scores carry the game as it stood when they were worked out, which is
- * stale the moment a live game moves, so a game is fetched again before it is
- * shown and then on `POLL_MS` until it is final. A game already final when it is
- * opened is shown as the scoring pass left it, because nothing about it can differ.
+ * stale the moment a live game moves, so a game is fetched again as it is shown and
+ * then on `POLL_MS` until it is final. A game already final when it is opened is
+ * never fetched at all, because nothing about it can differ.
  *
- * The game already on screen stays there while the next one is fetched, the way the
- * player analysis holds the last answer up behind its progress bar. `games` is the
- * scoring pass it belongs to: a rescore replaces every game, so it takes the one on
- * screen away with it.
+ * `shown` is the fresher answer alone. Nothing is returned until one lands, and the
+ * caller shows the week's own copy of the game meanwhile, so a reader never waits
+ * behind a fetch for a game they can already see.
+ *
+ * `games` is the scoring pass the answer belongs to. A rescore replaces every game,
+ * so it takes the fetched one with it.
  */
 export default function useLiveGame({
   open,
@@ -41,7 +43,7 @@ export default function useLiveGame({
    * before the next scheduled refresh would have.
    */
   onGameFinal?: () => void;
-}): { shown?: LeagueResult; isLoading: boolean; isFetching: boolean } {
+}): { shown?: LeagueResult; isFetching: boolean } {
   const [found, setFound] = useState<{
     games: Array<WeekGame>;
     label: string;
@@ -99,15 +101,12 @@ export default function useLiveGame({
     };
   }, [open, games, label, league, eventId, settled, week, season, onGameFinal]);
 
+  // Stamped with the game it was fetched for as well as the scoring pass, so an
+  // answer that landed for the game before this one is never handed back for it.
   const shown =
     settled ??
-    (found != null && found.games === games ? found.result : undefined);
-  const isLoading =
-    game != null &&
-    eventId != null &&
-    settled == null &&
-    (shown == null || found?.label !== label);
-  // `isLoading` is the wait with nothing to show behind it, and `isFetching` every
-  // wait, a poll of a game already on screen included.
-  return { shown, isLoading, isFetching: fetching };
+    (found != null && found.games === games && found.label === label
+      ? found.result
+      : undefined);
+  return { shown, isFetching: fetching };
 }

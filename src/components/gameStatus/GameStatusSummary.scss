@@ -1,8 +1,6 @@
-@use "../../styles/a11y" as *;
 @use "../../styles/breakpoints" as *;
 @use "../../styles/label" as *;
 @use "../../styles/lcd" as *;
-@use "../../styles/skeleton" as *;
 
 // Which side a player had to pick to score the point, and which one cost them it,
 // in the two hues the picks table fills a cell with. The 400 step, which is the one
@@ -32,25 +30,6 @@
   font-family: var(--rak-font-segment);
   // The face ships in its bold cut alone, which `src/index.tsx` is what loads.
   font-weight: var(--rak-weight-bold);
-}
-
-// A bar over the words an element holds, one on each line of it, so a name that wraps
-// to two lines comes out as two bars rather than as one across both. The bar is as wide
-// as the box, which the scoreline's grid gives both sides equally, so the two sides of
-// a wireframe mirror each other whatever the teams are called.
-//
-// Drawn on the element itself rather than in a layer over it: a bar of its own would
-// have to be told where every line of a wrapping name is.
-@mixin wireframe-bar($height: 0.7rem) {
-  color: transparent;
-  opacity: var(--rak-loading-fill-opacity);
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0 calc((1lh - #{$height}) / 2),
-    var(--rak-loading-fill) calc((1lh - #{$height}) / 2)
-      calc((1lh + #{$height}) / 2),
-    transparent calc((1lh + #{$height}) / 2) 1lh
-  );
 }
 
 // How big the scores, the dash between them and the possession marks are set. Named
@@ -85,78 +64,6 @@
     --rak-marker-size: 1rem;
     --rak-score-gap: var(--rak-space-2);
   }
-}
-
-// A game holds a dozen or so bars at once, never the hundreds a wireframe table
-// does, so each bar carries its own sheen rather than one sweep standing in for
-// all of them. That keeps the shine over a bar rather than crossing the gaps
-// between them, where the wait has nothing to show yet.
-//
-// Every word under here is the week's own copy of the game, laid out by the rules the
-// answer will be laid out by and taken down to a bar. What is left showing is those
-// bars, the marks' own circles, and the dash the two scores meet at, which is the same
-// dash either way.
-.game-status.--skeleton {
-  // Every word is still there, holding the room it will take, and none of it drawn.
-  color: transparent;
-
-  // A box of its own, so a bar over one of these is a whole line box tall like every
-  // other bar. Inline still, so the strip reads the way the answer's does.
-  .game-status__meta-group > span {
-    display: inline-block;
-  }
-
-  .game-status__meta-group > span,
-  .game-status__spread,
-  .game-status__side-label,
-  .game-status__team-name,
-  .game-status__record,
-  .game-status__detail,
-  .game-status__down,
-  .game-status__outcome {
-    @include wireframe-bar;
-    @include skeleton-sheen;
-  }
-
-  // Thicker, standing in for the one line here set big enough to carry its own weight.
-  .game-status__points {
-    @include wireframe-bar(1.25rem);
-    @include skeleton-sheen;
-
-    @include roomy-screen {
-      @include wireframe-bar(2.25rem);
-    }
-  }
-
-  // A wireframe knows no score, so it lights no cells and shows none waiting either.
-  // The bar over the number is what stands in for the whole readout.
-  .game-status__points-ghost {
-    display: none;
-  }
-
-  // The mark's own square, filled. Round, because a square block reads as a blot at
-  // that size.
-  .game-status__logo {
-    @include skeleton-surface;
-    @include skeleton-sheen;
-
-    border-radius: 50%;
-  }
-
-  // Who has the ball is a thing the wireframe cannot know, so it keeps the room and
-  // says nothing. Both sides go the same way, which is what keeps the two mirrored.
-  //
-  // The strip under the scoreline names its own color as well, and the dot it puts
-  // between two halves is drawn in it.
-  .game-status__marker,
-  .game-status__meta,
-  .game-status__spread-value {
-    color: transparent;
-  }
-}
-
-.game-status__sr-only {
-  @include visually-hidden;
 }
 
 // The pool's own line on the game, over the scoreline it decides. Always said, `None`
@@ -243,8 +150,7 @@
 //
 // Whether there is room for it at all is `useScorelineFit`'s to say, since what it costs
 // the name beside it is what that name is. The last thing that hook gives up, and only
-// where cutting the name to its abbreviation left the two still short. The wireframe
-// draws its circle by the same answer, so a wait is still the size of the answer.
+// where cutting the name to its abbreviation left the two still short.
 .game-status__logo {
   display: block;
   align-self: center;

@@ -321,8 +321,8 @@ function Score({
         "--missed": outcome === "missed",
       })}
     >
-      {/* Held apart from the marker beside it so the wireframe can draw a bar over
-          the number alone, and so a number of one digit takes the room two do. */}
+      {/* Held apart from the marker beside it so a number of one digit takes the
+          room two do. */}
       <span className="game-status__points">
         {/* Both cells, lit or not, so a score in single figures shows the one it is
             not using rather than a zero standing in it. The face is monospaced, so
@@ -458,14 +458,6 @@ function hasLogos(result: LeagueResult): boolean {
   return result.home.team.logoUrl != null && result.away.team.logoUrl != null;
 }
 
-/** Both logo URLs a result wears, away first as the scoreline shows them, or none
- *  where either side has none. */
-function logoUrlsOf(result: LeagueResult): Array<string> {
-  return hasLogos(result)
-    ? [result.away.team.logoUrl as string, result.home.team.logoUrl as string]
-    : [];
-}
-
 /**
  * The lines either side of the scores, each of which is one word on one line.
  *
@@ -583,11 +575,11 @@ function useScorelineFit(
 
 /**
  * The game, laid out the same way whether it is the one just fetched or the week's own
- * copy of it standing in under a wireframe.
+ * copy of it standing in until that answer lands.
  *
- * One layout for both is what keeps a wait the size of the answer: a game the week had
- * live carries a down and a link out, one it had finished carries neither, and the
- * wireframe is built from the same branches rather than from a guess at them.
+ * One layout for both is what lets an answer replace the copy in place: a game the week
+ * had live carries a down and a link out, one it had finished carries neither, and each
+ * of those is read off the game on screen rather than guessed at.
  */
 function Game({
   result,
@@ -599,11 +591,8 @@ function Game({
   spread?: GameSpread;
   /** What a side wears beside its name, or nothing where the marks are dropped. */
   logo?: (side: GameSide) => ReactNode;
-  /**
-   * ESPN's page for the game. Left off the wireframe, which is hidden from a screen
-   * reader and would otherwise hold a link that can be tabbed to but not seen.
-   */
-  gamecastHref?: string;
+  /** ESPN's page for the game. */
+  gamecastHref: string;
 }) {
   const [scoreline, fit] = useScorelineFit(result.id);
   // The link rides with the place rather than the kickoff, so it ends the strip at
@@ -611,16 +600,17 @@ function Game({
   // own, so a game ESPN sent no address for still carries the link.
   const placeParts = [
     result.venue,
-    gamecastHref != null && (
-      <a
-        className="game-status__gamecast"
-        href={gamecastHref}
-        target="_blank"
-        rel="noreferrer"
-      >
-        {GAMECAST_LABEL}
-      </a>
-    ),
+    <a
+      // `MetaGroup` keys each part by where it sits, so this one is only here
+      // because a bare element in an array literal is a lint error without it.
+      key="gamecast"
+      className="game-status__gamecast"
+      href={gamecastHref}
+      target="_blank"
+      rel="noreferrer"
+    >
+      {GAMECAST_LABEL}
+    </a>,
   ].filter(Boolean);
   // Only once the game is over, which is when the sentence under the scores says the
   // same thing. A side ahead at half time has won nothing yet.
@@ -668,70 +658,8 @@ function Game({
           opened for, and when and where it is played is the footnote. */}
       <div className="game-status__meta">
         <MetaGroup parts={kickoffParts(result.date)} />
-        {placeParts.length > 0 && <MetaGroup parts={placeParts} />}
+        <MetaGroup parts={placeParts} />
       </div>
-    </>
-  );
-}
-
-/**
- * The game before it has been fetched, drawn from the week's own copy of it.
- *
- * The same layout as the answer, with every word left in place and taken down to a bar
- * over it, so the wait is the size the answer will be: the same lines, in the same
- * rows, at the same widths, down to a name that takes two lines and a venue that takes
- * its own. Nothing under the dialog moves when the answer lands. What is on the way is
- * the same game, so the only thing the week's copy of it can be wrong about is a score
- * or a clock.
- *
- * Crossed by the one sheen the tables' wireframe uses, so a wait looks the same
- * wherever the app is waiting.
- */
-function Wireframe({
-  result,
-  spread,
-  pendingLogoUrls,
-  onLogoLoad,
-  onLogoError,
-}: {
-  result: LeagueResult;
-  spread?: GameSpread;
-  /** Every logo this game wears, decoded off screen so none of them pop in
-   *  once the wireframe gives way to the game itself. */
-  pendingLogoUrls: Array<string>;
-  onLogoLoad: (url: string) => void;
-  onLogoError: () => void;
-}) {
-  return (
-    <>
-      {/* Nothing below is worth reading out, so this says what it stands in for. */}
-      <span className="game-status__sr-only" role="status">
-        Loading the game
-      </span>
-      <div aria-hidden="true" className="game-status --skeleton">
-        <Game
-          result={result}
-          spread={spread}
-          // A block of its own rather than the mark itself: an image cannot carry the
-          // bar the rest of the wireframe is drawn with, and the real one is not
-          // fetched for a game nobody is looking at yet.
-          logo={
-            hasLogos(result)
-              ? () => <span className="game-status__logo" />
-              : undefined
-          }
-        />
-      </div>
-      {pendingLogoUrls.map((url) => (
-        <img
-          key={url}
-          src={url}
-          alt=""
-          hidden
-          onLoad={() => onLogoLoad(url)}
-          onError={onLogoError}
-        />
-      ))}
     </>
   );
 }
@@ -741,26 +669,21 @@ function Wireframe({
  * scores meeting at a dash between them, with where the game is up to over those scores
  * and what the offense or the pool has to say under them.
  *
- * `result` is the game as it was last fetched, and `isLoading` says it is not yet the
- * game `game` names. A wireframe stands in until it is, so a live game is never shown
- * at the score the week was last worked out at, nor at another game's.
+ * `result` is the game as it was last fetched. There is none until the first answer
+ * lands, and the week's own copy of the same game stands in meanwhile, so the dialog
+ * opens on the game rather than on a wait for it.
  */
 export default function GameStatusSummary({
   game,
   result,
-  isLoading = false,
 }: {
   game?: WeekGame;
+  /** The game as last fetched, where a fresher one than the week's has arrived. */
   result?: LeagueResult;
-  /** Set while the chosen game is being fetched for the first time. */
-  isLoading?: boolean;
 }) {
   // Which game's marks failed to load, rather than a flag, so moving to another
   // game asks about its marks instead of inheriting a verdict on the last one's.
   const [logolessId, setLogolessId] = useState<string>();
-  // Every URL that has already loaded, so a team seen once does not ask to be
-  // waited on again on a later game or a poll of this one.
-  const [loadedLogoUrls, setLoadedLogoUrls] = useState<Set<string>>(new Set());
 
   if (game == null) {
     return null;
@@ -774,39 +697,18 @@ export default function GameStatusSummary({
     );
   }
 
-  // `GameStatusDialog` has already asked the browser to warm every logo the week
-  // could show, so decoding these here is almost always a cache hit rather than
-  // a fetch, and the wireframe below holds only as long as that hit takes.
-  const chosenId = game.result.id;
-  const pendingLogoUrls = logoUrlsOf(game.result);
-  const logosDone =
-    logolessId === chosenId ||
-    pendingLogoUrls.every((url) => loadedLogoUrls.has(url));
-
-  // The wireframe rather than the game before it, so what is on screen is always
-  // the game the search names, and never a mark still popping in over it.
-  if (isLoading || result == null || !logosDone) {
-    return (
-      <Wireframe
-        result={game.result}
-        spread={game.spread}
-        pendingLogoUrls={pendingLogoUrls}
-        onLogoLoad={(url) =>
-          setLoadedLogoUrls((loaded) => new Set(loaded).add(url))
-        }
-        onLogoError={() => setLogolessId(chosenId)}
-      />
-    );
-  }
-
-  const logos = hasLogos(result) && logolessId !== result.id;
+  // The game as last fetched, or the week's own copy until the first answer lands.
+  // Both are the same game, so the only thing the week's copy can be behind on is a
+  // score or a clock, and a live one is replaced in place a moment later.
+  const shown = result ?? game.result;
+  const logos = hasLogos(shown) && logolessId !== shown.id;
 
   return (
     <div className="game-status">
       <Game
-        result={result}
+        result={shown}
         spread={game.spread}
-        gamecastHref={gamecastUrl(game.league, result.id)}
+        gamecastHref={gamecastUrl(game.league, shown.id)}
         logo={
           logos
             ? (side) => (
@@ -816,7 +718,12 @@ export default function GameStatusSummary({
                   // The team's name is beside it, so the mark says nothing a
                   // reader of the page in words is missing.
                   alt=""
-                  onError={() => setLogolessId(result.id)}
+                  // `GameStatusDialog` has already asked the browser to warm every
+                  // logo the week could show, so this is normally a cache hit, and
+                  // decoding it before the frame goes up puts the mark on screen
+                  // with the name beside it rather than a frame behind it.
+                  decoding="sync"
+                  onError={() => setLogolessId(shown.id)}
                 />
               )
             : undefined
