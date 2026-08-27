@@ -36,10 +36,8 @@ import Toaster from "./components/toaster/Toaster";
 import prefetchLink from "./utils/prefetchLink";
 import "./index.scss";
 
-// @font-face only fetches a file once layout needs it, which for the segment
-// faces is after their ghost has already committed to a fallback width. Most of
-// these weights are not what the route on screen first paints in, so this asks
-// the browser to warm them rather than to `preload` them.
+// @font-face only fetches a file once layout needs it, so this warms every
+// weight into cache regardless of when its route reaches it.
 const PREFETCH_FONT_URLS = [
   chakraPetch400Url,
   chakraPetch500Url,
@@ -57,11 +55,22 @@ for (const href of PREFETCH_FONT_URLS) {
     crossorigin: "anonymous",
   });
 }
-// A prefetch hint alone left this one arriving late: the home page's season
-// select is usually the very first thing opened, and its selected row is the
-// only home-page text set at 600, so a slow fetch showed the fallback face
-// first. Asked for outright instead, so it is decoded well before that click.
-document.fonts.load('600 1em "IBM Plex Mono"').catch(() => {});
+// A cache warm alone still shows the fallback face until something decodes the
+// font outright. Weights below are all ones a route paints immediately, before
+// a reader has clicked anything, so each is asked for here rather than left to
+// arrive after that first paint has already committed to the fallback.
+const FIRST_PAINT_FONTS = [
+  ["400", "Chakra Petch"], // body copy
+  ["600", "Chakra Petch"], // buttons, e.g. the home page's own
+  ["700", "Chakra Petch"], // table headers and other screen-printed labels
+  ["400", "IBM Plex Mono"], // table cells
+  ["600", "IBM Plex Mono"], // the home page's selected season row
+  ["700", "IBM Plex Mono"], // a table's bold rank column
+  ["700", "DSEG14 Classic"], // the navbar logo's name, on every route
+];
+for (const [weight, family] of FIRST_PAINT_FONTS) {
+  document.fonts.load(`${weight} 1em "${family}"`).catch(() => {});
+}
 
 const container = document.getElementById("root");
 if (!container) {
