@@ -27,7 +27,10 @@ describe("Footer", () => {
     mountFooter();
     const leaving = screen.getAllByRole("link");
 
-    expect(leaving).toHaveLength(2);
+    expect(leaving.map((link) => link.getAttribute("href"))).toEqual([
+      "https://rakmadness.net/standings-pickem",
+      "https://github.com/crombach/rak-madness-calculator",
+    ]);
     leaving.forEach((link) => {
       expect(link).toHaveAttribute("target", "_blank");
       expect(link).toHaveAttribute("rel", "noreferrer");
