@@ -58,12 +58,15 @@ function storedTheme(): Theme {
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
+/** The frame that clears the freeze below, while one is outstanding. */
+let thaw: number | undefined;
+
 /**
  * Hold every transition still across the frame a theme change repaints in.
  *
  * Set before the change and in the same synchronous block, so the browser never
  * computes a style between the old token values and the new ones, and nothing
- * has an old value to ease away from. Cleared a frame later, after the new
+ * has an old value to ease away from. Cleared two frames later, after the new
  * values are the resting style and there is nothing left to animate.
  *
  * Two frames rather than one, because the first only guarantees the change was
@@ -74,11 +77,16 @@ const DARK_QUERY = "(prefers-color-scheme: dark)";
 function freezeTransitions(): void {
   const root = document.documentElement;
   root.dataset.themeSwitching = "";
-  window.requestAnimationFrame(() =>
-    window.requestAnimationFrame(() => {
+  // A second change inside the two frames the first one holds would otherwise
+  // let the first one's clear land while the second one's colors are still on
+  // their way in, and that lifts the freeze the second change asked for.
+  if (thaw !== undefined) window.cancelAnimationFrame(thaw);
+  thaw = window.requestAnimationFrame(() => {
+    thaw = window.requestAnimationFrame(() => {
+      thaw = undefined;
       delete root.dataset.themeSwitching;
-    }),
-  );
+    });
+  });
 }
 
 /**

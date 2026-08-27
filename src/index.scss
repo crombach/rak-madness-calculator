@@ -383,13 +383,20 @@
   // line drawn above the lens rather than an inset shadow, because a lens this
   // thin has no room inside itself for one.
   //
-  // The lit halo is dark in this mode rather than light spilling out. These key
-  // faces are light, so a lit lens is the darkest thing on them. That is how an
-  // indicator lamp reads in daylight anyway.
-  --rak-led-on: var(--rak-on-solid);
-  --rak-led-off: #b0b0b0;
+  // Amber rather than the chrome's own ink, and the same amber in both modes.
+  // These key faces are light, so ink can only make the lit lens the darkest
+  // thing on them, and dark is what off looks like. A hue is the one signal that
+  // still reads as lit against a light face. Amber over the ramp green and red,
+  // which the results tables spend on a correct pick and a lost one.
+  //
+  // Off is warm too, and darker here than the face it sits on, since a lens has
+  // no light of its own to be lighter with. It clears 3:1 on both faces it lands
+  // on, `--rak-primary-500` at 3.45 and `--rak-primary-400` at 3.67. Dark mode
+  // cannot, and says why there.
+  --rak-led-on: #b45309;
+  --rak-led-off: #8a7a66;
   --rak-led-socket: 0 -1px 0 rgb(0 0 0 / 18%);
-  --rak-led-glow: 0 0 4px rgb(26 26 26 / 35%);
+  --rak-led-glow: 0 0 4px rgb(180 83 9 / 45%);
   --rak-bezel:
     inset 0 1px 0 rgb(255 255 255 / 10%), inset 0 -1px 0 rgb(0 0 0 / 30%);
   // A shadow that reads as a hole against black is a bruise against white, so
@@ -640,14 +647,19 @@ html {
   // mode's dark fills.
   --rak-key-top: inset 0 1px 0 rgb(255 255 255 / 18%);
   --rak-key-dish: inset 0 -2px 3px rgb(0 0 0 / 14%);
-  // The lamp's own values against this mode's dark faces. The halo is light
-  // spilling off the lens here, which is what a lamp does in the dark, so it
-  // carries further and takes two stops. The unlit lens goes darker than the
-  // face rather than lighter, which keeps it a hole and not a highlight.
-  --rak-led-off: #262626;
+  // The lamp against this mode's dark faces. Same amber, brighter, since here it
+  // has somewhere to be brighter than. The halo carries further and takes two
+  // stops, which is what a lamp does in the dark.
+  //
+  // The unlit lens stays darker than the face, so it reads as a hole and not as
+  // a highlight. That caps it under 3:1 whatever value it takes: pure black on
+  // `--rak-primary-500` is 2.56, so no lens darker than this face can clear the
+  // bar. The lit lens carries the state instead, at 6.21 on the fill it lands
+  // on, and `aria-pressed` carries it for anyone reading no color at all.
+  --rak-led-on: #fbbf24;
+  --rak-led-off: #1c1408;
   --rak-led-socket: 0 -1px 0 rgb(0 0 0 / 40%);
-  --rak-led-glow:
-    0 0 6px rgb(255 255 255 / 55%), 0 0 12px rgb(255 255 255 / 25%);
+  --rak-led-glow: 0 0 6px rgb(251 191 36 / 55%), 0 0 12px rgb(251 191 36 / 25%);
   --rak-state-hover: rgb(255 255 255 / 8%);
   --rak-state-press: rgb(255 255 255 / 16%);
 }
