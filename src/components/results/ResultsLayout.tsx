@@ -3,6 +3,7 @@ import { useAppData } from "../../context/AppDataContext";
 import useWeekRouteGuard from "../../hooks/useWeekRouteGuard";
 import { ScoresView } from "../navbar/ScoresNavbar";
 import ResultsFrame from "./ResultsFrame";
+import resultsPath from "./resultsPath";
 
 /**
  * Chrome for a week's results, shared by both views.
@@ -28,9 +29,7 @@ export default function ResultsLayout() {
       view={view}
       isReady={guard.status === "ready"}
       onViewChange={(next) =>
-        navigate(`/${rawSeason}/${rawWeek}/${next.toLowerCase()}`, {
-          replace: true,
-        })
+        navigate(resultsPath(rawSeason, rawWeek, next), { replace: true })
       }
       onRefresh={refresh}
       isRefreshing={isRefreshing}

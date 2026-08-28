@@ -2,6 +2,7 @@ import { Navigate } from "react-router";
 import { useAppData } from "../../context/AppDataContext";
 import { ScoresView } from "../navbar/ScoresNavbar";
 import ResultsFrame from "./ResultsFrame";
+import resultsPath from "./resultsPath";
 
 /**
  * Sends `/scoreboard` and `/picks` to the latest week worth showing.
@@ -28,12 +29,7 @@ export default function CurrentWeekRedirect({ view }: { view: ScoresView }) {
     if (weeks == null || currentWeek == null) {
       return <Navigate to="/" replace />;
     }
-    return (
-      <Navigate
-        to={`/${seasonYear}/${currentWeek}/${view.toLowerCase()}`}
-        replace
-      />
-    );
+    return <Navigate to={resultsPath(seasonYear, currentWeek, view)} replace />;
   }
 
   return <ResultsFrame view={view} />;
