@@ -25,10 +25,10 @@ function mount(
   appData: Record<string, unknown>,
 ): void {
   (useAppData as Mock).mockReturnValue({
-    seasonYear: SEASON,
-    currentWeek: CURRENT_WEEK,
+    loadedSeason: SEASON,
+    currentWeekNumber: CURRENT_WEEK,
     weeks: [{ value: CURRENT_WEEK }],
-    isWeekInfoLoading: false,
+    isWeeksLoading: false,
     ...appData,
   });
   const path = `/${view.toLowerCase()}`;
@@ -65,12 +65,12 @@ describe("CurrentWeekRedirect", () => {
 
   it("goes home when the season has no week behind it yet", () => {
     // Between the Super Bowl and the opener, which is the case this exists for.
-    mount("Scoreboard", { currentWeek: undefined });
+    mount("Scoreboard", { currentWeekNumber: undefined });
     expect(landedOn()).toBe("/");
   });
 
   it("shows the wireframe rather than guessing while the schedule loads", () => {
-    mount("Scoreboard", { isWeekInfoLoading: true });
+    mount("Scoreboard", { isWeeksLoading: true });
     expect(landedOn()).toBeUndefined();
     expect(screen.getByRole("table", { hidden: true })).toHaveAttribute(
       "aria-busy",
@@ -81,7 +81,7 @@ describe("CurrentWeekRedirect", () => {
   // This route knows no week to name yet, so the caption holds its room instead
   // of naming one. Filled in, the table below it would move when the week landed.
   it("holds the caption's room while the week is unknown", () => {
-    mount("Scoreboard", { isWeekInfoLoading: true });
+    mount("Scoreboard", { isWeeksLoading: true });
     const caption = document.querySelector(".results-caption");
     expect(caption).toBeInTheDocument();
     expect(caption).toHaveClass("--loading");

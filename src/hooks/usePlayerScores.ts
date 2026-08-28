@@ -21,11 +21,11 @@ import scoreChanges, {
 const REFRESH_THROTTLE_MS = 500;
 
 /** The season and week a scoring attempt has finished, however it turned out. */
-type LastAttempt = { season: number; week: number };
+type LastAttempt = { season: number; weekNumber: number };
 
 /** Scoring threw on picks the app already had, which every path can hit. */
-function scoringFailed(week: number): Toast {
-  return errorToast(`Failed to calculate scores for week ${week}.`);
+function scoringFailed(weekNumber: number): Toast {
+  return errorToast(`Failed to calculate scores for week ${weekNumber}.`);
 }
 
 type ScoringRequest = {
@@ -110,8 +110,8 @@ export default function usePlayerScores(
       isAttemptInFlight.current = true;
       setScoresLoading(true);
 
-      const attempted = { season, week: selectedWeek.value };
-      const key = `${attempted.season}:${attempted.week}`;
+      const attempted = { season, weekNumber: selectedWeek.value };
+      const key = `${attempted.season}:${attempted.weekNumber}`;
 
       let buffer: ArrayBuffer;
       try {
@@ -133,15 +133,15 @@ export default function usePlayerScores(
       }
 
       try {
-        const weekScores = await getPlayerScores(selectedWeek, buffer, season);
+        const nextScores = await getPlayerScores(selectedWeek, buffer, season);
         if (!isLatest()) return;
         const before =
           previousScores.current?.key === key
             ? previousScores.current.scores
             : undefined;
-        setScoreChangesState(scoreChanges(before, weekScores));
-        previousScores.current = { key, scores: weekScores };
-        setScores(weekScores);
+        setScoreChangesState(scoreChanges(before, nextScores));
+        previousScores.current = { key, scores: nextScores };
+        setScores(nextScores);
         if (onSuccess) {
           showToast(onSuccess);
         }

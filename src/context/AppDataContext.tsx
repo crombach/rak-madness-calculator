@@ -28,8 +28,8 @@ type AppData = ReturnType<typeof useLeagueWeeks> &
     setSelectedSeason: (season: number) => void;
     /**
      * The season being asked for, which is the one the picker should show.
-     * `seasonYear` is the season already loaded, so the two differ for the length
-     * of a switch.
+     * `loadedSeason` is the season already loaded, so the two differ for the
+     * length of a switch.
      */
     requestedSeason?: number;
     /**
@@ -61,10 +61,13 @@ const WeekDecidedContext = createContext(false);
 const ScoreChangesContext = createContext<ScoreChanges>(NO_SCORE_CHANGES);
 
 /** The season and week a results URL names, from `/<year>/<week>/…`. Empty elsewhere. */
-function routeFromPath(pathname: string): { season?: number; week?: number } {
+function routeFromPath(pathname: string): {
+  season?: number;
+  weekNumber?: number;
+} {
   const match = /^\/(\d{4})\/(\d+)/.exec(pathname);
   return match != null
-    ? { season: Number(match[1]), week: Number(match[2]) }
+    ? { season: Number(match[1]), weekNumber: Number(match[2]) }
     : {};
 }
 
@@ -82,7 +85,7 @@ export function AppDataContextProvider({
   const { pathname } = useLocation();
   const route = routeFromPath(pathname);
   // Undefined until a URL or the picker names one, which is what asks ESPN for
-  // the season running now. `seasonYear` then comes back saying which one that
+  // the season running now. `loadedSeason` then comes back saying which one that
   // was.
   const [selectedSeason, setSelectedSeason] = useState(route.season);
 
@@ -105,13 +108,13 @@ export function AppDataContextProvider({
   // of it has been played, so `useCurrentSeason` withholds it too.
   const requestedSeason = selectedSeason ?? picksSeasons.seasons?.[0];
   const leagueWeeks = useLeagueWeeks(
-    route.week,
+    route.weekNumber,
     requestedSeason,
     !picksSeasons.isSeasonsLoading,
   );
   const playerScores = usePlayerScores(
     leagueWeeks.selectedWeek,
-    leagueWeeks.seasonYear,
+    leagueWeeks.loadedSeason,
   );
   const { weeks } = leagueWeeks;
 
@@ -132,17 +135,21 @@ export function AppDataContextProvider({
   // out of reach. Falling back to the season the week list describes keeps the
   // picker usable where neither could be fetched, which is every `make run`, so
   // long as that season has a week behind it to score.
-  const { seasonYear, currentWeek } = leagueWeeks;
+  const { loadedSeason, currentWeekNumber } = leagueWeeks;
   const selectableSeasons = useMemo(() => {
     const offered = new Set(picksSeasons.seasons ?? []);
     if (currentSeason != null) {
       offered.add(currentSeason);
     }
-    if (offered.size === 0 && seasonYear != null && currentWeek != null) {
-      offered.add(seasonYear);
+    if (
+      offered.size === 0 &&
+      loadedSeason != null &&
+      currentWeekNumber != null
+    ) {
+      offered.add(loadedSeason);
     }
     return [...offered].sort((a, b) => b - a);
-  }, [picksSeasons.seasons, currentSeason, seasonYear, currentWeek]);
+  }, [picksSeasons.seasons, currentSeason, loadedSeason, currentWeekNumber]);
 
   const value = useMemo(
     () => ({

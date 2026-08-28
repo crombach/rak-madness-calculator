@@ -25,9 +25,9 @@ const getPlayerScoresMock = getPlayerScores as MockedFunction<
  */
 const WEEK_5 = week(5);
 
-function scoresFor(week: number): RakMadnessScores {
+function scoresFor(weekNumber: number): RakMadnessScores {
   return {
-    tiebreaker: week,
+    tiebreaker: weekNumber,
     scores: [],
   };
 }
@@ -58,7 +58,10 @@ describe("usePlayerScores", () => {
     });
 
     await waitFor(() =>
-      expect(result.current.attemptedFor).toEqual({ season: SEASON, week: 5 }),
+      expect(result.current.attemptedFor).toEqual({
+        season: SEASON,
+        weekNumber: 5,
+      }),
     );
     expect(result.current.scores).toEqual(scoresFor(5));
   });
@@ -73,7 +76,10 @@ describe("usePlayerScores", () => {
     });
 
     await waitFor(() =>
-      expect(result.current.attemptedFor).toEqual({ season: SEASON, week: 5 }),
+      expect(result.current.attemptedFor).toEqual({
+        season: SEASON,
+        weekNumber: 5,
+      }),
     );
     expect(result.current.scores).toBeUndefined();
     expect(getPlayerScoresMock).not.toHaveBeenCalled();
@@ -89,18 +95,24 @@ describe("usePlayerScores", () => {
       { initialProps: { season: SEASON }, wrapper },
     );
     await waitFor(() =>
-      expect(result.current.attemptedFor).toEqual({ season: SEASON, week: 5 }),
+      expect(result.current.attemptedFor).toEqual({
+        season: SEASON,
+        weekNumber: 5,
+      }),
     );
 
     // Week 5 of the season before. Same week number, different season, so the
     // scores on hand describe neither until this attempt finishes.
     rerender({ season: SEASON - 1 });
-    expect(result.current.attemptedFor).toEqual({ season: SEASON, week: 5 });
+    expect(result.current.attemptedFor).toEqual({
+      season: SEASON,
+      weekNumber: 5,
+    });
 
     await waitFor(() =>
       expect(result.current.attemptedFor).toEqual({
         season: SEASON - 1,
-        week: 5,
+        weekNumber: 5,
       }),
     );
   });
@@ -126,7 +138,9 @@ describe("usePlayerScores", () => {
 
     // Week 2 supersedes week 1 while week 1 is still being scored.
     rerender({ selectedWeek: week(2) });
-    await waitFor(() => expect(result.current.attemptedFor?.week).toBe(2));
+    await waitFor(() =>
+      expect(result.current.attemptedFor?.weekNumber).toBe(2),
+    );
 
     // Let week 1 finish and everything it queued run to the end.
     await act(async () => {
@@ -134,7 +148,10 @@ describe("usePlayerScores", () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    expect(result.current.attemptedFor).toEqual({ season: SEASON, week: 2 });
+    expect(result.current.attemptedFor).toEqual({
+      season: SEASON,
+      weekNumber: 2,
+    });
     expect(result.current.scores?.tiebreaker).toBe(2);
   });
 });

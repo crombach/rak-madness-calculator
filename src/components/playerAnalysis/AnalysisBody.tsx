@@ -70,11 +70,11 @@ function NeedsHelp({ games }: { games: Array<UncontrolledGame> }) {
 export default function AnalysisBody({
   result,
   isOver,
-  week,
+  weekNumber,
 }: {
   result: PlayerAnalysis;
   isOver?: boolean;
-  week?: number;
+  weekNumber?: number;
 }) {
   if (result.kind === "knockedOut") {
     // The explanation names who knocked them out and by how much, so it says they
@@ -93,7 +93,7 @@ export default function AnalysisBody({
     return (
       <Message
         lines={[
-          `${result.player} has won ${week != null ? `week ${week}` : "the week"}.`,
+          `${result.player} has won ${weekNumber != null ? `week ${weekNumber}` : "the week"}.`,
           isOver ? undefined : "Nothing still to be played can take it away.",
         ]}
       />

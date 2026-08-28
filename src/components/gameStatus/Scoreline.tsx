@@ -22,7 +22,7 @@ const SCORE_DASH = "-";
  * it is not currently using. `LogoButton.tsx` does the same for the app name, in the
  * fourteen-segment face that draws letters.
  */
-const ALL_SEGMENTS_ON = "8";
+const DSEG7_ALL_SEGMENTS = "8";
 
 /** What the mark beside a score is called, for anyone who cannot see it. */
 const HAS_BALL_LABEL = "Has the ball";
@@ -138,7 +138,7 @@ function Score({
             not using rather than a zero standing in it. The face is monospaced, so
             the row lands exactly under the number without being measured. */}
         <span className="game-status__points-ghost" aria-hidden="true">
-          {ALL_SEGMENTS_ON.repeat(SCORE_CELLS)}
+          {DSEG7_ALL_SEGMENTS.repeat(SCORE_CELLS)}
         </span>
         {points}
       </span>

@@ -37,20 +37,20 @@ function hasKickedOff(players: Array<PlayerScore>): boolean {
 function headline(
   players: Array<PlayerScore>,
   isOver: boolean,
-  chosen: PlayerScore,
+  player: PlayerScore,
   isClinched: boolean,
 ): { text: string; tone?: "--won" | "--knocked-out" } {
   if (!hasKickedOff(players)) return { text: "No finished games" };
   const [leader] = players;
-  if (chosen.status.isKnockedOut)
+  if (player.status.isKnockedOut)
     return { text: "Knocked out", tone: "--knocked-out" };
-  const behind = leader.score.total - chosen.score.total;
+  const behind = leader.score.total - player.score.total;
   if (behind > 0)
     return { text: `${plural(behind, "point")} behind ${leader.name}` };
   if (!isOver && !isClinched) return { text: "Tied for the lead" };
   const won = winners(players);
   // Level on points and still beaten, which only the tiebreakers can do.
-  if (!won.includes(chosen))
+  if (!won.includes(player))
     return { text: `Loses the tiebreaker to ${leader.name}` };
   return {
     text: won.length > 1 ? "Tied for the win" : "Winner",
@@ -70,12 +70,12 @@ function headline(
  */
 export default function Standing({
   scores,
-  player,
+  playerName,
   result,
   shape,
 }: {
   scores?: RakMadnessScores;
-  player?: string;
+  playerName?: string;
   result?: PlayerAnalysis;
   /**
    * What is left of the week. Reading it walks every pick of every player, so
@@ -87,15 +87,16 @@ export default function Standing({
   const players = scores?.scores ?? [];
   // The dialog is opened on a player and never lets go of one, so there is no
   // standing to give until the scores holding them arrive.
-  const chosen = players.find((it) => it.name === player);
-  if (chosen == null) return null;
+  const player = players.find((it) => it.name === playerName);
+  if (player == null) return null;
   // The counts as well as the answer, since the tail says which of the two is
   // holding the week open.
   const week = shape ?? weekShape(players);
   const remaining = week.remaining.length;
   const unscoreable = week.unscoreable.length;
-  const isClinched = result?.kind === "clinched" && result.player === player;
-  const { text, tone } = headline(players, week.isOver, chosen, isClinched);
+  const isClinched =
+    result?.kind === "clinched" && result.player === playerName;
+  const { text, tone } = headline(players, week.isOver, player, isClinched);
   return (
     <p className="analysis__standing">
       {/* Held apart from the tail, which says how much of the week is behind the

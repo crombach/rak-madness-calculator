@@ -163,7 +163,7 @@ export default function GameStatusDialog({
     setQuery(arrived?.name ?? label);
   });
 
-  const { shown, isFetching } = useLiveGame({
+  const { shown, isGameLoading } = useLiveGame({
     open,
     game,
     games: scores?.games,
@@ -179,7 +179,7 @@ export default function GameStatusDialog({
       title="Game Status"
       // Every fetch, a poll of the game already on screen included, so a live game
       // being asked about again is said the way a first fetch is.
-      busy={isFetching && { label: "Fetching the game" }}
+      busy={isGameLoading && { label: "Fetching the game" }}
       search={
         <DialogCombobox<WeekGame>
           ariaLabel="Game"

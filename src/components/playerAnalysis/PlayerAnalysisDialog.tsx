@@ -34,7 +34,7 @@ export default function PlayerAnalysisDialog({
   onOpenChange,
   player: named,
   scores,
-  week,
+  weekNumber,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -42,7 +42,7 @@ export default function PlayerAnalysisDialog({
   player?: string;
   scores?: RakMadnessScores;
   /** Which week the scores are for, which a won week is named by. */
-  week?: number;
+  weekNumber?: number;
 }) {
   const [player, setPlayer] = useState<PlayerOption>();
   const [query, setQuery] = useState("");
@@ -100,14 +100,14 @@ export default function PlayerAnalysisDialog({
   // dialog emptying and filling again. Only a rescore takes it away.
   const searched = found?.scores === scores ? found : undefined;
   const shown = settled ?? searched;
-  const isSearching = player != null && shown?.name !== player.name;
+  const isAnalysisLoading = player != null && shown?.name !== player.name;
 
   return (
     <DialogShell
       open={open}
       onOpenChange={onOpenChange}
       title="Player Analysis"
-      busy={isSearching && { label: "Working out the paths" }}
+      busy={isAnalysisLoading && { label: "Working out the paths" }}
       search={
         <DialogCombobox<PlayerOption>
           ariaLabel="Player"
@@ -155,10 +155,10 @@ export default function PlayerAnalysisDialog({
     >
       <AnalysisSummary
         scores={scores}
-        player={player?.name}
+        playerName={player?.name}
         result={shown?.paths}
         shape={shape}
-        weekNumber={week}
+        weekNumber={weekNumber}
       />
     </DialogShell>
   );

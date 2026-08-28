@@ -24,10 +24,10 @@ export default function HomePage() {
     selectedWeek,
     setSelectedWeek,
     selectableSeasons,
-    seasonYear,
+    loadedSeason,
     requestedSeason,
     setSelectedSeason,
-    isWeekInfoLoading,
+    isWeeksLoading,
     scores,
     isScoresLoading,
     scoreLocalFile,
@@ -35,7 +35,7 @@ export default function HomePage() {
   const { exportResults, isExportLoading } = useExportScores(
     scores,
     selectedWeek,
-    seasonYear,
+    loadedSeason,
   );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,7 +54,7 @@ export default function HomePage() {
 
   // Anything that has to finish before the controls mean anything. The week
   // lookup waits on the season list, so its flag covers that too.
-  const isBusy = isWeekInfoLoading || isScoresLoading;
+  const isBusy = isWeeksLoading || isScoresLoading;
   const hasNoScoresYet = !selectedWeek || isBusy || !scores;
 
   return (
@@ -71,7 +71,7 @@ export default function HomePage() {
           disabled={hasNoScoresYet}
           isWeekLive={false}
           onViewChange={(view) =>
-            navigate(resultsPath(seasonYear, selectedWeek?.value, view))
+            navigate(resultsPath(loadedSeason, selectedWeek?.value, view))
           }
           onRefresh={doNothing}
           isRefreshing={false}
@@ -82,7 +82,7 @@ export default function HomePage() {
         Only the first load hides the controls. Switching seasons disables them
         instead, so the picker the user just used does not vanish under them.
       */}
-      {seasonYear != null && (
+      {loadedSeason != null && (
         <>
           <div className="home__controls">
             {/*
@@ -95,11 +95,11 @@ export default function HomePage() {
               // The season asked for, not the one loaded, so the trigger shows
               // the switch immediately. Falls back for `make run`, where there
               // is no season list to have asked from.
-              value={requestedSeason ?? seasonYear ?? null}
+              value={requestedSeason ?? loadedSeason ?? null}
               onValueChange={(season) =>
                 season != null && setSelectedSeason(season)
               }
-              disabled={isWeekInfoLoading}
+              disabled={isWeeksLoading}
               placeholder="Select a season..."
               renderValue={seasonLabel}
               items={selectableSeasons}
@@ -117,7 +117,7 @@ export default function HomePage() {
               className="home__week-input select__trigger"
               value={selectedWeek ?? null}
               onValueChange={(week) => setSelectedWeek(week ?? undefined)}
-              disabled={isWeekInfoLoading}
+              disabled={isWeeksLoading}
               placeholder="Select a week..."
               renderValue={(week) => week.label}
               items={selectableWeeks}
@@ -149,7 +149,7 @@ export default function HomePage() {
               color="info"
               onClick={() =>
                 navigate(
-                  resultsPath(seasonYear, selectedWeek?.value, "Scoreboard"),
+                  resultsPath(loadedSeason, selectedWeek?.value, "Scoreboard"),
                 )
               }
             >

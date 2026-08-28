@@ -46,7 +46,7 @@ export default function ResultsFrame({
   onRefresh = doNothing,
   isRefreshing = false,
   scores,
-  weekInfo,
+  week,
   season,
   children,
 }: PropsWithChildren<{
@@ -59,15 +59,15 @@ export default function ResultsFrame({
   /** What the player analysis is worked out from. Absent while a week loads. */
   scores?: RakMadnessScores;
   /** The week the scores are for, which fetching one of its games again needs. */
-  weekInfo?: WeekInfo;
+  week?: WeekInfo;
   /** The year that week's season started in. */
   season?: number;
 }>) {
   const navigate = useNavigate();
   // Absent on the redirect routes, which render this frame before they know which
   // week they are headed for.
-  const { season: seasonParam, week } = useParams();
-  const hasWeek = Boolean(seasonParam && week);
+  const { season: seasonParam, week: weekParam } = useParams();
+  const hasWeek = Boolean(seasonParam && weekParam);
   // Once every game is final there is nothing left to fetch, so the refresh button
   // and the divider beside it go rather than sit there doing nothing.
   const isWeekDecided = useIsWeekDecided();
@@ -91,7 +91,9 @@ export default function ResultsFrame({
   return (
     <PageLayout
       title={
-        hasWeek ? `${seasonParam} Week ${week} ${view}` : `${APP_NAME} ${view}`
+        hasWeek
+          ? `${seasonParam} Week ${weekParam} ${view}`
+          : `${APP_NAME} ${view}`
       }
       // True while loading too: the wireframe is shaped like the table it stands
       // in for, so it wants the same content area.
@@ -129,7 +131,7 @@ export default function ResultsFrame({
         >
           {hasWeek && (
             <span className="results-caption__text">
-              {`${POOL_NAME} · ${seasonParam} Season · Week ${week}`}
+              {`${POOL_NAME} · ${seasonParam} Season · Week ${weekParam}`}
             </span>
           )}
         </p>
@@ -144,14 +146,14 @@ export default function ResultsFrame({
         onOpenChange={close}
         player={opened?.kind === "player" ? opened.name : undefined}
         scores={scores}
-        week={week != null ? Number(week) : undefined}
+        weekNumber={weekParam != null ? Number(weekParam) : undefined}
       />
       <GameStatusDialog
         open={opened?.kind === "game"}
         onOpenChange={close}
         gameLabel={opened?.kind === "game" ? opened.label : undefined}
         scores={scores}
-        week={weekInfo}
+        week={week}
         season={season}
         onGameFinal={onRefresh}
       />

@@ -14,14 +14,14 @@ import "./AnalysisSummary.scss";
  */
 export default function AnalysisSummary({
   scores,
-  player,
+  playerName,
   result,
   shape,
   weekNumber,
 }: {
   scores?: RakMadnessScores;
   /** The player picked, whose standing heads the answer. */
-  player?: string;
+  playerName?: string;
   result?: PlayerAnalysis;
   /**
    * What is left of the week, which the "clinched" case reads. Left out, it is
@@ -34,18 +34,23 @@ export default function AnalysisSummary({
 }) {
   // Nothing under the search until a name is picked, which the placeholder in it
   // already asks for.
-  if (player == null && result == null) return null;
+  if (playerName == null && result == null) return null;
 
   const week = shape ?? weekShape(scores?.scores ?? []);
   return (
     <div className="analysis">
-      <Standing scores={scores} player={player} result={result} shape={week} />
+      <Standing
+        scores={scores}
+        playerName={playerName}
+        result={result}
+        shape={week}
+      />
       {result != null && (
         <div className="analysis__body">
           <AnalysisBody
             result={result}
             isOver={week.isOver}
-            week={weekNumber}
+            weekNumber={weekNumber}
           />
         </div>
       )}

@@ -31,22 +31,22 @@ describe("Standing", () => {
   it("says nothing until the scores hold the player picked", () => {
     // A name the week does not hold, then a name with no week behind it yet.
     const { container: withoutPlayer } = render(
-      <Standing scores={scores} player="Nobody" />,
+      <Standing scores={scores} playerName="Nobody" />,
     );
     expect(withoutPlayer).toBeEmptyDOMElement();
 
-    const { container: withoutScores } = render(<Standing player="Rak" />);
+    const { container: withoutScores } = render(<Standing playerName="Rak" />);
     expect(withoutScores).toBeEmptyDOMElement();
   });
 
   it("counts the player picked back to the leader", () => {
-    render(<Standing scores={scores} player="Alice" />);
+    render(<Standing scores={scores} playerName="Alice" />);
 
     expect(standingText()).toBe("2 points behind Rak · 1 game still to play");
   });
 
   it("ties the player picked to the lead where they hold it", () => {
-    render(<Standing scores={scores} player="Rak" />);
+    render(<Standing scores={scores} playerName="Rak" />);
 
     expect(standingText()).toBe("Tied for the lead · 1 game still to play");
   });
@@ -62,7 +62,7 @@ describe("Standing", () => {
   }
 
   it("calls the player picked the winner rather than tied for the lead", () => {
-    render(<Standing scores={finished(scores)} player="Rak" />);
+    render(<Standing scores={finished(scores)} playerName="Rak" />);
 
     expect(standingText()).toBe("Winner · Week complete");
   });
@@ -71,7 +71,7 @@ describe("Standing", () => {
     const tied: RakMadnessScores = {
       scores: [...scores.scores, player("Bill", 3, "KC -3")],
     };
-    render(<Standing scores={finished(tied)} player="Rak" />);
+    render(<Standing scores={finished(tied)} playerName="Rak" />);
 
     expect(standingText()).toBe("Tied for the win · Week complete");
   });
@@ -93,14 +93,14 @@ describe("Standing", () => {
   );
 
   it("calls the player picked the winner where they took the tiebreaker", () => {
-    render(<Standing scores={separatedWeek} player="Rak" />);
+    render(<Standing scores={separatedWeek} playerName="Rak" />);
 
     // Level on points with Bill, so only the tiebreaker makes this one winner.
     expect(standingText()).toBe("Winner · Week complete");
   });
 
   it("says the player picked lost the tiebreaker rather than tied for the win", () => {
-    render(<Standing scores={separatedWeek} player="Bill" />);
+    render(<Standing scores={separatedWeek} playerName="Bill" />);
 
     expect(standingText()).toBe("Loses the tiebreaker to Rak · Week complete");
   });
@@ -109,7 +109,7 @@ describe("Standing", () => {
     render(
       <Standing
         scores={scores}
-        player="Rak"
+        playerName="Rak"
         result={{ kind: "clinched", player: "Rak" }}
       />,
     );
@@ -124,7 +124,7 @@ describe("Standing", () => {
     render(
       <Standing
         scores={tied}
-        player="Rak"
+        playerName="Rak"
         result={{ kind: "clinched", player: "Rak" }}
       />,
     );
@@ -136,7 +136,7 @@ describe("Standing", () => {
     render(
       <Standing
         scores={scores}
-        player="Rak"
+        playerName="Rak"
         result={{ kind: "clinched", player: "Alice" }}
       />,
     );
@@ -156,21 +156,25 @@ describe("Standing", () => {
   }
 
   it("says a knocked out player is knocked out, and leaves the points to the answer", () => {
-    render(<Standing scores={knockedOut(scores, "Alice")} player="Alice" />);
+    render(
+      <Standing scores={knockedOut(scores, "Alice")} playerName="Alice" />,
+    );
 
     expect(standingText()).toBe("Knocked out · 1 game still to play");
   });
 
   it("colors a win and a knockout, and leaves an open standing plain", () => {
     const { rerender } = render(
-      <Standing scores={finished(scores)} player="Rak" />,
+      <Standing scores={finished(scores)} playerName="Rak" />,
     );
     expect(screen.getByText("Winner")).toHaveClass("--won");
 
-    rerender(<Standing scores={knockedOut(scores, "Alice")} player="Alice" />);
+    rerender(
+      <Standing scores={knockedOut(scores, "Alice")} playerName="Alice" />,
+    );
     expect(screen.getByText("Knocked out")).toHaveClass("--knocked-out");
 
-    rerender(<Standing scores={scores} player="Rak" />);
+    rerender(<Standing scores={scores} playerName="Rak" />);
     expect(screen.getByText("Tied for the lead")).not.toHaveClass(
       "--won",
       "--knocked-out",
@@ -196,7 +200,10 @@ describe("Standing", () => {
 
   it("does not call a week complete while a game cannot be scored", () => {
     render(
-      <Standing scores={withUnscoreableGame(finished(scores))} player="Rak" />,
+      <Standing
+        scores={withUnscoreableGame(finished(scores))}
+        playerName="Rak"
+      />,
     );
 
     // Not the winner: a week with a hole in it has no result to state yet.
@@ -222,7 +229,7 @@ describe("Standing", () => {
               ],
       })),
     };
-    render(<Standing scores={blank} player="Rak" />);
+    render(<Standing scores={blank} playerName="Rak" />);
 
     expect(standingText()).toBe("Winner · Week complete");
   });
@@ -235,7 +242,7 @@ describe("Standing", () => {
         pro: it.pro.map((pick) => ({ ...pick, status: "incomplete" as const })),
       })),
     };
-    render(<Standing scores={fresh} player="Rak" />);
+    render(<Standing scores={fresh} playerName="Rak" />);
 
     expect(standingText()).toBe("No finished games · 2 games still to play");
   });

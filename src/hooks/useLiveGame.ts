@@ -43,7 +43,7 @@ export default function useLiveGame({
    * before the next scheduled refresh would have.
    */
   onGameFinal?: () => void;
-}): { shown?: LeagueResult; isFetching: boolean } {
+}): { shown?: LeagueResult; isGameLoading: boolean } {
   // Held in a ref rather than read from the deps below. A rescore mints a new
   // callback, and depending on it would tear the poll down and start its 20s over
   // every time the week is scored again.
@@ -116,5 +116,5 @@ export default function useLiveGame({
     (found != null && found.games === games && found.label === label
       ? found.result
       : undefined);
-  return { shown, isFetching: fetching };
+  return { shown, isGameLoading: fetching };
 }
