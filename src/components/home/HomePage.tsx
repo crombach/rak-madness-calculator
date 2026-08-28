@@ -1,4 +1,4 @@
-import { Select } from "@base-ui-components/react/select";
+import { Select } from "@base-ui/react/select";
 import { UnfoldMoreIcon } from "../icon/Icon";
 import { ChangeEventHandler, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";

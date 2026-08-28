@@ -9,8 +9,9 @@ help: ## Show available targets
 
 setup: ## Install dependencies from the lockfile (idempotent)
 	@command -v node >/dev/null || { echo "Missing node. Install $$(cat .nvmrc): brew install node@22"; exit 1; }
-	@req=$$(sed 's/^v//' .nvmrc | cut -d. -f1); cur=$$(node -v | sed 's/^v//' | cut -d. -f1); \
-	  [ "$$req" = "$$cur" ] || { echo "Node major $$cur found, .nvmrc requires $$req. Run: nvm install && nvm use"; exit 1; }
+	@req=$$(sed 's/^v//' .nvmrc); cur=$$(node -v | sed 's/^v//'); \
+	  [ "$${req%%.*}" = "$${cur%%.*}" ] && [ "$$req" = "$$(printf '%s\n%s\n' "$$req" "$$cur" | sort -V | head -1)" ] \
+	  || { echo "Node $$cur found, .nvmrc requires $$req or a later 22.x. Run: nvm install && nvm use"; exit 1; }
 	npm ci
 
 build: ## Typecheck, then production build into ./build (what Cloudflare Pages serves)

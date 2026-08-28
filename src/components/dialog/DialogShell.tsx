@@ -1,4 +1,4 @@
-import { Dialog } from "@base-ui-components/react/dialog";
+import { Dialog } from "@base-ui/react/dialog";
 import { PropsWithChildren, ReactNode } from "react";
 import useViewportInsets from "../../hooks/useViewportInsets";
 import Button from "../button/Button";

@@ -1,4 +1,4 @@
-import { Combobox } from "@base-ui-components/react/combobox";
+import { Combobox } from "@base-ui/react/combobox";
 import { ReactNode, useRef } from "react";
 import { UnfoldMoreIcon } from "../icon/Icon";
 import { DIALOG_POPUP_CLASS } from "./DialogShell";
@@ -100,11 +100,16 @@ export default function DialogCombobox<T>({
       inputValue={query}
       onInputValueChange={onQueryChange}
       // Tapping the search is the start of looking something else up, so what is
-      // already in it goes rather than being deleted by hand. Only a press:
-      // opening by typing reports `input-change`, and wiping that would take the
-      // letters that opened the list.
+      // already in it goes rather than being deleted by hand. A press on the input
+      // and a press on the trigger over the rest of the field report their own
+      // reason, and both are the same tap to the reader. Only a press: opening by
+      // typing reports `input-change`, and wiping that would take the letters that
+      // opened the list.
       onOpenChange={(listOpen, details) => {
-        if (listOpen && details.reason === "trigger-press") onQueryChange("");
+        const pressed =
+          details.reason === "trigger-press" ||
+          details.reason === "input-press";
+        if (listOpen && pressed) onQueryChange("");
       }}
       // The list is short and already on screen, so the first match being
       // highlighted saves an arrow key before Enter.
