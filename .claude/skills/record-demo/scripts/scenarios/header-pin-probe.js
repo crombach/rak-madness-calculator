@@ -8,9 +8,26 @@ const SEASON = 2024;
 const WEEK = 5;
 
 const NAMES = [
-  "Alice", "Bob", "Carol", "Dave", "Erin", "Frank", "Grace", "Heidi",
-  "Ivan", "Judy", "Mallory", "Niaj", "Olivia", "Peggy", "Rupert", "Sybil",
-  "Trent", "Victor", "Walter", "Wendy",
+  "Alice",
+  "Bob",
+  "Carol",
+  "Dave",
+  "Erin",
+  "Frank",
+  "Grace",
+  "Heidi",
+  "Ivan",
+  "Judy",
+  "Mallory",
+  "Niaj",
+  "Olivia",
+  "Peggy",
+  "Rupert",
+  "Sybil",
+  "Trent",
+  "Victor",
+  "Walter",
+  "Wendy",
 ];
 
 const PICK_SETS = [
@@ -51,7 +68,9 @@ export default async function run({ page, context, baseUrl }) {
   await page.waitForTimeout(800);
 
   const scroller = page.locator(".page__content");
-  const max = await scroller.evaluate((el) => el.scrollHeight - el.clientHeight);
+  const max = await scroller.evaluate(
+    (el) => el.scrollHeight - el.clientHeight,
+  );
   console.log("vertical scroll range:", max);
   await scroller.evaluate((el) => {
     el.scrollTop = Math.round((el.scrollHeight - el.clientHeight) / 2);
