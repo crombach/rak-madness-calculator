@@ -3,10 +3,9 @@
 Auto-scoring web app for the Rak Madness football pool. Vite + React 19 +
 TypeScript, react-router, Base UI, SCSS. Vitest and ESLint flat config.
 Scores an uploaded picks spreadsheet against ESPN results, exports XLSX.
-Home page at `/`, a week's results at `/:season/:week/scoreboard` and
-`/:season/:week/picks`, and `/scoreboard` and `/picks` redirect to the latest week
-worth showing. A dialog off the home page footer holds the reader's theme and own name. Deployed to Cloudflare Pages (`wrangler`), which serves the picks
-API in `functions/` beside the built app.
+A dialog off the home page footer holds the reader's theme and own name.
+Cloudflare Pages hosts it and serves the picks API in `functions/` beside the
+built app.
 
 `index.html` at the repo root is the HTML shell Vite builds from. Before the
 first paint it sets `data-theme` from storage and preloads the logo's face.

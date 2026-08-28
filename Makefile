@@ -26,7 +26,7 @@ test: ## Run the Vitest suite once (no watch mode)
 bench: ## Run the scoring benchmarks (not part of `make check`)
 	npm run bench
 
-check: lint lint-docs typecheck test ## Lint, typecheck, test, and format-check everything
+check: lint lint-docs typecheck test ## Lint, lint docs, typecheck, test, and format-check everything
 	npm run prettier
 
 lint: ## ESLint over the repo

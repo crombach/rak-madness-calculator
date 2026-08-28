@@ -1,10 +1,7 @@
 # src
 
-`index.tsx`: Vite entry, loaded by the root `index.html`. React 19 `createRoot` mount into `#root`, wraps `App` in `BrowserRouter`, `SettingsContextProvider`, `ToastContextProvider`, and `AppDataContextProvider`, with `Toaster` beside it. `App.tsx`: the route table, which the root `CLAUDE.md` lists. `index.scss`: global resets, the body baseline, every `--rak-*` design token, and
-a `dark-tokens` mixin the OS or a saved `data-theme` applies. It
-hides `<html>`'s overflow, because no route scrolls the page itself and saying so
-keeps Base UI's scroll lock from reserving a scrollbar gutter that shifts everything
-under an opening dialog. Base UI is unstyled, so tokens plus SCSS carry the whole look. `setupTests.ts`: Vitest setup, jest-dom plus a `jest` global shim that @testing-library/dom needs to drive fake timers.
+`index.tsx`: Vite entry, loaded by the root `index.html`. React 19 `createRoot` mount into `#root`, wraps `App` in `BrowserRouter`, `SettingsContextProvider`, `ToastContextProvider`, and `AppDataContextProvider`, with `Toaster` beside it. `App.tsx`: the route table. `index.scss`: global resets, the body baseline, every `--rak-*` design token, and
+a `dark-tokens` mixin the OS or a saved `data-theme` applies. Its comment explains `<html>`'s overflow. Base UI is unstyled, so tokens plus SCSS carry the whole look. `setupTests.ts`: Vitest setup. jest-dom, a raised `asyncUtilTimeout`, `ResizeObserver` and `matchMedia` stubs, and the `jest` global shim @testing-library/dom needs to drive fake timers.
 
 ## Subdirectories
 
