@@ -7,6 +7,7 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 - `validateSpreads`: rows disagreeing on spread
 - `marginAgainstSpread`: a side's margin, spread applied
 - `getPickResults`: picks scored, plus `getStatus`
+- `resultsIndex`: a week by team and by matchup, built once
 - `gameColumns`: `LEAGUES`, `LEAGUE_PREFIX`, `gameLabels`
 - `weekGames`: each column, game and line
 - `getTiebreakerScore`: the Monday night total

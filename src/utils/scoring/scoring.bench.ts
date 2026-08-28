@@ -13,6 +13,7 @@ import { getPlayerScores } from "./getPlayerScores";
 import getTiebreakerScore from "./getTiebreakerScore";
 import isWeekOver from "./isWeekOver";
 import parsePicksWorkbook from "./parsePicksWorkbook";
+import { indexResults } from "./resultsIndex";
 import scorePlayers from "./scorePlayers";
 import weekGames from "./weekGames";
 
@@ -25,19 +26,23 @@ const parsed = await parsePicksWorkbook(picksBuffer);
 
 function weekAt(phase: WeekPhase) {
   const results = benchResults(phase);
+  const indexed = {
+    college: indexResults(results.college),
+    pro: indexResults(results.pro),
+  };
   const tiebreaker = getTiebreakerScore(
     parsed.tiebreakerGameKey,
     parsed.rows[0],
-    results.college,
-    results.pro,
+    indexed.college,
+    indexed.pro,
   );
-  const sorted = scorePlayers(parsed, results, tiebreaker);
+  const sorted = scorePlayers(parsed, results, tiebreaker, indexed);
   const scores: RakMadnessScores = {
     tiebreaker,
     scores: applyKnockouts(sorted, tiebreaker),
-    games: weekGames(parsed, results),
+    games: weekGames(parsed, results, indexed),
   };
-  return { results, tiebreaker, sorted, scores };
+  return { results, indexed, tiebreaker, sorted, scores };
 }
 
 const kickoff = weekAt("kickoff");
@@ -76,7 +81,7 @@ describe("applyKnockouts", () => {
 
 describe("weekGames", () => {
   bench("sunday night", () => {
-    weekGames(parsed, sundayNight.results);
+    weekGames(parsed, sundayNight.results, sundayNight.indexed);
   });
 });
 

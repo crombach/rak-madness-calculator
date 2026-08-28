@@ -2,13 +2,10 @@ import { GameScore } from "../../types/GameScore";
 import { LeagueResult } from "../../types/LeagueResult";
 import { PlayerScore } from "../../types/RakMadnessScores";
 import comparePlayerScores from "./comparePlayerScores";
-import {
-  getPickResults,
-  getStatus,
-  indexResultsByTeam,
-} from "./getPickResults";
+import { getPickResults, getStatus } from "./getPickResults";
 import { formatPickDisplay } from "./parsePick";
 import { ParsedPicks, TIEBREAKER_PICK_KEY } from "./parsePicksWorkbook";
+import { indexResults, ResultsIndex } from "./resultsIndex";
 
 function sumPointValues(scores: Array<GameScore>): number {
   return scores.reduce((sum, score) => sum + score.pointValue, 0);
@@ -34,11 +31,12 @@ export default function scorePlayers(
   parsed: ParsedPicks,
   results: { college: Array<LeagueResult>; pro: Array<LeagueResult> },
   tiebreakerScore?: number,
+  indexed?: { college: ResultsIndex; pro: ResultsIndex },
 ): Array<PlayerScore> {
-  // Built here, not per player: every row resolves its picks against the same
-  // games.
-  const collegeResultsByTeam = indexResultsByTeam(results.college);
-  const proResultsByTeam = indexResultsByTeam(results.pro);
+  const collegeResultsByTeam = (
+    indexed?.college ?? indexResults(results.college)
+  ).byTeam;
+  const proResultsByTeam = (indexed?.pro ?? indexResults(results.pro)).byTeam;
   const unscoreableCollege = byPickIndex(
     parsed.collegeKeys,
     parsed.inconsistentSpreadGames,

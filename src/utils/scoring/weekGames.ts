@@ -1,11 +1,11 @@
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import { GameSpread, WeekGame } from "../../types/WeekGame";
-import { matchesMatchup } from "../getLeagueResults";
 import rangeWithPrefix from "../rangeWithPrefix";
 import { LEAGUE_PREFIX, LEAGUES, LeagueKey } from "./gameColumns";
 import parsePick from "./parsePick";
 import { ParsedPicks } from "./parsePicksWorkbook";
+import { findMatchup, indexResults, ResultsIndex } from "./resultsIndex";
 
 const ESPN_LEAGUE: Record<LeagueKey, League> = {
   college: League.COLLEGE,
@@ -58,26 +58,25 @@ export default function weekGames(
     | "inconsistentSpreadGames"
   >,
   results: Record<LeagueKey, Array<LeagueResult>>,
+  indexed?: Record<LeagueKey, ResultsIndex>,
 ): Array<WeekGame> {
   return LEAGUES.flatMap((league) => {
+    const index = indexed?.[league] ?? indexResults(results[league]);
     const keys = league === "college" ? parsed.collegeKeys : parsed.proKeys;
     const labels = rangeWithPrefix(keys.length, LEAGUE_PREFIX[league]);
-    return keys.map((key, index) => {
+    return keys.map((key, position) => {
       const teams = parsed.matchupsByGameKey.get(key);
       // First match wins, which is how the picks themselves are resolved, so a
       // team playing twice in a college bowl week lands on the same game here.
-      const result =
-        teams != null
-          ? results[league].find((it) => matchesMatchup(it, teams))
-          : undefined;
+      const result = teams != null ? findMatchup(index, teams) : undefined;
       return {
-        label: labels[index],
+        label: labels[position],
         league: ESPN_LEAGUE[league],
         name:
           result?.shortName ??
           (teams != null && teams.size > 0
             ? [...teams].join(" / ")
-            : labels[index]),
+            : labels[position]),
         result,
         // Read off the game ESPN listed, which is what names the favored side where
         // the picks wrote the line from the other one.
