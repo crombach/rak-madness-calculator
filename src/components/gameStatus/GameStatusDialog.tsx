@@ -20,16 +20,8 @@ import "./GameStatusDialog.scss";
  * column is how a reader who came from a cell knows which game they clicked, so it
  * is worth typing even where it is not worth keeping on screen.
  */
-function gameSearchText(game: WeekGame): string {
+export function gameSearchText(game: WeekGame): string {
   return `${game.label}  ${game.name}`;
-}
-
-/** The games a query offers, in picks table column order. */
-export function gamesMatching(
-  games: Array<WeekGame>,
-  query: string,
-): Array<WeekGame> {
-  return matching(games, query, gameSearchText);
 }
 
 /** What one mark is: the state it says, in the shape, the word and the label. */
@@ -194,7 +186,7 @@ export default function GameStatusDialog({
           placeholder="Search games..."
           emptyMessage="No matching games"
           items={games}
-          filteredItems={gamesMatching(games, query)}
+          filteredItems={matching(games, query, gameSearchText)}
           value={game}
           onValueChange={setGame}
           query={query}

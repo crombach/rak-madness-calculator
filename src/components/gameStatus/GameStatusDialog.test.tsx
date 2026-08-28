@@ -19,7 +19,8 @@ import { warmedImageUrls } from "../../utils/warmImage";
 
 vi.mock("../../utils/getLeagueResults");
 
-import { gamesMatching } from "./GameStatusDialog";
+import matching from "../../utils/matching";
+import { gameSearchText } from "./GameStatusDialog";
 import {
   dialog,
   getGameResultMock,
@@ -103,9 +104,9 @@ function deferred() {
   return { promise, settle };
 }
 
-describe("gamesMatching", () => {
+describe("the games a query offers", () => {
   it("offers every game before anything is typed, in column order", () => {
-    expect(gamesMatching(games, "").map((it) => it.label)).toEqual([
+    expect(matching(games, "", gameSearchText).map((it) => it.label)).toEqual([
       "C1",
       "C2",
       "P1",
@@ -114,16 +115,22 @@ describe("gamesMatching", () => {
   });
 
   it("finds a game by either team", () => {
-    expect(gamesMatching(games, "mich").map((it) => it.label)).toEqual(["C1"]);
-    expect(gamesMatching(games, "buf").map((it) => it.label)).toEqual(["P1"]);
+    expect(
+      matching(games, "mich", gameSearchText).map((it) => it.label),
+    ).toEqual(["C1"]);
+    expect(
+      matching(games, "buf", gameSearchText).map((it) => it.label),
+    ).toEqual(["P1"]);
   });
 
   it("finds a game by the column it is in, which is what a cell said", () => {
-    expect(gamesMatching(games, "P1").map((it) => it.label)).toEqual(["P1"]);
+    expect(matching(games, "P1", gameSearchText).map((it) => it.label)).toEqual(
+      ["P1"],
+    );
   });
 
   it("has nothing to offer before a week is scored", () => {
-    expect(gamesMatching([], "")).toEqual([]);
+    expect(matching([], "", gameSearchText)).toEqual([]);
   });
 });
 
