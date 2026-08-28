@@ -16,7 +16,6 @@
   min-height: var(--rak-touch-target);
   // No padding on the trailing edge: the chevron below has a bay of its own there.
   padding: var(--rak-space-1) 0 var(--rak-space-1) var(--rak-space-3);
-  // The face the tables and the dialog's own search are set in.
   font-family: var(--rak-font-mono);
   font-size: var(--rak-text-md);
   line-height: var(--rak-line-height);
@@ -53,8 +52,6 @@
 .select__item {
   @include listbox-item;
 
-  // The trigger's face, so what an option says and what the glass shows once it is
-  // chosen are set the same.
   font-family: var(--rak-font-mono);
 }
 
@@ -92,10 +89,9 @@
   width: 100%;
   min-width: min-content;
   min-height: var(--rak-control-height);
-  // Collapsing takes the slow step and everything a key does keeps the fast one, so
-  // both durations are listed per property rather than set once on the shorthand.
-  // The two halves are told apart by what they are for, not by which rule they came
-  // from, so the key's own timing is repeated here from `Button.scss`.
+  // Collapsing takes the slow step, and the key's own two steps still keep the
+  // fast one set on them in `Button.scss`. Listed out again rather than named
+  // once, since a `transition` shorthand cannot be partly inherited from there.
   transition:
     height var(--rak-duration-slow) var(--rak-ease-standard),
     min-height var(--rak-duration-slow) var(--rak-ease-standard),

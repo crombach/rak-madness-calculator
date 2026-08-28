@@ -1,5 +1,12 @@
 @use "../../styles/label" as *;
 
+// Flex column plus its own gap, the shape most of this sheet's blocks share.
+@mixin stacked($gap) {
+  display: flex;
+  flex-direction: column;
+  gap: $gap;
+}
+
 .analysis {
   // What a pick chip sets its text in by, which a line under one indents by to
   // stand under that text rather than under the chip.
@@ -9,17 +16,13 @@
   // width rather than a guess.
   --rak-pick-label-width: 3ch;
 
-  display: flex;
-  flex-direction: column;
   // The standing above reads as a title over the body, so it sits the same distance
   // from it as a section title sits from its own contents.
-  gap: 8px;
+  @include stacked(var(--rak-space-2));
 }
 
 .analysis__body {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  @include stacked(var(--rak-space-4));
 }
 
 .analysis__note {
@@ -35,9 +38,7 @@
 }
 
 .analysis__section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  @include stacked(var(--rak-space-2));
 }
 
 // A win and a knockout, in the hues the tables and the search already mark those
@@ -91,10 +92,10 @@
   display: flex;
   align-items: baseline;
   gap: var(--rak-pick-gap);
-  padding: 4px var(--rak-pick-inset);
+  padding: var(--rak-space-1) var(--rak-pick-inset);
   border-radius: var(--rak-radius-sm);
   background-color: var(--rak-fill-subtle);
-  font-weight: 600;
+  font-weight: var(--rak-weight-semibold);
   white-space: nowrap;
 }
 
@@ -102,7 +103,7 @@
 .analysis__pick-label,
 .analysis__term {
   color: var(--rak-text-tertiary);
-  font-weight: 700;
+  font-weight: var(--rak-weight-bold);
 }
 
 .analysis__pick-label {
@@ -115,9 +116,7 @@
 }
 
 .analysis__routes {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  @include stacked(var(--rak-space-2));
   margin: 0;
   padding: 0;
   list-style: none;
@@ -125,7 +124,7 @@
 
 .analysis__route,
 .analysis__must-win {
-  padding: 8px 10px;
+  padding: var(--rak-space-2) 10px;
   // Drawn on the left alone, so a stack of routes reads as a list of alternatives
   // rather than as a stack of boxes.
   border-inline-start: var(--rak-border-width) solid var(--rak-gold-500);
@@ -133,9 +132,7 @@
 }
 
 .analysis__route {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  @include stacked(var(--rak-space-1));
 }
 
 // Red against the routes' gold, since these games are what has to happen rather
@@ -149,13 +146,11 @@
 .analysis__more {
   align-self: flex-start;
   color: var(--rak-gold-700);
-  font-weight: 700;
+  font-weight: var(--rak-weight-bold);
 }
 
 .analysis__help {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  @include stacked(var(--rak-space-1));
   margin: 0;
   padding: 0;
   list-style: none;
@@ -178,11 +173,9 @@
   padding-inline-start: var(--rak-pick-inset);
   color: var(--rak-text);
   font-family: var(--rak-font-mono);
-  font-weight: 600;
+  font-weight: var(--rak-weight-semibold);
 }
 
 .analysis__message {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  @include stacked(var(--rak-space-2));
 }

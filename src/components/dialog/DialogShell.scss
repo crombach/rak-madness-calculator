@@ -26,11 +26,6 @@
 // running on behind it, and is capped by what is left rather than by the screen.
 // Every one falls back to the whole screen, which is where they started.
 
-// How far the lowest thing in the sheet stands off the keyboard. The body gives up
-// its room before the search does, so with a long body squeezed out this is what
-// keeps the rule under the search off the keyboard's top edge.
-$keyboard-gap: 12px;
-
 .dialog__popup {
   position: fixed;
   z-index: calc(var(--rak-z-modal) + 1);
@@ -61,10 +56,14 @@ $keyboard-gap: 12px;
   // in a body can be scrolled clear of the keyboard. Carried by the sheet, the
   // same room is a floor no scroll reaches past, and a body squeezed by an open
   // keyboard ends with its last control cut off against it.
+  // The last term below is how far the lowest thing in the sheet stands off the
+  // keyboard. The body gives up its room before the search does, so with a long
+  // body squeezed out this is what keeps the rule under the search off the
+  // keyboard's top edge.
   --rak-dialog-floor: calc(
     20px + var(--rak-keyboard-inset, 0px) +
       max(0px, env(safe-area-inset-bottom) - var(--rak-keyboard-inset, 0px)) +
-      min(var(--rak-keyboard-inset, 0px), #{$keyboard-gap})
+      min(var(--rak-keyboard-inset, 0px), var(--rak-space-3))
   );
 
   padding-top: 20px;
@@ -112,7 +111,7 @@ $keyboard-gap: 12px;
   margin: 0;
   color: var(--rak-text);
   font-size: var(--rak-text-lg);
-  font-weight: 700;
+  font-weight: var(--rak-weight-bold);
 }
 
 // Sized to the answer, and capped by the popup above it. A tall floor would
@@ -121,7 +120,7 @@ $keyboard-gap: 12px;
 .dialog__body {
   // How far the answer stands off the rule above it, which the progress bar reads
   // back to sit on that rule without moving the answer.
-  --rak-dialog-inset: 16px;
+  --rak-dialog-inset: var(--rak-space-4);
 
   box-sizing: border-box;
   flex: 0 1 auto;

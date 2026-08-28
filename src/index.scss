@@ -55,6 +55,7 @@
   --rak-weight-bold: 700;
 
   --rak-line-height: 1.5;
+  --rak-line-height-tight: 1.1;
 
   // The width the tiled logo stops being drawn at, which `PageLayout.tsx` reads so
   // it can stop fetching the tile there too. The breakpoints themselves are Sass,
