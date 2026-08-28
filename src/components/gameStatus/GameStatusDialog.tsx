@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useArrival from "../../hooks/useArrival";
 import useLiveGame from "../../hooks/useLiveGame";
 import { GameStatus } from "../../types/ESPN";
@@ -145,14 +145,17 @@ export default function GameStatusDialog({
 
   // Every logo the week could show, asked for as soon as the week is scored rather
   // than when a game is opened, so the scoreline comes up with its marks already on
-  // it.
-  games.forEach((it) => {
-    [it.result?.home.team.logoUrl, it.result?.away.team.logoUrl].forEach(
-      (url) => {
-        if (url != null) warmImage(url);
-      },
-    );
-  });
+  // it. In an effect rather than in the render, which a search keystroke repeats and
+  // React may throw away.
+  useEffect(() => {
+    games.forEach((it) => {
+      [it.result?.home.team.logoUrl, it.result?.away.team.logoUrl].forEach(
+        (url) => {
+          if (url != null) warmImage(url);
+        },
+      );
+    });
+  }, [games]);
 
   // A column arriving from outside stands in for a choice made in the search.
   useArrival(named, (label) => {
