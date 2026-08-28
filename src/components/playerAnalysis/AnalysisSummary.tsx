@@ -49,7 +49,7 @@ export default function AnalysisSummary({
         <div className="analysis__body">
           <AnalysisBody
             result={result}
-            isOver={week.isOver}
+            isEveryGameSettled={week.isEveryGameSettled}
             weekNumber={weekNumber}
           />
         </div>

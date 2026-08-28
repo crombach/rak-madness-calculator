@@ -83,7 +83,7 @@ describe("AnalysisSummary", () => {
       <AnalysisSummary
         result={{ kind: "clinched", player: "Alice" }}
         weekNumber={12}
-        shape={{ remaining: [], unscoreable: [], isOver: true }}
+        shape={{ remaining: [], unscoreable: [], isEveryGameSettled: true }}
       />,
     );
 

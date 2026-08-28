@@ -69,11 +69,11 @@ function NeedsHelp({ games }: { games: Array<UncontrolledGame> }) {
 /** What the player has to do, or why there is nothing left to do about it. */
 export default function AnalysisBody({
   result,
-  isOver,
+  isEveryGameSettled,
   weekNumber,
 }: {
   result: PlayerAnalysis;
-  isOver?: boolean;
+  isEveryGameSettled?: boolean;
   weekNumber?: number;
 }) {
   if (result.kind === "knockedOut") {
@@ -94,7 +94,9 @@ export default function AnalysisBody({
       <Message
         lines={[
           `${result.player} has won ${weekNumber != null ? `week ${weekNumber}` : "the week"}.`,
-          isOver ? undefined : "Nothing still to be played can take it away.",
+          isEveryGameSettled
+            ? undefined
+            : "Nothing still to be played can take it away.",
         ]}
       />
     );

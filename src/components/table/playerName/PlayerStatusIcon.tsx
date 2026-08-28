@@ -1,4 +1,4 @@
-import { useIsWeekDecided } from "../../../context/AppDataContext";
+import { useIsWinnerDecided } from "../../../context/AppDataContext";
 import {
   EmojiEventsOutlinedIcon,
   SentimentVerySatisfiedOutlinedIcon,
@@ -21,13 +21,13 @@ export default function PlayerStatusIcon({
 }: {
   isKnockedOut: boolean;
 }) {
-  const isWeekDecided = useIsWeekDecided();
+  const isWinnerDecided = useIsWinnerDecided();
 
   return (
     <span className="player-status-icon">
       {isKnockedOut ? (
         <SkullOutlinedIcon />
-      ) : isWeekDecided ? (
+      ) : isWinnerDecided ? (
         <EmojiEventsOutlinedIcon />
       ) : (
         <SentimentVerySatisfiedOutlinedIcon />

@@ -4,12 +4,14 @@ import { pickDifference, RemainingGame } from "./remainingGames";
 import weekShape from "./weekShape";
 
 function remainingSuffix(
-  weekOver: boolean,
+  everyGameSettled: boolean,
   count: number,
   noun: string,
   tail = "",
 ): string {
-  return weekOver ? "." : ` with ${plural(count, noun)} remaining${tail}.`;
+  return everyGameSettled
+    ? "."
+    : ` with ${plural(count, noun)} remaining${tail}.`;
 }
 
 function knockedOut(score: PlayerScore, explanation: string): PlayerScore {
@@ -67,9 +69,10 @@ export default function applyKnockouts(
   sortedScores: Array<PlayerScore>,
   tiebreakerScore?: number,
 ): Array<PlayerScore> {
-  // One walk. Asking `remainingGames` and `isWeekOver` apart reads every pick of
+  // One walk. Asking `remainingGames` and `isEveryGameSettled` apart reads every pick of
   // every player three times over.
-  const { remaining: games, isOver: weekOver } = weekShape(sortedScores);
+  const { remaining: games, isEveryGameSettled: everyGameSettled } =
+    weekShape(sortedScores);
   const isCollegeDone = games.every((game) => game.league !== "college");
 
   return sortedScores.map((activeScore, activeIndex) => {
@@ -109,7 +112,11 @@ export default function applyKnockouts(
             activeScore,
             `Knocked out on Total Score by ${rivalScore.name}. ` +
               `Behind by ${totalScoreDiff}` +
-              remainingSuffix(weekOver, totalDifferentPicks, "different pick"),
+              remainingSuffix(
+                everyGameSettled,
+                totalDifferentPicks,
+                "different pick",
+              ),
           );
         } else if (totalDifferentPicks === totalScoreDiff) {
           // Either distance is absent when that player left the Monday night
@@ -134,7 +141,7 @@ export default function applyKnockouts(
                 `Knocked out on College Score tiebreaker by ${rivalScore.name}. ` +
                   `Behind by ${collegeScoreDiff}` +
                   remainingSuffix(
-                    weekOver,
+                    everyGameSettled,
                     differentCollegePicks,
                     "different college pick",
                   ),
@@ -154,7 +161,7 @@ export default function applyKnockouts(
                   `Knocked out on Pro Score Against the Spread tiebreaker by ${rivalScore.name}. ` +
                     `Behind by ${proAgainstTheSpreadScoreDiff}` +
                     remainingSuffix(
-                      weekOver,
+                      everyGameSettled,
                       differentProPicksWithSpreads,
                       "different pick",
                       " for pro games with spreads",

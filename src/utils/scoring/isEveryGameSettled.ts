@@ -6,9 +6,11 @@ import weekShape from "./weekShape";
  * scoreable. A game nobody could be scored on is a hole in the week, so a leader
  * standing over one is not the winner yet however few games are still being played.
  *
- * Not `isWeekDecided`, which asks whether the knockouts have settled who won. This
+ * Not `isWinnerDecided`, which asks whether the knockouts have settled who won. This
  * asks only whether the week itself has run out.
  */
-export default function isWeekOver(players: Array<PlayerScore>): boolean {
-  return weekShape(players).isOver;
+export default function isEveryGameSettled(
+  players: Array<PlayerScore>,
+): boolean {
+  return weekShape(players).isEveryGameSettled;
 }

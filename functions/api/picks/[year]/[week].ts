@@ -10,14 +10,14 @@ import { serviceUnavailable } from "../env";
 const CACHE_CONTROL = "public, max-age=3600, must-revalidate";
 
 /**
- * One week's picks workbook, from the season that started in `year`. A season
+ * One week's picks workbook, from the season named by the `year` segment. A season
  * runs into the following January, so the 2025 season's week 18 was played in
  * January 2026 and is still filed under 2025.
  */
 export const onRequestGet: PagesFunction<Env> = async (context) => {
-  const year = Number(context.params.year);
+  const season = Number(context.params.year);
   const week = Number(context.params.week);
-  if (!Number.isInteger(year) || !Number.isInteger(week)) {
+  if (!Number.isInteger(season) || !Number.isInteger(week)) {
     return new Response("Not Found", { status: 404 });
   }
 
@@ -31,7 +31,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   }
 
   // Get the spreadsheet from R2.
-  const filePath = `picks/${year}/${week}.xlsx`;
+  const filePath = `picks/${season}/${week}.xlsx`;
   let spreadsheet;
   try {
     spreadsheet = await context.env.RAK_MADNESS_BUCKET.get(filePath, {
@@ -63,7 +63,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       // the Functions bundle separately and can't import it.
       "Content-Type":
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": `attachment; filename=${year}-week-${week}-picks.xlsx`,
+      "Content-Disposition": `attachment; filename=${season}-week-${week}-picks.xlsx`,
       ETag: spreadsheet.httpEtag,
       "Cache-Control": CACHE_CONTROL,
     },

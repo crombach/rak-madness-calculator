@@ -13,11 +13,11 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 - `getTiebreakerScore`: the Monday night total
 - `scorePlayers`: per-player totals, sorted
 - `comparePlayerScores`: rank order, on merit
-- `isWeekDecided`: whether knockouts settled it
+- `isWinnerDecided`: whether knockouts settled it
 - `weekShape`: open games, holes, and whether the week ran out
 - `remainingGames`: the open games
 - `unscoreableGames`: games nobody scores
-- `isWeekOver`: whether the week finished
+- `isEveryGameSettled`: whether the week finished
 - `applyKnockouts`: who can still win, why not
 - `scoreChanges`: what a refresh changed
 - `getPlayerAnalysis`: what a player must do, plus `getSettledAnalysis`,

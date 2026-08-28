@@ -7,7 +7,7 @@ import {
 } from "../../types/PlayerAnalysis";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import { comparePlayerScoresOnMerit } from "./comparePlayerScores";
-import isWeekDecided from "./isWeekDecided";
+import isWinnerDecided from "./isWinnerDecided";
 import remainingGames, {
   pickDifference,
   RemainingGame,
@@ -572,7 +572,7 @@ function settledAnalysis(
   // whoever they left standing has won it. Said here rather than searched for,
   // because the search reads the lower tiers in an order of its own, and on a
   // week nobody can change it would sometimes disagree with the standings.
-  if (isWeekDecided(scores)) {
+  if (isWinnerDecided(scores)) {
     return { playerIndex, player, rivals: [], analysis: clinched };
   }
 

@@ -36,7 +36,7 @@ function hasKickedOff(players: Array<PlayerScore>): boolean {
  */
 function headline(
   players: Array<PlayerScore>,
-  isOver: boolean,
+  isEveryGameSettled: boolean,
   player: PlayerScore,
   isClinched: boolean,
 ): { text: string; tone?: "--won" | "--knocked-out" } {
@@ -47,7 +47,7 @@ function headline(
   const behind = leader.score.total - player.score.total;
   if (behind > 0)
     return { text: `${plural(behind, "point")} behind ${leader.name}` };
-  if (!isOver && !isClinched) return { text: "Tied for the lead" };
+  if (!isEveryGameSettled && !isClinched) return { text: "Tied for the lead" };
   const won = winners(players);
   // Level on points and still beaten, which only the tiebreakers can do.
   if (!won.includes(player))
@@ -96,7 +96,12 @@ export default function Standing({
   const unscoreable = week.unscoreable.length;
   const isClinched =
     result?.kind === "clinched" && result.player === playerName;
-  const { text, tone } = headline(players, week.isOver, player, isClinched);
+  const { text, tone } = headline(
+    players,
+    week.isEveryGameSettled,
+    player,
+    isClinched,
+  );
   return (
     <p className="analysis__standing">
       {/* Held apart from the tail, which says how much of the week is behind the

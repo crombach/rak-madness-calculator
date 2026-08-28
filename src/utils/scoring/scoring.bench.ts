@@ -11,7 +11,7 @@ import {
 import getPlayerAnalysis from "./getPlayerAnalysis";
 import { getPlayerScores } from "./getPlayerScores";
 import getTiebreakerScore from "./getTiebreakerScore";
-import isWeekOver from "./isWeekOver";
+import isEveryGameSettled from "./isEveryGameSettled";
 import parsePicksWorkbook from "./parsePicksWorkbook";
 import { indexResults } from "./resultsIndex";
 import scorePlayers from "./scorePlayers";
@@ -85,9 +85,9 @@ describe("weekGames", () => {
   });
 });
 
-describe("isWeekOver", () => {
+describe("isEveryGameSettled", () => {
   bench("sunday night", () => {
-    isWeekOver(sundayNight.scores.scores);
+    isEveryGameSettled(sundayNight.scores.scores);
   });
 });
 

@@ -12,7 +12,7 @@ import useLeagueWeeks from "../hooks/useLeagueWeeks";
 import usePicksSeasons from "../hooks/usePicksSeasons";
 import usePlayerScores from "../hooks/usePlayerScores";
 import { WeekInfo } from "../types/League";
-import isWeekDecided from "../utils/scoring/isWeekDecided";
+import isWinnerDecided from "../utils/scoring/isWinnerDecided";
 import { NO_SCORE_CHANGES, ScoreChanges } from "../utils/scoring/scoreChanges";
 
 type AppData = ReturnType<typeof useLeagueWeeks> &
@@ -50,11 +50,11 @@ const AppDataContext = createContext<AppData | undefined>(undefined);
  * split. False with no provider above, so a table can still be rendered on its
  * own with scores handed straight to it.
  */
-const WeekDecidedContext = createContext(false);
+const WinnerDecidedContext = createContext(false);
 
 /**
  * What the most recent scoring attempt changed, so a table can flash only the
- * cells that moved. Its own context for the same reason `WeekDecidedContext` is:
+ * cells that moved. Its own context for the same reason `WinnerDecidedContext` is:
  * every pick and player cell reads it, and `AppData` re-renders on every loading
  * flag it carries.
  */
@@ -124,8 +124,8 @@ export function AppDataContextProvider({
   );
 
   const { scores, scoreChanges } = playerScores;
-  const weekDecided = useMemo(
-    () => scores != null && isWeekDecided(scores),
+  const winnerDecided = useMemo(
+    () => scores != null && isWinnerDecided(scores),
     [scores],
   );
 
@@ -173,11 +173,11 @@ export function AppDataContextProvider({
 
   return (
     <AppDataContext.Provider value={value}>
-      <WeekDecidedContext.Provider value={weekDecided}>
+      <WinnerDecidedContext.Provider value={winnerDecided}>
         <ScoreChangesContext.Provider value={scoreChanges}>
           {children}
         </ScoreChangesContext.Provider>
-      </WeekDecidedContext.Provider>
+      </WinnerDecidedContext.Provider>
     </AppDataContext.Provider>
   );
 }
@@ -190,8 +190,8 @@ export function useAppData(): AppData {
   return value;
 }
 
-export function useIsWeekDecided(): boolean {
-  return useContext(WeekDecidedContext);
+export function useIsWinnerDecided(): boolean {
+  return useContext(WinnerDecidedContext);
 }
 
 export function useScoreChanges(): ScoreChanges {

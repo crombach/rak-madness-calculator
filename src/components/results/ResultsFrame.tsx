@@ -1,6 +1,6 @@
 import { PropsWithChildren, useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { useIsWeekDecided } from "../../context/AppDataContext";
+import { useIsWinnerDecided } from "../../context/AppDataContext";
 import { GameStatusContextProvider } from "../../context/GameStatusContext";
 import { PlayerAnalysisContextProvider } from "../../context/PlayerAnalysisContext";
 import { WeekInfo } from "../../types/League";
@@ -70,7 +70,7 @@ export default function ResultsFrame({
   const hasWeek = Boolean(seasonParam && weekParam);
   // Once every game is final there is nothing left to fetch, so the refresh button
   // and the divider beside it go rather than sit there doing nothing.
-  const isWeekDecided = useIsWeekDecided();
+  const isWinnerDecided = useIsWinnerDecided();
   const [opened, setOpened] = useState<Opened>();
 
   // Stable, so the memoized tables below do not re-render for a dialog opening.
@@ -107,7 +107,7 @@ export default function ResultsFrame({
         <ScoresNavbar
           view={view}
           disabled={!isReady}
-          isWeekLive={!isWeekDecided}
+          isWeekLive={!isWinnerDecided}
           onViewChange={onViewChange}
           onRefresh={onRefresh}
           isRefreshing={isRefreshing}

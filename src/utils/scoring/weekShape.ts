@@ -10,10 +10,14 @@ export type WeekShape = {
   /** The labels of the games nobody can be scored on, in the same order. */
   unscoreable: Array<string>;
   /** Every game played, and every one of them scoreable. */
-  isOver: boolean;
+  isEveryGameSettled: boolean;
 };
 
-const EMPTY: WeekShape = { remaining: [], unscoreable: [], isOver: false };
+const EMPTY: WeekShape = {
+  remaining: [],
+  unscoreable: [],
+  isEveryGameSettled: false,
+};
 
 /**
  * What is left of a week, read column by column in one pass.
@@ -65,6 +69,6 @@ export default function weekShape(players: Array<PlayerScore>): WeekShape {
   return {
     remaining,
     unscoreable,
-    isOver: remaining.length === 0 && unscoreable.length === 0,
+    isEveryGameSettled: remaining.length === 0 && unscoreable.length === 0,
   };
 }

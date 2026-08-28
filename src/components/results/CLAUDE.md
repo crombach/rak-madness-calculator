@@ -12,6 +12,6 @@ week worth showing.
 - `ResultsFrame`: the page and wireframe both `ResultsLayout` and
   `CurrentWeekRedirect` render into. Holds the app's `PlayerAnalysisDialog` and
   `GameStatusDialog` and both providers around the tables, and reads
-  `useIsWeekDecided` for `ScoresNavbar`'s `isWeekLive`.
+  `useIsWinnerDecided` for `ScoresNavbar`'s `isWeekLive`.
 - `ResultsFrame.scss`: the column the table and the wireframe are laid in, and the
   caption naming the week over both.
