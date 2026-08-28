@@ -55,7 +55,6 @@
   // be a line one of them could not show.
   background-color: var(--rak-primary-600);
   // No `z-index`, so the sticky header passes over it on the way up.
-  // See SCROLL-FLASH.md.
   color: var(--rak-on-solid);
   // The header row's own type, so the two read as one head with a line drawn
   // through it rather than as two bands set differently. The size is the token
@@ -79,9 +78,7 @@
  * side of the screen until the table has been panned halfway across.
  *
  * Only the text sticks. The bar stays in flow at the frame's full width, so its
- * fill runs the whole way across rather than stopping at the window's edge. That
- * also keeps the sticky area to one box, which is the smallest hole this can leave
- * in the rasterized layer. See SCROLL-FLASH.md.
+ * fill runs the whole way across rather than stopping at the window's edge.
  */
 .results-caption__text {
   position: sticky;
