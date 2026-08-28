@@ -1,6 +1,5 @@
 import { PlayerScore } from "../../types/RakMadnessScores";
-import remainingGames from "./remainingGames";
-import unscoreableGames from "./unscoreableGames";
+import weekShape from "./weekShape";
 
 /**
  * Whether a week has a result to state: every game played, and every one of them
@@ -11,9 +10,5 @@ import unscoreableGames from "./unscoreableGames";
  * asks only whether the week itself has run out.
  */
 export default function isWeekOver(players: Array<PlayerScore>): boolean {
-  return (
-    players.length > 0 &&
-    remainingGames(players).length === 0 &&
-    unscoreableGames(players).length === 0
-  );
+  return weekShape(players).isOver;
 }

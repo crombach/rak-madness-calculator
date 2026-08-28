@@ -1,10 +1,7 @@
 import { PlayerScore } from "../../types/RakMadnessScores";
-import isWeekOver from "./isWeekOver";
 import plural from "../plural";
-import remainingGames, {
-  pickDifference,
-  RemainingGame,
-} from "./remainingGames";
+import { pickDifference, RemainingGame } from "./remainingGames";
+import weekShape from "./weekShape";
 
 function remainingSuffix(
   weekOver: boolean,
@@ -70,11 +67,10 @@ export default function applyKnockouts(
   sortedScores: Array<PlayerScore>,
   tiebreakerScore?: number,
 ): Array<PlayerScore> {
-  const games = remainingGames(sortedScores);
+  // One walk. Asking `remainingGames` and `isWeekOver` apart reads every pick of
+  // every player three times over.
+  const { remaining: games, isOver: weekOver } = weekShape(sortedScores);
   const isCollegeDone = games.every((game) => game.league !== "college");
-  // Once the week is over there are no remaining games to differ on, so the
-  // count is always zero and saying so is redundant.
-  const weekOver = isWeekOver(sortedScores);
 
   return sortedScores.map((activeScore, activeIndex) => {
     // If a player has no picks, they're knocked out.
