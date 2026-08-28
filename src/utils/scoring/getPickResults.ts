@@ -6,6 +6,19 @@ import debugLog from "../debugLog";
 import marginAgainstSpread from "./marginAgainstSpread";
 import parsePick from "./parsePick";
 
+/**
+ * Built once. `toLocaleTimeString` mints a formatter per call, and a week of
+ * upcoming games formats one per pick of every player.
+ */
+const KICKOFF_TIME = new Intl.DateTimeFormat("en-US", {
+  hour: "numeric",
+  minute: "2-digit",
+});
+const KICKOFF_DATE = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+});
+
 export function getStatus(score: GameScore): Status {
   if (score.isInvalid) {
     return "unscoreable";
@@ -146,8 +159,8 @@ export function getPickResults(
         message:
           gameResult.status === GameStatus.UPCOMING
             ? `${gameResult.away.team.abbreviation} @ ${gameResult.home.team.abbreviation}` +
-              ` begins at ${gameResult.date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}` +
-              ` on ${gameResult.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}.`
+              ` begins at ${KICKOFF_TIME.format(gameResult.date)}` +
+              ` on ${KICKOFF_DATE.format(gameResult.date)}.`
             : `${gameResult.possession.homeAway === HomeAway.AWAY ? "▸ " : ""}${gameResult.away.team.abbreviation} ${gameResult.away.score}` +
               ` - ` +
               `${gameResult.home.score} ${gameResult.home.team.abbreviation}${gameResult.possession.homeAway === HomeAway.HOME ? " ◂" : ""}`,

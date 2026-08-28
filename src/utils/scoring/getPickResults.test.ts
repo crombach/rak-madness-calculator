@@ -162,6 +162,28 @@ describe("getPickResults, game state", () => {
     expect(result.explanation.header).toBe("Upcoming");
     expect(result.explanation.message).toContain("KC @ BUF begins at");
   });
+
+  it("formats the kickoff the way toLocale* did", () => {
+    const upcoming: LeagueResult = {
+      ...bufBeatKcBy10,
+      status: GameStatus.UPCOMING,
+    };
+    const result = getPickResults(["BUF"], indexResultsByTeam([upcoming]))[0];
+    // Expected through the API the shared formatters replaced, so the assertion
+    // holds in whatever time zone the run is in.
+    const { date } = upcoming;
+    const time = date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    const day = date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+    expect(result.explanation.message).toBe(
+      `KC @ BUF begins at ${time} on ${day}.`,
+    );
+  });
 });
 
 // GameStatus models only UPCOMING, LIVE, and FINAL, but `status` is assigned
