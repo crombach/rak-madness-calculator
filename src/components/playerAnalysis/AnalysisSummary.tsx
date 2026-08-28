@@ -8,7 +8,7 @@ import {
 } from "../../types/PlayerAnalysis";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import plural from "../../utils/plural";
-import isWeekOver from "../../utils/scoring/isWeekOver";
+import weekShape, { WeekShape } from "../../utils/scoring/weekShape";
 import Button from "../button/Button";
 import Standing from "./Standing";
 import "./AnalysisSummary.scss";
@@ -336,38 +336,33 @@ export default function AnalysisSummary({
   scores,
   player,
   result,
-  isOver,
-  week,
+  shape,
+  weekNumber,
 }: {
   scores?: RakMadnessScores;
   /** The player picked, whose standing heads the answer. */
   player?: string;
   result?: PlayerAnalysis;
   /**
-   * Whether the week itself is done, which is what the "clinched" case needs.
-   * Left out, it is worked out here. Asked once and handed to both halves, so
-   * neither can disagree with the other and the walk behind it runs once.
+   * What is left of the week, which the "clinched" case reads. Left out, it is
+   * worked out here. Read once and handed to both halves, so neither can
+   * disagree with the other and the walk behind it runs once.
    */
-  isOver?: boolean;
+  shape?: WeekShape;
   /** Which week this is, named by the one line that congratulates a winner. */
-  week?: number;
+  weekNumber?: number;
 }) {
   // Nothing under the search until a name is picked, which the placeholder in it
   // already asks for.
   if (player == null && result == null) return null;
 
-  const isWeekDone = isOver ?? isWeekOver(scores?.scores ?? []);
+  const week = shape ?? weekShape(scores?.scores ?? []);
   return (
     <div className="analysis">
-      <Standing
-        scores={scores}
-        player={player}
-        result={result}
-        isOver={isWeekDone}
-      />
+      <Standing scores={scores} player={player} result={result} shape={week} />
       {result != null && (
         <div className="analysis__body">
-          <Body result={result} isOver={isWeekDone} week={week} />
+          <Body result={result} isOver={week.isOver} week={weekNumber} />
         </div>
       )}
     </div>

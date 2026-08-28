@@ -4,6 +4,7 @@ import { PlayerAnalysis } from "../../types/PlayerAnalysis";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import getClasses from "../../utils/getClasses";
 import matching from "../../utils/matching";
+import weekShape from "../../utils/scoring/weekShape";
 import getPlayerAnalysis, {
   getSettledAnalysis,
 } from "../../utils/scoring/getPlayerAnalysis";
@@ -62,6 +63,9 @@ export default function PlayerAnalysisDialog({
   // Held still between renders, since the combobox reads the chosen player back
   // off this list by identity.
   const options = useMemo(() => playerOptions(scores), [scores]);
+  // Once per scoring pass, not once per keystroke in the search. Reading it walks
+  // every pick of every player.
+  const shape = useMemo(() => weekShape(scores?.scores ?? []), [scores]);
 
   // A name arriving from outside stands in for a choice made in the search.
   useArrival(named, (name) => {
@@ -161,7 +165,8 @@ export default function PlayerAnalysisDialog({
         scores={scores}
         player={player?.name}
         result={shown?.paths}
-        week={week}
+        shape={shape}
+        weekNumber={week}
       />
     </DialogShell>
   );

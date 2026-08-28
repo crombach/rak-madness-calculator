@@ -2,9 +2,7 @@ import { PlayerAnalysis } from "../../types/PlayerAnalysis";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import plural from "../../utils/plural";
 import { comparePlayerScoresOnMerit } from "../../utils/scoring/comparePlayerScores";
-import isWeekOver from "../../utils/scoring/isWeekOver";
-import remainingGames from "../../utils/scoring/remainingGames";
-import unscoreableGames from "../../utils/scoring/unscoreableGames";
+import weekShape, { WeekShape } from "../../utils/scoring/weekShape";
 // The standing is an element of the `analysis` block, which `AnalysisSummary`
 // owns and styles.
 import "./AnalysisSummary.scss";
@@ -74,34 +72,30 @@ export default function Standing({
   scores,
   player,
   result,
-  isOver,
+  shape,
 }: {
   scores?: RakMadnessScores;
   player?: string;
   result?: PlayerAnalysis;
   /**
-   * Whether the week is done. `isWeekOver` walks every pick of every player
-   * twice, so the summary works it out once and hands it down. Falls back to
-   * asking, for a standing rendered on its own.
+   * What is left of the week. Reading it walks every pick of every player, so
+   * the summary works it out once and hands it down. Falls back to asking, for
+   * a standing rendered on its own.
    */
-  isOver?: boolean;
+  shape?: WeekShape;
 }) {
   const players = scores?.scores ?? [];
   // The dialog is opened on a player and never lets go of one, so there is no
   // standing to give until the scores holding them arrive.
   const chosen = players.find((it) => it.name === player);
   if (chosen == null) return null;
-  // Counted here as well as asked about, since the tail says which of the two is
+  // The counts as well as the answer, since the tail says which of the two is
   // holding the week open.
-  const remaining = remainingGames(players).length;
-  const unscoreable = unscoreableGames(players).length;
+  const week = shape ?? weekShape(players);
+  const remaining = week.remaining.length;
+  const unscoreable = week.unscoreable.length;
   const isClinched = result?.kind === "clinched" && result.player === player;
-  const { text, tone } = headline(
-    players,
-    isOver ?? isWeekOver(players),
-    chosen,
-    isClinched,
-  );
+  const { text, tone } = headline(players, week.isOver, chosen, isClinched);
   return (
     <p className="analysis__standing">
       {/* Held apart from the tail, which says how much of the week is behind the
