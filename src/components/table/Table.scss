@@ -111,18 +111,18 @@
 
   .table__header {
     background-color: var(--rak-primary-800);
+    // THROWAWAY. One sticky element for the whole header, so the page carries two
+    // sticky elements in total. See SCROLL-FLASH.md.
+    position: sticky;
+    top: 0;
+    z-index: var(--rak-z-sticky-header);
 
     th {
       // The screen-printed label every heading in the app is set in.
       @include micro-label;
 
-      // Each cell sticks on its own rather than the row's section doing it for
-      // them. The player column sticks left, and a cell sticking inside a
-      // sticky <thead> is a case Firefox on Android hands back to the main
-      // thread, which lands it a frame or two behind a fling. What shows in the
-      // gap is the white underneath.
       z-index: var(--rak-z-sticky-header);
-      position: sticky;
+      position: static;
       top: 0;
       color: var(--rak-on-solid);
       background-color: var(--rak-primary-800);
@@ -231,7 +231,8 @@
   // positioned cell already draws over the static ones beside it, and the header
   // sets a `z-index` of its own to stay over this on the way past.
   .table__player-col {
-    position: sticky;
+    // THROWAWAY. Unpinned, so the header is the only thing sticking.
+    position: static;
     left: 0;
   }
 
