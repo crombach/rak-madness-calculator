@@ -312,24 +312,36 @@ function knockedOut(player: PlayerScore): PlayerAnalysis {
  *
  * A game only the rival picked is assumed to miss, which is what makes this a floor.
  */
-function fewestWinsToCatch(
+type PickGap = {
+  /** Games the two picked different teams in, worth two points each. */
+  opposed: number;
+  /** Games the player picked and the rival left blank, worth one. */
+  playerOnly: number;
+};
+
+function countAgainst(
   playerIndex: number,
   rivalIndex: number,
   games: Array<RemainingGame>,
-  gap: number,
-  clear: boolean,
-): number | undefined {
-  let different = 0;
+): PickGap {
+  let opposed = 0;
   let playerOnly = 0;
   games.forEach((game) => {
     const difference = pickDifference(game, playerIndex, rivalIndex);
-    if (difference === "opposed") different += 1;
+    if (difference === "opposed") opposed += 1;
     else if (difference === "playerOnly") playerOnly += 1;
   });
+  return { opposed, playerOnly };
+}
 
-  const target = gap + different + (clear ? 1 : 0);
+function fewestWinsToCatch(
+  { opposed, playerOnly }: PickGap,
+  gap: number,
+  clear: boolean,
+): number | undefined {
+  const target = gap + opposed + (clear ? 1 : 0);
   if (target <= 0) return 0;
-  const onDifferent = Math.min(different, Math.ceil(target / 2));
+  const onDifferent = Math.min(opposed, Math.ceil(target / 2));
   const onOwn = Math.max(0, target - onDifferent * 2);
   return onOwn > playerOnly ? undefined : onDifferent + onOwn;
 }
@@ -342,9 +354,13 @@ function headline(
 ): PlayerAnalysis {
   const counts = rivals.map((rival) => {
     const gap = rival.player.score.total - player.score.total;
-    const at = (clear: boolean) =>
-      fewestWinsToCatch(playerIndex, rival.index, games, gap, clear);
-    return { toLevel: at(false), toClear: at(true) };
+    // Both targets read off one walk. They differ only by the point that clears a
+    // draw, never in what the two players have left to differ on.
+    const against = countAgainst(playerIndex, rival.index, games);
+    return {
+      toLevel: fewestWinsToCatch(against, gap, false),
+      toClear: fewestWinsToCatch(against, gap, true),
+    };
   });
 
   // `toLevel` is only absent where `applyKnockouts` has already knocked the player
@@ -522,13 +538,34 @@ export function getSettledAnalysis(
   scores: RakMadnessScores,
   playerName: string,
 ): PlayerAnalysis | undefined {
+  return settledAnalysis(scores, playerName)?.analysis;
+}
+
+type Settled = {
+  playerIndex: number;
+  player: PlayerScore;
+  rivals: Array<{ player: PlayerScore; index: number }>;
+  /** The answer the week already holds, absent where the search has to find it. */
+  analysis?: PlayerAnalysis;
+};
+
+/**
+ * Undefined where the sheet holds nobody by that name. Every branch is a walk of
+ * the players, and `getPlayerAnalysis` reads the walks back off this rather than
+ * repeating them.
+ */
+function settledAnalysis(
+  scores: RakMadnessScores,
+  playerName: string,
+): Settled | undefined {
   const players = scores.scores;
   const playerIndex = players.findIndex((it) => it.name === playerName);
   if (playerIndex < 0) return undefined;
 
   const player = players[playerIndex];
+  const clinched: PlayerAnalysis = { kind: "clinched", player: player.name };
   if (player.status.isKnockedOut) {
-    return knockedOut(player);
+    return { playerIndex, player, rivals: [], analysis: knockedOut(player) };
   }
 
   // Nothing is left to play, so the knockouts have already settled the week and
@@ -536,17 +573,17 @@ export function getSettledAnalysis(
   // because the search reads the lower tiers in an order of its own, and on a
   // week nobody can change it would sometimes disagree with the standings.
   if (isWeekDecided(scores)) {
-    return { kind: "clinched", player: player.name };
+    return { playerIndex, player, rivals: [], analysis: clinched };
   }
 
   // A knocked out player cannot take the week off anyone, so they are not measured
   // against. That is what keeps the search small late in a week.
   const rivals = liveRivals(players, playerIndex);
   if (rivals.length === 0) {
-    return { kind: "clinched", player: player.name };
+    return { playerIndex, player, rivals, analysis: clinched };
   }
 
-  return undefined;
+  return { playerIndex, player, rivals };
 }
 
 /** Everyone still able to take the week off this player. */
@@ -563,15 +600,11 @@ export default function getPlayerAnalysis(
   scores: RakMadnessScores,
   playerName: string,
 ): PlayerAnalysis | undefined {
-  const settled = getSettledAnalysis(scores, playerName);
-  if (settled != null) return settled;
-
+  const settled = settledAnalysis(scores, playerName);
+  if (settled == null) return undefined;
+  if (settled.analysis != null) return settled.analysis;
+  const { playerIndex, player, rivals } = settled;
   const players = scores.scores;
-  const playerIndex = players.findIndex((it) => it.name === playerName);
-  if (playerIndex < 0) return undefined;
-
-  const player = players[playerIndex];
-  const rivals = liveRivals(players, playerIndex);
 
   // A game every live player picked the same way moves all their scores together,
   // in the total and in both tiebreaker tiers, so it cannot change the order.
@@ -599,8 +632,20 @@ export default function getPlayerAnalysis(
     gains: gainsFor(rival.index, contested, coverers),
   }));
   const isMondayNightSettled = scores.tiebreaker != null;
-  const read = (outcome: number) =>
-    evaluate(player, gains, scoredRivals, outcome, isMondayNightSettled);
+  const verdicts = new Map<number, ReturnType<typeof evaluate>>();
+  const read = (outcome: number) => {
+    const held = verdicts.get(outcome);
+    if (held != null) return held;
+    const verdict = evaluate(
+      player,
+      gains,
+      scoredRivals,
+      outcome,
+      isMondayNightSettled,
+    );
+    verdicts.set(outcome, verdict);
+    return verdict;
+  };
 
   let mineMask = 0;
   let luckMask = 0;
@@ -609,9 +654,10 @@ export default function getPlayerAnalysis(
     else luckMask |= 1 << bit;
   });
 
-  const ordered = subMasks(mineMask).sort(
-    (a, b) => bitCount(a) - bitCount(b) || a - b,
-  );
+  const ordered = subMasks(mineMask)
+    .map((mask) => ({ mask, bits: bitCount(mask) }))
+    .sort((a, b) => a.bits - b.bits || a.mask - b.mask)
+    .map((counted) => counted.mask);
   const luckOutcomes = subMasks(luckMask);
 
   // Held against the player first, so a route that survives every way the games
