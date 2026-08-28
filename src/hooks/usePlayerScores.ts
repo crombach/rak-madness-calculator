@@ -1,6 +1,11 @@
 import throttle from "lodash.throttle";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Toast, useToastActions } from "../context/ToastContext";
+import {
+  Toast,
+  errorToast,
+  successToast,
+  useToastActions,
+} from "../context/ToastContext";
 import { WeekInfo } from "../types/League";
 import { RakMadnessScores } from "../types/RakMadnessScores";
 import loadStoredPicks from "../utils/loadStoredPicks";
@@ -20,11 +25,7 @@ type LastAttempt = { season: number; week: number };
 
 /** Scoring threw on picks the app already had, which every path can hit. */
 function scoringFailed(week: number): Toast {
-  return new Toast(
-    "danger",
-    "Error",
-    `Failed to calculate scores for week ${week}.`,
-  );
+  return errorToast(`Failed to calculate scores for week ${week}.`);
 }
 
 type ScoringRequest = {
@@ -186,9 +187,7 @@ export default function usePlayerScores(
       }
       // A file the user picked may not be a workbook at all, so reading it and
       // scoring it fail the same way as far as they are concerned.
-      const failure = new Toast(
-        "danger",
-        "Error",
+      const failure = errorToast(
         "Failed to read picks from the spreadsheet you selected.",
       );
       await attemptScoring({
@@ -199,11 +198,7 @@ export default function usePlayerScores(
         },
         onLoadFailure: failure,
         onScoreFailure: failure,
-        onSuccess: new Toast(
-          "success",
-          "Success",
-          "Generated results from picks spreadsheet",
-        ),
+        onSuccess: successToast("Generated results from picks spreadsheet"),
       });
     },
     [selectedWeek, season, attemptScoring, showToast],
@@ -226,11 +221,7 @@ export default function usePlayerScores(
               loadPicks: async () => picksBuffer,
               onLoadFailure: failure,
               onScoreFailure: failure,
-              onSuccess: new Toast(
-                "success",
-                "Success",
-                "Results successfully updated",
-              ),
+              onSuccess: successToast("Results successfully updated"),
               keepScoresOnFailure: true,
             });
           } finally {

@@ -14,7 +14,7 @@ import { League } from "../types/League";
 import { LeagueResult } from "../types/LeagueResult";
 import localStorageCache, { LocalStorageCache } from "./localStorageCache";
 
-/** A size guard, not a history. A week of both leagues is tens of KB. */
+/** A week of both leagues is tens of KB. */
 const MAX_CACHED_WEEKS = 6;
 /** Bumped where a stored shape changes, which makes every older entry a miss. */
 const VERSION = 2;

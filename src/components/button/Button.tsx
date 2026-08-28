@@ -1,5 +1,6 @@
 import { Button as BaseButton } from "@base-ui/react/button";
 import { ReactNode } from "react";
+import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import "./Button.scss";
 
@@ -74,7 +75,7 @@ export default function Button({
       aria-busy={busy || undefined}
       className={classes}
       disabled={disabled}
-      onClick={ariaDisabled ? () => {} : onClick}
+      onClick={ariaDisabled ? doNothing : onClick}
     >
       {children}
     </BaseButton>

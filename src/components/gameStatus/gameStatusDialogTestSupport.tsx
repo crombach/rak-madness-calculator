@@ -1,6 +1,7 @@
 import { MockedFunction } from "vitest";
 import { WeekInfo } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
+import doNothing from "../../utils/doNothing";
 import { getGameResult } from "../../utils/getLeagueResults";
 import GameStatusDialog from "./GameStatusDialog";
 
@@ -36,7 +37,7 @@ export function dialog(
   return (
     <GameStatusDialog
       open={open}
-      onOpenChange={() => undefined}
+      onOpenChange={doNothing}
       gameLabel={gameLabel}
       scores={scores}
       week={WEEK}

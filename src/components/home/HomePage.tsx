@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import { useAppData } from "../../context/AppDataContext";
 import useExportScores from "../../hooks/useExportScores";
 import { WeekInfo } from "../../types/League";
+import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import Button from "../button/Button";
 import Footer from "../footer/Footer";
@@ -143,7 +144,7 @@ export default function HomePage() {
               `/${seasonYear}/${selectedWeek?.value}/${view.toLowerCase()}`,
             )
           }
-          onRefresh={() => undefined}
+          onRefresh={doNothing}
           isRefreshing={false}
         />
       }

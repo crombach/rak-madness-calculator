@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Toast, useToastActions } from "../context/ToastContext";
+import { errorToast, useToastActions } from "../context/ToastContext";
 import { League, WeekInfo } from "../types/League";
 import getLeagueInfo from "../utils/getLeagueInfo";
 import latestOnly from "../utils/latestOnly";
@@ -65,9 +65,7 @@ export default function useLeagueWeeks(
         setCurrentWeek(undefined);
         setSelectedWeek(undefined);
         setLoading(false);
-        showToast(
-          new Toast("danger", "Error", "Failed to load the pro schedule."),
-        );
+        showToast(errorToast("Failed to load the pro schedule."));
         return;
       }
       const calendarWeeks = proLeagueInfo.activeCalendar.weeks;

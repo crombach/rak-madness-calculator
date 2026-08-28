@@ -130,7 +130,7 @@ export async function uploadSpreadsheet(
   user: ReturnType<typeof userEvent.setup>,
 ) {
   const file = new File(["picks"], "picks.xlsx", {
-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    type: XLSX_CONTENT_TYPE,
   });
   await user.upload(fileInput(), file);
 }
