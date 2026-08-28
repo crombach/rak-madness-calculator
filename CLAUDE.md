@@ -11,8 +11,6 @@ API in `functions/` beside the built app.
 `index.html` at the repo root is the HTML shell Vite builds from. Before the
 first paint it sets `data-theme` from storage and preloads the logo's face.
 
-[`SCROLL-FLASH.md`](SCROLL-FLASH.md): an open bug, read before changing sticky.
-
 ## Subdirectories
 
 - [`functions/`](functions/CLAUDE.md) — the picks routes, on Pages and R2
