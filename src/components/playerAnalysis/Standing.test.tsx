@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
+import { playerScore } from "../../weekFixtures";
 import Standing from "./Standing";
 
 describe("Standing", () => {
@@ -15,14 +16,12 @@ describe("Standing", () => {
       status,
       explanation: { header: "", message: "" },
     });
-    return {
+    return playerScore({
       name,
       score: { total, college: 0, pro: total, proAgainstTheSpread: 0 },
       tiebreaker: {},
-      college: [],
       pro: [result("yes"), result("incomplete")],
-      status: { hasNoPicks: false, isKnockedOut: false },
-    };
+    });
   }
 
   const scores: RakMadnessScores = {

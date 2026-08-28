@@ -2,21 +2,20 @@ import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { PlayerScore, RakMadnessScores } from "../../../types/RakMadnessScores";
 import { PlayerAnalysisContextProvider } from "../../../context/PlayerAnalysisContext";
-import { SettingsContextProvider } from "../../../context/SettingsContext";
+import {
+  PLAYER_NAME_KEY,
+  SettingsContextProvider,
+} from "../../../context/SettingsContext";
+import { playerScore } from "../../../weekFixtures";
 import ScoresTable from "./ScoresTable";
 
 const showPlayerAnalysis = vi.fn();
 
 function player(overrides: Partial<PlayerScore> = {}): PlayerScore {
-  return {
-    name: "Alice",
-    score: { total: 3, college: 1, pro: 2, proAgainstTheSpread: 1 },
-    tiebreaker: { pick: 41, distance: 0 },
-    college: [],
-    pro: [],
+  return playerScore({
     status: { hasNoPicks: false, isKnockedOut: false, explanation: "Winner!" },
     ...overrides,
-  };
+  });
 }
 
 const knockedOutBob = player({
@@ -43,7 +42,7 @@ function mountTable(scores?: RakMadnessScores) {
 // The provider seeds itself from storage as it mounts, so a name written here is
 // the reader's by the time the table renders.
 function saveMyName(name: string) {
-  localStorage.setItem("rak-madness:settings:playerName", name);
+  localStorage.setItem(PLAYER_NAME_KEY, name);
 }
 
 beforeEach(() => {

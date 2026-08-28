@@ -1,10 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import { SettingsContextProvider } from "../../context/SettingsContext";
+import {
+  PLAYER_NAME_KEY,
+  SettingsContextProvider,
+  THEME_KEY,
+} from "../../context/SettingsContext";
 import SettingsDialog from "./SettingsDialog";
-
-const THEME_KEY = "rak-madness:settings:theme";
-const PLAYER_NAME_KEY = "rak-madness:settings:playerName";
 
 function mountDialog(onOpenChange = () => undefined) {
   const user = userEvent.setup();

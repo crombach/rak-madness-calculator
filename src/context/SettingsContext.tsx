@@ -8,12 +8,16 @@ import {
   useState,
 } from "react";
 import doNothing from "../utils/doNothing";
-import { readSetting, writeSetting } from "../utils/settingsStore";
+import { PREFIX, readSetting, writeSetting } from "../utils/settingsStore";
 
 export type Theme = "light" | "dark" | "auto";
 
-const THEME_KEY = "theme";
-const PLAYER_NAME_KEY = "playerName";
+const THEME_SETTING = "theme";
+const PLAYER_NAME_SETTING = "playerName";
+
+/** The exact key `settingsStore` writes to, for a test that reads localStorage directly. */
+export const THEME_KEY = PREFIX + THEME_SETTING;
+export const PLAYER_NAME_KEY = PREFIX + PLAYER_NAME_SETTING;
 
 /** Follow the operating system, which is what the app did before it could be told. */
 const DEFAULT_THEME: Theme = "auto";
@@ -52,7 +56,7 @@ const SettingsContext = createContext<Settings>({
 });
 
 function storedTheme(): Theme {
-  const saved = readSetting(THEME_KEY);
+  const saved = readSetting(THEME_SETTING);
   return saved === "light" || saved === "dark" ? saved : DEFAULT_THEME;
 }
 
@@ -128,7 +132,7 @@ function applyThemeColor(theme: Theme): void {
 export function SettingsContextProvider({ children }: PropsWithChildren) {
   const [theme, setThemeState] = useState<Theme>(storedTheme);
   const [playerName, setPlayerNameState] = useState<string>(
-    () => readSetting(PLAYER_NAME_KEY) ?? "",
+    () => readSetting(PLAYER_NAME_SETTING) ?? "",
   );
 
   useEffect(() => {
@@ -154,12 +158,12 @@ export function SettingsContextProvider({ children }: PropsWithChildren) {
 
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);
-    writeSetting(THEME_KEY, next === DEFAULT_THEME ? "" : next);
+    writeSetting(THEME_SETTING, next === DEFAULT_THEME ? "" : next);
   }, []);
 
   const setPlayerName = useCallback((next: string) => {
     setPlayerNameState(next);
-    writeSetting(PLAYER_NAME_KEY, next);
+    writeSetting(PLAYER_NAME_SETTING, next);
   }, []);
 
   const value = useMemo(

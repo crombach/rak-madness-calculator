@@ -1,5 +1,6 @@
 import { Mock } from "vitest";
 import { League, SeasonType } from "../types/League";
+import { SEASON } from "../weekFixtures";
 import getLeagueInfo, { getRegularSeasonWeekCount } from "./getLeagueInfo";
 
 const NOW = new Date("2024-10-06T12:00:00Z");
@@ -46,8 +47,6 @@ type CalendarFixture = {
   endDate: string;
   entries?: Array<ReturnType<typeof week>>;
 };
-
-const SEASON = 2024;
 
 function scoreboard(
   slug: string,

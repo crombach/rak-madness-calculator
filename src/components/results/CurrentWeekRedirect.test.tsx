@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router";
 import { Mock } from "vitest";
 import { useAppData } from "../../context/AppDataContext";
+import { SEASON } from "../../weekFixtures";
 import CurrentWeekRedirect from "./CurrentWeekRedirect";
 
 vi.mock("../../context/AppDataContext", () => ({
@@ -9,7 +10,6 @@ vi.mock("../../context/AppDataContext", () => ({
   useIsWeekDecided: vi.fn(() => false),
 }));
 
-const SEASON = 2024;
 const CURRENT_WEEK = 5;
 
 /**

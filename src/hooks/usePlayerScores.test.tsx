@@ -2,9 +2,9 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { PropsWithChildren } from "react";
 import { MockedFunction } from "vitest";
 import { ToastContextProvider } from "../context/ToastContext";
+import { notFoundResponse, spreadsheetResponse } from "../responseTestFixtures";
 import { WeekInfo } from "../types/League";
 import { RakMadnessScores } from "../types/RakMadnessScores";
-import { XLSX_CONTENT_TYPE } from "../utils/buildSpreadsheetBuffer";
 import { writeCachedPicks } from "../utils/picksCache";
 import { getPlayerScores } from "../utils/scoring/getPlayerScores";
 import { SEASON, week } from "../weekFixtures";
@@ -40,12 +40,7 @@ beforeEach(() => {
   localStorage.clear();
   // A fresh Response per call, because a body can only be read once.
   global.fetch = vi.fn(async () =>
-    Promise.resolve(
-      new Response(new ArrayBuffer(8), {
-        status: 200,
-        headers: { "content-type": XLSX_CONTENT_TYPE },
-      }),
-    ),
+    Promise.resolve(spreadsheetResponse()),
   ) as unknown as typeof fetch;
 });
 
@@ -54,7 +49,7 @@ describe("usePlayerScores", () => {
     // What lets a results URL survive a reload after a local upload.
     writeCachedPicks(SEASON, 5, new ArrayBuffer(8));
     global.fetch = vi.fn(async () =>
-      Promise.resolve(new Response(null, { status: 404 })),
+      Promise.resolve(notFoundResponse()),
     ) as unknown as typeof fetch;
     getPlayerScoresMock.mockResolvedValue(scoresFor(5));
 
@@ -70,7 +65,7 @@ describe("usePlayerScores", () => {
 
   it("gives up when the API has no picks and nothing is cached", async () => {
     global.fetch = vi.fn(async () =>
-      Promise.resolve(new Response(null, { status: 404 })),
+      Promise.resolve(notFoundResponse()),
     ) as unknown as typeof fetch;
 
     const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {

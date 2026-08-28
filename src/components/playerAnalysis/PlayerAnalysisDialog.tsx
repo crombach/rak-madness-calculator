@@ -25,14 +25,6 @@ export function playerOptions(scores?: RakMadnessScores): Array<PlayerOption> {
   );
 }
 
-/** The players a query offers, in the order the tables rank them. */
-export function playersMatching(
-  options: Array<PlayerOption>,
-  query: string,
-): Array<PlayerOption> {
-  return matching(options, query, (option) => option.name);
-}
-
 /**
  * Where a player stands in the week on screen, and what they still have to do to
  * win it.
@@ -122,7 +114,7 @@ export default function PlayerAnalysisDialog({
           placeholder="Search players..."
           emptyMessage="No matching players"
           items={options}
-          filteredItems={playersMatching(options, query)}
+          filteredItems={matching(options, query, (option) => option.name)}
           value={player}
           onValueChange={setPlayer}
           query={query}

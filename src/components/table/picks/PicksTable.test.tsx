@@ -10,8 +10,12 @@ import {
 import { useScoreChanges } from "../../../context/AppDataContext";
 import { GameStatusContextProvider } from "../../../context/GameStatusContext";
 import { PlayerAnalysisContextProvider } from "../../../context/PlayerAnalysisContext";
-import { SettingsContextProvider } from "../../../context/SettingsContext";
+import {
+  PLAYER_NAME_KEY,
+  SettingsContextProvider,
+} from "../../../context/SettingsContext";
 import { pickChangeKey } from "../../../utils/scoring/gameColumns";
+import { playerScore } from "../../../weekFixtures";
 import PicksTable from "./PicksTable";
 
 vi.mock("../../../context/AppDataContext", () => ({
@@ -40,7 +44,7 @@ function player({
   pro?: Array<PickResult>;
   isKnockedOut?: boolean;
 }): PlayerScore {
-  return {
+  return playerScore({
     name,
     score: { total: 3, college: 1, pro: 2, proAgainstTheSpread: 2 },
     tiebreaker: { pick: 45, distance: 2 },
@@ -51,7 +55,7 @@ function player({
       isKnockedOut,
       explanation: isKnockedOut ? `${name} is out` : undefined,
     },
-  };
+  });
 }
 
 const scores: RakMadnessScores = {
@@ -298,7 +302,7 @@ describe("PicksTable, the reader's own row", () => {
   // The provider seeds itself from storage as it mounts, so a name written here
   // is the reader's by the time the table renders.
   function renderAs(name: string) {
-    localStorage.setItem("rak-madness:settings:playerName", name);
+    localStorage.setItem(PLAYER_NAME_KEY, name);
     render(
       <SettingsContextProvider>
         <PicksTable scores={scores} />
