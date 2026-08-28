@@ -558,6 +558,14 @@ describe("GameStatusSummary, a game still being played", () => {
     expect(screen.getByLabelText("Has the ball")).toBeInTheDocument();
     expect(screen.queryByText("KC ball")).toBeNull();
   });
+
+  it("draws the side without the ball a marker of its own, unlit", () => {
+    renderLive();
+    expect(document.querySelectorAll(".game-status__marker")).toHaveLength(2);
+    expect(
+      document.querySelectorAll('.game-status__marker[aria-hidden="true"]'),
+    ).toHaveLength(1);
+  });
 });
 
 describe("GameStatusSummary, a game yet to kick off", () => {

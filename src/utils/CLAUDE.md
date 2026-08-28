@@ -12,6 +12,7 @@
 - `contentType`: what a response says it is, and why an `/api` path checks
 - `debugLog`: scoring traces, silent outside a dev server
 - `latestOnly`: drops an async result its effect outlived
+- `observeResize`: one ResizeObserver over several boxes, and its disposer
 - `getClasses`: className join, fixed and conditional names
 - `doNothing`: the no-op a default prop or context stands in with
 - `plural`: a count and its noun, pluralized

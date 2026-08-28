@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import useArrival from "../../hooks/useArrival";
 import useLiveGame from "../../hooks/useLiveGame";
 import { GameStatus } from "../../types/ESPN";
@@ -32,6 +32,50 @@ export function gamesMatching(
   return matching(games, query, gameSearchText);
 }
 
+/** What one mark is: the state it says, in the shape, the word and the label. */
+type Mark = { modifier: string; label: string; icon: ReactNode; word: string };
+
+/**
+ * Which mark a game wears, tested in the order the states rule each other out: a
+ * column ESPN lists no game for before any status, since there is no game to have
+ * one, then the game as its own status says it, with anything ESPN reports that the
+ * app does not model falling through to the calendar.
+ */
+function markFor(game: WeekGame, status?: GameStatus): Mark {
+  if (game.result == null) {
+    return {
+      modifier: "--invalid",
+      label: "Not listed by ESPN",
+      icon: <WarningIcon />,
+      word: "WARN",
+    };
+  }
+  if (status === GameStatus.FINAL) {
+    return {
+      modifier: "--final",
+      label: "Final",
+      icon: <CheckIcon />,
+      word: "DONE",
+    };
+  }
+  if (status === GameStatus.LIVE) {
+    return {
+      modifier: "--live",
+      label: "Live",
+      // Read out by the label rather than as letters, so a reader being read to
+      // hears "Live" and not "L I V E".
+      icon: <span className="game-status__live-dot" />,
+      word: "LIVE",
+    };
+  }
+  return {
+    modifier: "--upcoming",
+    label: "Yet to kick off",
+    icon: <EventIcon />,
+    word: "SOON",
+  };
+}
+
 /**
  * Where a game stands, in one mark, on every game the search offers.
  *
@@ -50,52 +94,15 @@ function GameMark({
   /** The freshest status known, which for the chosen game is not the scoring pass's. */
   status?: GameStatus;
 }) {
-  if (game.result == null) {
-    return (
-      <span
-        className="game-status__mark --invalid"
-        role="img"
-        aria-label="Not listed by ESPN"
-      >
-        <span className="game-status__mark-icon">
-          <WarningIcon />
-        </span>
-        WARN
-      </span>
-    );
-  }
-  if (status === GameStatus.FINAL) {
-    return (
-      <span className="game-status__mark --final" role="img" aria-label="Final">
-        <span className="game-status__mark-icon">
-          <CheckIcon />
-        </span>
-        DONE
-      </span>
-    );
-  }
-  if (status === GameStatus.LIVE) {
-    return (
-      <span className="game-status__mark --live" role="img" aria-label="Live">
-        <span className="game-status__mark-icon">
-          {/* Read out by the label above rather than as letters, so a reader being
-              read to hears "Live" and not "L I V E". */}
-          <span className="game-status__live-dot" />
-        </span>
-        LIVE
-      </span>
-    );
-  }
+  const { modifier, label, icon, word } = markFor(game, status);
   return (
     <span
-      className="game-status__mark --upcoming"
+      className={`game-status__mark ${modifier}`}
       role="img"
-      aria-label="Yet to kick off"
+      aria-label={label}
     >
-      <span className="game-status__mark-icon">
-        <EventIcon />
-      </span>
-      SOON
+      <span className="game-status__mark-icon">{icon}</span>
+      {word}
     </span>
   );
 }
