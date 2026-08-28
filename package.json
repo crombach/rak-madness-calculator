@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit && tsc --noEmit -p functions/tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
+    "bench": "vitest bench --run --mode test",
     "pages:dev": "npm run build && wrangler pages dev ./build --port 3000",
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",

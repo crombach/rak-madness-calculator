@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help setup build run test check lint lint-docs typecheck format
+.PHONY: help setup build run test bench check lint lint-docs typecheck format
 
 # Override to run a second dev server alongside the first, e.g. make run PORT=3001
 PORT ?= 3000
@@ -22,6 +22,9 @@ run: ## Start the Vite dev server (PORT=3000 by default)
 
 test: ## Run the Vitest suite once (no watch mode)
 	npm test
+
+bench: ## Run the scoring benchmarks (not part of `make check`)
+	npm run bench
 
 check: lint lint-docs typecheck test ## Lint, typecheck, test, and format-check everything
 	npm run prettier

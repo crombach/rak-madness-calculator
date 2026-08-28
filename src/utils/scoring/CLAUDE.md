@@ -21,3 +21,4 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 - `getPlayerAnalysis`: what a player must do, plus `getSettledAnalysis`,
   the answers a week already holds, which the dialog asks before it waits
 - `leagueResultFixtures`: test game builders
+- `benchFixtures`: the 60x19 week the benchmarks measure
