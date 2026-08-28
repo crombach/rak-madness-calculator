@@ -88,6 +88,14 @@ export default function usePlayerScores(
 
   // Every path into the scores runs through here, so the loading flags and the
   // failure toasts cannot drift between them.
+  // Both failure branches drop the same three, and a stale score change outliving
+  // the scores it described is what a partial reset would leave behind.
+  const clearScores = useCallback(() => {
+    setScores(undefined);
+    previousScores.current = undefined;
+    setScoreChangesState(NO_SCORE_CHANGES);
+  }, []);
+
   const attemptScoring = useCallback(
     async ({
       loadPicks,
@@ -116,9 +124,7 @@ export default function usePlayerScores(
           `Failed to load week ${selectedWeek.value} picks spreadsheet. Has it been uploaded yet?`,
           error,
         );
-        setScores(undefined);
-        previousScores.current = undefined;
-        setScoreChangesState(NO_SCORE_CHANGES);
+        clearScores();
         setAttemptedFor(attempted);
         setScoresLoading(false);
         isAttemptInFlight.current = false;
@@ -143,9 +149,7 @@ export default function usePlayerScores(
         if (!isLatest()) return;
         console.error("Failed to calculate scores", error);
         if (!keepScoresOnFailure) {
-          setScores(undefined);
-          previousScores.current = undefined;
-          setScoreChangesState(NO_SCORE_CHANGES);
+          clearScores();
         }
         showToast(onScoreFailure);
       } finally {
@@ -156,7 +160,7 @@ export default function usePlayerScores(
         }
       }
     },
-    [selectedWeek, season, showToast],
+    [selectedWeek, season, showToast, clearScores],
   );
 
   useEffect(() => {
