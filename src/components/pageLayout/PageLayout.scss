@@ -74,6 +74,10 @@
   justify-content: safe center;
   box-shadow: var(--rak-shadow-overlay);
   overflow: auto;
+  // A fling in the table stops at the table. It never chained anywhere worth
+  // going, since `<html>` does not scroll, and on a phone it is what the pull
+  // below competes with.
+  overscroll-behavior: contain;
   // The room a scrollbar needs, held whether or not there is one, so a week long
   // enough to scroll is not narrower than the wireframe that stood in for it.
   scrollbar-gutter: stable;
@@ -129,6 +133,35 @@
       overflow-x: hidden;
     }
   }
+}
+
+// Where the pull is drawn, this box gives up its own bounce as well. At the top
+// of a table the rubber-band and the gesture answer the same finger, and the one
+// the app draws has to win. `index.scss` gave the same thing up document-wide.
+@include phone-touch {
+  .page__content {
+    overscroll-behavior-y: none;
+  }
+}
+
+// Only while a pull is running. Written unconditionally this would make the box a
+// stacking context on every page, trapping the table's sticky header and the
+// wireframe's sheen inside it for the sake of translating by nothing. Here it is
+// what is wanted: the header rides down with the box it sticks in.
+:root[data-pull] .page__content {
+  transform: translate3d(0, var(--rak-pull-offset, 0px), 0);
+  will-change: transform;
+}
+
+// From wherever the finger left it to where the puck rests, and back again after.
+// `--rak-ease-key` is the app's own curve for something that starts fast and
+// settles, which is what a spring back is.
+:root[data-pull="refreshing"] .page__content {
+  transition: transform var(--rak-duration-fast) var(--rak-ease-key);
+}
+
+:root[data-pull="settling"] .page__content {
+  transition: transform var(--rak-duration-slow) var(--rak-ease-key);
 }
 
 /** Straight to the results, past a navbar that is the same on every page. */

@@ -1,3 +1,4 @@
+@use "../../styles/a11y" as *;
 @use "../../styles/breakpoints" as *;
 
 // One flex child of the navbar's right side, so it carries the gap between its
@@ -49,5 +50,15 @@
 
   &.--collapsed {
     opacity: 0;
+  }
+}
+
+// Where a pull on the table takes its place. Read and not drawn, rather than
+// gone: a screen reader owns every swipe, so its reader cannot perform the
+// gesture, and `display: none` would leave them no way to refresh a live week at
+// all. On the wrapper, so the divider goes with it.
+@include phone-touch {
+  .scores-nav__live {
+    @include visually-hidden;
   }
 }

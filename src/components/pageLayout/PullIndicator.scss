@@ -1,0 +1,66 @@
+@use "../../styles/skeleton" as *;
+
+/**
+ * A strip of no height between the navbar and the content, so it takes no room in
+ * the page's column and needs to know nothing about the bar above it. The gap the
+ * translated content opens below is the whole of what it draws into.
+ */
+.page__pull {
+  position: relative;
+  align-self: stretch;
+  flex: 0 0 0;
+  height: 0;
+  // Over the table's sticky header and the wireframe's sheen, under the navbar,
+  // so the puck comes out from beneath the bar rather than over it.
+  z-index: var(--rak-z-pull);
+}
+
+.page__pull-puck {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--rak-touch-target);
+  height: var(--rak-touch-target);
+  border-radius: 50%;
+  background-color: var(--rak-primary-500);
+  box-shadow: var(--rak-shadow-raised);
+  // Centered in the gap below, which is `--rak-pull-offset` tall. Half of nothing
+  // is nothing, so at rest the puck is centered on the navbar's lower edge and
+  // covered by it.
+  transform: translate(-50%, calc(var(--rak-pull-offset, 0px) / 2 - 50%));
+  // Faded in by the pull itself rather than by a duration of its own, so it
+  // arrives at the speed the finger moves.
+  opacity: var(--rak-pull-progress, 0);
+
+  > svg {
+    fill: var(--rak-on-solid);
+  }
+}
+
+// Far enough that letting go would refresh. The app's own key, lit.
+:root[data-pull="armed"] .page__pull-puck,
+:root[data-pull="refreshing"] .page__pull-puck {
+  background-color: var(--rak-primary-400);
+}
+
+// The one way the app says it is still working, which is a sheen and never a
+// spin. `_skeleton.scss` states that, and the puck is no exception.
+:root[data-pull="refreshing"] .page__pull-puck {
+  @include skeleton-sheen;
+
+  // The mixin makes what it is on the containing block it clips the sheen
+  // against, and its `relative` would drop the puck back into the strip's flow.
+  // Said again after it, because absolute is a containing block too.
+  position: absolute;
+}
+
+// The finger is off it, so the puck rides the content back up rather than
+// tracking a position nothing is moving to any more.
+:root[data-pull="settling"] .page__pull-puck {
+  transition:
+    transform var(--rak-duration-slow) var(--rak-ease-key),
+    opacity var(--rak-duration-slow) var(--rak-ease-key);
+}

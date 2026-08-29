@@ -3,11 +3,14 @@ import {
   PropsWithChildren,
   ReactNode,
   useEffect,
+  useRef,
   useState,
 } from "react";
+import usePullToRefresh, { Pull } from "../../hooks/usePullToRefresh";
 import getClasses from "../../utils/getClasses";
 import { ScreenRotationIcon } from "../icon/Icon";
 import Navbar from "../navbar/Navbar";
+import PullIndicator from "./PullIndicator";
 import "./PageLayout.scss";
 
 const BACKGROUND_TILE = "/logo512.png";
@@ -87,6 +90,7 @@ export default function PageLayout({
   navbarRight,
   showingScores = false,
   scrollable = true,
+  pull,
   children,
 }: PropsWithChildren<{
   /**
@@ -103,8 +107,16 @@ export default function PageLayout({
    * clicked. The content keeps whatever scrollbars it asks for either way.
    */
   scrollable?: boolean;
+  /**
+   * The refresh a pull on the content offers, which is a phone's replacement for
+   * the refresh button. Left out by a page with nothing to refetch, and by one
+   * with nothing on it to pull yet.
+   */
+  pull?: Pull;
 }>) {
   const areTilesLoaded = useTileLoaded(BACKGROUND_TILE);
+  const contentRef = useRef<HTMLElement>(null);
+  const isPullArmed = usePullToRefresh({ scrollRef: contentRef, pull });
 
   return (
     <div
@@ -115,8 +127,10 @@ export default function PageLayout({
         Skip to results
       </a>
       <Navbar left={navbarLeft} right={navbarRight} />
+      {isPullArmed && <PullIndicator />}
       <main
         id="main"
+        ref={contentRef}
         className={getClasses("page__content", {
           "--scores": showingScores,
           "--frozen": !scrollable,

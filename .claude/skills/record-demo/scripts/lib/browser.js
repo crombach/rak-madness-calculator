@@ -14,6 +14,7 @@ import path from "node:path";
  *   outPath: string,
  *   screenshot?: boolean,
  *   viewport?: { width: number, height: number },
+ *   touch?: boolean,
  *   mp4?: boolean,
  * }} options
  */
@@ -21,6 +22,7 @@ export async function launchDemo({
   outPath,
   screenshot = false,
   viewport = { width: 430, height: 900 },
+  touch = false,
   mp4 = false,
 }) {
   const browser = await chromium.launch({ headless: true });
@@ -29,6 +31,12 @@ export async function launchDemo({
     : await mkdtemp(path.join(tmpdir(), "record-demo-"));
   const context = await browser.newContext({
     viewport,
+    // A phone rather than a narrow desktop window. Off by default, because it
+    // also turns off every `can-hover` rule, which is what the other scenarios
+    // are capturing. Without it Chromium reports `hover: hover` and
+    // `pointer: fine`, so a scenario driving a touch gets no phone-only rules.
+    hasTouch: touch,
+    isMobile: touch,
     recordVideo: videoDir ? { dir: videoDir, size: viewport } : undefined,
   });
   const page = await context.newPage();

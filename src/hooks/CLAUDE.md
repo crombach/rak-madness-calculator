@@ -10,6 +10,8 @@ The data layer, plus the two page measurements. The first four mount once in
   the throttle
 - `useLiveGame`: one game, refetched every twenty seconds
 - `useArrival`: an outside value, taken as it arrives
+- `useMediaQuery`: whether a media query holds, kept in step
+- `usePullToRefresh`: a phone's pull on a scrolling box, written to the root
 - `useExportScores`: the scores, as a workbook
 - `useWeekRouteGuard`: whether a `/:season/:week` URL has anything to show
 - `useFillerRows`: the empty rows carrying a table to the viewport bottom

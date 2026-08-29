@@ -98,6 +98,11 @@ export default function ResultsFrame({
       // in for, so it wants the same content area.
       showingScores
       scrollable={isReady}
+      // Exact parity with the refresh button beside it: the same live week, and
+      // only once there is a table to pull on.
+      pull={
+        isReady && !isWinnerDecided ? { onRefresh, isRefreshing } : undefined
+      }
       navbarLeft={<LogoButton onClick={() => navigate("/")} />}
       navbarRight={
         // Rendered while the week loads, so the navbar does not change shape

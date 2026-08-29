@@ -57,11 +57,16 @@
   --rak-line-height: 1.5;
   --rak-line-height-tight: 1.1;
 
-  // The width the tiled logo stops being drawn at, which `PageLayout.tsx` reads so
-  // it can stop fetching the tile there too. The breakpoints themselves are Sass,
-  // because a media query cannot read a custom property, and this is the one place
-  // outside a stylesheet that has to ask a breakpoint's question.
+  // The two questions asked outside a stylesheet as well as inside one. The
+  // breakpoints themselves stay Sass, because a media query cannot read a custom
+  // property, so what crosses over is written here for `matchMedia` to ask.
+  //
+  // `--rak-breakpoint-roomy` is the width the tiled logo stops being drawn at,
+  // which `PageLayout.tsx` reads so it can stop fetching the tile there too.
+  // `--rak-phone-touch` is the whole query `phone-touch` guards, quoted because a
+  // custom property holding a bare media query is not a valid declaration.
   --rak-breakpoint-roomy: #{$breakpoint-roomy};
+  --rak-phone-touch: "#{$phone-touch-query}";
 
   // What a label set in capitals is opened up by. Capitals are drawn on one
   // height and run together without it, and every small label in the app is set
@@ -126,6 +131,9 @@
   // after it in the table, which pass under it as the table scrolls sideways.
   --rak-z-sticky-corner: 25;
   --rak-z-skeleton: 30;
+  // The pull-to-refresh puck, over the table it is dragged off and under the bar
+  // it is dragged out from beneath.
+  --rak-z-pull: 40;
   --rak-z-navbar: 100;
   --rak-z-overlay: 200;
   --rak-z-toast: 400;
