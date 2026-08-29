@@ -24,7 +24,7 @@ type AppData = ReturnType<typeof useLeagueWeeks> &
      * reference, so a rebuilt one would leave it unable to show a selection.
      */
     findWeek: (value: number) => WeekInfo | undefined;
-    /** Which season the user is looking at, by the year it started in. */
+    /** Which season the user is looking at. */
     setSelectedSeason: (season: number) => void;
     /**
      * The season being asked for, which is the one the picker should show.

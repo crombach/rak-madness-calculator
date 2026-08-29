@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { RemainingPick } from "../../types/PlayerAnalysis";
-// These render elements of the `analysis` block, which `AnalysisSummary` owns and styles.
 import "./AnalysisSummary.scss";
 
 export const NAMES = new Intl.ListFormat("en-US");

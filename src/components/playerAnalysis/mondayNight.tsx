@@ -1,7 +1,6 @@
 import { Fragment } from "react";
 import { MondayNightOutlook } from "../../types/PlayerAnalysis";
 import { NAMES, Section } from "./analysisParts";
-// These render elements of the `analysis` block, which `AnalysisSummary` owns and styles.
 import "./AnalysisSummary.scss";
 
 /** The outlooks worth a sentence: a week won outright says so on its own line. */

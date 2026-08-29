@@ -6,7 +6,6 @@ type Team = {
   location?: string;
   mascot?: string;
   abbreviation: string;
-  /** Absent for a team ESPN has no mark for, which the college groups have. */
   logoUrl?: string;
 };
 
@@ -20,7 +19,7 @@ export type GameSide = {
   score: number;
   /** The season record, like `3-2`. Absent where ESPN did not send one. */
   record?: string;
-  /** Points per period, in order. Empty before kickoff. */
+  /** Points per period, in order. */
   linescores: Array<number>;
 };
 
@@ -32,17 +31,14 @@ export type LeagueResult = {
   date: Date;
   status: GameStatus;
   detailMessage: string;
-  /** The quarter the game is in, counting past four into overtime. */
   period?: number;
-  /** The clock as ESPN writes it, like `8:42`. */
   clock?: string;
   home: GameSide;
   away: GameSide;
   /**
-   * Whether the game is played at neither side's own ground, which every bowl game is.
-   *
-   * ESPN still names a home side for one of them, and the pool still scores the line
-   * against it, so the two sides are only ever said to be home and away where they are.
+   * ESPN still names a home side for a neutral-site game, and the pool still scores
+   * the line against it, so the two sides are only ever said to be home and away
+   * where they are.
    */
   isNeutralSite: boolean;
   /**

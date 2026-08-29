@@ -9,10 +9,6 @@ import { indexResults } from "./resultsIndex";
 import scorePlayers from "./scorePlayers";
 import weekGames from "./weekGames";
 
-/**
- * `season` is the year the week's season started in, so a week played in January
- * still scores against the season it belongs to.
- */
 export async function getPlayerScores(
   week: WeekInfo,
   picksBuffer: ArrayBuffer,

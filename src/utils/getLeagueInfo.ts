@@ -20,7 +20,6 @@ type Calendar = {
 
 type LeagueMetadata = {
   slug: string;
-  /** The year the season started in, whatever calendar year its games fall in. */
   season: { year: number };
   calendar: Calendar[];
 };
@@ -68,17 +67,16 @@ const regularSeasonWeekCounts = new Map<string, number>();
 /**
  * Fetches league information from the ESPN API.
  *
- * `season` is the year a season started in, which is what ESPN's `dates` means
- * here: `dates=2025` covers the games played from September 2025 into January
- * 2026, not the 2026 games of the season after. Left out, ESPN answers with
- * whichever season is running now.
+ * ESPN's `dates` param takes `season`. `dates=2025` covers the games played from
+ * September 2025 into January 2026, not the 2026 games of the season after. Left
+ * out, ESPN answers with whichever season is running now.
  */
 export default function getLeagueInfo(
   league: League,
   season?: number,
 ): Promise<LeagueInfo | null> {
-  // `useCurrentSeason` asks for whichever season is running, `useLeagueWeeks` and
-  // `getRegularSeasonWeekCount` for a named one. One request answers each, then drops.
+  // A request for whichever season is running is keyed apart from one for a named
+  // season, so each answers once and then drops.
   const key = `${league}:${season ?? "current"}`;
   const inFlight = requests.get(key);
   if (inFlight != null) {
@@ -107,7 +105,6 @@ async function fetchLeagueInfo(
     }
   }
 
-  // Get the ESPN league data.
   const response = await fetch(
     `https://site.api.espn.com/apis/site/v2/sports/football/${league}/scoreboard${
       season != null ? `?dates=${season}` : ""
@@ -153,7 +150,6 @@ function toLeagueInfo(
   league: League,
   scoreboard: Scoreboard,
 ): LeagueInfo | null {
-  // Find the requested league. Should always be index 0, but we are being safe.
   const leagueMetadata = scoreboard.leagues.find(
     (it) => it.slug === (league as string),
   );
@@ -162,10 +158,8 @@ function toLeagueInfo(
     return null;
   }
 
-  // Get the current datetime.
   const now = new Date();
 
-  // Map calendar objects to the format we need.
   const calendars = leagueMetadata.calendar.map((cal) => {
     return {
       seasonType: parseInt(cal.value) as SeasonType,
@@ -186,7 +180,6 @@ function toLeagueInfo(
   // every year: Off Season. Leave it out of the running.
   const datedCalendars = calendars.filter((cal) => cal.weeks.length > 0);
 
-  // Find the active calendar for the current league and date/time.
   // For the NFL, we always want to use the regular season calendar.
   // For the NCAA, we go by date because we cross into the postseason.
   // Fall back to the last calendar.

@@ -16,9 +16,9 @@ import latestOnly from "../utils/latestOnly";
  * would be selected and scored first, only to be replaced. It is read when the
  * calendar lands, so it can change without costing another lookup.
  *
- * `season` is the year a season started in. Left out, ESPN answers with the
- * season running now, and `loadedSeason` comes back saying which one that was. A
- * season that has ended has every week behind it, so all of them are selectable.
+ * Left out, ESPN answers with the season running now, and `loadedSeason` comes
+ * back saying which one that was. A season that has ended has every week behind
+ * it, so all of them are selectable.
  *
  * `enabled` holds the lookup back until the caller knows which season to ask for.
  * Without it the season running now would be fetched first and shown for a moment,

@@ -44,9 +44,9 @@ function gameSpread(
  * A column ESPN had no game for keeps its place, so a reader who clicked it is
  * told there is nothing behind it rather than being shown the wrong game.
  *
- * Positional labels rather than the workbook's own keys, because a sheet with two
- * `C1` headers reaches the second column as `C1_1` while the table titles it `C2`.
- * The key is only how the column's teams are looked up.
+ * Positional labels rather than the workbook's own keys, which a repeated header
+ * suffixes (see `parsePicksWorkbook`). The key is only how the column's teams are
+ * looked up.
  */
 export default function weekGames(
   parsed: Pick<

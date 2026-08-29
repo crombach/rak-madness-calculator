@@ -9,9 +9,6 @@ type SeasonsResponse = {
 /**
  * The seasons that have picks in the database, newest first.
  *
- * A season is named by the year it started in, so 2025 covers the games played
- * from September 2025 into January 2026.
- *
  * Why the type is checked at all: see `contentType.ts`. A dev server's HTML reads
  * the same as an empty list here, and the caller falls back to the season running
  * now, which is the only one that can be scored from a local upload anyway.

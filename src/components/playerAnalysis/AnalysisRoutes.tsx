@@ -4,7 +4,6 @@ import plural from "../../utils/plural";
 import Button from "../button/Button";
 import { Picks, Section } from "./analysisParts";
 import { RouteMondayNight } from "./mondayNight";
-// These render elements of the `analysis` block, which `AnalysisSummary` owns and styles.
 import "./AnalysisSummary.scss";
 
 /** How many routes stand open, the rest being a click away. */

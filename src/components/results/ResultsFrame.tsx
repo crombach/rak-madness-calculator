@@ -60,7 +60,6 @@ export default function ResultsFrame({
   scores?: RakMadnessScores;
   /** The week the scores are for, which fetching one of its games again needs. */
   week?: WeekInfo;
-  /** The year that week's season started in. */
   season?: number;
 }>) {
   const navigate = useNavigate();

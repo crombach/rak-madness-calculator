@@ -1,6 +1,5 @@
 // The one "screen cut into a panel" look every readout in the app shares: the
-// scoreline in the game dialog and the app's own name in the navbar. Mixins only,
-// so this emits no CSS of its own however many files pull it in.
+// scoreline in the game dialog and the app's own name in the navbar.
 
 /**
  * A well of `--rak-glass-fill`, framed in a plate `$plate-width` wide: the plate

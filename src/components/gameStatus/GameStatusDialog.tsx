@@ -125,7 +125,6 @@ export default function GameStatusDialog({
   scores?: RakMadnessScores;
   /** Which week the games belong to, which fetching one again needs. */
   week?: WeekInfo;
-  /** The year that week's season started in. */
   season?: number;
   /**
    * Called once the game shown here is polled final, so the week's scores can

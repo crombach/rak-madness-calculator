@@ -22,10 +22,6 @@
       color: var(--rak-text-on-pale);
     }
 
-    // The picks table's own token rather than a direct read of `--rak-warning-300`:
-    // that ramp step also fills the game dialog's `--invalid` mark, paired there
-    // with its own fixed dark text, and the two need to move independently once
-    // dark mode darkens this cell instead.
     .table__pick.--unscoreable,
     .table__cell-wipe.--unscoreable {
       --rak-cell-base: var(--rak-cell-unscoreable);

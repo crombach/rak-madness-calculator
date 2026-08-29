@@ -1,7 +1,6 @@
 // The shape every Base UI popup list in the app shares: the season and week
 // selects on the home page, and the player combobox in the player analysis
-// dialog. Mixins only, so this emits no CSS of its own however many files pull it
-// in. Each caller adds what makes its own list different.
+// dialog. Each caller adds what makes its own list different.
 
 // The most rows any of these lists shows before it scrolls.
 $-max-rows: 5;

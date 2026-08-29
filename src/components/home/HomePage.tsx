@@ -85,10 +85,6 @@ export default function HomePage() {
       {loadedSeason != null && (
         <>
           <div className="home__controls">
-            {/*
-              Seasons are named by the year they started in, so the 2025 season
-              covers the games played from September 2025 into January 2026.
-            */}
             <LabeledSelect<number>
               ariaLabel="Season"
               className="home__week-input home__season-input select__trigger"

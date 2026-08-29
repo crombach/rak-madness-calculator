@@ -48,10 +48,8 @@ type ScoringRequest = {
  * The scores for a week, however the picks arrive: from the API, from this
  * browser's cache of an earlier upload, or from a file the user just chose.
  *
- * `season` is the year the week's season started in. It names the picks in the
- * API path and the cache, and it is what the games are scored against, so a week
- * played in January still scores against the season it belongs to. Nothing is
- * attempted until it is known.
+ * `season` names the picks in the API path and the cache, and is what the games
+ * are scored against. Nothing is attempted until it is known.
  *
  * `attemptedFor` names the season and week this hook has finished trying, which
  * is not always the pair asked for: switching either leaves the old scores in
@@ -253,7 +251,6 @@ export default function usePlayerScores(
     await refreshThrottled();
   }, [refreshThrottled]);
 
-  // Memoized so `AppDataContext` can memoize the value it publishes.
   return useMemo(
     () => ({
       scores,

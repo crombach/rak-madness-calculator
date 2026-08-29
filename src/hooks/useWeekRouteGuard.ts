@@ -9,7 +9,6 @@ type GuardResult =
 
 type Redirect = { header: string; message: string } | "silent";
 
-/** Seasons are named by the year they started in, so four digits. */
 const SEASON_PATTERN = /^\d{4}$/;
 
 /**

@@ -10,7 +10,6 @@ type Cell = {
 };
 
 export type RemainingGame = {
-  /** `C4`, `P11`: the column label the picks table gives the same game. */
   label: string;
   league: LeagueKey;
   /** Every row's cell, in the order the scores hold their players. */
