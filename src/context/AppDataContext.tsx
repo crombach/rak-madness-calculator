@@ -12,7 +12,7 @@ import useLeagueWeeks from "../hooks/useLeagueWeeks";
 import usePicksSeasons from "../hooks/usePicksSeasons";
 import usePlayerScores from "../hooks/usePlayerScores";
 import { WeekInfo } from "../types/League";
-import isWeekDecided from "../utils/scoring/isWeekDecided";
+import isWinnerDecided from "../utils/scoring/isWinnerDecided";
 import { NO_SCORE_CHANGES, ScoreChanges } from "../utils/scoring/scoreChanges";
 
 type AppData = ReturnType<typeof useLeagueWeeks> &
@@ -24,12 +24,12 @@ type AppData = ReturnType<typeof useLeagueWeeks> &
      * reference, so a rebuilt one would leave it unable to show a selection.
      */
     findWeek: (value: number) => WeekInfo | undefined;
-    /** Which season the user is looking at, by the year it started in. */
+    /** Which season the user is looking at. */
     setSelectedSeason: (season: number) => void;
     /**
      * The season being asked for, which is the one the picker should show.
-     * `seasonYear` is the season already loaded, so the two differ for the length
-     * of a switch.
+     * `loadedSeason` is the season already loaded, so the two differ for the
+     * length of a switch.
      */
     requestedSeason?: number;
     /**
@@ -50,21 +50,24 @@ const AppDataContext = createContext<AppData | undefined>(undefined);
  * split. False with no provider above, so a table can still be rendered on its
  * own with scores handed straight to it.
  */
-const WeekDecidedContext = createContext(false);
+const WinnerDecidedContext = createContext(false);
 
 /**
  * What the most recent scoring attempt changed, so a table can flash only the
- * cells that moved. Its own context for the same reason `WeekDecidedContext` is:
+ * cells that moved. Its own context for the same reason `WinnerDecidedContext` is:
  * every pick and player cell reads it, and `AppData` re-renders on every loading
  * flag it carries.
  */
 const ScoreChangesContext = createContext<ScoreChanges>(NO_SCORE_CHANGES);
 
 /** The season and week a results URL names, from `/<year>/<week>/…`. Empty elsewhere. */
-function routeFromPath(pathname: string): { season?: number; week?: number } {
+function routeFromPath(pathname: string): {
+  season?: number;
+  weekNumber?: number;
+} {
   const match = /^\/(\d{4})\/(\d+)/.exec(pathname);
   return match != null
-    ? { season: Number(match[1]), week: Number(match[2]) }
+    ? { season: Number(match[1]), weekNumber: Number(match[2]) }
     : {};
 }
 
@@ -82,7 +85,7 @@ export function AppDataContextProvider({
   const { pathname } = useLocation();
   const route = routeFromPath(pathname);
   // Undefined until a URL or the picker names one, which is what asks ESPN for
-  // the season running now. `seasonYear` then comes back saying which one that
+  // the season running now. `loadedSeason` then comes back saying which one that
   // was.
   const [selectedSeason, setSelectedSeason] = useState(route.season);
 
@@ -105,13 +108,13 @@ export function AppDataContextProvider({
   // of it has been played, so `useCurrentSeason` withholds it too.
   const requestedSeason = selectedSeason ?? picksSeasons.seasons?.[0];
   const leagueWeeks = useLeagueWeeks(
-    route.week,
+    route.weekNumber,
     requestedSeason,
     !picksSeasons.isSeasonsLoading,
   );
   const playerScores = usePlayerScores(
     leagueWeeks.selectedWeek,
-    leagueWeeks.seasonYear,
+    leagueWeeks.loadedSeason,
   );
   const { weeks } = leagueWeeks;
 
@@ -121,8 +124,8 @@ export function AppDataContextProvider({
   );
 
   const { scores, scoreChanges } = playerScores;
-  const weekDecided = useMemo(
-    () => scores != null && isWeekDecided(scores),
+  const winnerDecided = useMemo(
+    () => scores != null && isWinnerDecided(scores),
     [scores],
   );
 
@@ -132,17 +135,21 @@ export function AppDataContextProvider({
   // out of reach. Falling back to the season the week list describes keeps the
   // picker usable where neither could be fetched, which is every `make run`, so
   // long as that season has a week behind it to score.
-  const { seasonYear, currentWeek } = leagueWeeks;
+  const { loadedSeason, currentWeekNumber } = leagueWeeks;
   const selectableSeasons = useMemo(() => {
     const offered = new Set(picksSeasons.seasons ?? []);
     if (currentSeason != null) {
       offered.add(currentSeason);
     }
-    if (offered.size === 0 && seasonYear != null && currentWeek != null) {
-      offered.add(seasonYear);
+    if (
+      offered.size === 0 &&
+      loadedSeason != null &&
+      currentWeekNumber != null
+    ) {
+      offered.add(loadedSeason);
     }
     return [...offered].sort((a, b) => b - a);
-  }, [picksSeasons.seasons, currentSeason, seasonYear, currentWeek]);
+  }, [picksSeasons.seasons, currentSeason, loadedSeason, currentWeekNumber]);
 
   const value = useMemo(
     () => ({
@@ -166,11 +173,11 @@ export function AppDataContextProvider({
 
   return (
     <AppDataContext.Provider value={value}>
-      <WeekDecidedContext.Provider value={weekDecided}>
+      <WinnerDecidedContext.Provider value={winnerDecided}>
         <ScoreChangesContext.Provider value={scoreChanges}>
           {children}
         </ScoreChangesContext.Provider>
-      </WeekDecidedContext.Provider>
+      </WinnerDecidedContext.Provider>
     </AppDataContext.Provider>
   );
 }
@@ -183,8 +190,8 @@ export function useAppData(): AppData {
   return value;
 }
 
-export function useIsWeekDecided(): boolean {
-  return useContext(WeekDecidedContext);
+export function useIsWinnerDecided(): boolean {
+  return useContext(WinnerDecidedContext);
 }
 
 export function useScoreChanges(): ScoreChanges {

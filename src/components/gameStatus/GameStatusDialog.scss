@@ -127,9 +127,8 @@ $check-icon-ratio: math.div(451, 333);
 }
 
 // Already cropped to its own edges rather than a square Material box, so it fills
-// the slot's own width exactly rather than needing a share to divide it. `.icon`
-// sets a font size of its own, which `--rak-caps-ink`'s `em` would otherwise be
-// read against instead of the word beside it.
+// the slot's own width exactly rather than needing a share to divide it. `font-size:
+// inherit` counters `.icon`'s own font-size, the same way `ink-height` does.
 .game-status__mark.--final .game-status__mark-icon svg {
   font-size: inherit;
   width: 100%;

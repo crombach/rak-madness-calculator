@@ -31,6 +31,14 @@
   }
 }
 
+// Fixed white ink rather than `--rak-on-solid`: that token now inverts with the
+// primary ramp's own chrome, but these fills each stay their own fixed color in
+// both modes, so their ink has to stay fixed too.
+@mixin fixed-white-ink {
+  color: #fff;
+  --rak-focus-ring: #fff;
+}
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -168,9 +176,7 @@
       }
     }
 
-    // Fixed white ink rather than `--rak-on-solid`: that token now inverts with
-    // the primary ramp's own chrome, but this fill stays the same dark green in
-    // both modes, so its ink has to stay fixed too.
+    // This fill stays the same dark green in both modes.
     &.--success {
       @include button-color(
         var(--rak-success-700),
@@ -178,11 +184,10 @@
         var(--rak-success-600)
       );
 
-      color: #fff;
-      --rak-focus-ring: #fff;
+      @include fixed-white-ink;
     }
 
-    // Same reasoning as `--success` above, off the equally fixed dark red.
+    // Off the equally fixed dark red.
     &.--danger {
       @include button-color(
         var(--rak-danger-700),
@@ -190,13 +195,12 @@
         var(--rak-danger-600)
       );
 
-      color: #fff;
-      --rak-focus-ring: #fff;
+      @include fixed-white-ink;
     }
 
     // The key that goes somewhere rather than reports something, in the same blue
-    // the lamp is lit in. Same reasoning as the two above, off a fill that stays
-    // one saturated blue in both modes: 5.45:1 on white ink.
+    // the lamp is lit in: a fill that stays one saturated blue in both modes,
+    // 5.45:1 on white ink.
     &.--info {
       @include button-color(
         var(--rak-info-700),
@@ -204,13 +208,12 @@
         var(--rak-info-600)
       );
 
-      color: #fff;
-      --rak-focus-ring: #fff;
+      @include fixed-white-ink;
     }
 
     // The key that hands the week to something outside the app, in the orange
     // the tables already spend on a knockout, so it reads as neither a result
-    // nor a route. 5.02:1 on white ink.
+    // nor a route: 5.02:1 on white ink.
     &.--warning {
       @include button-color(
         var(--rak-warning-700),
@@ -218,8 +221,7 @@
         var(--rak-warning-600)
       );
 
-      color: #fff;
-      --rak-focus-ring: #fff;
+      @include fixed-white-ink;
     }
   }
 

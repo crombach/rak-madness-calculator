@@ -1,6 +1,5 @@
-// How big an icon is drawn to come out as tall as the text beside it. Mixins and
-// variables only, so this emits no CSS of its own however many files `@use` it. The
-// two heights it is drawn to, `--rak-text-ink` and `--rak-caps-ink`, are tokens in
+// How big an icon is drawn to come out as tall as the text beside it. The two
+// heights it is drawn to, `--rak-text-ink` and `--rak-caps-ink`, are tokens in
 // `src/index.scss`.
 
 // Material draws every glyph on a 24-unit box but not out to its edges, and how much of

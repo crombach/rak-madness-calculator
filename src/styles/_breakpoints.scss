@@ -1,6 +1,5 @@
 // Sass rather than a custom property, because custom properties do not work
-// inside a media query. Variables and mixins only, so this emits no CSS of its
-// own however many files pull it in.
+// inside a media query.
 //
 // Every width mixin here is `min-width`. A phone gets the base rules, and wider
 // screens opt into what the extra room allows. Written the other way round, the

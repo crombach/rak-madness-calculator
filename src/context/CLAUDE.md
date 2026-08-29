@@ -2,7 +2,7 @@
 
 - `AppDataContext`: the season list, week list, picks, and scores, held above the
   routes, with the season and week derived from the pathname. Publishes
-  `WeekDecidedContext` and `ScoreChangesContext` separately, the latter what a
+  `WinnerDecidedContext` and `ScoreChangesContext` separately, the latter what a
   refresh just changed, for the tables to flash.
 - `SettingsContext`: the theme and the reader's own name, from `settingsStore`.
   Writes `data-theme` for `index.scss`, and answers `useIsMyPlayer`.

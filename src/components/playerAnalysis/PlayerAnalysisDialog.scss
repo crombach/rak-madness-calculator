@@ -3,11 +3,9 @@
 // The status hues the search wears, and the size the icon carrying them is drawn at,
 // over the shared dialog and combobox rules the rest of this dialog's look comes from.
 
-// The status of the player named in the input, in the hue the list marks them
-// with, so the search reads the same way whether it is open or closed.
-.player-analysis__input-status {
-  display: flex;
-  align-items: center;
+// The size and the color a player's status is drawn in, off whichever hue the list
+// already marks them with.
+@mixin player-status-hues {
   --rak-player-icon-size: calc(var(--rak-text-ink) / #{$ink-share-player});
   --rak-player-icon-fill: var(--rak-in-contention-on-light);
 
@@ -16,17 +14,20 @@
   }
 }
 
+// The status of the player named in the input, in the hue the list marks them
+// with, so the search reads the same way whether it is open or closed.
+.player-analysis__input-status {
+  display: flex;
+  align-items: center;
+  @include player-status-hues;
+}
+
 // The icon rather than the entry, so the highlight the list draws as it is walked
 // is still the only fill in the popup. Written against both classes, so the gap
 // wins over the one every dialog option gets however the sheets are ordered.
 .dialog__option.player-analysis__option {
   gap: var(--rak-player-icon-gap);
-  --rak-player-icon-size: calc(var(--rak-text-ink) / #{$ink-share-player});
-  --rak-player-icon-fill: var(--rak-in-contention-on-light);
-
-  &.--knocked-out {
-    --rak-player-icon-fill: var(--rak-knocked-out-on-light);
-  }
+  @include player-status-hues;
 
   // One line however long the name is, cut to the room left beside the icon. The popup
   // is only as wide as the search it hangs off, so that room is what there is to cut to.

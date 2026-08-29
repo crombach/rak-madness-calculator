@@ -5,10 +5,8 @@ import {
   PlayerScore,
   RakMadnessScores,
 } from "../../types/RakMadnessScores";
-import PlayerAnalysisDialog, {
-  playerOptions,
-  playersMatching,
-} from "./PlayerAnalysisDialog";
+import { playerScore } from "../../weekFixtures";
+import PlayerAnalysisDialog, { playerOptions } from "./PlayerAnalysisDialog";
 
 function proPick(pick: string): PickResult {
   return {
@@ -24,18 +22,17 @@ function player(
   pick: string,
   explanation?: string,
 ): PlayerScore {
-  return {
+  return playerScore({
     name,
     score: { total, college: 0, pro: total, proAgainstTheSpread: 0 },
     tiebreaker: {},
-    college: [],
     pro: [proPick(pick)],
     status: {
       hasNoPicks: false,
       isKnockedOut: explanation != null,
       explanation,
     },
-  };
+  });
 }
 
 /**
@@ -50,32 +47,9 @@ const scores: RakMadnessScores = {
   ],
 };
 
-describe("playersMatching", () => {
-  const options = playerOptions(scores);
-
-  it("offers a knocked out player alongside anyone standing", () => {
-    expect(playersMatching(options, "Bob")).toEqual([
-      { name: "Bob", isKnockedOut: false },
-      { name: "Bobby", isKnockedOut: true },
-    ]);
-  });
-
-  it("offers the knocked out player where they are the only match", () => {
-    expect(playersMatching(options, "Bobby")).toEqual([
-      { name: "Bobby", isKnockedOut: true },
-    ]);
-  });
-
-  it("offers everyone before anything is typed, in the order ranked", () => {
-    expect(playersMatching(options, "").map((it) => it.name)).toEqual([
-      "Alice",
-      "Bob",
-      "Bobby",
-    ]);
-  });
-
+describe("playerOptions", () => {
   it("has nobody to offer before a week is scored", () => {
-    expect(playersMatching(playerOptions(undefined), "")).toEqual([]);
+    expect(playerOptions(undefined)).toEqual([]);
   });
 });
 

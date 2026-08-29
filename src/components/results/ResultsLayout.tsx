@@ -3,6 +3,7 @@ import { useAppData } from "../../context/AppDataContext";
 import useWeekRouteGuard from "../../hooks/useWeekRouteGuard";
 import { ScoresView } from "../navbar/ScoresNavbar";
 import ResultsFrame from "./ResultsFrame";
+import resultsPath from "./resultsPath";
 
 /**
  * Chrome for a week's results, shared by both views.
@@ -12,11 +13,11 @@ import ResultsFrame from "./ResultsFrame";
  * its throttle window.
  */
 export default function ResultsLayout() {
-  const { season: rawSeason, week: rawWeek } = useParams();
+  const { season: seasonParam, week: weekParam } = useParams();
   const navigate = useNavigate();
-  const { refresh, isRefreshing, scores, selectedWeek, seasonYear } =
+  const { refresh, isRefreshing, scores, selectedWeek, loadedSeason } =
     useAppData();
-  const guard = useWeekRouteGuard(rawSeason, rawWeek);
+  const guard = useWeekRouteGuard(seasonParam, weekParam);
 
   // The route decides which view is showing, not component state.
   const view: ScoresView = useMatch("/:season/:week/picks")
@@ -28,15 +29,13 @@ export default function ResultsLayout() {
       view={view}
       isReady={guard.status === "ready"}
       onViewChange={(next) =>
-        navigate(`/${rawSeason}/${rawWeek}/${next.toLowerCase()}`, {
-          replace: true,
-        })
+        navigate(resultsPath(seasonParam, weekParam, next), { replace: true })
       }
       onRefresh={refresh}
       isRefreshing={isRefreshing}
       scores={scores}
-      weekInfo={selectedWeek}
-      season={seasonYear}
+      week={selectedWeek}
+      season={loadedSeason}
     >
       <Outlet />
     </ResultsFrame>

@@ -1,6 +1,5 @@
 import { PlayerScore } from "../../types/RakMadnessScores";
-import gameLabels, { LEAGUES } from "./gameColumns";
-import { MISSING_PICK } from "./getPickResults";
+import weekShape from "./weekShape";
 
 /**
  * The games nobody can be scored on, by the label the picks table gives them.
@@ -13,20 +12,5 @@ import { MISSING_PICK } from "./getPickResults";
 export default function unscoreableGames(
   players: Array<PlayerScore>,
 ): Array<string> {
-  const [first] = players;
-  if (first == null) return [];
-  return LEAGUES.flatMap((league) => {
-    const labels = gameLabels(first, league);
-    return first[league]
-      .map((_, index) =>
-        players.some(
-          (player) =>
-            player[league][index].status === "unscoreable" &&
-            player[league][index].explanation.header !== MISSING_PICK,
-        )
-          ? labels[index]
-          : null,
-      )
-      .filter((label) => label != null);
-  });
+  return weekShape(players).unscoreable;
 }

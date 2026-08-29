@@ -66,6 +66,6 @@ it in step with those if their URLs or query params change.
 
 ## Once you have the file
 
-Use `SendUserFile` to show the user the result. That step is a tool call, not
-a script. To embed it in a PR body instead, the `upload-pr-media` skill
-hosts it and hands back the URL.
+Read a `.png` with the Read tool and it renders in the transcript. A video
+cannot render, so give the user its path instead. To embed either one in a PR
+body, the `upload-pr-media` skill hosts it and hands back the URL.

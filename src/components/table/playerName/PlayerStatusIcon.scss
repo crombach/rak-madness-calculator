@@ -8,8 +8,7 @@
     // the name beside it. Somewhere with no fill behind it to say which status
     // this is, the caller sets `--rak-player-icon-fill` to say it in the icon.
     fill: var(--rak-player-icon-fill, var(--rak-text-on-pale));
-    // `.icon` sets a font size of its own, which an `em` size would otherwise be
-    // read against instead of against the text this icon stands beside.
+    // Counters `.icon`'s own font-size, the same way `ink-height` does.
     font-size: inherit;
     width: var(--rak-player-icon-size);
     height: var(--rak-player-icon-size);

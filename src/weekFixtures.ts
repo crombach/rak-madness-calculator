@@ -1,7 +1,8 @@
 import { WeekInfo } from "./types/League";
+import { PlayerScore } from "./types/RakMadnessScores";
 
 /**
- * The one `WeekInfo` builder every suite uses.
+ * Fixture builders every suite uses.
  *
  * Held apart from `appTestFixtures`, which mounts `App` and so cannot be imported
  * by a suite that mocks `react-router` or a context provider out from under it.
@@ -16,5 +17,17 @@ export function week(value: number): WeekInfo {
     label: `Week ${value}`,
     startDate: new Date(SEASON, 8, value),
     endDate: new Date(SEASON, 8, value + 6),
+  };
+}
+
+export function playerScore(over: Partial<PlayerScore> = {}): PlayerScore {
+  return {
+    name: "Alice",
+    score: { total: 3, college: 1, pro: 2, proAgainstTheSpread: 1 },
+    tiebreaker: { pick: 41, distance: 0 },
+    college: [],
+    pro: [],
+    status: { hasNoPicks: false, isKnockedOut: false },
+    ...over,
   };
 }

@@ -14,7 +14,7 @@
   display: flex;
   align-items: center;
   gap: var(--rak-space-2);
-  padding: 3px 12px;
+  padding: 3px var(--rak-space-3);
 
   // On the shell rather than on the input inside it, so the ring goes round the
   // whole search including its icons.
@@ -42,11 +42,9 @@
   border: 0 solid var(--rak-border);
   background-color: transparent;
   color: var(--rak-on-solid);
-  // The face the tables are set in, since what is typed here and what the list offers
-  // are the names and the columns those tables carry.
   font-family: var(--rak-font-mono);
   font-size: var(--rak-text-md);
-  line-height: 1.5;
+  line-height: var(--rak-line-height);
 
   &:focus {
     outline: none;
@@ -77,12 +75,11 @@
 
   justify-content: space-between;
   gap: var(--rak-space-2);
-  // The input's face, and the tables' behind it.
   font-family: var(--rak-font-mono);
 }
 
 .dialog__empty {
-  padding: 8px 12px;
+  padding: var(--rak-space-2) var(--rak-space-3);
   color: var(--rak-text-tertiary);
   font-size: var(--rak-text-sm);
 

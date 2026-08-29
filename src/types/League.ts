@@ -9,6 +9,17 @@ export enum SeasonType {
   OFF = 4,
 }
 
+/**
+ * One week of a league's season, chosen from its calendar.
+ *
+ * A `WeekInfo` value is named `week`. Its number alone is `weekNumber`. A week
+ * named by a URL segment, before it is looked up, is `weekParam`.
+ *
+ * A season is named by the year it started in, and that value is `season`. A
+ * season named by a URL segment is `seasonParam`. Qualify only where a requested
+ * season and the one already loaded are both on hand at once: `requestedSeason`
+ * and `loadedSeason`.
+ */
 export type WeekInfo = {
   value: number;
   label: string;

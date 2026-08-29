@@ -11,6 +11,13 @@ export type RakMadnessScores = {
   games?: Array<WeekGame>;
 };
 
+/**
+ * One player's picks for the week, scored.
+ *
+ * A `PlayerScore` value is named `player`. A player's name alone, as a string, is
+ * `playerName`. A `PlayerOption`, what a picker offers before the scores behind a
+ * name are read, is `option`.
+ */
 export type PlayerScore = {
   name: string;
   score: {

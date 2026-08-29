@@ -1,6 +1,11 @@
 import throttle from "lodash.throttle";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Toast, useToastActions } from "../context/ToastContext";
+import {
+  Toast,
+  errorToast,
+  successToast,
+  useToastActions,
+} from "../context/ToastContext";
 import { WeekInfo } from "../types/League";
 import { RakMadnessScores } from "../types/RakMadnessScores";
 import loadStoredPicks from "../utils/loadStoredPicks";
@@ -16,15 +21,11 @@ import scoreChanges, {
 const REFRESH_THROTTLE_MS = 500;
 
 /** The season and week a scoring attempt has finished, however it turned out. */
-type LastAttempt = { season: number; week: number };
+type LastAttempt = { season: number; weekNumber: number };
 
 /** Scoring threw on picks the app already had, which every path can hit. */
-function scoringFailed(week: number): Toast {
-  return new Toast(
-    "danger",
-    "Error",
-    `Failed to calculate scores for week ${week}.`,
-  );
+function scoringFailed(weekNumber: number): Toast {
+  return errorToast(`Failed to calculate scores for week ${weekNumber}.`);
 }
 
 type ScoringRequest = {
@@ -47,10 +48,8 @@ type ScoringRequest = {
  * The scores for a week, however the picks arrive: from the API, from this
  * browser's cache of an earlier upload, or from a file the user just chose.
  *
- * `season` is the year the week's season started in. It names the picks in the
- * API path and the cache, and it is what the games are scored against, so a week
- * played in January still scores against the season it belongs to. Nothing is
- * attempted until it is known.
+ * `season` names the picks in the API path and the cache, and is what the games
+ * are scored against. Nothing is attempted until it is known.
  *
  * `attemptedFor` names the season and week this hook has finished trying, which
  * is not always the pair asked for: switching either leaves the old scores in
@@ -87,6 +86,14 @@ export default function usePlayerScores(
 
   // Every path into the scores runs through here, so the loading flags and the
   // failure toasts cannot drift between them.
+  // Both failure branches drop the same three, and a stale score change outliving
+  // the scores it described is what a partial reset would leave behind.
+  const clearScores = useCallback(() => {
+    setScores(undefined);
+    previousScores.current = undefined;
+    setScoreChangesState(NO_SCORE_CHANGES);
+  }, []);
+
   const attemptScoring = useCallback(
     async ({
       loadPicks,
@@ -101,8 +108,8 @@ export default function usePlayerScores(
       isAttemptInFlight.current = true;
       setScoresLoading(true);
 
-      const attempted = { season, week: selectedWeek.value };
-      const key = `${attempted.season}:${attempted.week}`;
+      const attempted = { season, weekNumber: selectedWeek.value };
+      const key = `${attempted.season}:${attempted.weekNumber}`;
 
       let buffer: ArrayBuffer;
       try {
@@ -115,9 +122,7 @@ export default function usePlayerScores(
           `Failed to load week ${selectedWeek.value} picks spreadsheet. Has it been uploaded yet?`,
           error,
         );
-        setScores(undefined);
-        previousScores.current = undefined;
-        setScoreChangesState(NO_SCORE_CHANGES);
+        clearScores();
         setAttemptedFor(attempted);
         setScoresLoading(false);
         isAttemptInFlight.current = false;
@@ -126,15 +131,15 @@ export default function usePlayerScores(
       }
 
       try {
-        const weekScores = await getPlayerScores(selectedWeek, buffer, season);
+        const nextScores = await getPlayerScores(selectedWeek, buffer, season);
         if (!isLatest()) return;
         const before =
           previousScores.current?.key === key
             ? previousScores.current.scores
             : undefined;
-        setScoreChangesState(scoreChanges(before, weekScores));
-        previousScores.current = { key, scores: weekScores };
-        setScores(weekScores);
+        setScoreChangesState(scoreChanges(before, nextScores));
+        previousScores.current = { key, scores: nextScores };
+        setScores(nextScores);
         if (onSuccess) {
           showToast(onSuccess);
         }
@@ -142,9 +147,7 @@ export default function usePlayerScores(
         if (!isLatest()) return;
         console.error("Failed to calculate scores", error);
         if (!keepScoresOnFailure) {
-          setScores(undefined);
-          previousScores.current = undefined;
-          setScoreChangesState(NO_SCORE_CHANGES);
+          clearScores();
         }
         showToast(onScoreFailure);
       } finally {
@@ -155,7 +158,7 @@ export default function usePlayerScores(
         }
       }
     },
-    [selectedWeek, season, showToast],
+    [selectedWeek, season, showToast, clearScores],
   );
 
   useEffect(() => {
@@ -186,9 +189,7 @@ export default function usePlayerScores(
       }
       // A file the user picked may not be a workbook at all, so reading it and
       // scoring it fail the same way as far as they are concerned.
-      const failure = new Toast(
-        "danger",
-        "Error",
+      const failure = errorToast(
         "Failed to read picks from the spreadsheet you selected.",
       );
       await attemptScoring({
@@ -199,11 +200,7 @@ export default function usePlayerScores(
         },
         onLoadFailure: failure,
         onScoreFailure: failure,
-        onSuccess: new Toast(
-          "success",
-          "Success",
-          "Generated results from picks spreadsheet",
-        ),
+        onSuccess: successToast("Generated results from picks spreadsheet"),
       });
     },
     [selectedWeek, season, attemptScoring, showToast],
@@ -226,11 +223,7 @@ export default function usePlayerScores(
               loadPicks: async () => picksBuffer,
               onLoadFailure: failure,
               onScoreFailure: failure,
-              onSuccess: new Toast(
-                "success",
-                "Success",
-                "Results successfully updated",
-              ),
+              onSuccess: successToast("Results successfully updated"),
               keepScoresOnFailure: true,
             });
           } finally {
@@ -258,7 +251,6 @@ export default function usePlayerScores(
     await refreshThrottled();
   }, [refreshThrottled]);
 
-  // Memoized so `AppDataContext` can memoize the value it publishes.
   return useMemo(
     () => ({
       scores,

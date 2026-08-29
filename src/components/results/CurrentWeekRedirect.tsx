@@ -2,6 +2,7 @@ import { Navigate } from "react-router";
 import { useAppData } from "../../context/AppDataContext";
 import { ScoresView } from "../navbar/ScoresNavbar";
 import ResultsFrame from "./ResultsFrame";
+import resultsPath from "./resultsPath";
 
 /**
  * Sends `/scoreboard` and `/picks` to the latest week worth showing.
@@ -18,19 +19,20 @@ import ResultsFrame from "./ResultsFrame";
  * until that schedule has arrived.
  */
 export default function CurrentWeekRedirect({ view }: { view: ScoresView }) {
-  const { seasonYear, currentWeek, weeks, isWeekInfoLoading } = useAppData();
+  const { loadedSeason, currentWeekNumber, weeks, isWeeksLoading } =
+    useAppData();
 
-  if (!isWeekInfoLoading) {
+  if (!isWeeksLoading) {
     // The schedule lookup failed and already said so in its own toast, or the
     // season has no week to show. Home, as the week route guard does for both.
-    // `seasonYear` is set alongside the weeks, so it names the season those weeks
-    // describe by the time there are any.
-    if (weeks == null || currentWeek == null) {
+    // `loadedSeason` is set alongside the weeks, so it names the season those
+    // weeks describe by the time there are any.
+    if (weeks == null || currentWeekNumber == null) {
       return <Navigate to="/" replace />;
     }
     return (
       <Navigate
-        to={`/${seasonYear}/${currentWeek}/${view.toLowerCase()}`}
+        to={resultsPath(loadedSeason, currentWeekNumber, view)}
         replace
       />
     );

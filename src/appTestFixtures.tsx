@@ -6,6 +6,12 @@ import { AppDataContextProvider } from "./context/AppDataContext";
 import { SettingsContextProvider } from "./context/SettingsContext";
 import { ToastContextProvider } from "./context/ToastContext";
 import { League, LeagueInfo, SeasonType } from "./types/League";
+import {
+  htmlResponse,
+  notFoundResponse,
+  seasonsResponse,
+  spreadsheetResponse,
+} from "./responseTestFixtures";
 import { SEASON, week } from "./weekFixtures";
 import { RakMadnessScores } from "./types/RakMadnessScores";
 import App from "./App";
@@ -35,6 +41,7 @@ export const buildSpreadsheetBufferMock =
 
 export const CURRENT_WEEK = 3;
 export { SEASON, week };
+export { htmlResponse, notFoundResponse, seasonsResponse, spreadsheetResponse };
 
 export const weeks = [week(1), week(2), week(3), week(4), week(5)];
 
@@ -130,7 +137,7 @@ export async function uploadSpreadsheet(
   user: ReturnType<typeof userEvent.setup>,
 ) {
   const file = new File(["picks"], "picks.xlsx", {
-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    type: XLSX_CONTENT_TYPE,
   });
   await user.upload(fileInput(), file);
 }
@@ -151,24 +158,6 @@ export function resultsCaption(): HTMLElement | null {
   return document.querySelector<HTMLElement>(".results-caption");
 }
 
-export function notFoundResponse(): Response {
-  return new Response(null, { status: 404 });
-}
-
-export function htmlResponse(): Response {
-  return new Response("<!doctype html><title>Rakulator</title>", {
-    status: 200,
-    headers: { "content-type": "text/html" },
-  });
-}
-
-export function seasonsResponse(years: Array<number>): Response {
-  return new Response(JSON.stringify({ years }), {
-    status: 200,
-    headers: { "content-type": "application/json" },
-  });
-}
-
 /** Answers the seasons list, and everything else the way the case asked for. */
 export function routedFetch(
   picks: () => Response,
@@ -179,13 +168,6 @@ export function routedFetch(
       String(input) === "/api/picks" ? seasonsResponse(years) : picks(),
     ),
   ) as unknown as MockedFunction<typeof fetch>;
-}
-
-export function spreadsheetResponse(): Response {
-  return new Response(new ArrayBuffer(8), {
-    status: 200,
-    headers: { "content-type": XLSX_CONTENT_TYPE },
-  });
 }
 
 /** Resets mock state before a case. Each test file calls this in its own `beforeEach`. */

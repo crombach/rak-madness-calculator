@@ -6,7 +6,7 @@
 // value the reader typed. A failure here is a miss for that one name, and the
 // names beside it are left alone.
 
-const PREFIX = "rak-madness:settings:";
+export const PREFIX = "rak-madness:settings:";
 
 /** The value saved under a name, or undefined for one never set. */
 export function readSetting(name: string): string | undefined {

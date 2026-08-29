@@ -5,7 +5,7 @@
 
 import localStorageCache from "./localStorageCache";
 
-/** A size guard, not a history. Picks files are tens of KB. */
+/** Picks files are tens of KB. */
 const MAX_CACHED_WEEKS = 3;
 // Encoding the whole buffer in one call overflows the argument list, so it goes
 // through in slices.

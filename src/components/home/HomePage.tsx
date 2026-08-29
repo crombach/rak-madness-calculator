@@ -1,89 +1,21 @@
-import { Select } from "@base-ui/react/select";
-import { UnfoldMoreIcon } from "../icon/Icon";
 import { ChangeEventHandler, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
 import { useAppData } from "../../context/AppDataContext";
 import useExportScores from "../../hooks/useExportScores";
 import { WeekInfo } from "../../types/League";
+import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import Button from "../button/Button";
 import Footer from "../footer/Footer";
+import LabeledSelect from "./LabeledSelect";
 import LogoButton, { APP_NAME } from "../navbar/LogoButton";
 import ScoresNavbar from "../navbar/ScoresNavbar";
 import PageLayout from "../pageLayout/PageLayout";
+import resultsPath from "../results/resultsPath";
 import "./HomePage.scss";
 
 /** Title case, to read like the week labels ESPN sends. */
 const seasonLabel = (season: number) => `${season} Season`;
-
-/**
- * The season and week pickers' shared shape: a Base UI select styled by
- * `home__week-input`/`select__*`, so both read from one place instead of
- * drifting apart one field at a time.
- */
-function LabeledSelect<T>({
-  ariaLabel,
-  className,
-  value,
-  onValueChange,
-  disabled,
-  placeholder,
-  renderValue,
-  items,
-  itemKey,
-  itemLabel,
-}: {
-  ariaLabel: string;
-  className: string;
-  value: T | null;
-  onValueChange: (value: T | null) => void;
-  disabled?: boolean;
-  placeholder: string;
-  renderValue: (value: T) => string;
-  items: Array<T>;
-  itemKey: (item: T) => string | number;
-  itemLabel: (item: T) => string;
-}) {
-  return (
-    <Select.Root
-      value={value}
-      onValueChange={onValueChange}
-      disabled={disabled}
-    >
-      <Select.Trigger aria-label={ariaLabel} className={className}>
-        <Select.Value>
-          {(current: T | null) =>
-            current != null ? renderValue(current) : placeholder
-          }
-        </Select.Value>
-        <Select.Icon className="select__icon">
-          <UnfoldMoreIcon />
-        </Select.Icon>
-      </Select.Trigger>
-      <Select.Portal>
-        <Select.Positioner
-          className="select__positioner"
-          sideOffset={4}
-          // Base UI otherwise lays the popup over the trigger and sizes it
-          // to the viewport to do so, past the rows the stylesheet allows.
-          alignItemWithTrigger={false}
-        >
-          <Select.Popup className="select__popup">
-            {items.map((item) => (
-              <Select.Item
-                key={itemKey(item)}
-                value={item}
-                className="select__item"
-              >
-                <Select.ItemText>{itemLabel(item)}</Select.ItemText>
-              </Select.Item>
-            ))}
-          </Select.Popup>
-        </Select.Positioner>
-      </Select.Portal>
-    </Select.Root>
-  );
-}
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -92,10 +24,10 @@ export default function HomePage() {
     selectedWeek,
     setSelectedWeek,
     selectableSeasons,
-    seasonYear,
+    loadedSeason,
     requestedSeason,
     setSelectedSeason,
-    isWeekInfoLoading,
+    isWeeksLoading,
     scores,
     isScoresLoading,
     scoreLocalFile,
@@ -103,7 +35,7 @@ export default function HomePage() {
   const { exportResults, isExportLoading } = useExportScores(
     scores,
     selectedWeek,
-    seasonYear,
+    loadedSeason,
   );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -122,7 +54,7 @@ export default function HomePage() {
 
   // Anything that has to finish before the controls mean anything. The week
   // lookup waits on the season list, so its flag covers that too.
-  const isBusy = isWeekInfoLoading || isScoresLoading;
+  const isBusy = isWeeksLoading || isScoresLoading;
   const hasNoScoresYet = !selectedWeek || isBusy || !scores;
 
   return (
@@ -139,11 +71,9 @@ export default function HomePage() {
           disabled={hasNoScoresYet}
           isWeekLive={false}
           onViewChange={(view) =>
-            navigate(
-              `/${seasonYear}/${selectedWeek?.value}/${view.toLowerCase()}`,
-            )
+            navigate(resultsPath(loadedSeason, selectedWeek?.value, view))
           }
-          onRefresh={() => undefined}
+          onRefresh={doNothing}
           isRefreshing={false}
         />
       }
@@ -152,24 +82,20 @@ export default function HomePage() {
         Only the first load hides the controls. Switching seasons disables them
         instead, so the picker the user just used does not vanish under them.
       */}
-      {seasonYear != null && (
+      {loadedSeason != null && (
         <>
           <div className="home__controls">
-            {/*
-              Seasons are named by the year they started in, so the 2025 season
-              covers the games played from September 2025 into January 2026.
-            */}
             <LabeledSelect<number>
               ariaLabel="Season"
               className="home__week-input home__season-input select__trigger"
               // The season asked for, not the one loaded, so the trigger shows
               // the switch immediately. Falls back for `make run`, where there
               // is no season list to have asked from.
-              value={requestedSeason ?? seasonYear ?? null}
+              value={requestedSeason ?? loadedSeason ?? null}
               onValueChange={(season) =>
                 season != null && setSelectedSeason(season)
               }
-              disabled={isWeekInfoLoading}
+              disabled={isWeeksLoading}
               placeholder="Select a season..."
               renderValue={seasonLabel}
               items={selectableSeasons}
@@ -187,7 +113,7 @@ export default function HomePage() {
               className="home__week-input select__trigger"
               value={selectedWeek ?? null}
               onValueChange={(week) => setSelectedWeek(week ?? undefined)}
-              disabled={isWeekInfoLoading}
+              disabled={isWeeksLoading}
               placeholder="Select a week..."
               renderValue={(week) => week.label}
               items={selectableWeeks}
@@ -218,7 +144,9 @@ export default function HomePage() {
               disabled={hasNoScoresYet}
               color="info"
               onClick={() =>
-                navigate(`/${seasonYear}/${selectedWeek?.value}/scoreboard`)
+                navigate(
+                  resultsPath(loadedSeason, selectedWeek?.value, "Scoreboard"),
+                )
               }
             >
               View Results

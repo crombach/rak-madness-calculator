@@ -7,18 +7,18 @@ description: How to build, run, and test this repo. Read before any npm, make, t
 
 `make help` lists targets. Run targets, not raw npm scripts.
 
-`make check` also runs `make lint-docs`, which checks the CLAUDE.md tree: every meaningful directory indexed, no parent link restating its child, every file inside the word ceiling the root file states. Python 3 only, no npm. `public/` has a CLAUDE.md like any other directory, and a build plugin in `vite.config.ts` drops it from `build/` so the site never serves it.
+`make check` also runs `make lint-docs`, which checks the CLAUDE.md tree against the rules the root `CLAUDE.md` states. Python 3 only, no npm. `public/` has a CLAUDE.md like any other directory, and a build plugin in `vite.config.ts` drops it from `build/` so the site never serves it.
 
 ## Toolchain
 
 - Vite 8, React 19, TypeScript 6, Vitest 4, ESLint 9 flat config, wrangler 4.
-- Base UI for behavior, react-router 8 for routing, SCSS for looks. Base UI ships no styles, so every visual lives in SCSS against the `--rak-*` tokens in `src/index.scss`. There is no theme provider. Icons are inlined SVGs in `src/components/icon/`, with the path data copied from Material Design.
+- Base UI for behavior, react-router 8 for routing, SCSS for looks. There is no theme provider. `src/CLAUDE.md` covers the `--rak-*` design tokens, `src/styles/CLAUDE.md` the Sass mixins, `src/components/icon/CLAUDE.md` the icons.
 - Node `v22.23` (`.nvmrc`), npm 10 (`lockfileVersion: 3`). `nvm use` before anything. wrangler 4 refuses to run on Node 20, and jsdom 30 needs `>=22.22.2`, which is why the pin carries a minor. `make setup` fails with an actionable message on an older Node or another major.
 - Three CI signals on a PR: `check` (`.github/workflows/check.yml`) runs the same `make check` you run locally, `conventional-commit-title` (`.github/workflows/pr-title.yml`) matches the title format, and `Cloudflare Pages` builds from git using the dashboard's own settings. Break `make check` locally and CI breaks the same way.
 
 ## Verified
 
-From a clean checkout: `make setup`, `make build`, `make run`, `make test`, `make check` all green. `make run` serves `http://localhost:3000`, HTTP 200, `<title>The Rakulator</title>`. `npm audit` reports 0 vulnerabilities.
+From a clean checkout: `make setup`, `make build`, `make run`, `make test`, `make check` all green. `make run` serves `http://localhost:3000`, HTTP 200, `<title>Rakulator</title>`. `npm audit` reports 0 vulnerabilities.
 
 `npm run build` runs `npm run typecheck` first, so a type error fails the Cloudflare build too. The build does not lint. Lint reaches CI through the `check` workflow calling `make check`.
 
@@ -39,7 +39,7 @@ Writing a test here:
 - Fixture games come from `src/utils/scoring/leagueResultFixtures.ts` (`finalGame`, `upcomingGame`). Use them instead of hand-rolling a `LeagueResult`.
 - Reading an exported workbook back flattens the fill onto `cell.s`, so assert `cell.s.fgColor.rgb`, not `cell.s.fill.fgColor.rgb`.
 - jsdom reports no layout: every rect is zero and `window.innerHeight` is 768. Anything that measures the page has its arithmetic tested apart from the hook that feeds it.
-- Mount `App` the way `index.tsx` does: inside `MemoryRouter`, `ToastContextProvider`, and `AppDataContextProvider`, with `Toaster` beside it. Toasts render in `Toaster`, so without it no toast assertion can pass.
+- Mount through `mountApp` or `mountLoadedApp` in `src/appTestFixtures.tsx`, never by hand. They wrap `App` in `MemoryRouter`, `SettingsContextProvider`, `ToastContextProvider`, and `AppDataContextProvider`, with `Toaster` beside it. Toasts render in `Toaster`, so without it no toast assertion can pass.
 - Clear `localStorage` in `beforeEach` for anything that uploads or scores. An upload caches its workbook per week, and `espnCache` holds the games of a week that is over plus a finished season's calendar, and jsdom keeps storage between cases. Without the clear a later case finds an answer an earlier one left behind, and asserting on `fetch` calls is what breaks.
 - `getLeagueInfo` also caches week counts in a module-level `Map` that no reset clears, so a case that counts calendar requests needs a season number no other case in the file uses. The existing ones use 3001 upward.
 - `mountLoadedApp` waits for the home controls, so it only works for URLs that land on `/`. Deep-link cases use `mountApp` and await something on the results route.
@@ -53,15 +53,16 @@ Writing a test here:
 
 The scoring path logs through `src/utils/debugLog.ts`, which is silent when the Vite mode is `test`. Console output during a test run is now a signal, not background noise.
 
+`make bench` runs `vitest bench --run --mode test`, and `make check` leaves it out. `--mode test` is what keeps `debugLog` quiet, because that mode is the only one it is silent in.
+
 ## Gotchas
 
 - `GameStatus` models only upcoming, live, and final, but `status` is assigned straight from ESPN's `status.type.id`, which also has ids for postponed and canceled. Those reach the same branch as a live game, so the header reads "Live Score" and ESPN's detail message is what tells the reader otherwise. A canceled game has no winner, so every pick on it scores a point.
 - Vite does not open a browser, so there is no `BROWSER=none` to set. `make run PORT=3001` moves the port, which is how you get two dev servers side by side. `strictPort` is on, so a busy port fails instead of silently sliding to the next one.
 - Sass prints deprecation warnings on compile. Noise, not breakage.
-- Breakpoints are Sass mixins in `src/styles/_breakpoints.scss`, not custom properties, because custom properties do not work inside a media query. `@use "…/styles/breakpoints" as *;` then `@include roomy-screen { … }`, `labelled-navbar`, `wide-screen`, or `can-hover`. Every one is `min-width`: write the phone's rules as the base and let a wider screen opt into the rest.
+- Breakpoints are Sass mixins. `src/styles/CLAUDE.md` names them and how to reach them.
 - `make check` does not build. Sass errors, an undefined mixin among them, surface only in `npm run build`, because `css: false` keeps stylesheets out of the test run. Run both before pushing a change to any stylesheet.
-- `index.html` asks for `viewport-fit=cover`, which is what makes `env(safe-area-inset-*)` non-zero. The table's trailing row sizes itself from the bottom inset; `PageLayout.scss` holds back the other three sides. Removing `viewport-fit=cover` silently collapses all of that to zero.
-- It also asks for `interactive-widget=resizes-content`, so a keyboard's height comes out of the layout viewport. That is what makes the dialog sheet's `bottom: 0`, every `dvh`, and Base UI's popup sizing measure the screen actually on show. Two things depend on it: `phone-landscape` in `src/styles/_breakpoints.scss` carries a `min-aspect-ratio` guard, because a shrunk portrait phone is otherwise wider than it is tall and raises the rotate overlay; and `src/hooks/useViewportInsets.ts` is still what holds the sheet clear on iOS Safari, which ignores the flag. Dropping it puts the dialog search back behind the keyboard on Android.
+- Never drop `viewport-fit=cover` or `interactive-widget=resizes-content` from `index.html`'s viewport meta. The comment above them names what breaks.
 - One ESLint config: `eslint.config.js` (flat). It names its plugins directly. `package.json` has no `eslintConfig` key and there is no `.eslintrc.json`.
 - `import/no-unresolved` is off. `tsc` already resolves modules for both tsconfigs, and the import plugin misreads ESM exports maps without its own resolver.
 - `.wrangler/` is in the ESLint ignore list. It holds generated bundles that fail every rule.
@@ -72,15 +73,15 @@ The scoring path logs through `src/utils/debugLog.ts`, which is silent when the 
 
 ## Cloudflare Pages, not wrapped in make
 
-**Nothing in this repo deploys.** Cloudflare builds the site itself from git, using the build settings in its own dashboard: push to `main` for production, push any other branch for a preview. There is no deploy script, and adding one would create a second path to production that ignores those settings. wrangler is here for local testing only.
+**Nothing in this repo deploys.** There is no deploy script, and adding one would create a second path to production that ignores the settings Cloudflare's own build uses. wrangler is here for local testing only. `README.md` carries the mechanism.
 
 - `npm run pages:dev` builds, then runs `wrangler pages dev ./build --port 3000`. Verified on wrangler 4: `/` serves 200, the Pages Function executes, assets serve. This is the supported form; the older `pages dev -- <command>` proxy form is deprecated and gone from this repo.
 - `pages:dev` serves a build, so there is no hot reload. Two workflows, on purpose: `make run` for iterating on the UI, `pages:dev` for anything touching the Function or the binding. Rerun it to pick up a code change.
 - No make target wraps `pages:dev` because it needs Cloudflare context that `make` targets deliberately stay out of.
 - `wrangler.toml` holds `name = "rak-sadness"` (the real Pages project, which Cloudflare cannot rename), `compatibility_date`, and the `RAK_MADNESS_BUCKET` R2 binding pointing at the `rak-madness-calculator` bucket. It configures `pages dev` and nothing else. The same binding has to exist on the Pages project itself, for preview and production both.
 - **Do not add `pages_build_output_dir` to `wrangler.toml`.** Its absence is what keeps the file local-development-only. Adding it makes wrangler.toml the source of truth for production builds and overrides the dashboard settings the real build uses.
-- `functions/api/picks/index.ts` lists the seasons that have picks, and `functions/api/picks/[year]/[week].ts` reads `picks/<year>/<week>.xlsx` from the binding. Locally the bucket is simulated and empty, so `/api/picks` comes back with an empty list and `/api/picks/<year>/<week>` returns 404 until seeded: `wrangler r2 object put rak-madness-calculator/picks/2025/1.xlsx --file <path> --local`.
-- The client checks the response's content type before parsing it, because `make run` has no Function behind it and answers both routes with the app's own HTML at 200. So the API path works for real under `pages:dev` with a seeded bucket, and falls back to manual upload under `make run`.
+- `functions/api/picks/index.ts` lists the seasons that have picks, and `functions/api/picks/[year]/[week].ts` reads `picks/<year>/<week>.xlsx` from the binding. Locally the bucket is simulated and empty, so `/api/picks` comes back with an empty list and `/api/picks/<year>/<week>` returns 404 until seeded. `wrangler.toml` carries the seed command.
+- The client checks the response's content type before parsing it, so an HTML answer at 200 falls back to manual upload instead of parsing as a workbook.
 - `wrangler *` and `npx wrangler *` sit in `ask`, because seeding a bucket or reading account state is not an agent action to take unattended.
 
 ## Offline

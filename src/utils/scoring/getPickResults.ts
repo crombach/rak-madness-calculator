@@ -5,6 +5,20 @@ import { Status } from "../../types/RakMadnessScores";
 import debugLog from "../debugLog";
 import marginAgainstSpread from "./marginAgainstSpread";
 import parsePick from "./parsePick";
+import { indexResults } from "./resultsIndex";
+
+/**
+ * Built once. `toLocaleTimeString` mints a formatter per call, and a week of
+ * upcoming games formats one per pick of every player.
+ */
+const KICKOFF_TIME = new Intl.DateTimeFormat("en-US", {
+  hour: "numeric",
+  minute: "2-digit",
+});
+const KICKOFF_DATE = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+});
 
 export function getStatus(score: GameScore): Status {
   if (score.isInvalid) {
@@ -17,26 +31,11 @@ export function getStatus(score: GameScore): Status {
   return "no";
 }
 
-/**
- * Indexes both sides of every game by team abbreviation.
- *
- * First result wins, so a team playing twice in one week resolves to whichever game
- * its league's results list first. College is ordered latest first for that reason.
- */
+/** Both sides of every game by team abbreviation, as `resultsIndex` files them. */
 export function indexResultsByTeam(
   leagueResults: Array<LeagueResult>,
 ): Map<string, LeagueResult> {
-  const byTeam = new Map<string, LeagueResult>();
-  leagueResults.forEach((result) => {
-    [result.home.team.abbreviation, result.away.team.abbreviation].forEach(
-      (abbreviation) => {
-        if (!byTeam.has(abbreviation)) {
-          byTeam.set(abbreviation, result);
-        }
-      },
-    );
-  });
-  return byTeam;
+  return indexResults(leagueResults).byTeam;
 }
 
 /**
@@ -146,8 +145,8 @@ export function getPickResults(
         message:
           gameResult.status === GameStatus.UPCOMING
             ? `${gameResult.away.team.abbreviation} @ ${gameResult.home.team.abbreviation}` +
-              ` begins at ${gameResult.date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}` +
-              ` on ${gameResult.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}.`
+              ` begins at ${KICKOFF_TIME.format(gameResult.date)}` +
+              ` on ${KICKOFF_DATE.format(gameResult.date)}.`
             : `${gameResult.possession.homeAway === HomeAway.AWAY ? "▸ " : ""}${gameResult.away.team.abbreviation} ${gameResult.away.score}` +
               ` - ` +
               `${gameResult.home.score} ${gameResult.home.team.abbreviation}${gameResult.possession.homeAway === HomeAway.HOME ? " ◂" : ""}`,

@@ -1,6 +1,5 @@
 /** A game still to be played, named the way the picks table names its columns. */
 export type RemainingPick = {
-  /** `C4`, `P11`: the position in the league's picks, which is the column label. */
   label: string;
   /** The cell as written, so the team and the spread read as they do in the table. */
   pick: string;

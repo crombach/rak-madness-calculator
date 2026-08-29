@@ -21,7 +21,7 @@ export default function TableShell({
   columnCount,
   header,
   className = "",
-  ariaBusy = false,
+  busy = false,
   ariaHidden = false,
   standInRows = 0,
   children,
@@ -32,7 +32,7 @@ export default function TableShell({
   header: ReactNode;
   className?: string;
   /** Set while the real rows have not arrived yet. */
-  ariaBusy?: boolean;
+  busy?: boolean;
   /**
    * Set on the wireframe, which has nothing real to read out and would otherwise
    * cost a screen reader ~1500 empty cells.
@@ -62,7 +62,7 @@ export default function TableShell({
       ref={tableRef}
       className={`table ${className}`}
       cellSpacing="0"
-      aria-busy={ariaBusy || undefined}
+      aria-busy={busy || undefined}
       aria-hidden={ariaHidden || undefined}
     >
       {caption != null && (

@@ -1,6 +1,6 @@
 import { PlayerScore } from "../../types/RakMadnessScores";
-import gameLabels, { LEAGUES, LeagueKey } from "./gameColumns";
-import parsePick from "./parsePick";
+import { LeagueKey } from "./gameColumns";
+import weekShape from "./weekShape";
 
 type Cell = {
   /** Absent where the player left the game blank, which scores them nothing. */
@@ -10,33 +10,11 @@ type Cell = {
 };
 
 export type RemainingGame = {
-  /** `C4`, `P11`: the column label the picks table gives the same game. */
   label: string;
   league: LeagueKey;
   /** Every row's cell, in the order the scores hold their players. */
   cells: Array<Cell>;
 };
-
-/**
- * The positions of the games still to be played, read across every row.
- *
- * A row that left a game blank scores it "unscoreable", not "incomplete", so reading one
- * row alone would drop a game the leader happened to skip and knock out everybody
- * who needed it.
- */
-function remainingGameIndices(
-  scores: Array<PlayerScore>,
-  league: LeagueKey,
-): Array<number> {
-  const [firstPlayer] = scores;
-  return firstPlayer[league]
-    .map((_, index) =>
-      scores.some((score) => score[league][index].status === "incomplete")
-        ? index
-        : null,
-    )
-    .filter((index) => index != null);
-}
 
 /**
  * How one game still to be played separates a player from a rival.
@@ -69,17 +47,5 @@ export function pickDifference(
 export default function remainingGames(
   players: Array<PlayerScore>,
 ): Array<RemainingGame> {
-  const [first] = players;
-  return LEAGUES.flatMap((league) => {
-    const labels = gameLabels(first, league);
-    return remainingGameIndices(players, league).map((index) => ({
-      label: labels[index],
-      league,
-      cells: players.map((player) => {
-        const text = player[league][index].pick ?? "";
-        const { teamAbbreviation, spread } = parsePick(text);
-        return { team: teamAbbreviation, hasSpread: spread !== 0, text };
-      }),
-    }));
-  });
+  return weekShape(players).remaining;
 }

@@ -16,6 +16,11 @@ import {
   writeCachedResults,
 } from "./espnCache";
 import { getRegularSeasonWeekCount } from "./getLeagueInfo";
+import {
+  findMatchup,
+  indexResults,
+  resultMatchupKey,
+} from "./scoring/resultsIndex";
 
 /**
  * Used only where the season's own calendar could not be read. The NCAA count
@@ -337,22 +342,34 @@ export async function getLeagueResults(
   const events = await getLeagueEvents(league, week, season);
   debugLog(`${league} events`, events);
 
+  // The keys the picks ask about, split by how a column names its game. A college
+  // answer runs to hundreds of events, so each one is looked up rather than walked
+  // against every matchup.
+  const wantedPairs = new Set<string>();
+  const wantedTeams = new Set<string>();
+  matchups.forEach((teams, index) => {
+    if (teams.size === 2) wantedPairs.add(keys[index]);
+    if (teams.size === 1) wantedTeams.add(keys[index]);
+  });
+
   const results = events
     .map(toLeagueResult)
     .filter((it) => it != null)
-    .filter((result) =>
-      matchups.some((teams) => matchesMatchup(result, teams)),
-    );
+    .filter((result) => {
+      const key = resultMatchupKey(result);
+      if (key != null && wantedPairs.has(key)) return true;
+      const home = result.home.team.abbreviation;
+      const away = result.away.team.abbreviation;
+      return wantedTeams.has(home) || wantedTeams.has(away);
+    });
 
-  // Each matchup and the one game the fetch found for it. `find` over results already
-  // in fetch order picks the same game every lookup by team will.
+  // Each matchup and the one game the fetch found for it. Indexed over results
+  // already in fetch order, so it picks the same game every lookup by team will.
+  const index = indexResults(results);
   const found = new Map<string, CachedGame>();
-  matchups.forEach((teams, index) => {
-    if (found.has(keys[index])) return;
-    found.set(
-      keys[index],
-      results.find((result) => matchesMatchup(result, teams)) ?? null,
-    );
+  matchups.forEach((teams, position) => {
+    if (found.has(keys[position])) return;
+    found.set(keys[position], findMatchup(index, teams) ?? null);
   });
 
   const games: Record<string, CachedGame> = {};

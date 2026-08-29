@@ -5,13 +5,10 @@ import { getLeagueResults } from "../getLeagueResults";
 import applyKnockouts from "./applyKnockouts";
 import getTiebreakerScore from "./getTiebreakerScore";
 import parsePicksWorkbook from "./parsePicksWorkbook";
+import { indexResults } from "./resultsIndex";
 import scorePlayers from "./scorePlayers";
 import weekGames from "./weekGames";
 
-/**
- * `season` is the year the week's season started in, so a week played in January
- * still scores against the season it belongs to.
- */
 export async function getPlayerScores(
   week: WeekInfo,
   picksBuffer: ArrayBuffer,
@@ -25,25 +22,26 @@ export async function getPlayerScores(
   ]);
   debugLog("league results", { collegeResults, proResults });
 
+  // Built once for the pass. Every row resolves its picks against the same games,
+  // and so do the tiebreaker and the week's game list.
+  const results = { college: collegeResults, pro: proResults };
+  const indexed = {
+    college: indexResults(collegeResults),
+    pro: indexResults(proResults),
+  };
+
   const tiebreakerScore = getTiebreakerScore(
     parsed.tiebreakerGameKey,
     parsed.rows[0],
-    collegeResults,
-    proResults,
+    indexed.college,
+    indexed.pro,
   );
 
-  const sortedScores = scorePlayers(
-    parsed,
-    { college: collegeResults, pro: proResults },
-    tiebreakerScore,
-  );
+  const sortedScores = scorePlayers(parsed, results, tiebreakerScore, indexed);
 
   return {
     tiebreaker: tiebreakerScore,
     scores: applyKnockouts(sortedScores, tiebreakerScore),
-    games: weekGames(parsed, {
-      college: collegeResults,
-      pro: proResults,
-    }),
+    games: weekGames(parsed, results, indexed),
   };
 }

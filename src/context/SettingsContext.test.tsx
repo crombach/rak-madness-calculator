@@ -1,14 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import {
+  PLAYER_NAME_KEY,
   SettingsContextProvider,
+  THEME_KEY,
   Theme,
   useIsMyPlayer,
   useSettings,
 } from "./SettingsContext";
-
-const THEME_KEY = "rak-madness:settings:theme";
-const PLAYER_NAME_KEY = "rak-madness:settings:playerName";
 
 function Probe({ candidate = "Linebacher" }: { candidate?: string }) {
   const { theme, setTheme, playerName, setPlayerName } = useSettings();

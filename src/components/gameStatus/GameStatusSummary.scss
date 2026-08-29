@@ -257,7 +257,7 @@
 
   color: var(--rak-glass-ink);
   font-size: var(--rak-score-size);
-  line-height: 1.1;
+  line-height: var(--rak-line-height-tight);
 }
 
 .game-status__side-label {
@@ -274,7 +274,7 @@
   color: var(--rak-text);
   font-size: var(--rak-text-lg);
   font-weight: var(--rak-weight-semibold);
-  line-height: 1.1;
+  line-height: var(--rak-line-height-tight);
 
   @include outcome;
 }
@@ -330,7 +330,7 @@
   color: var(--rak-glass-ink);
   font-size: var(--rak-score-size);
   font-weight: var(--rak-weight-bold);
-  line-height: 1.1;
+  line-height: var(--rak-line-height-tight);
 
   // Away only, since the marker is written after the score. Either way it lands on
   // the far side from the middle, so it never crowds the dash between the two.

@@ -12,7 +12,6 @@ export type GameSpread = {
 
 /** One picks column, and the game it was picked against. */
 export type WeekGame = {
-  /** The picks table's column label, `C1` or `P3`, which also names this game. */
   label: string;
   league: League;
   /** What the game is called where there is no result to name it after. */

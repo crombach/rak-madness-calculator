@@ -127,12 +127,9 @@ export default async function buildSpreadsheetBuffer(
   { season, week }: { season: number; week: number },
 ): Promise<ArrayBuffer> {
   const XLSX = await import("xlsx-js-style");
-  // Create a new Excel workbook.
   const workbook = XLSX.utils.book_new();
 
-  // Build the results sheet data as an array of arrays.
   const resultsData = [
-    // Header row
     [
       headerCell("Rank"),
       headerCell("Player"),
@@ -143,7 +140,6 @@ export default async function buildSpreadsheetBuffer(
       headerCell("Pro Score ATS"),
       headerCell("Total Score"),
     ],
-    // Data rows
     ...scoresObject.scores.map((player, index) => {
       return [
         normalCell({ value: index + 1, alignment: "left", isBold: true }),
@@ -158,9 +154,7 @@ export default async function buildSpreadsheetBuffer(
     }),
   ];
 
-  // Convert the scores data to a sheet.
   const resultsSheet = XLSX.utils.aoa_to_sheet(resultsData);
-  // Set column widths.
   resultsSheet["!cols"] = [
     { wch: 5 },
     { wch: 22 },
@@ -171,19 +165,16 @@ export default async function buildSpreadsheetBuffer(
     { wch: 25 },
     { wch: 10 },
   ];
-  // Add the results sheet to the workbook.
   XLSX.utils.book_append_sheet(
     workbook,
     resultsSheet,
     sheetName(season, week, "Results"),
   );
 
-  // Build the picks sheet data as an array of arrays.
   const firstPlayer = scoresObject.scores[0];
   const collegeCount = firstPlayer.college.length;
   const proCount = firstPlayer.pro.length;
   const picksData = [
-    // Header row
     [
       headerCell("Rank"),
       headerCell("Player"),
@@ -193,7 +184,6 @@ export default async function buildSpreadsheetBuffer(
       headerCell("Pro Score"),
       headerCell("Total Score"),
     ],
-    // Data rows
     ...scoresObject.scores.map((player, index) => {
       return [
         normalCell({ value: index + 1, alignment: "left", isBold: true }),
@@ -211,9 +201,7 @@ export default async function buildSpreadsheetBuffer(
     }),
   ];
 
-  // Convert the picks data to a sheet.
   const picksSheet = XLSX.utils.aoa_to_sheet(picksData);
-  // Set column widths.
   picksSheet["!cols"] = [
     { wch: 5 },
     { wch: 22 },
@@ -223,13 +211,11 @@ export default async function buildSpreadsheetBuffer(
     { wch: 9 },
     { wch: 10 },
   ];
-  // Add the results sheet to the workbook.
   XLSX.utils.book_append_sheet(
     workbook,
     picksSheet,
     sheetName(season, week, "Picks"),
   );
 
-  // Write the workbook to a buffer and return that buffer.
   return XLSX.write(workbook, { type: "array" });
 }

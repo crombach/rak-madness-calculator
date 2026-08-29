@@ -1,6 +1,6 @@
 import { PropsWithChildren, useCallback, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { useIsWeekDecided } from "../../context/AppDataContext";
+import { useIsWinnerDecided } from "../../context/AppDataContext";
 import { GameStatusContextProvider } from "../../context/GameStatusContext";
 import { PlayerAnalysisContextProvider } from "../../context/PlayerAnalysisContext";
 import { WeekInfo } from "../../types/League";
@@ -46,7 +46,7 @@ export default function ResultsFrame({
   onRefresh = doNothing,
   isRefreshing = false,
   scores,
-  weekInfo,
+  week,
   season,
   children,
 }: PropsWithChildren<{
@@ -59,18 +59,17 @@ export default function ResultsFrame({
   /** What the player analysis is worked out from. Absent while a week loads. */
   scores?: RakMadnessScores;
   /** The week the scores are for, which fetching one of its games again needs. */
-  weekInfo?: WeekInfo;
-  /** The year that week's season started in. */
+  week?: WeekInfo;
   season?: number;
 }>) {
   const navigate = useNavigate();
   // Absent on the redirect routes, which render this frame before they know which
   // week they are headed for.
-  const { season: seasonParam, week } = useParams();
-  const hasWeek = Boolean(seasonParam && week);
+  const { season: seasonParam, week: weekParam } = useParams();
+  const hasWeek = Boolean(seasonParam && weekParam);
   // Once every game is final there is nothing left to fetch, so the refresh button
   // and the divider beside it go rather than sit there doing nothing.
-  const isWeekDecided = useIsWeekDecided();
+  const isWinnerDecided = useIsWinnerDecided();
   const [opened, setOpened] = useState<Opened>();
 
   // Stable, so the memoized tables below do not re-render for a dialog opening.
@@ -91,7 +90,9 @@ export default function ResultsFrame({
   return (
     <PageLayout
       title={
-        hasWeek ? `${seasonParam} Week ${week} ${view}` : `${APP_NAME} ${view}`
+        hasWeek
+          ? `${seasonParam} Week ${weekParam} ${view}`
+          : `${APP_NAME} ${view}`
       }
       // True while loading too: the wireframe is shaped like the table it stands
       // in for, so it wants the same content area.
@@ -105,7 +106,7 @@ export default function ResultsFrame({
         <ScoresNavbar
           view={view}
           disabled={!isReady}
-          isWeekLive={!isWeekDecided}
+          isWeekLive={!isWinnerDecided}
           onViewChange={onViewChange}
           onRefresh={onRefresh}
           isRefreshing={isRefreshing}
@@ -129,7 +130,7 @@ export default function ResultsFrame({
         >
           {hasWeek && (
             <span className="results-caption__text">
-              {`${POOL_NAME} · ${seasonParam} Season · Week ${week}`}
+              {`${POOL_NAME} · ${seasonParam} Season · Week ${weekParam}`}
             </span>
           )}
         </p>
@@ -144,14 +145,14 @@ export default function ResultsFrame({
         onOpenChange={close}
         player={opened?.kind === "player" ? opened.name : undefined}
         scores={scores}
-        week={week != null ? Number(week) : undefined}
+        weekNumber={weekParam != null ? Number(weekParam) : undefined}
       />
       <GameStatusDialog
         open={opened?.kind === "game"}
         onOpenChange={close}
         gameLabel={opened?.kind === "game" ? opened.label : undefined}
         scores={scores}
-        week={weekInfo}
+        week={week}
         season={season}
         onGameFinal={onRefresh}
       />

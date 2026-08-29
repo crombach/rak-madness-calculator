@@ -1,4 +1,5 @@
 import { RefObject, useCallback, useLayoutEffect, useState } from "react";
+import observeResize from "../utils/observeResize";
 
 /** The rows this hook adds, which `TableShell` renders and this measures back. */
 export const FILLER_ROW_CLASS = "table__filler-row";
@@ -105,22 +106,16 @@ export default function useFillerRows(
     };
     const table = tableRef.current;
     // The table resizes without the window doing so: a view switch, or scores
-    // arriving. ResizeObserver catches both.
-    const observer =
-      table != null && typeof ResizeObserver !== "undefined"
-        ? new ResizeObserver(schedule)
-        : undefined;
-    if (table != null) {
-      observer?.observe(table);
-      // A horizontal scrollbar appearing takes height off the box without the
-      // window or the table changing size.
-      const box = scrollBoxOf(table);
-      if (box != null) observer?.observe(box);
-    }
+    // arriving. And a horizontal scrollbar appearing takes height off the box
+    // without either the window or the table changing size.
+    const unobserve = observeResize(
+      [table, table == null ? undefined : scrollBoxOf(table)],
+      schedule,
+    );
     window.addEventListener("resize", schedule);
     return () => {
       cancelAnimationFrame(frame);
-      observer?.disconnect();
+      unobserve();
       window.removeEventListener("resize", schedule);
     };
   }, [measure, tableRef]);

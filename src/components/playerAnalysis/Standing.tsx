@@ -2,9 +2,7 @@ import { PlayerAnalysis } from "../../types/PlayerAnalysis";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import plural from "../../utils/plural";
 import { comparePlayerScoresOnMerit } from "../../utils/scoring/comparePlayerScores";
-import isWeekOver from "../../utils/scoring/isWeekOver";
-import remainingGames from "../../utils/scoring/remainingGames";
-import unscoreableGames from "../../utils/scoring/unscoreableGames";
+import weekShape, { WeekShape } from "../../utils/scoring/weekShape";
 // The standing is an element of the `analysis` block, which `AnalysisSummary`
 // owns and styles.
 import "./AnalysisSummary.scss";
@@ -38,21 +36,21 @@ function hasKickedOff(players: Array<PlayerScore>): boolean {
  */
 function headline(
   players: Array<PlayerScore>,
-  isOver: boolean,
-  chosen: PlayerScore,
+  isEveryGameSettled: boolean,
+  player: PlayerScore,
   isClinched: boolean,
 ): { text: string; tone?: "--won" | "--knocked-out" } {
   if (!hasKickedOff(players)) return { text: "No finished games" };
   const [leader] = players;
-  if (chosen.status.isKnockedOut)
+  if (player.status.isKnockedOut)
     return { text: "Knocked out", tone: "--knocked-out" };
-  const behind = leader.score.total - chosen.score.total;
+  const behind = leader.score.total - player.score.total;
   if (behind > 0)
     return { text: `${plural(behind, "point")} behind ${leader.name}` };
-  if (!isOver && !isClinched) return { text: "Tied for the lead" };
+  if (!isEveryGameSettled && !isClinched) return { text: "Tied for the lead" };
   const won = winners(players);
   // Level on points and still beaten, which only the tiebreakers can do.
-  if (!won.includes(chosen))
+  if (!won.includes(player))
     return { text: `Loses the tiebreaker to ${leader.name}` };
   return {
     text: won.length > 1 ? "Tied for the win" : "Winner",
@@ -72,34 +70,36 @@ function headline(
  */
 export default function Standing({
   scores,
-  player,
+  playerName,
   result,
-  isOver,
+  shape,
 }: {
   scores?: RakMadnessScores;
-  player?: string;
+  playerName?: string;
   result?: PlayerAnalysis;
   /**
-   * Whether the week is done. `isWeekOver` walks every pick of every player
-   * twice, so the summary works it out once and hands it down. Falls back to
-   * asking, for a standing rendered on its own.
+   * What is left of the week. Reading it walks every pick of every player, so
+   * the summary works it out once and hands it down. Falls back to asking, for
+   * a standing rendered on its own.
    */
-  isOver?: boolean;
+  shape?: WeekShape;
 }) {
   const players = scores?.scores ?? [];
   // The dialog is opened on a player and never lets go of one, so there is no
   // standing to give until the scores holding them arrive.
-  const chosen = players.find((it) => it.name === player);
-  if (chosen == null) return null;
-  // Counted here as well as asked about, since the tail says which of the two is
+  const player = players.find((it) => it.name === playerName);
+  if (player == null) return null;
+  // The counts as well as the answer, since the tail says which of the two is
   // holding the week open.
-  const remaining = remainingGames(players).length;
-  const unscoreable = unscoreableGames(players).length;
-  const isClinched = result?.kind === "clinched" && result.player === player;
+  const week = shape ?? weekShape(players);
+  const remaining = week.remaining.length;
+  const unscoreable = week.unscoreable.length;
+  const isClinched =
+    result?.kind === "clinched" && result.player === playerName;
   const { text, tone } = headline(
     players,
-    isOver ?? isWeekOver(players),
-    chosen,
+    week.isEveryGameSettled,
+    player,
     isClinched,
   );
   return (

@@ -9,7 +9,6 @@ type GuardResult =
 
 type Redirect = { header: string; message: string } | "silent";
 
-/** Seasons are named by the year they started in, so four digits. */
 const SEASON_PATTERN = /^\d{4}$/;
 
 /**
@@ -20,19 +19,19 @@ const SEASON_PATTERN = /^\d{4}$/;
  * before the schedule has loaded and before the picks have been looked for, so
  * anything that redirects on missing scores has to be sure the season and week it
  * is judging are the ones actually tried. That is what `attemptedFor` is for, and
- * `seasonYear` is the same guarantee for the schedule.
+ * `loadedSeason` is the same guarantee for the schedule.
  */
 export default function useWeekRouteGuard(
-  rawSeason?: string,
-  rawWeek?: string,
+  seasonParam?: string,
+  weekParam?: string,
 ): GuardResult {
   const navigate = useNavigate();
   const { showToast } = useToastActions();
   const {
     weeks,
-    currentWeek,
-    seasonYear,
-    isWeekInfoLoading,
+    currentWeekNumber,
+    loadedSeason,
+    isWeeksLoading,
     findWeek,
     selectedWeek,
     setSelectedWeek,
@@ -40,12 +39,14 @@ export default function useWeekRouteGuard(
     attemptedFor,
   } = useAppData();
 
-  const seasonNumber = Number(rawSeason);
-  const isKnownSeason = SEASON_PATTERN.test(rawSeason ?? "");
-  const weekNumber = Number(rawWeek);
+  const seasonNumber = Number(seasonParam);
+  const isKnownSeason = SEASON_PATTERN.test(seasonParam ?? "");
+  const weekNumber = Number(weekParam);
   const week = Number.isInteger(weekNumber) ? findWeek(weekNumber) : undefined;
   const isSelectableWeek =
-    week != null && currentWeek != null && weekNumber <= currentWeek;
+    week != null &&
+    currentWeekNumber != null &&
+    weekNumber <= currentWeekNumber;
 
   // The URL is the source of truth. Comparing before writing matters: setting
   // the same week again would restart the fetch chain behind it. The season is
@@ -63,26 +64,26 @@ export default function useWeekRouteGuard(
     result = { status: "loading" };
     redirect = {
       header: "Unknown Season",
-      message: `${rawSeason} isn't a season, so there is nothing to show.`,
+      message: `${seasonParam} isn't a season, so there is nothing to show.`,
     };
-  } else if (isWeekInfoLoading) {
+  } else if (isWeeksLoading) {
     result = { status: "loading" };
   } else if (weeks == null) {
     // The schedule lookup failed, and already said so in its own toast.
     result = { status: "loading" };
     redirect = "silent";
-  } else if (seasonNumber !== seasonYear) {
+  } else if (seasonNumber !== loadedSeason) {
     // The schedule on hand is still the season we came from.
     result = { status: "loading" };
   } else if (!isSelectableWeek) {
     result = { status: "loading" };
     redirect = {
       header: "Unknown Week",
-      message: `Week ${rawWeek} isn't part of the ${seasonNumber} season, so there is nothing to show.`,
+      message: `Week ${weekParam} isn't part of the ${seasonNumber} season, so there is nothing to show.`,
     };
   } else if (
     attemptedFor?.season !== seasonNumber ||
-    attemptedFor.week !== weekNumber
+    attemptedFor.weekNumber !== weekNumber
   ) {
     // Scores from the week before this one are still on hand until the new ones
     // land, and week 5 of one season is not week 5 of another.

@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { v4 as uuidv4 } from "uuid";
+import doNothing from "../utils/doNothing";
 
 export const MAX_VISIBLE_TOASTS = 3;
 export const TOAST_LIFETIME_MS = 5000;
@@ -43,6 +44,16 @@ export class Toast {
   }
 }
 
+/** The app's one way of saying something failed. */
+export function errorToast(message: string): Toast {
+  return new Toast("danger", "Error", message);
+}
+
+/** The app's one way of saying something worked. */
+export function successToast(message: string): Toast {
+  return new Toast("success", "Success", message);
+}
+
 type ToastActions = {
   showToast: (toast: Toast) => void;
   removeToast: (toast: Toast) => void;
@@ -55,13 +66,12 @@ type ToastActions = {
 // The actions sit in their own context because their identity never changes. That
 // keeps the parts of the app that only send toasts (every player cell, for one)
 // still while toasts appear and time out.
-const noop = () => undefined;
 const ToastActionsContext = createContext<ToastActions>({
-  showToast: noop,
-  removeToast: noop,
-  clearToasts: noop,
-  pauseToasts: noop,
-  resumeToasts: noop,
+  showToast: doNothing,
+  removeToast: doNothing,
+  clearToasts: doNothing,
+  pauseToasts: doNothing,
+  resumeToasts: doNothing,
 });
 
 const ToastListContext = createContext<Array<Toast>>([]);

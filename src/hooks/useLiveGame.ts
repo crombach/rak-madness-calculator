@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GameStatus } from "../types/ESPN";
 import { WeekInfo } from "../types/League";
 import { LeagueResult } from "../types/LeagueResult";
@@ -43,7 +43,15 @@ export default function useLiveGame({
    * before the next scheduled refresh would have.
    */
   onGameFinal?: () => void;
-}): { shown?: LeagueResult; isFetching: boolean } {
+}): { shown?: LeagueResult; isGameLoading: boolean } {
+  // Held in a ref rather than read from the deps below. A rescore mints a new
+  // callback, and depending on it would tear the poll down and start its 20s over
+  // every time the week is scored again.
+  const onFinal = useRef(onGameFinal);
+  useEffect(() => {
+    onFinal.current = onGameFinal;
+  }, [onGameFinal]);
+
   const [found, setFound] = useState<{
     games: Array<WeekGame>;
     label: string;
@@ -87,7 +95,7 @@ export default function useLiveGame({
         if (result == null || result.status !== GameStatus.FINAL) {
           timer = window.setTimeout(poll, POLL_MS);
         } else {
-          onGameFinal?.();
+          onFinal.current?.();
         }
       };
       await poll();
@@ -99,7 +107,7 @@ export default function useLiveGame({
       // outstanding whatever it comes back with.
       setFetching(false);
     };
-  }, [open, games, label, league, eventId, settled, week, season, onGameFinal]);
+  }, [open, games, label, league, eventId, settled, week, season]);
 
   // Stamped with the game it was fetched for as well as the scoring pass, so an
   // answer that landed for the game before this one is never handed back for it.
@@ -108,5 +116,5 @@ export default function useLiveGame({
     (found != null && found.games === games && found.label === label
       ? found.result
       : undefined);
-  return { shown, isFetching: fetching };
+  return { shown, isGameLoading: fetching };
 }

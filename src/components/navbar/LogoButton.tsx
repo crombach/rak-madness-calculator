@@ -9,14 +9,14 @@ export const APP_NAME = "Rakulator";
  * name is the display's unlit segments, the way a real readout shows the shapes
  * it is not currently using.
  */
-const ALL_SEGMENTS_ON = "~";
+const DSEG14_ALL_SEGMENTS = "~";
 
 /**
  * The name with every letter turned into an unlit cell. A space is left alone:
  * the face advances it far narrower than a cell, so filling it too would push
  * every cell after the space clear of the letter it is meant to sit under.
  */
-const UNLIT_SEGMENTS = APP_NAME.replace(/\S/g, ALL_SEGMENTS_ON);
+const UNLIT_SEGMENTS = APP_NAME.replace(/\S/g, DSEG14_ALL_SEGMENTS);
 
 export default function LogoButton({ onClick }: { onClick: () => void }) {
   return (

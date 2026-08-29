@@ -99,7 +99,7 @@ function SkeletonTable({ view }: { view: ScoresView }) {
           className="--skeleton"
           columnCount={columns.length}
           standInRows={PLAYER_COUNT}
-          ariaBusy
+          busy
           ariaHidden
           header={columns.map((column, index) => (
             // The heading itself, hidden, so a header that wraps to two lines is two

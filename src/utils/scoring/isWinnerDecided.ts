@@ -11,8 +11,8 @@ function hasOutcome(status: Status): boolean {
 }
 
 /**
- * Whether the week is over: every game settled, and the Monday night total that
- * decides the tiebreaker is in.
+ * Whether the week has a winner. Every game is settled, and the Monday night
+ * total that decides the tiebreaker is in.
  *
  * Read a column at a time rather than a row at a time, because a row cannot tell
  * the two kinds of unscoreable pick apart. A game the workbook described two ways,
@@ -20,10 +20,10 @@ function hasOutcome(status: Status): boolean {
  * the week open. A blank cell comes back the same way on one row alone, and one
  * player's blank says nothing about whether the game finished.
  *
- * Whoever the knockouts left standing once the week is over has won it, so nothing
- * here looks at a score.
+ * Whoever the knockouts left standing once the week is settled has won it, so
+ * nothing here looks at a score.
  */
-export default function isWeekDecided(scores: RakMadnessScores): boolean {
+export default function isWinnerDecided(scores: RakMadnessScores): boolean {
   if (scores.tiebreaker == null) {
     return false;
   }

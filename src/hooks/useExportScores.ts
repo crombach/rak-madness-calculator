@@ -1,5 +1,9 @@
 import { useCallback, useState } from "react";
-import { Toast, useToastActions } from "../context/ToastContext";
+import {
+  errorToast,
+  successToast,
+  useToastActions,
+} from "../context/ToastContext";
 import { WeekInfo } from "../types/League";
 import { RakMadnessScores } from "../types/RakMadnessScores";
 import buildSpreadsheetBuffer, {
@@ -40,14 +44,10 @@ export default function useExportScores(
         // after it in practice, across current browsers.
         setTimeout(() => window.URL.revokeObjectURL(url), 0);
 
-        showToast(
-          new Toast("success", "Success", `Exported results spreadsheet`),
-        );
+        showToast(successToast(`Exported results spreadsheet`));
       } catch (error) {
         console.error("Failed to export results spreadsheet", error);
-        showToast(
-          new Toast("danger", "Error", "Failed to export results spreadsheet."),
-        );
+        showToast(errorToast("Failed to export results spreadsheet."));
       } finally {
         setExportLoading(false);
       }

@@ -31,27 +31,28 @@ const setSelectedWeek = vi.fn();
 function appData(overrides: Record<string, unknown> = {}) {
   return {
     weeks: WEEKS,
-    currentWeek: CURRENT_WEEK,
-    seasonYear: SEASON,
-    isWeekInfoLoading: false,
+    currentWeekNumber: CURRENT_WEEK,
+    loadedSeason: SEASON,
+    isWeeksLoading: false,
     findWeek: (value: number) => WEEKS.find((it) => it.value === value),
     // The calendar's own object, not a rebuilt one. The guard compares the URL's
     // week to this by reference, exactly as the real `findWeek` promises.
     selectedWeek: WEEKS[CURRENT_WEEK - 1],
     setSelectedWeek,
     scores: { scores: [{ name: "Alice" }] },
-    attemptedFor: { season: SEASON, week: CURRENT_WEEK },
+    attemptedFor: { season: SEASON, weekNumber: CURRENT_WEEK },
     ...overrides,
   };
 }
 
 function guard(
-  rawSeason?: string,
-  rawWeek?: string,
+  seasonParam?: string,
+  weekParam?: string,
   overrides: Record<string, unknown> = {},
 ) {
   (useAppData as Mock).mockReturnValue(appData(overrides));
-  return renderHook(() => useWeekRouteGuard(rawSeason, rawWeek)).result.current;
+  return renderHook(() => useWeekRouteGuard(seasonParam, weekParam)).result
+    .current;
 }
 
 /** The header of the toast the guard raised, or undefined if it raised none. */
@@ -96,9 +97,9 @@ describe("useWeekRouteGuard", () => {
     // The whole point of the guard: a results URL is opened before the schedule
     // and the picks are known, so nothing may be decided on what is missing yet.
     const result = guard(String(SEASON), String(CURRENT_WEEK), {
-      isWeekInfoLoading: true,
+      isWeeksLoading: true,
       weeks: undefined,
-      seasonYear: undefined,
+      loadedSeason: undefined,
       scores: undefined,
       attemptedFor: undefined,
     });
@@ -121,7 +122,7 @@ describe("useWeekRouteGuard", () => {
 
   it("waits while the schedule on hand is still the season before", () => {
     const result = guard(String(SEASON), String(CURRENT_WEEK), {
-      seasonYear: SEASON - 1,
+      loadedSeason: SEASON - 1,
     });
 
     expect(result).toEqual({ status: "loading" });
@@ -145,7 +146,7 @@ describe("useWeekRouteGuard", () => {
 
   it("sends a week of a season with no week behind it home", () => {
     const result = guard(String(SEASON), String(CURRENT_WEEK), {
-      currentWeek: undefined,
+      currentWeekNumber: undefined,
     });
 
     expect(result.status).toBe("loading");
@@ -156,7 +157,7 @@ describe("useWeekRouteGuard", () => {
     // Last week's scores are still there until this week's land, and judging them
     // would send the user home from a week that is about to have results.
     const result = guard(String(SEASON), "3", {
-      attemptedFor: { season: SEASON, week: CURRENT_WEEK },
+      attemptedFor: { season: SEASON, weekNumber: CURRENT_WEEK },
     });
 
     expect(result).toEqual({
@@ -168,7 +169,7 @@ describe("useWeekRouteGuard", () => {
 
   it("waits while the scores on hand answer for the same week of another season", () => {
     const result = guard(String(SEASON), String(CURRENT_WEEK), {
-      attemptedFor: { season: SEASON - 1, week: CURRENT_WEEK },
+      attemptedFor: { season: SEASON - 1, weekNumber: CURRENT_WEEK },
     });
 
     expect(result.status).toBe("loading");
