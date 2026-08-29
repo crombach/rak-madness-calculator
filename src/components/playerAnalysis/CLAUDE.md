@@ -3,8 +3,8 @@
 Where a player stands in a week and what they must still do to win it, opened from
 their name in either table.
 
-- `PlayerAnalysisDialog`: `DialogShell` over a `DialogCombobox`. `playersMatching`
-  offers every player the typed letters reach; entries and input carry
+- `PlayerAnalysisDialog`: `DialogShell` over a `DialogCombobox`. `matching` offers
+  every player the typed letters reach. Entries and input carry
   `PlayerStatusIcon`. `useArrival` takes a name handed in from a table.
 - `PlayerAnalysisDialog.scss`: the status hues alone. Everything else about the look
   comes from `components/dialog/`.

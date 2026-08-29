@@ -36,6 +36,7 @@ One `package.json`, but two TypeScript roots. The root `tsconfig.json` excludes 
 
 - `src/components/results/` — imports `gameStatus/`, `navbar/`, `pageLayout/`, `playerAnalysis/`, and `table/`. `src/components/home/HomePage.tsx` imports `results/resultsPath`, and `src/App.tsx` imports four of its route files.
 - `src/components/settings/` — `footer/` imports it, so the theme and own-name dialog and the bottom links bar move together.
+- `src/components/footer/` — imports `settings/`, and `home/HomePage.tsx` imports it. It sits between the two, so it belongs to whichever agent holds `settings/`.
 - `src/components/navbar/` — three `.tsx` and `.scss` pairs (`Navbar`, `ScoresNavbar`, `LogoButton`), not one. `pageLayout/` and `table/` both import it.
 - `src/components/table/` — imports `table/playerName/`, and `playerAnalysis/` and `results/` import `table/`.
 - `src/components/pageLayout/` — imported by `home/` and `results/`.

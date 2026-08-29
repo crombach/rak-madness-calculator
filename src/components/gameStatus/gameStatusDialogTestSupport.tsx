@@ -3,6 +3,7 @@ import { WeekInfo } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import doNothing from "../../utils/doNothing";
 import { getGameResult } from "../../utils/getLeagueResults";
+import { SEASON } from "../../weekFixtures";
 import GameStatusDialog from "./GameStatusDialog";
 
 /**
@@ -26,7 +27,6 @@ export const WEEK: WeekInfo = {
   startDate: new Date("2024-10-01T00:00:00Z"),
   endDate: new Date("2024-10-08T00:00:00Z"),
 };
-export const SEASON = 2024;
 
 export function dialog(
   gameLabel: string | undefined,

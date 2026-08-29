@@ -20,13 +20,9 @@ import { warmedImageUrls } from "../../utils/warmImage";
 vi.mock("../../utils/getLeagueResults");
 
 import matching from "../../utils/matching";
+import { SEASON } from "../../weekFixtures";
 import { gameSearchText } from "./GameStatusDialog";
-import {
-  dialog,
-  getGameResultMock,
-  SEASON,
-  WEEK,
-} from "./gameStatusDialogTestSupport";
+import { dialog, getGameResultMock, WEEK } from "./gameStatusDialogTestSupport";
 
 /**
  * The shared fixtures build a game ESPN's own boxscore never quite is: no id
