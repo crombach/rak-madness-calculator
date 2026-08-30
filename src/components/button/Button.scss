@@ -291,10 +291,6 @@
   &.--busy {
     @include skeleton-sheen;
     cursor: default;
-    // A key this small reads the sheen's usual loop as a slow, faint smear rather
-    // than as work happening. `dialog-sweep`'s own progress bar is the other place
-    // the app times a sweep to the box it crosses rather than to the shared loop.
-    --rak-duration-loop: 900ms;
 
     // A key is disabled for as long as it is working, so this is where most of the
     // app's waiting is seen. The sweep is white, which is invisible on the grey a

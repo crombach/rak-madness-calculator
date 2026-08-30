@@ -33,11 +33,9 @@ $sheen-fraction: 0.6;
 }
 
 /**
- * One sheen crossing the whole element, rather than a pulse in each of the
- * fifteen hundred bars a wireframe table holds. Animating them all cost three
- * quarters of the frame budget on a throttled phone, over the same seconds the
- * week is being scored. This is one transform on the compositor, so it costs the
- * same whatever the element's size.
+ * One sheen crossing the whole element, rather than a pulse in each of the parts
+ * inside it. This is one transform on the compositor, so it costs the same
+ * whatever the element's size.
  *
  * Applies to the element it is included in, which becomes the containing block
  * and clips the sheen: the sheen is as wide as most of the box, so both ends of

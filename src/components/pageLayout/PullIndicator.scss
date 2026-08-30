@@ -25,7 +25,7 @@
   width: var(--rak-touch-target);
   height: var(--rak-touch-target);
   border-radius: 50%;
-  background-color: var(--rak-primary-500);
+  background-color: var(--rak-nav-fill);
   // Lit and unlit over a beat rather than in one frame. The unlighting lands on
   // the close, where the puck starts moving in the same frame, and a fill
   // snapping back there is read as part of the movement going wrong.
@@ -48,14 +48,14 @@
   opacity: var(--rak-pull-progress, 0);
 
   > svg {
-    fill: var(--rak-on-solid);
+    fill: var(--rak-nav-ink);
   }
 }
 
 // Far enough that letting go would refresh. The app's own key, lit.
 :root[data-pull="armed"] .page__pull-puck,
 :root[data-pull="refreshing"] .page__pull-puck {
-  background-color: var(--rak-primary-400);
+  background-color: var(--rak-nav-key);
 }
 
 // The one way the app says it is still working, which is a sheen and never a

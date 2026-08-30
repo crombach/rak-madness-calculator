@@ -68,7 +68,7 @@
     // the box, so nothing but that gap ever shows this. A roomier screen leaves
     // room beside the table, where it would show as a second dark band against the
     // header, so the surface every other page carries goes back below.
-    background-color: var(--rak-primary-600);
+    background-color: var(--rak-band-caption);
 
     // Nothing of its own, so the case behind the page shows either side of the
     // table, which is what every other page stands on. The shadow goes with it: it

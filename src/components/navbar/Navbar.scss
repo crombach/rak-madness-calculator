@@ -7,7 +7,22 @@
   align-items: center;
   justify-content: center;
   z-index: var(--rak-z-navbar);
-  box-shadow: var(--rak-shadow-raised);
+  // The highest of the three bands the scoreboard steps down through.
+  box-shadow: var(--rak-shadow-band-navbar);
+  // The bar's chrome, which light mode takes off the brand blue. Pinned as ramp
+  // steps rather than read one at a time, so the key faces below, the name
+  // plate's ring (`lcd-glass`), and a key's lower edge all follow: `Button.scss`
+  // reads that edge from `--rak-primary-700` at a specificity no `--rak-key-edge`
+  // set here can beat.
+  --rak-primary-400: var(--rak-nav-key);
+  --rak-primary-500: var(--rak-nav-fill);
+  --rak-primary-600: var(--rak-nav-key-active);
+  --rak-primary-700: var(--rak-nav-key-edge);
+  --rak-on-solid: var(--rak-nav-ink);
+  --rak-key-top: var(--rak-nav-key-top);
+  // The lamp, which cannot be the blue the bar itself is filled in.
+  --rak-led-on: var(--rak-nav-led);
+
   background-color: var(--rak-primary-500);
   color: var(--rak-on-solid);
   // Every button in here sits on the app's own primary, which a ring in that same
