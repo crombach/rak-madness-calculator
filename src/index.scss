@@ -185,9 +185,11 @@
   --rak-nav-ink: #fff;
   // The lamp saying which view is chosen. `--rak-info-400`, which rules the
   // reader's own row and lit this lamp when the bar was near white, is 2.30:1
-  // on the face a chosen key wears now. This step is 5.66:1 there, the light
-  // the dark bar leaves it room to be, and the row's own rule is unmoved.
-  --rak-nav-led: var(--rak-info-200);
+  // on the face a chosen key wears now. Its own value rather than a step on
+  // that ramp: between the 400 and the 200 the lamp wants a blue this dark bar
+  // leaves room to be light against, and no step there is one. 4.41:1 on the
+  // chosen face, and the row's own rule is unmoved.
+  --rak-nav-led: #38bdf8;
   // The fill a combobox's field sinks into: `lcd-field` in `_lcd.scss`. Its own
   // token rather than a read of the step above, which is the header/frame
   // chrome: a field reads brighter than the panel it is set into, so this stays
