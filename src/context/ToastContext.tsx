@@ -12,7 +12,12 @@ import { v4 as uuidv4 } from "uuid";
 import doNothing from "../utils/doNothing";
 
 export const MAX_VISIBLE_TOASTS = 3;
-export const TOAST_LIFETIME_MS = 5000;
+/**
+ * How long a toast that closes itself stays up. Long enough to read one line of
+ * confirmation, and no longer: the only toasts on this clock say something
+ * worked, and the reader is already looking at what it did.
+ */
+export const TOAST_LIFETIME_MS = 3000;
 
 /** Each value has a matching ramp in `index.scss`. */
 export type ToastType =
