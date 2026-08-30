@@ -165,6 +165,26 @@
   --rak-primary-600: #dcdcdc;
   --rak-primary-700: #c4c4c4;
   --rak-primary-800: #a8a8a8;
+  // The two chrome bands under the navbar: the week caption and the table's
+  // header. Their own tokens rather than steps on the ramp above, which also
+  // fills every solid key in the app. The bands step dark-to-light down the
+  // scoreboard here and light-to-dark in dark mode, and one ramp cannot run
+  // both ways.
+  --rak-band-caption: #bfbfbf;
+  --rak-band-header: #f0f0f0;
+  // The navbar's own chrome, on the brand blue while the ramp above stays
+  // achromatic for every key elsewhere. `Navbar.scss` pins the ramp to these
+  // inside the bar, so its keys, the name plate's ring, and the pull puck all
+  // read one set. White ink clears 7.19:1 on the fill and 5.45:1 on a key.
+  --rak-nav-fill: #095c8c;
+  --rak-nav-key: #0a6fa8;
+  --rak-nav-key-active: #074a6f;
+  --rak-nav-key-edge: #063f60;
+  --rak-nav-ink: #fff;
+  // The lamp saying which view is chosen, in the brand orange: the blue it takes
+  // elsewhere is the bar's own color here, which it cannot be seen against.
+  // 3.23:1 on the key's face, and the table's own row marker stays blue.
+  --rak-nav-led: #fdba74;
   // The fill a combobox's field sinks into: `lcd-field` in `_lcd.scss`. Its own
   // token rather than a read of the step above, which is the header/frame
   // chrome: a field reads brighter than the panel it is set into, so this stays
@@ -591,6 +611,17 @@ html {
   --rak-primary-600: #404040;
   --rak-primary-700: #333333;
   --rak-primary-800: #262626;
+  // The bands and the navbar's chrome, unmoved: this mode's ramp already runs
+  // light-to-dark down the scoreboard. Literals for the navbar, since it pins
+  // the ramp steps to these and a read back would be a cycle.
+  --rak-band-caption: var(--rak-primary-600);
+  --rak-band-header: var(--rak-primary-800);
+  --rak-nav-fill: #4f4f4f;
+  --rak-nav-key: #5e5e5e;
+  --rak-nav-key-active: #404040;
+  --rak-nav-key-edge: #333333;
+  --rak-nav-ink: #fff;
+  --rak-nav-led: var(--rak-info-200);
   // The combobox field, back to the same dark fill this step always stood on
   // in this mode. The readout glass needs no override: `--rak-glass-fill`
   // above is fixed to this same value in both modes already.

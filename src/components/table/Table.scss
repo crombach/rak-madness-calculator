@@ -100,7 +100,7 @@
     var(--rak-table-header-divider);
   // For an edge that draws nothing. Never `none`, which resets the color to
   // `currentColor`.
-  --rak-table-no-border: 0 solid var(--rak-primary-800);
+  --rak-table-no-border: 0 solid var(--rak-band-header);
 
   // The table's own accessible name. Not shown: a caption here would add a line
   // above the header no sighted reader needs, since the page around the table
@@ -110,7 +110,7 @@
   }
 
   .table__header {
-    background-color: var(--rak-primary-800);
+    background-color: var(--rak-band-header);
 
     th {
       // The screen-printed label every heading in the app is set in.
@@ -125,7 +125,7 @@
       position: sticky;
       top: 0;
       color: var(--rak-on-solid);
-      background-color: var(--rak-primary-800);
+      background-color: var(--rak-band-header);
       // The header row is what a fixed layout reads its columns off, so the widths
       // are named here and every cell under one follows.
       width: var(--rak-table-score-width);
@@ -359,7 +359,7 @@
       padding: 0;
       // The last real row already carries the table's bottom edge.
       border: var(--rak-table-no-border);
-      background-color: var(--rak-primary-600);
+      background-color: var(--rak-band-caption);
     }
   }
 }

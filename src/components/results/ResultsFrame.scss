@@ -27,7 +27,7 @@
   // height; painted the same, it reads as that row being the taller for it rather
   // than as the page running out before the table does. The caption's own color,
   // not the header's: this is the frame around the table, not the table itself.
-  background-color: var(--rak-primary-600);
+  background-color: var(--rak-band-caption);
   // The table is the app's screen, so the dark band around it is drawn as the
   // bezel holding it: lit along its top edge and shadowed along its bottom. Inset,
   // so it costs no room and nothing inside the frame moves.
@@ -53,7 +53,7 @@
   // the table. No border under it: the step off this fill is what divides the
   // caption from the header, and a rule drawn in either neighbour's color would
   // be a line one of them could not show.
-  background-color: var(--rak-primary-600);
+  background-color: var(--rak-band-caption);
   // No `z-index`, so the sticky header passes over it on the way up.
   color: var(--rak-on-solid);
   // The header row's own type, so the two read as one head with a line drawn
