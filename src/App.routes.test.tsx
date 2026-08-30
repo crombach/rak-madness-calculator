@@ -154,6 +154,6 @@ describe("the app: the URL decides which week is fetched, and what shows while i
     await user.click(await screen.findByRole("button", { name: "Settings" }));
 
     expect(screen.getByRole("group", { name: "Theme" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Your Player Name")).toBeInTheDocument();
+    expect(screen.getByLabelText("Player Name")).toBeInTheDocument();
   });
 });

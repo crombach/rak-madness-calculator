@@ -29,7 +29,7 @@ describe("SettingsDialog", () => {
       .getAllByRole("heading", { level: 3 })
       .map((heading) => heading.textContent);
 
-    expect(headings).toEqual(["Your Player Name", "Theme"]);
+    expect(headings).toEqual(["Player Name", "Theme"]);
   });
 
   it("closes from the shell's own close button", async () => {
@@ -80,7 +80,7 @@ describe("SettingsDialog, the theme", () => {
 describe("SettingsDialog, the reader's own name", () => {
   it("saves what is typed", async () => {
     const user = mountDialog();
-    await user.type(screen.getByLabelText("Your Player Name"), "Linebacher");
+    await user.type(screen.getByLabelText("Player Name"), "Linebacher");
 
     expect(localStorage.getItem(PLAYER_NAME_KEY)).toBe("Linebacher");
   });
@@ -89,13 +89,13 @@ describe("SettingsDialog, the reader's own name", () => {
     localStorage.setItem(PLAYER_NAME_KEY, "Linebacher");
     mountDialog();
 
-    expect(screen.getByLabelText("Your Player Name")).toHaveValue("Linebacher");
+    expect(screen.getByLabelText("Player Name")).toHaveValue("Linebacher");
   });
 
   it("forgets the name once the field is cleared", async () => {
     localStorage.setItem(PLAYER_NAME_KEY, "Linebacher");
     const user = mountDialog();
-    await user.clear(screen.getByLabelText("Your Player Name"));
+    await user.clear(screen.getByLabelText("Player Name"));
 
     expect(localStorage.getItem(PLAYER_NAME_KEY)).toBeNull();
   });
@@ -107,7 +107,7 @@ describe("SettingsDialog, the reader's own name", () => {
       screen.getByRole("button", { name: "Clear your player name" }),
     );
 
-    expect(screen.getByLabelText("Your Player Name")).toHaveValue("");
+    expect(screen.getByLabelText("Player Name")).toHaveValue("");
     expect(localStorage.getItem(PLAYER_NAME_KEY)).toBeNull();
   });
 
@@ -120,7 +120,16 @@ describe("SettingsDialog, the reader's own name", () => {
 
     // The button unmounts on the same click, so without this the focus lands on
     // `<body>` and the next tab restarts from the top of the document.
-    expect(screen.getByLabelText("Your Player Name")).toHaveFocus();
+    expect(screen.getByLabelText("Player Name")).toHaveFocus();
+  });
+
+  it("leaves the field on enter, which drops a phone's keyboard", async () => {
+    const user = mountDialog();
+    const field = screen.getByLabelText("Player Name");
+    await user.type(field, "Linebacher{Enter}");
+
+    expect(field).not.toHaveFocus();
+    expect(field).toHaveValue("Linebacher");
   });
 
   it("offers nothing to clear while the field is empty", () => {
