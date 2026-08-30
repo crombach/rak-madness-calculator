@@ -102,6 +102,16 @@
   // the table is cut to its own width and needs an edge to end at.
   --rak-table-edge: var(--rak-table-no-border);
   --rak-table-header-edge: var(--rak-table-no-border);
+  // The rule between the rank and the player, drawn by the rank's right edge
+  // rather than the player's left. The player column sticks to `left: 0`, so a
+  // rule on its left edge sits on the screen's own edge once the table is
+  // panned across. On the rank it travels with the rank, under that sticky
+  // column and out of sight. Twice the width, since the sticky column covers
+  // half of it for the whole pan.
+  --rak-table-rank-border: calc(2 * var(--rak-border-width)) solid
+    var(--rak-panel-border);
+  --rak-table-header-rank-border: calc(2 * var(--rak-border-width)) solid
+    var(--rak-table-header-divider);
   --rak-table-header-border: var(--rak-border-width) solid
     var(--rak-table-header-divider);
   // For an edge that draws nothing. Never `none`, which resets the color to
@@ -152,15 +162,14 @@
       border-right: var(--rak-table-header-border);
       &:first-child {
         width: var(--rak-table-rank-width);
-        // The rank and the player read as one block, so nothing divides them.
-        border-right: var(--rak-table-no-border);
+        border-right: var(--rak-table-header-rank-border);
         border-left: var(--rak-table-header-edge);
       }
       &:last-child {
         border-right: var(--rak-table-header-edge);
       }
       &:nth-child(2) {
-        border-left: var(--rak-table-header-border);
+        border-left: var(--rak-table-no-border);
       }
 
       // The corner, stuck to the top and the left at once. Above its neighbours
@@ -272,7 +281,9 @@
     }
 
     .table__player-col {
-      border-left: var(--rak-table-border);
+      // Nothing here. The rank's right edge carries this rule instead, so it is
+      // not left standing on the screen's edge once this column sticks.
+      border-left: var(--rak-table-no-border);
       // A name is read, not compared down the column, and it is the one cell cut
       // short with an ellipsis. Centering would move where it starts from row to
       // row and put the cut at both ends.
@@ -345,8 +356,7 @@
       border-right: var(--rak-table-border);
       &:first-child {
         border-left: var(--rak-table-edge);
-        // The player column draws this divider on its own left edge.
-        border-right: var(--rak-table-no-border);
+        border-right: var(--rak-table-rank-border);
       }
       &:last-child {
         border-right: var(--rak-table-edge);
