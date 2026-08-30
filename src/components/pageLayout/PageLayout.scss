@@ -22,34 +22,8 @@
   flex-direction: column;
   align-items: center;
   overflow: hidden;
-  // Makes this a stacking context, so the fill below sits above this element's
-  // own background and under everything the page lays out.
+  // Makes this a stacking context, so nothing the page raises can rise past it.
   isolation: isolate;
-
-  // What a pull opens a gap onto. Only while one is running, so the case is what
-  // frames the content column at every other moment, and only where the gesture
-  // is armed at all.
-  //
-  // Held off the safe-area row above the navbar, which is the one strip of this
-  // element a phone leaves bare. `inset: 0` is the padding box, which takes that
-  // row in, and flipping it for the length of a pull is a flash at the notch.
-  @include phone-touch {
-    &::before {
-      content: "";
-      position: absolute;
-      top: env(safe-area-inset-top, 0px);
-      right: 0;
-      bottom: 0;
-      left: 0;
-      z-index: var(--rak-z-below);
-      display: none;
-      background-color: var(--rak-pull-ground);
-    }
-  }
-}
-
-:root[data-pull] .page::before {
-  display: block;
 }
 
 .page__content {
