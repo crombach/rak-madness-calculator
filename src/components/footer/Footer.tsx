@@ -19,7 +19,7 @@ export const SETTINGS_SEEN_KEY = PREFIX + SETTINGS_SEEN_SETTING;
  * A reader who opens the dialog stores the moment they did. That is what makes
  * this comparable rather than a flag that can only be set once.
  */
-const SETTINGS_CHANGED_AT = Date.parse("2026-08-30T00:00:00Z");
+const SETTINGS_CHANGED_AT = Date.parse("2026-08-30T17:00:00Z");
 
 /**
  * Whether this reader has opened the settings since the last thing worth showing

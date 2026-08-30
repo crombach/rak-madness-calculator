@@ -1,17 +1,17 @@
 # playerName
 
-`PlayerName`: table cell (`<td>`) holding a `.table__cell-button` with the player
-name and status icon. Click opens the player analysis on that player, through
-`PlayerAnalysisContext`. Name is cut short with an ellipsis rather than wrapped, so
-every row is one line tall. A `.table__sr-only` span carries the words for the fill
-color.
+`PlayerName`: table cell (`<td>`) for one player, the name cut short with an
+ellipsis rather than wrapped, so every row is one line tall.
 
-`PlayerStatusIcon`: that icon on its own, sized from `--rak-player-icon-size`. The
-player analysis search renders it too, so the same player wears the same icon in
-both places.
+Where `useShowPlayerStatus` says yes, it is a `.table__cell-button` holding the
+name and `PlayerStatusIcon`, opening the player analysis through
+`PlayerAnalysisContext`, with a `.table__sr-only` span carrying the words for the
+fill color and a `.table__cell-wipe` over the fill a just-knocked-out player
+held. Where it says no, it is the bare name under `--no-status`, which
+`Table.scss` takes the fill and the hit area off.
 
-`--mine`, from `useIsMyPlayer`, marks the reader's own. `Table.scss` reads it
-off the row and rules every cell, lit like the navbar's lamp.
+`PlayerStatusIcon`: that icon alone, sized from `--rak-player-icon-size`. The
+player analysis search renders it too.
 
-A player a refresh just knocked out renders a `.table__cell-wipe`, from
-`useScoreChanges()`, over the fill they held before that.
+`--mine`, from `useIsMyPlayer`, marks the reader's own either way, ruled in
+`Table.scss` and lit like the navbar's lamp.

@@ -13,7 +13,14 @@ const THEMES: Array<{ value: Theme; label: string }> = [
   { value: "light", label: "Light" },
 ];
 
-/** How the app looks, and who the reader is. */
+// The on choice first, against the alphabetical order above, because these two are
+// one setting's two states rather than three peers.
+const LIVE_ANALYSIS: Array<{ value: boolean; label: string }> = [
+  { value: true, label: "Enable" },
+  { value: false, label: "Disable" },
+];
+
+/** How the app looks, who the reader is, and how much it tells them. */
 export default function SettingsDialog({
   open,
   onOpenChange,
@@ -21,8 +28,16 @@ export default function SettingsDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { theme, setTheme, playerName, setPlayerName } = useSettings();
+  const {
+    theme,
+    setTheme,
+    playerName,
+    setPlayerName,
+    liveAnalysis,
+    setLiveAnalysis,
+  } = useSettings();
   const themeLabelId = useId();
+  const liveAnalysisLabelId = useId();
   const nameInputId = useId();
   const nameInput = useRef<HTMLInputElement>(null);
 
@@ -76,6 +91,32 @@ export default function SettingsDialog({
           </div>
           <p className="settings__hint">
             Your row is marked in the scoreboard and picks tables.
+          </p>
+        </section>
+
+        <section className="settings__section">
+          <h3 className="settings__label" id={liveAnalysisLabelId}>
+            Live Player Analysis
+          </h3>
+          <div
+            className="settings__choices"
+            role="group"
+            aria-labelledby={liveAnalysisLabelId}
+          >
+            {LIVE_ANALYSIS.map(({ value, label }) => (
+              <Button
+                key={label}
+                compact
+                selected={liveAnalysis === value}
+                onClick={() => setLiveAnalysis(value)}
+                className="settings__choice"
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+          <p className="settings__hint">
+            {"Sometimes you don't want to know."}
           </p>
         </section>
 

@@ -14,10 +14,15 @@ export type Theme = "light" | "dark" | "auto";
 
 const THEME_SETTING = "theme";
 const PLAYER_NAME_SETTING = "playerName";
+const LIVE_ANALYSIS_SETTING = "liveAnalysis";
 
 /** The exact key `settingsStore` writes to, for a test that reads localStorage directly. */
 export const THEME_KEY = PREFIX + THEME_SETTING;
 export const PLAYER_NAME_KEY = PREFIX + PLAYER_NAME_SETTING;
+export const LIVE_ANALYSIS_KEY = PREFIX + LIVE_ANALYSIS_SETTING;
+
+/** The only value this setting is ever stored as, the default being stored as nothing. */
+const LIVE_ANALYSIS_OFF = "off";
 
 /** Follow the operating system, which is what the app did before it could be told. */
 const DEFAULT_THEME: Theme = "auto";
@@ -44,6 +49,13 @@ type Settings = {
    */
   playerName: string;
   setPlayerName: (name: string) => void;
+  /**
+   * Whether a week still being played says where each player stands. Off, the
+   * tables mark nobody and open nothing until the week is decided, for a reader
+   * who would rather watch the games than be told how they end.
+   */
+  liveAnalysis: boolean;
+  setLiveAnalysis: (enabled: boolean) => void;
 };
 
 // Defaults rather than a throw, following `PlayerAnalysisContext`: the tables read
@@ -53,11 +65,21 @@ const SettingsContext = createContext<Settings>({
   setTheme: doNothing,
   playerName: "",
   setPlayerName: doNothing,
+  liveAnalysis: true,
+  setLiveAnalysis: doNothing,
 });
 
 function storedTheme(): Theme {
   const saved = readSetting(THEME_SETTING);
   return saved === "light" || saved === "dark" ? saved : DEFAULT_THEME;
+}
+
+/**
+ * On unless it was turned off, which is what the app did before it could be told.
+ * Anything else stored reads as on, the same way an unparseable theme does.
+ */
+function storedLiveAnalysis(): boolean {
+  return readSetting(LIVE_ANALYSIS_SETTING) !== LIVE_ANALYSIS_OFF;
 }
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
@@ -134,6 +156,8 @@ export function SettingsContextProvider({ children }: PropsWithChildren) {
   const [playerName, setPlayerNameState] = useState<string>(
     () => readSetting(PLAYER_NAME_SETTING) ?? "",
   );
+  const [liveAnalysis, setLiveAnalysisState] =
+    useState<boolean>(storedLiveAnalysis);
 
   useEffect(() => {
     applyTheme(theme);
@@ -166,9 +190,21 @@ export function SettingsContextProvider({ children }: PropsWithChildren) {
     writeSetting(PLAYER_NAME_SETTING, next);
   }, []);
 
+  const setLiveAnalysis = useCallback((next: boolean) => {
+    setLiveAnalysisState(next);
+    writeSetting(LIVE_ANALYSIS_SETTING, next ? "" : LIVE_ANALYSIS_OFF);
+  }, []);
+
   const value = useMemo(
-    () => ({ theme, setTheme, playerName, setPlayerName }),
-    [theme, setTheme, playerName, setPlayerName],
+    () => ({
+      theme,
+      setTheme,
+      playerName,
+      setPlayerName,
+      liveAnalysis,
+      setLiveAnalysis,
+    }),
+    [theme, setTheme, playerName, setPlayerName, liveAnalysis, setLiveAnalysis],
   );
 
   return (
