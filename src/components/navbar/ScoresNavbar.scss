@@ -57,8 +57,13 @@
 // gone: a screen reader owns every swipe, so its reader cannot perform the
 // gesture, and `display: none` would leave them no way to refresh a live week at
 // all. On the wrapper, so the divider goes with it.
+//
+// Back on the bar the moment it is tabbed to, the way `.page__skip-link` comes
+// back. Clipped to a pixel it is still in the tab order, so a keyboard on a phone
+// would otherwise land focus on something nobody can see. The bar shifts when it
+// returns, which is the whole of what a reader tabbing to it is asking for.
 @include phone-touch {
-  .scores-nav__live {
+  .scores-nav__live:not(:focus-within) {
     @include visually-hidden;
   }
 }
