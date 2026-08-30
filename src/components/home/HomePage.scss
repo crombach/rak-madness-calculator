@@ -24,7 +24,7 @@
 
   &[data-disabled] {
     cursor: default;
-    // A dim readout rather than a greyed field: the glass stays, only the
+    // A dim readout rather than a grayed field: the glass stays, only the
     // value goes dark, the same as a socket with nothing chosen yet.
     color: var(--rak-unlit);
   }

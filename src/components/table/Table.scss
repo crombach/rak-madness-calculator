@@ -161,7 +161,7 @@
         border-left: var(--rak-table-no-border);
       }
 
-      // The corner, stuck to the top and the left at once. Above its neighbours
+      // The corner, stuck to the top and the left at once. Above its neighbors
       // rather than level with them: they come after it in the table, so at the
       // same step they would draw over it on the way past.
       &.table__player-col {

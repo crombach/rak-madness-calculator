@@ -114,7 +114,7 @@ export default async function run({ page, context, baseUrl }) {
       .click();
     const controls = page.locator(".home__controls");
     await controls.waitFor({ timeout: 20000 });
-    // Both keys stay grey until the week has been scored, so wait for the last
+    // Both keys stay gray until the week has been scored, so wait for the last
     // of them to come up rather than for a fixed delay.
     await page
       .locator(".home__button:not([disabled])", { hasText: "Export Results" })

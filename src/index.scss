@@ -76,7 +76,7 @@
   --rak-space-4: 16px;
   --rak-space-6: 24px;
 
-  // Squarer than a card's. The app is drawn as a moulded case with keys set into
+  // Squarer than a card's. The app is drawn as a molded case with keys set into
   // it, and a corner rounded much past this stops reading as something pressed
   // out of a panel.
   --rak-radius-xs: 2px;
@@ -118,7 +118,7 @@
   --rak-duration-slow: 300ms;
   --rak-duration-loop: 800ms;
   --rak-ease-standard: ease;
-  // A key's travel. Out fast and settling, the way a moulded key answers a
+  // A key's travel. Out fast and settling, the way a molded key answers a
   // finger, rather than the symmetric curve every other transition uses.
   --rak-ease-key: cubic-bezier(0.2, 0.8, 0.3, 1);
   // Something going home under nothing but its own weight, which starts from a
@@ -189,7 +189,7 @@
   // The lit rim along a key's top edge, weaker than the one every other key in
   // the app wears. That 70% white was set against a near-white key face; on the
   // dark face a key in this bar carries, it reads as a white line rather than as
-  // an edge, and a key held down looks as raised as its neighbours.
+  // an edge, and a key held down looks as raised as its neighbors.
   --rak-nav-key-top: inset 0 1px 0 rgb(255 255 255 / 25%);
   // The lamp saying which view is chosen. `--rak-info-400`, which rules the
   // reader's own row and lit this lamp when the bar was near white, is 2.30:1
@@ -201,7 +201,7 @@
   // The fill a combobox's field sinks into: `lcd-field` in `_lcd.scss`. Its own
   // token rather than a read of the step above, which is the header/frame
   // chrome: a field reads brighter than the panel it is set into, so this stays
-  // near white here while that step stays mid-grey. Dark mode below pins this
+  // near white here while that step stays mid-gray. Dark mode below pins this
   // back to the old dark field, unchanged.
   --rak-well-fill: #f5f5f5;
   // The fill a readout's own glass sinks into: `lcd-glass` in `_lcd.scss`, the
@@ -312,7 +312,7 @@
 
   --rak-surface: #fff;
   // What a dialog stands on, one plane above the page. The same white here,
-  // where the scrim already takes the page to grey under it. Dark mode has no
+  // where the scrim already takes the page to gray under it. Dark mode has no
   // such room and lifts the plane instead.
   --rak-surface-raised: var(--rak-surface);
   --rak-fill-subtle: #f3f3f3;
@@ -405,13 +405,13 @@
   --rak-disabled-bg: #f3f3f3;
   --rak-disabled-text: #737373;
   // The lower edge a key that cannot be pressed stands on. A disabled key keeps
-  // its moulding, so enabling one eases its fill rather than growing an edge out
+  // its molding, so enabling one eases its fill rather than growing an edge out
   // of nothing under a fill that is already moving.
   --rak-disabled-edge: #d6d6d6;
 
   // How far an even row is taken from the fill its cells already carry. One value
   // for every column, so a striped name cell, a striped pick, and a striped score
-  // are all the same step apart from their odd-row neighbours. Its own dark value
+  // are all the same step apart from their odd-row neighbors. Its own dark value
   // rather than a read of `--rak-primary-800`, which is light here: mixing toward
   // a light color would fade the stripe instead of darkening it. Dark mode moves
   // this to `--rak-text` below, off that mode's own light ink.
@@ -455,7 +455,7 @@
   --rak-shadow-band-caption: 0 2px 4px -1px rgb(var(--rak-shadow-color) / 15%);
   --rak-shadow-band-header: 0 2px 3px -1px rgb(var(--rak-shadow-color) / 11%);
 
-  // Moulding, for the three things the app draws as parts of a device rather than
+  // Molding, for the three things the app draws as parts of a device rather than
   // as panes of a page: a key, the bezel around a screen, and the well a readout
   // is sunk into. Every one is an alpha, so it is read against whatever fill it is
   // laid on and none of them has to be repainted per surface. The dark lower edge
@@ -486,12 +486,22 @@
   // boundary itself, at 2.99:1 on the face a chosen key wears, so the socket
   // stays a seam rather than the bezel a light lens needed.
   //
-  // Off is grey, and dark enough to leave the lit lens somewhere to be brighter
+  // Off is gray, and dark enough to leave the lit lens somewhere to be brighter
   // than: 3.32:1 between the two, which is what says which key is chosen.
   --rak-led-on: var(--rak-info-400);
   --rak-led-off: #2e2e2e;
   --rak-led-socket: 0 -1px 0 rgb(0 0 0 / 22%);
   --rak-led-glow: 0 0 4px rgb(2 132 199 / 55%);
+  // The lamp's blue said as ink rather than as a lens, for the footer's Settings
+  // control before anyone has opened it. A lens only has to clear 3:1 and
+  // `--rak-led-on` is set for that. A word has to clear 4.5:1, and
+  // `--rak-info-400` misses it here at about 4.1:1. One step down the ramp
+  // carries the same blue at about 5.4:1.
+  --rak-attention-ink: var(--rak-info-500);
+  // The halo off the lit lens, at the one strength this app gives a lamp. Text and
+  // an icon take it through `drop-shadow` rather than `box-shadow`, so this is the
+  // color alone and `Footer.scss` says how far it carries.
+  --rak-attention-glow: rgb(2 132 199 / 55%);
   // The same lamp where it is drawn as a rule inside something rather than as a
   // lens in a lip: the reader's own row in `Table.scss`. Inset, because the rule
   // is inset and a halo outside the cell would fall under the cell beside it.
@@ -540,7 +550,7 @@
   --rak-loading-sheen: rgb(255 255 255 / 30%);
   // The same sweep on a fill light enough that white crossing it cannot be seen.
   // The only one is a key that is working and disabled while it does, which stands
-  // in the app's lightest grey.
+  // in the app's lightest gray.
   --rak-loading-sheen-on-light: rgb(0 0 0 / 10%);
 }
 
@@ -562,7 +572,7 @@ body {
 
 * {
   box-sizing: border-box;
-  // Every fill in the app is chosen, so nothing wants a translucent grey laid
+  // Every fill in the app is chosen, so nothing wants a translucent gray laid
   // over it on tap. Both cells and buttons draw their own `:active` state.
   -webkit-tap-highlight-color: transparent;
 }
@@ -729,7 +739,7 @@ html {
   --rak-mark-upcoming-text: var(--rak-text);
 
   // The toast's own darkened fills, off the same hues as their light
-  // pastel. `primary` and `neutral` are both grey chrome, so they take the
+  // pastel. `primary` and `neutral` are both gray chrome, so they take the
   // selected-row and muted-panel fills already this dark; `success` and
   // `danger` reuse the table cell's own darkened green/red. `warning` gets
   // its own: its hue is the orange the rest of its ramp runs on, not the
@@ -770,7 +780,7 @@ html {
   --rak-progress-fill: var(--rak-border);
 
   --rak-well-light: inset 0 1px 2px rgb(0 0 0 / 42%);
-  // The key's own moulding, back to the cut it always dished by against this
+  // The key's own molding, back to the cut it always dished by against this
   // mode's dark fills.
   --rak-key-top: inset 0 1px 0 rgb(255 255 255 / 18%);
   --rak-key-dish: inset 0 -2px 3px rgb(0 0 0 / 14%);
@@ -791,6 +801,10 @@ html {
   --rak-led-socket: 0 -1px 0 rgb(0 0 0 / 40%);
   --rak-led-glow:
     0 0 6px rgb(125 211 252 / 55%), 0 0 12px rgb(125 211 252 / 25%);
+  // The lit lens is already light enough to read as a word on this surface, so
+  // the ink and the lens are one step here.
+  --rak-attention-ink: var(--rak-info-200);
+  --rak-attention-glow: rgb(125 211 252 / 55%);
   --rak-led-bloom:
     inset 0 8px 7px -6px rgb(125 211 252 / 15%),
     inset 0 -8px 7px -6px rgb(125 211 252 / 15%);

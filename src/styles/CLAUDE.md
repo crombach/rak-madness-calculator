@@ -4,7 +4,7 @@ Sass partials, mixins and variables only, so a partial emits no CSS however many
 files `@use` it. `_skeleton.scss` is the one exception, and says so: it holds
 keyframes. Design tokens live in `src/index.scss` instead.
 
-- `_breakpoints.scss`: `roomy-screen`, `labelled-navbar`, `wide-screen`,
+- `_breakpoints.scss`: `roomy-screen`, `labeled-navbar`, `wide-screen`,
   `can-hover`, `phone-landscape`, `phone-touch`, `reduced-motion`. Mixins rather
   than custom properties, because a custom property does not work inside a media
   query. Reach them with `@use "…/styles/breakpoints" as *;`. Every width one is

@@ -59,7 +59,7 @@
   line-height: var(--rak-line-height);
   cursor: pointer;
   // The key's travel and the edge it stands on are timed with its fill, so a
-  // press is one move rather than a colour easing while the face jumps.
+  // press is one move rather than a color easing while the face jumps.
   //
   // This order (background-color, color, transform, box-shadow) is read
   // positionally by every `transition-delay` override below, `--selectable`'s
@@ -74,7 +74,7 @@
 
   @include focus-ring;
 
-  // Only a real `disabled` greys out. `aria-disabled` says the button is waiting
+  // Only a real `disabled` grays out. `aria-disabled` says the button is waiting
   // on something rather than unavailable, and a control that is about to work
   // should not look like one that never will.
   &:disabled {
@@ -100,7 +100,7 @@
     aspect-ratio: 1;
   }
 
-  // A key moulded out of the panel: lit along its top edge, standing on a lower
+  // A key molded out of the panel: lit along its top edge, standing on a lower
   // edge in its own color one step down. Each variant names that step below, so
   // a key is never edged in a color it does not otherwise carry.
   &.--solid {
@@ -155,7 +155,7 @@
     // two eased moves land back to back — the browser drops `:active` the instant
     // the pointer lifts, a render tick before React can add `--selected`, so a fill
     // a step darker flashes through the one below it on every click. The press is
-    // said in the travel and the edge instead, which is what a moulded key says it
+    // said in the travel and the edge instead, which is what a molded key says it
     // with. A phone has no pointer, so the same step is the one it gets on touch.
     //
     // Properties rather than an override, because a fill that varies by surface
@@ -226,7 +226,7 @@
   }
 
   // Which one is chosen, said in something other than a fill one step from its
-  // neighbours': a lamp set into the key's bottom lip, on the edge it shares
+  // neighbors': a lamp set into the key's bottom lip, on the edge it shares
   // with the page. A key that could be chosen carries the lamp unlit, so the
   // row reads as lamps with one of them on rather than as one key wearing a
   // rule under it.
@@ -293,7 +293,7 @@
     cursor: default;
 
     // A key is disabled for as long as it is working, so this is where most of the
-    // app's waiting is seen. The sweep is white, which is invisible on the grey a
+    // app's waiting is seen. The sweep is white, which is invisible on the gray a
     // disabled key stands in, and the key looked switched off rather than busy.
     &:disabled {
       --rak-loading-sheen: var(--rak-loading-sheen-on-light);

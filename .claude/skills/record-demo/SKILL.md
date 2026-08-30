@@ -45,6 +45,9 @@ instead of recording the whole run.
   dialog theme switch, the reader's own row, and the home page's two colored
   keys, in both themes. Writes its crops to `$LED_SHOT_DIR`, so `--out` is a
   throwaway.
+- `scenarios/settings-pulse.js` — the footer's Settings control pulsing at a
+  reader who has never opened it, then going quiet as they do. Takes its theme
+  from `$PULSE_THEME`, so run it once per theme.
 - `scenarios/pull-to-refresh.js` — pulls down from the top of the scoreboard on
   a phone, where the navbar's refresh button is read and not drawn. Needs
   `--touch`.

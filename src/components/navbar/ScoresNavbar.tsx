@@ -78,9 +78,9 @@ export default function ScoresNavbar({
 
   // A results route always names a view, even while it loads, so that button
   // keeps looking selected through the wait: only `aria-disabled`, never a real
-  // `disabled` that would greyscale its highlight. The home page has no view
+  // `disabled` that would grayscale its highlight. The home page has no view
   // yet to show as selected, so there is nothing that look would protect, and
-  // it greys out for real instead.
+  // it grays out for real instead.
   const noViewYet = disabled && view == null;
 
   return (
