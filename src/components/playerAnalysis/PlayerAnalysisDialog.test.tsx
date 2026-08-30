@@ -228,5 +228,14 @@ describe("PlayerAnalysisDialog", () => {
     // Half a name reaches nobody yet, so there is nobody for the mark to speak
     // for until the next one is picked.
     expect(document.querySelector(".player-analysis__input-status")).toBeNull();
+
+    // A touch on the field hands the input the focus as well. Base UI skips that
+    // for a touch, and a phone raises its keyboard on the focus, so the search
+    // opened with no way to type a name into it.
+    await user.keyboard("{Escape}");
+    search.blur();
+    await user.pointer({ target: field!, keys: "[TouchA]" });
+
+    expect(search).toHaveFocus();
   });
 });

@@ -121,9 +121,11 @@ export default function DialogCombobox<T>({
           in the input. This fills the field and everything else in it draws over
           it, so the icon, the adornment, and the padding around them all reach it.
 
-          The input alone sits above it and keeps its own press, which is what a
-          phone needs: the trigger raises no keyboard on a touch, and a search
-          opened without one cannot be typed into.
+          The input alone sits above it and keeps its own press, which places the
+          caret where the reader pressed. Base UI hands the input the focus from
+          here as well, but not from a touch, so a phone opened the search with no
+          keyboard to type into it. The click covers that, and it is the gesture a
+          phone raises the keyboard on.
 
           Out of a reader's way, which has the input's own `combobox` role for all
           of this and would otherwise be offered a second, nameless control.
@@ -132,6 +134,7 @@ export default function DialogCombobox<T>({
           className="dialog__search-trigger"
           aria-hidden="true"
           tabIndex={-1}
+          onClick={() => inputRef.current?.focus()}
         />
         <Combobox.Input
           ref={inputRef}
