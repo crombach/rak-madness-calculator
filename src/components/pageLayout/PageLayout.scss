@@ -9,7 +9,9 @@
   // showing. `100vh` is the tall viewport, which would put the table's last rows
   // and the safe-area row below it out of reach until the URL bar collapsed.
   height: 100dvh;
-  background-color: var(--rak-brand-light);
+  // What the app is mounted in, at every width. The pages stand on it as panels,
+  // and it is what a pull to refresh draws the content off.
+  background-color: var(--rak-case);
   // index.html asks for viewport-fit=cover so the table below the scores can
   // size itself from the bottom inset. That lets the whole app draw into the
   // unsafe areas, so the other three sides are held back here.
@@ -20,39 +22,8 @@
   flex-direction: column;
   align-items: center;
   overflow: hidden;
-  // Makes this a stacking context, which is what lets the tiles below sit above
-  // this element's own background and below everything on the page.
+  // Makes this a stacking context, so nothing the page raises can rise past it.
   isolation: isolate;
-
-  // The tiled logo. Drawn here rather than on `.page` itself so it can be faded
-  // in: a background image cannot be, and the tiles arriving at full strength
-  // all at once is disorienting.
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: var(--rak-z-below);
-    background-image: var(--rak-background-tile);
-    opacity: 0;
-    transition: opacity var(--rak-duration-slow) ease-in;
-  }
-
-  &.--tiles-loaded::before {
-    opacity: 1;
-  }
-
-  // A phone only. The tiles are the whole surface behind a page held in one hand,
-  // and past that they are two strips either side of a content column 1024px wide,
-  // which reads as wallpaper the app forgot to finish rather than as its ground.
-  // The case the app is mounted in takes over there, since with the tiles gone the
-  // brand fill is a field of color rather than the ground under a pattern.
-  @include roomy-screen {
-    background-color: var(--rak-case);
-
-    &::before {
-      display: none;
-    }
-  }
 }
 
 .page__content {
@@ -99,11 +70,11 @@
     // header, so the surface every other page carries goes back below.
     background-color: var(--rak-primary-600);
 
-    // Nothing of its own, so the tiled ground behind the page shows either side of
-    // the table, which is what every other page stands on. The shadow goes with
-    // it: it is what lifts a panel off that ground, and with the fill gone there is
-    // no panel here to lift. `ResultsFrame.scss` puts it on the table, which is
-    // what stands on that ground instead.
+    // Nothing of its own, so the case behind the page shows either side of the
+    // table, which is what every other page stands on. The shadow goes with it: it
+    // is what lifts a panel off that ground, and with the fill gone there is no
+    // panel here to lift. `ResultsFrame.scss` puts it on the table, which is what
+    // stands on that ground instead.
     @include roomy-screen {
       background-color: transparent;
       box-shadow: none;
@@ -213,7 +184,7 @@
     justify-content: center;
     gap: var(--rak-space-2);
     padding: var(--rak-space-6);
-    background-color: var(--rak-brand-light);
+    background-color: var(--rak-case);
     text-align: center;
   }
 

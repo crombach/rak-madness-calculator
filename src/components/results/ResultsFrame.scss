@@ -113,8 +113,8 @@
 }
 
 // Room enough that the table does not fill the width, so the frame is cut to the
-// table and what is left either side is the page's own tiled ground, the same
-// background the home page stands on.
+// table and what is left either side is the case, the same ground the home page
+// stands on.
 @include roomy-screen {
   .results-scores {
     width: max-content;
