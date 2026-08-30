@@ -172,19 +172,22 @@
   // both ways.
   --rak-band-caption: #bfbfbf;
   --rak-band-header: #f0f0f0;
-  // The navbar's own chrome, on the brand blue while the ramp above stays
-  // achromatic for every key elsewhere. `Navbar.scss` pins the ramp to these
-  // inside the bar, so its keys, the name plate's ring, and the pull puck all
-  // read one set. White ink clears 7.19:1 on the fill and 5.45:1 on a key.
-  --rak-nav-fill: #095c8c;
-  --rak-nav-key: #0a6fa8;
-  --rak-nav-key-active: #074a6f;
-  --rak-nav-key-edge: #063f60;
+  // The navbar's own chrome. Its own steps rather than the ramp above, which
+  // runs light here for every key elsewhere: the bar is the darkest of the
+  // three bands now, and a key set into it goes lighter, not darker.
+  // `Navbar.scss` pins the ramp to these inside the bar, so its keys, the name
+  // plate's ring, and the pull puck all read one set. White ink clears 7.23:1
+  // on the fill and 5.49:1 on a key.
+  --rak-nav-fill: #575757;
+  --rak-nav-key: #696969;
+  --rak-nav-key-active: #464646;
+  --rak-nav-key-edge: #3b3b3b;
   --rak-nav-ink: #fff;
-  // The lamp saying which view is chosen, in the brand orange: the blue it takes
-  // elsewhere is the bar's own color here, which it cannot be seen against.
-  // 3.23:1 on the key's face, and the table's own row marker stays blue.
-  --rak-nav-led: #fdba74;
+  // The lamp saying which view is chosen. `--rak-info-400`, which rules the
+  // reader's own row and lit this lamp when the bar was near white, is 2.30:1
+  // on the face a chosen key wears now. This step is 5.66:1 there, the light
+  // the dark bar leaves it room to be, and the row's own rule is unmoved.
+  --rak-nav-led: var(--rak-info-200);
   // The fill a combobox's field sinks into: `lcd-field` in `_lcd.scss`. Its own
   // token rather than a read of the step above, which is the header/frame
   // chrome: a field reads brighter than the panel it is set into, so this stays
@@ -611,24 +614,16 @@ html {
   --rak-primary-600: #404040;
   --rak-primary-700: #333333;
   --rak-primary-800: #262626;
-  // The bands, which already run light-to-dark down the scoreboard in this mode.
-  // The caption sits a step under the ramp's own 600, to leave the bar below
-  // room to sink: at the 600 the two read as one block. 1.38:1 against the bar
-  // above and 1.20:1 against the header below.
-  --rak-band-caption: #333333;
+  // The bands and the navbar's chrome, unmoved: this mode's ramp already runs
+  // light-to-dark down the scoreboard. Literals for the navbar, since it pins
+  // the ramp steps to these and a read back would be a cycle.
+  --rak-band-caption: var(--rak-primary-600);
   --rak-band-header: var(--rak-primary-800);
-  // The navbar's chrome, on the brand blue as it is in light mode, sunk to sit
-  // under the bands rather than over them. Literals, since the bar pins the
-  // ramp steps to these and a read back would be a cycle. White ink clears
-  // 9.17:1 on the fill and 7.31:1 on a key.
-  --rak-nav-fill: #074c73;
-  --rak-nav-key: #085b8a;
-  --rak-nav-key-active: #053d5d;
-  --rak-nav-key-edge: #043149;
+  --rak-nav-fill: #4f4f4f;
+  --rak-nav-key: #5e5e5e;
+  --rak-nav-key-active: #404040;
+  --rak-nav-key-edge: #333333;
   --rak-nav-ink: #fff;
-  // The lamp stays this mode's own light blue, which the sunk key leaves it
-  // room to be light against at 4.38:1. Light mode moves it to orange instead,
-  // where the bar is the blue it would otherwise take.
   --rak-nav-led: var(--rak-info-200);
   // The combobox field, back to the same dark fill this step always stood on
   // in this mode. The readout glass needs no override: `--rak-glass-fill`
