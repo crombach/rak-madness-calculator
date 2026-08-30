@@ -48,6 +48,10 @@ instead of recording the whole run.
 - `scenarios/pull-to-refresh.js` — pulls down from the top of the scoreboard on
   a phone, where the navbar's refresh button is read and not drawn. Needs
   `--touch`.
+- `scenarios/pull-close-variants.js` — the same pull twice, once at real speed
+  and once stretched, with a candidate close animation injected from
+  `$CLOSE_CSS` and `$CLOSE_CSS_SLOW`. Needs `--touch`. For comparing curves
+  against one build instead of rebuilding per candidate.
 - `scenarios/live-refresh.js` — opens the Game Status dialog on a live pick,
   waits out its real poll interval, and shows the table update on its own
   once the mocked game goes final.
