@@ -27,10 +27,18 @@
   border-radius: 50%;
   background-color: var(--rak-primary-500);
   box-shadow: var(--rak-shadow-raised);
-  // Centered in the gap below, which is `--rak-pull-offset` tall. Half of nothing
-  // is nothing, so at rest the puck is centered on the navbar's lower edge and
-  // covered by it.
-  transform: translate(-50%, calc(var(--rak-pull-offset, 0px) / 2 - 50%));
+  // Out from under the navbar, and back under it on the way home. At rest the
+  // whole puck is above the strip's top edge, which is the bar's lower one, so
+  // the bar covers it: `-100%` puts its own bottom on that line. The progress
+  // term gives that back as the pull runs, and by the time the pull is armed the
+  // two cancel to `-50%`, which is the middle of the gap. Centered in the gap
+  // from there on, however much further the finger goes.
+  transform: translate(
+    -50%,
+    calc(
+      var(--rak-pull-offset, 0px) / 2 - 100% + var(--rak-pull-progress, 0) * 50%
+    )
+  );
   // Faded in by the pull itself rather than by a duration of its own, so it
   // arrives at the speed the finger moves.
   opacity: var(--rak-pull-progress, 0);
