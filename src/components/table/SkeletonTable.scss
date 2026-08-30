@@ -56,10 +56,4 @@
     // The header's own ink, so the bars read as gaps in it.
     background-color: var(--rak-loading-fill-on-solid);
   }
-
-  // A real table draws this edge from its sticky player column, which the
-  // wireframe has no stand-in for, so the rank column would run into the next one.
-  td:nth-child(2) {
-    border-left: var(--rak-table-border);
-  }
 }
