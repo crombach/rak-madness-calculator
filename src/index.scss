@@ -334,6 +334,13 @@
   // both. Dark mode pins it to its own old value below, against the header's
   // dark fill there.
   --rak-table-header-divider: #373737;
+  // The rule under the whole header, which is heavier than the ones inside it.
+  // The header's fill is a step off white here, so the fill alone parts it from
+  // the rows by 1.14:1. This seam is what actually divides the two. In
+  // `--rak-panel-border` rather than the divider above, since the body's own
+  // grid is already drawn in that darker step and a lighter seam would read as
+  // the faintest line in the table.
+  --rak-table-header-seam: 4px solid var(--rak-panel-border);
   // The dialog progress bar's sweep. Its own token rather than a direct read of
   // `--rak-primary-500`, for the same reason as `--rak-panel-border`: that ramp
   // step is light here, and the track it sweeps over (`--rak-fill-subtle`)
@@ -640,6 +647,10 @@ html {
   // above is fixed to this same value in both modes already.
   --rak-well-fill: #262626;
   --rak-table-header-divider: #757575;
+  // Unmoved: this mode's header is dark against dark rows, and the divider
+  // carries that boundary already.
+  --rak-table-header-seam: var(--rak-border-width) solid
+    var(--rak-table-header-divider);
   // The chrome's own ink, light again against the dark fill above.
   --rak-on-solid: #fff;
   // The stronger cut, for the dark fill the field sinks into here. Same as
