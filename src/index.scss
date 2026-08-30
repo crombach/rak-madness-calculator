@@ -117,6 +117,10 @@
   // A key's travel. Out fast and settling, the way a moulded key answers a
   // finger, rather than the symmetric curve every other transition uses.
   --rak-ease-key: cubic-bezier(0.2, 0.8, 0.3, 1);
+  // Something going home under nothing but its own weight, which starts from a
+  // standstill and lands soft. The key's curve is the wrong way round for that:
+  // it opens at full speed, which off a dead stop is read as a jolt.
+  --rak-ease-return: cubic-bezier(0.4, 0, 0.2, 1);
 
   // Stacking, one step per layer the page stacks, so what sits above what is
   // decided in one place. A z-index outside this list orders an element against

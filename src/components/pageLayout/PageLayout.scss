@@ -124,15 +124,17 @@
   will-change: transform;
 }
 
-// From wherever the finger left it to where the puck rests, and back again after.
-// `--rak-ease-key` is the app's own curve for something that starts fast and
-// settles, which is what a spring back is.
+// From wherever the finger left it to where the puck rests. Under the finger's
+// own curve, since the content is still being handled at that point.
 :root[data-pull="refreshing"] .page__content {
   transition: transform var(--rak-duration-fast) var(--rak-ease-key);
 }
 
-:root[data-pull="settling"] .page__content {
-  transition: transform var(--rak-duration-slow) var(--rak-ease-key);
+// And home again after, off a stop it has been sitting at for the length of the
+// rescore. `--rak-ease-return` is what leaves that stop gently.
+:root[data-pull="settling"] .page__content,
+:root[data-pull="closing"] .page__content {
+  transition: transform var(--rak-duration-slow) var(--rak-ease-return);
 }
 
 /** Straight to the results, past a navbar that is the same on every page. */

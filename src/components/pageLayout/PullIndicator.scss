@@ -26,6 +26,10 @@
   height: var(--rak-touch-target);
   border-radius: 50%;
   background-color: var(--rak-primary-500);
+  // Lit and unlit over a beat rather than in one frame. The unlighting lands on
+  // the close, where the puck starts moving in the same frame, and a fill
+  // snapping back there is read as part of the movement going wrong.
+  transition: background-color var(--rak-duration-fast) linear;
   box-shadow: var(--rak-shadow-raised);
   // Out from under the navbar, and back under it on the way home. At rest the
   // whole puck is above the strip's top edge, which is the bar's lower one, so
@@ -56,7 +60,12 @@
 
 // The one way the app says it is still working, which is a sheen and never a
 // spin. `_skeleton.scss` states that, and the puck is no exception.
-:root[data-pull="refreshing"] .page__pull-puck {
+//
+// Carried through the close as well, so the sweep ends when the puck is back
+// under the bar rather than being cut at the first frame of its retreat. Only
+// that close: `settling` is a pull that stopped short and did no work.
+:root[data-pull="refreshing"] .page__pull-puck,
+:root[data-pull="closing"] .page__pull-puck {
   @include skeleton-sheen;
 
   // The mixin makes what it is on the containing block it clips the sheen
@@ -67,8 +76,16 @@
 
 // The finger is off it, so the puck rides the content back up rather than
 // tracking a position nothing is moving to any more.
-:root[data-pull="settling"] .page__pull-puck {
+//
+// It goes home solid and is put out at the end, over the last fast beat of the
+// slow one. Fading it across the whole retreat emptied it in mid air, well
+// before it reached the bar, which read as the puck giving up rather than as the
+// bar taking it back.
+:root[data-pull="settling"] .page__pull-puck,
+:root[data-pull="closing"] .page__pull-puck {
   transition:
-    transform var(--rak-duration-slow) var(--rak-ease-key),
-    opacity var(--rak-duration-slow) var(--rak-ease-key);
+    transform var(--rak-duration-slow) var(--rak-ease-return),
+    opacity var(--rak-duration-fast) linear
+      calc(var(--rak-duration-slow) - var(--rak-duration-fast)),
+    background-color var(--rak-duration-slow) linear;
 }

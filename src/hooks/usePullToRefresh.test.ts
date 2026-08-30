@@ -5,6 +5,7 @@ import usePullToRefresh, {
   Pull,
   PULL_PHASE_ATTR,
   PULL_MAX_PX,
+  PULL_MIN_HOLD_MS,
   PULL_SLOP_PX,
   PULL_TRIGGER_PX,
   pullOffset,
@@ -129,6 +130,33 @@ describe("usePullToRefresh", () => {
     expect(document.documentElement.getAttribute(PULL_PHASE_ATTR)).toBe(
       "settling",
     );
+  });
+
+  it("closes a refresh apart from a pull that stopped short", async () => {
+    vi.useFakeTimers();
+    try {
+      const { box, view } = mount({ onRefresh: vi.fn(), isRefreshing: false });
+
+      act(() => {
+        box.dispatchEvent(touch("touchstart", 100, 100));
+        box.dispatchEvent(touch("touchmove", 100, 140));
+        box.dispatchEvent(touch("touchmove", 100, 100 + PULL_TRIGGER_PX + 10));
+        box.dispatchEvent(touch("touchend", 0, 0));
+      });
+      view.rerender({ pull: { onRefresh: vi.fn(), isRefreshing: true } });
+      view.rerender({ pull: { onRefresh: vi.fn(), isRefreshing: false } });
+
+      // The two closes are told apart so only the one that did work carries its
+      // sheen home. `settling` is what the case above writes.
+      act(() => {
+        vi.advanceTimersByTime(PULL_MIN_HOLD_MS);
+      });
+      expect(document.documentElement.getAttribute(PULL_PHASE_ATTR)).toBe(
+        "closing",
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("leaves a sideways pan to the table, and takes a pull off it", () => {

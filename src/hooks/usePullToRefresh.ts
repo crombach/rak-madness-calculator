@@ -136,13 +136,24 @@ export default function usePullToRefresh({
     root.removeAttribute(PULL_PHASE_ATTR);
   }, []);
 
-  // Back to nothing, over the length of the transition the stylesheet runs on
-  // `settling`, and the transform is given up in the frame it reaches zero.
-  const settle = useCallback(() => {
-    write(0, "settling");
-    clearTimeout(clearTimer.current);
-    clearTimer.current = setTimeout(clear, PULL_SETTLE_MS);
-  }, [write, clear]);
+  /**
+   * Back to nothing, over the length of the transition the stylesheet runs on
+   * both closing phases, and the transform is given up in the frame it reaches
+   * zero.
+   *
+   * The two are told apart because only one of them was working. `closing`
+   * carries the sheen the whole way home rather than cutting it at the first
+   * frame of the retreat, and `settling` is the pull that stopped short, which
+   * has nothing to say it was doing anything.
+   */
+  const settle = useCallback(
+    (phase: "settling" | "closing") => {
+      write(0, phase);
+      clearTimeout(clearTimer.current);
+      clearTimer.current = setTimeout(clear, PULL_SETTLE_MS);
+    },
+    [write, clear],
+  );
 
   useEffect(() => {
     const box = scrollRef.current;
@@ -190,7 +201,7 @@ export default function usePullToRefresh({
       drag.current.axis = "abandoned";
       if (axis !== "pull") return;
       if (offset < PULL_TRIGGER_PX) {
-        settle();
+        settle("settling");
         return;
       }
       // Pinned where the puck rests while the week is rescored.
@@ -224,7 +235,7 @@ export default function usePullToRefresh({
     const left = PULL_MIN_HOLD_MS - (performance.now() - releasedAt.current);
     const timer = setTimeout(
       () => {
-        settle();
+        settle("closing");
         setHolding(false);
       },
       Math.max(left, 0),
