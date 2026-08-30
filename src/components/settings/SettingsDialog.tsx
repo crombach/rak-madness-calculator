@@ -31,7 +31,7 @@ export default function SettingsDialog({
       <div className="settings">
         <section className="settings__section">
           <h3 className="settings__label">
-            <label htmlFor={nameInputId}>Your Player Name</label>
+            <label htmlFor={nameInputId}>Player Name</label>
           </h3>
           {/* The well is the shell rather than the input, so the clear button
               sits inside it in a bay of its own, the way the home page's selects
@@ -47,6 +47,13 @@ export default function SettingsDialog({
               placeholder="As it appears in the picks"
               value={playerName}
               onChange={(event) => setPlayerName(event.target.value)}
+              // There is no form to submit, so enter would otherwise do nothing
+              // and a phone would hold its keyboard over the rest of the dialog.
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.currentTarget.blur();
+                }
+              }}
             />
             {/* Nothing to clear while the field is empty, and a button that does
                 nothing is one more thing to tab past. Clearing therefore takes
