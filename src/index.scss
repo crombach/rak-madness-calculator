@@ -492,6 +492,12 @@
   --rak-led-off: #2e2e2e;
   --rak-led-socket: 0 -1px 0 rgb(0 0 0 / 22%);
   --rak-led-glow: 0 0 4px rgb(2 132 199 / 55%);
+  // The lamp's blue said as ink rather than as a lens, for the footer's Settings
+  // control before anyone has opened it. A lens only has to clear 3:1 and
+  // `--rak-led-on` is set for that. A word has to clear 4.5:1, and
+  // `--rak-info-400` misses it here at about 4.1:1. One step down the ramp
+  // carries the same blue at about 5.4:1.
+  --rak-attention-ink: var(--rak-info-500);
   // The same lamp where it is drawn as a rule inside something rather than as a
   // lens in a lip: the reader's own row in `Table.scss`. Inset, because the rule
   // is inset and a halo outside the cell would fall under the cell beside it.
@@ -791,6 +797,9 @@ html {
   --rak-led-socket: 0 -1px 0 rgb(0 0 0 / 40%);
   --rak-led-glow:
     0 0 6px rgb(125 211 252 / 55%), 0 0 12px rgb(125 211 252 / 25%);
+  // The lit lens is already light enough to read as a word on this surface, so
+  // the ink and the lens are one step here.
+  --rak-attention-ink: var(--rak-info-200);
   --rak-led-bloom:
     inset 0 8px 7px -6px rgb(125 211 252 / 15%),
     inset 0 -8px 7px -6px rgb(125 211 252 / 15%);
