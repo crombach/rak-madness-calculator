@@ -133,6 +133,9 @@
   // The header cell of the column that also sticks left. Above the header cells
   // after it in the table, which pass under it as the table scrolls sideways.
   --rak-z-sticky-corner: 25;
+  // Over the sticky header and its corner, so the caption's own plane is above
+  // the header's. `ResultsFrame.scss` says why.
+  --rak-z-caption: 26;
   --rak-z-skeleton: 30;
   // The pull-to-refresh puck, over the table it is dragged off and under the bar
   // it is dragged out from beneath.
@@ -334,13 +337,6 @@
   // both. Dark mode pins it to its own old value below, against the header's
   // dark fill there.
   --rak-table-header-divider: #373737;
-  // The rule under the whole header, which is heavier than the ones inside it.
-  // The header's fill is a step off white here, so the fill alone parts it from
-  // the rows by 1.14:1. This seam is what actually divides the two. In
-  // `--rak-panel-border` rather than the divider above, since the body's own
-  // grid is already drawn in that darker step and a lighter seam would read as
-  // the faintest line in the table.
-  --rak-table-header-seam: 4px solid var(--rak-panel-border);
   // The dialog progress bar's sweep. Its own token rather than a direct read of
   // `--rak-primary-500`, for the same reason as `--rak-panel-border`: that ramp
   // step is light here, and the track it sweeps over (`--rak-fill-subtle`)
@@ -449,6 +445,15 @@
   --rak-shadow-modal:
     0 8px 24px -4px rgb(var(--rak-shadow-color) / 18%),
     0 16px 40px -8px rgb(var(--rak-shadow-color) / 12%);
+
+  // The scoreboard's three bands, each on its own plane over the one below:
+  // the navbar, the week caption, and the table's header, down onto the rows.
+  // Weaker at every step, so the stack reads as a stack and no one shadow is
+  // looked at. Alphas, so a dark mode that casts almost nothing still casts
+  // it in the right order.
+  --rak-shadow-band-navbar: 0 3px 5px -1px rgb(var(--rak-shadow-color) / 20%);
+  --rak-shadow-band-caption: 0 2px 4px -1px rgb(var(--rak-shadow-color) / 15%);
+  --rak-shadow-band-header: 0 2px 3px -1px rgb(var(--rak-shadow-color) / 11%);
 
   // Moulding, for the three things the app draws as parts of a device rather than
   // as panes of a page: a key, the bezel around a screen, and the well a readout
@@ -647,10 +652,6 @@ html {
   // above is fixed to this same value in both modes already.
   --rak-well-fill: #262626;
   --rak-table-header-divider: #757575;
-  // Unmoved: this mode's header is dark against dark rows, and the divider
-  // carries that boundary already.
-  --rak-table-header-seam: var(--rak-border-width) solid
-    var(--rak-table-header-divider);
   // The chrome's own ink, light again against the dark fill above.
   --rak-on-solid: #fff;
   // The stronger cut, for the dark fill the field sinks into here. Same as

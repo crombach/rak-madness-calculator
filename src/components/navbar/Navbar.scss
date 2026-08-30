@@ -7,7 +7,8 @@
   align-items: center;
   justify-content: center;
   z-index: var(--rak-z-navbar);
-  box-shadow: var(--rak-shadow-raised);
+  // The highest of the three bands the scoreboard steps down through.
+  box-shadow: var(--rak-shadow-band-navbar);
   // The bar's chrome, which light mode takes off the brand blue. Pinned as ramp
   // steps rather than read one at a time, so the key faces below, the name
   // plate's ring (`lcd-glass`), and a key's lower edge all follow: `Button.scss`

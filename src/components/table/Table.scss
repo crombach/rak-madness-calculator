@@ -96,6 +96,12 @@
       2 * var(--rak-table-cell-padding-x) - 2 * var(--rak-border-width)
   );
   --rak-table-border: var(--rak-border-width) solid var(--rak-panel-border);
+  // The table's own outer left and right edges. Nothing on a phone, where the
+  // table is as wide as the screen and a rule down each side reads as the app
+  // boxing in what the reader came for. `roomy-screen` puts them back, where
+  // the table is cut to its own width and needs an edge to end at.
+  --rak-table-edge: var(--rak-table-no-border);
+  --rak-table-header-edge: var(--rak-table-no-border);
   --rak-table-header-border: var(--rak-border-width) solid
     var(--rak-table-header-divider);
   // For an edge that draws nothing. Never `none`, which resets the color to
@@ -139,13 +145,19 @@
       // takes `currentColor`, which is white here.
       border-color: var(--rak-table-header-divider);
 
-      border-bottom: var(--rak-table-header-seam);
+      border-bottom: var(--rak-table-header-border);
+      // The lowest of the three bands, cast onto the rows that pass under it.
+      // Per cell rather than on the row, which a sticky `<thead>` cannot carry.
+      box-shadow: var(--rak-shadow-band-header);
       border-right: var(--rak-table-header-border);
       &:first-child {
         width: var(--rak-table-rank-width);
         // The rank and the player read as one block, so nothing divides them.
         border-right: var(--rak-table-no-border);
-        border-left: var(--rak-table-header-border);
+        border-left: var(--rak-table-header-edge);
+      }
+      &:last-child {
+        border-right: var(--rak-table-header-edge);
       }
       &:nth-child(2) {
         border-left: var(--rak-table-header-border);
@@ -332,9 +344,12 @@
       border-bottom: var(--rak-table-border);
       border-right: var(--rak-table-border);
       &:first-child {
-        border-left: var(--rak-table-border);
+        border-left: var(--rak-table-edge);
         // The player column draws this divider on its own left edge.
         border-right: var(--rak-table-no-border);
+      }
+      &:last-child {
+        border-right: var(--rak-table-edge);
       }
     }
 
@@ -368,6 +383,8 @@
 // these go back up.
 @include roomy-screen {
   .table {
+    --rak-table-edge: var(--rak-table-border);
+    --rak-table-header-edge: var(--rak-table-header-border);
     font-size: var(--rak-text-md);
     --rak-table-row-height: 32px;
     // About twenty-four characters of a name here, against seventeen on a phone.

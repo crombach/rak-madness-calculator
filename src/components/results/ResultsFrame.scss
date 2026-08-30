@@ -54,7 +54,12 @@
   // caption from the header, and a rule drawn in either neighbour's color would
   // be a line one of them could not show.
   background-color: var(--rak-band-caption);
-  // No `z-index`, so the sticky header passes over it on the way up.
+  // Over the header rather than under it, which is the order the three bands
+  // are lit in: the caption's own shadow falls on the header, and the header's
+  // on the rows. The sticky header passes under this on the way up.
+  position: relative;
+  z-index: var(--rak-z-caption);
+  box-shadow: var(--rak-shadow-band-caption);
   color: var(--rak-on-solid);
   // The header row's own type, so the two read as one head with a line drawn
   // through it rather than as two bands set differently. The size is the token
