@@ -17,7 +17,7 @@ export const MAX_VISIBLE_TOASTS = 3;
  * confirmation, and no longer: the only toasts on this clock say something
  * worked, and the reader is already looking at what it did.
  */
-export const TOAST_LIFETIME_MS = 3000;
+export const TOAST_LIFETIME_MS = 2000;
 
 /** Each value has a matching ramp in `index.scss`. */
 export type ToastType =
