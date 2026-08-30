@@ -30,15 +30,22 @@
 // blue through the label and the gear together, since the icon draws in
 // `currentColor`, and stops for good the first time the dialog opens.
 //
+// The halo is `drop-shadow` rather than `text-shadow`, which reaches the glyphs
+// and the icon's own path where a text shadow would leave the gear unlit. Both
+// ends of the run are one shadow, since a filter list interpolates only against
+// a list the same length, and `none` is not one.
+//
 // An animated property outranks a normal declaration whatever its specificity,
 // so this beats the `.footer > *` ink above without a stronger selector.
 @keyframes rak-footer-pulse {
   0%,
   100% {
     color: var(--rak-text-tertiary);
+    filter: drop-shadow(0 0 0 transparent);
   }
   50% {
     color: var(--rak-attention-ink);
+    filter: drop-shadow(0 0 4px var(--rak-attention-glow));
   }
 }
 
@@ -54,6 +61,7 @@
   @include reduced-motion {
     animation: none;
     color: var(--rak-attention-ink);
+    filter: drop-shadow(0 0 4px var(--rak-attention-glow));
   }
 }
 

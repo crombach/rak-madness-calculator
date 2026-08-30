@@ -84,7 +84,7 @@ function holdFrames() {
         next(0);
       }
     },
-    /** How many frames are waiting, which a cancelled one is not. */
+    /** How many frames are waiting, which a canceled one is not. */
     pending: () => queued.size,
     restore() {
       window.requestAnimationFrame = originalRequest;

@@ -13,11 +13,11 @@
 $breakpoint-roomy: 481px;
 
 /**
- * Above this the navbar can hold the app name and three labelled buttons at
+ * Above this the navbar can hold the app name and three labeled buttons at
  * once. Measured: with the labels showing, the name wraps to three lines at 540px
  * and to two at 560px.
  */
-$breakpoint-labelled-navbar: 561px;
+$breakpoint-labeled-navbar: 561px;
 
 /**
  * Above this a dialog centered in the viewport leaves enough either side of it to
@@ -35,8 +35,8 @@ $breakpoint-wide: 601px;
 }
 
 /** Room enough for the navbar to label its buttons. */
-@mixin labelled-navbar {
-  @media (min-width: $breakpoint-labelled-navbar) {
+@mixin labeled-navbar {
+  @media (min-width: $breakpoint-labeled-navbar) {
     @content;
   }
 }

@@ -71,7 +71,7 @@
 .game-status__spread {
   align-self: center;
   margin: 0;
-  // The grey the labels over the two names are set in, so the line over the
+  // The gray the labels over the two names are set in, so the line over the
   // scoreline and the labels inside it read as one tier of the same dialog.
   color: var(--rak-text-secondary);
   font-size: var(--rak-text-sm);
@@ -81,8 +81,8 @@
 
 // The line itself, in the face the picks table sets every number in. `None` too: it
 // answers the same question, and a value that changes face with its own value reads
-// as two different fields. Set in the grey the records under the two names carry,
-// which is the same grey their labels do, so the face is what tells the answer from
+// as two different fields. Set in the gray the records under the two names carry,
+// which is the same gray their labels do, so the face is what tells the answer from
 // the question rather than a second color on one line.
 .game-status__spread-value {
   color: var(--rak-text-secondary);

@@ -215,7 +215,7 @@ $bar-height: 2px;
     transform: translate(-50%, -50%);
 
     // The fade alone, at the transform it rests at, so the window opens where it
-    // will stand rather than travelling into place.
+    // will stand rather than traveling into place.
     &[data-starting-style],
     &[data-ending-style] {
       opacity: 0;

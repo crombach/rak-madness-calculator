@@ -41,7 +41,7 @@ $-max-rows: 5;
   }
 
   // The one already set, said in the app's own primary rather than a step further
-  // down the same greys the row under the pointer uses. Two neutrals one step
+  // down the same grays the row under the pointer uses. Two neutrals one step
   // apart cannot say which of them means chosen.
   &[data-selected] {
     background-color: var(--rak-selected-fill);

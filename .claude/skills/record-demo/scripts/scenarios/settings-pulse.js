@@ -7,7 +7,7 @@ import {
 const SEASON = 2024;
 const WEEK = 5;
 const THEME_KEY = "rak-madness:settings:theme";
-const SEEN_KEY = "rak-madness:settings:settingsSeenAt";
+const SETTINGS_SEEN_KEY = "rak-madness:settings:settingsSeenAt";
 
 const ROWS = [
   { Name: "Alice", P1: "KC", P2: "SF", P3: "MIA" },
@@ -52,7 +52,7 @@ export default async function run({ page, context, baseUrl }) {
       localStorage.setItem(themeKey, theme);
       localStorage.removeItem(seenKey);
     },
-    [THEME_KEY, theme, SEEN_KEY],
+    [THEME_KEY, theme, SETTINGS_SEEN_KEY],
   );
   await page.goto(`${baseUrl}/`);
   // A toast stands over the footer, and the settings button is under it.

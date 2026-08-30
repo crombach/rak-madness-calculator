@@ -27,7 +27,7 @@
 }
 
 // Set heavier inside the rules `Table.scss` draws above and below the row, so the
-// reader's own row is told from its neighbours by weight as well as by that mark.
+// reader's own row is told from its neighbors by weight as well as by that mark.
 .--mine .player-name__name {
   font-weight: var(--rak-weight-bold);
 }
