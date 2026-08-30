@@ -611,16 +611,24 @@ html {
   --rak-primary-600: #404040;
   --rak-primary-700: #333333;
   --rak-primary-800: #262626;
-  // The bands and the navbar's chrome, unmoved: this mode's ramp already runs
-  // light-to-dark down the scoreboard. Literals for the navbar, since it pins
-  // the ramp steps to these and a read back would be a cycle.
-  --rak-band-caption: var(--rak-primary-600);
+  // The bands, which already run light-to-dark down the scoreboard in this mode.
+  // The caption sits a step under the ramp's own 600, to leave the bar below
+  // room to sink: at the 600 the two read as one block. 1.38:1 against the bar
+  // above and 1.20:1 against the header below.
+  --rak-band-caption: #333333;
   --rak-band-header: var(--rak-primary-800);
-  --rak-nav-fill: #4f4f4f;
-  --rak-nav-key: #5e5e5e;
-  --rak-nav-key-active: #404040;
-  --rak-nav-key-edge: #333333;
+  // The navbar's chrome, on the brand blue as it is in light mode, sunk to sit
+  // under the bands rather than over them. Literals, since the bar pins the
+  // ramp steps to these and a read back would be a cycle. White ink clears
+  // 9.17:1 on the fill and 7.31:1 on a key.
+  --rak-nav-fill: #074c73;
+  --rak-nav-key: #085b8a;
+  --rak-nav-key-active: #053d5d;
+  --rak-nav-key-edge: #043149;
   --rak-nav-ink: #fff;
+  // The lamp stays this mode's own light blue, which the sunk key leaves it
+  // room to be light against at 4.38:1. Light mode moves it to orange instead,
+  // where the bar is the blue it would otherwise take.
   --rak-nav-led: var(--rak-info-200);
   // The combobox field, back to the same dark fill this step always stood on
   // in this mode. The readout glass needs no override: `--rak-glass-fill`
