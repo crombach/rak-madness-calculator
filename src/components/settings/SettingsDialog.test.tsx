@@ -20,12 +20,12 @@ function mountDialog(onOpenChange = () => undefined) {
 
 /** The choices under one heading, which is what names their group. */
 function choiceLabels(group: string): Array<string> {
+  const row = screen.getByRole("group", { name: group });
   return screen
     .getAllByRole("button", { name: /.+/ })
     .filter(
       (button) =>
-        button.classList.contains("settings__choice") &&
-        screen.getByRole("group", { name: group }).contains(button),
+        button.classList.contains("settings__choice") && row.contains(button),
     )
     .map((button) => button.textContent);
 }
