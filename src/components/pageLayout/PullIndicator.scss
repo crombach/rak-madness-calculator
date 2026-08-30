@@ -84,8 +84,8 @@
 :root[data-pull="settling"] .page__pull-puck,
 :root[data-pull="closing"] .page__pull-puck {
   transition:
-    transform var(--rak-duration-slow) var(--rak-ease-return),
+    transform var(--rak-duration-medium) var(--rak-ease-return),
     opacity var(--rak-duration-fast) linear
-      calc(var(--rak-duration-slow) - var(--rak-duration-fast)),
-    background-color var(--rak-duration-slow) linear;
+      calc(var(--rak-duration-medium) - var(--rak-duration-fast)),
+    background-color var(--rak-duration-medium) linear;
 }

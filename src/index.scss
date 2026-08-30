@@ -109,8 +109,12 @@
   --rak-text-ink: 0.92em;
   --rak-caps-ink: 0.7em;
 
-  // Motion. Three durations cover every transition and the one loop.
+  // Motion. Three durations cover every transition, plus the one loop.
   --rak-duration-fast: 120ms;
+  // The travel too far to take at the fast one and too short to be given the
+  // slow. Only the pull's own close, which is a dismissal: the work is done and
+  // the reader is waiting on the page rather than watching it.
+  --rak-duration-medium: 200ms;
   --rak-duration-slow: 300ms;
   --rak-duration-loop: 2000ms;
   --rak-ease-standard: ease;

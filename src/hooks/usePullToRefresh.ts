@@ -20,11 +20,11 @@ export const PULL_TRIGGER_PX = 72;
 export const PULL_MAX_PX = 112;
 
 /**
- * How long the spring back takes. Matches `--rak-duration-slow`, which the
+ * How long the spring back takes. Matches `--rak-duration-medium`, which the
  * stylesheet times the transition to, so the transform is dropped in the frame it
  * reaches zero rather than before.
  */
-export const PULL_SETTLE_MS = 300;
+export const PULL_SETTLE_MS = 200;
 
 /**
  * The least time the puck stays open once the finger is off it.
