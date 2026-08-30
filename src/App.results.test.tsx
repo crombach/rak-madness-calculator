@@ -96,11 +96,11 @@ describe("the app, results views", () => {
     await user.click(screen.getByRole("button", { name: "Refresh" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Results successfully updated"),
-      ).toBeInTheDocument();
+      expect(getPlayerScoresMock).toHaveBeenCalledTimes(2);
     });
-    expect(getPlayerScoresMock).toHaveBeenCalledTimes(2);
+    // A refresh that worked says nothing. The rescored table is the whole of the
+    // answer, so a toast over it would only repeat what it shows.
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
   it("reports a scoring failure instead of crashing", async () => {

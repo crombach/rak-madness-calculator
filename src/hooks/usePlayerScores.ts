@@ -218,12 +218,15 @@ export default function usePlayerScores(
           // Refreshing rescores the workbook already in memory, so there is no
           // separate way for loading it to fail.
           const failure = scoringFailed(selectedWeek.value);
+          // Nothing said on success. The scores are on screen and the numbers
+          // that moved are marked, so a toast over them repeats what the table
+          // already shows and covers part of it to do so. A failure still speaks,
+          // since the table looks the same either way when one happens.
           try {
             await attemptScoring({
               loadPicks: async () => picksBuffer,
               onLoadFailure: failure,
               onScoreFailure: failure,
-              onSuccess: successToast("Results successfully updated"),
               keepScoresOnFailure: true,
             });
           } finally {
