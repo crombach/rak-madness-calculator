@@ -89,9 +89,7 @@ export default function SettingsDialog({
               </button>
             )}
           </div>
-          <p className="settings__hint">
-            Your row is marked in the scoreboard and picks tables.
-          </p>
+          <p className="settings__hint">Your results are highlighted.</p>
         </section>
 
         <section className="settings__section">
