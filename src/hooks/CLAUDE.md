@@ -16,3 +16,4 @@ The data layer, plus the two page measurements. The first four mount once in
 - `useWeekRouteGuard`: whether a `/:season/:week` URL has anything to show
 - `useFillerRows`: the empty rows carrying a table to the viewport bottom
 - `useViewportInsets`: what a keyboard covers, as root properties
+- `useShowPlayerStatus`: whether the tables may say where a player stands

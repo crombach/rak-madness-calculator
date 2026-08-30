@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import {
+  LIVE_ANALYSIS_KEY,
   PLAYER_NAME_KEY,
   SettingsContextProvider,
   THEME_KEY,
@@ -17,19 +18,31 @@ function mountDialog(onOpenChange = () => undefined) {
   return user;
 }
 
+/** The choices under one heading, which is what names their group. */
+function choiceLabels(group: string): Array<string> {
+  const row = screen.getByRole("group", { name: group });
+  return screen
+    .getAllByRole("button", { name: /.+/ })
+    .filter(
+      (button) =>
+        button.classList.contains("settings__choice") && row.contains(button),
+    )
+    .map((button) => button.textContent);
+}
+
 beforeEach(() => {
   localStorage.clear();
   delete document.documentElement.dataset.theme;
 });
 
 describe("SettingsDialog", () => {
-  it("asks for the name first, then the theme", () => {
+  it("asks for the name first, then the analysis, then the theme", () => {
     mountDialog();
     const headings = screen
       .getAllByRole("heading", { level: 3 })
       .map((heading) => heading.textContent);
 
-    expect(headings).toEqual(["Player Name", "Theme"]);
+    expect(headings).toEqual(["Player Name", "Live Player Analysis", "Theme"]);
   });
 
   it("closes from the shell's own close button", async () => {
@@ -44,12 +57,8 @@ describe("SettingsDialog", () => {
 describe("SettingsDialog, the theme", () => {
   it("offers auto, dark, and light, in that order", () => {
     mountDialog();
-    const labels = screen
-      .getAllByRole("button")
-      .filter((button) => button.classList.contains("settings__choice"))
-      .map((button) => button.textContent);
 
-    expect(labels).toEqual(["Auto", "Dark", "Light"]);
+    expect(choiceLabels("Theme")).toEqual(["Auto", "Dark", "Light"]);
   });
 
   it("starts on auto", () => {
@@ -138,5 +147,51 @@ describe("SettingsDialog, the reader's own name", () => {
     expect(
       screen.queryByRole("button", { name: "Clear your player name" }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("SettingsDialog, the live player analysis", () => {
+  it("offers on then off", () => {
+    mountDialog();
+
+    expect(choiceLabels("Live Player Analysis")).toEqual(["On", "Off"]);
+  });
+
+  it("starts on", () => {
+    mountDialog();
+
+    expect(screen.getByRole("button", { name: "On" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  it("saves the choice to disable, and shows it as chosen", async () => {
+    const user = mountDialog();
+    await user.click(screen.getByRole("button", { name: "Off" }));
+
+    expect(screen.getByRole("button", { name: "Off" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(localStorage.getItem(LIVE_ANALYSIS_KEY)).toBe("off");
+  });
+
+  it("forgets the choice on the way back to enabled, the default", async () => {
+    const user = mountDialog();
+    await user.click(screen.getByRole("button", { name: "Off" }));
+    await user.click(screen.getByRole("button", { name: "On" }));
+
+    expect(localStorage.getItem(LIVE_ANALYSIS_KEY)).toBeNull();
+  });
+
+  it("starts on the choice last made", () => {
+    localStorage.setItem(LIVE_ANALYSIS_KEY, "off");
+    mountDialog();
+
+    expect(screen.getByRole("button", { name: "Off" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
   });
 });

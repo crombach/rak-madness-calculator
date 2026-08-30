@@ -248,8 +248,8 @@
   tbody {
     // Both of these hold a `.table__cell-button` filling them, so both answer to a
     // touch the same way. The wireframe takes no clicks at all, so it never
-    // reaches this.
-    .table__player-col,
+    // reaches this, and neither does a name cell with nothing to open.
+    .table__player-col:not(.--no-status),
     .table__pick {
       // The button inside carries this instead, so the cell's whole box is inside
       // its hit area.
@@ -284,6 +284,13 @@
 
       &.--knocked-out {
         --rak-cell-base: var(--rak-knocked-out-300);
+      }
+
+      // A reader who has turned the live analysis off is told nothing by this
+      // column, so it takes the fill and the ink every other cell has.
+      &.--no-status {
+        --rak-cell-base: var(--rak-surface);
+        color: var(--rak-text);
       }
 
       // The one change a name cell can show is a player just being knocked out,

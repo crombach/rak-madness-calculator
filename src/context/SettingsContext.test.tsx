@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import {
+  LIVE_ANALYSIS_KEY,
   PLAYER_NAME_KEY,
   SettingsContextProvider,
   THEME_KEY,
@@ -10,13 +11,23 @@ import {
 } from "./SettingsContext";
 
 function Probe({ candidate = "Linebacher" }: { candidate?: string }) {
-  const { theme, setTheme, playerName, setPlayerName } = useSettings();
+  const {
+    theme,
+    setTheme,
+    playerName,
+    setPlayerName,
+    liveAnalysis,
+    setLiveAnalysis,
+  } = useSettings();
   const isMine = useIsMyPlayer(candidate);
   return (
     <>
       <span data-testid="theme">{theme}</span>
       <span data-testid="playerName">{playerName}</span>
       <span data-testid="isMine">{String(isMine)}</span>
+      <span data-testid="liveAnalysis">{String(liveAnalysis)}</span>
+      <button onClick={() => setLiveAnalysis(false)}>hide analysis</button>
+      <button onClick={() => setLiveAnalysis(true)}>show analysis</button>
       {(["light", "dark", "auto"] as Array<Theme>).map((option) => (
         <button key={option} onClick={() => setTheme(option)}>
           {option}
@@ -175,6 +186,45 @@ describe("SettingsContext, the reader's own name", () => {
     mountProbe("Barb Wire");
 
     expect(screen.getByTestId("isMine")).toHaveTextContent("false");
+  });
+});
+
+describe("SettingsContext, the live player analysis", () => {
+  it("is on for a reader who has never said otherwise", () => {
+    mountProbe();
+
+    expect(screen.getByTestId("liveAnalysis")).toHaveTextContent("true");
+  });
+
+  it("saves the one value it has to store, and reads it back", async () => {
+    const user = mountProbe();
+    await user.click(screen.getByRole("button", { name: "hide analysis" }));
+
+    expect(screen.getByTestId("liveAnalysis")).toHaveTextContent("false");
+    expect(localStorage.getItem(LIVE_ANALYSIS_KEY)).toBe("off");
+  });
+
+  it("stores nothing for the default, the way the theme does", async () => {
+    const user = mountProbe();
+    await user.click(screen.getByRole("button", { name: "hide analysis" }));
+    await user.click(screen.getByRole("button", { name: "show analysis" }));
+
+    expect(screen.getByTestId("liveAnalysis")).toHaveTextContent("true");
+    expect(localStorage.getItem(LIVE_ANALYSIS_KEY)).toBeNull();
+  });
+
+  it("starts off where it was left off", () => {
+    localStorage.setItem(LIVE_ANALYSIS_KEY, "off");
+    mountProbe();
+
+    expect(screen.getByTestId("liveAnalysis")).toHaveTextContent("false");
+  });
+
+  it("reads anything else stored as on, rather than as off", () => {
+    localStorage.setItem(LIVE_ANALYSIS_KEY, "true");
+    mountProbe();
+
+    expect(screen.getByTestId("liveAnalysis")).toHaveTextContent("true");
   });
 });
 
