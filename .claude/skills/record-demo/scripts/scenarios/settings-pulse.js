@@ -66,7 +66,7 @@ export default async function run({ page, context, baseUrl }) {
   await page.locator(".dialog__popup").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1500);
 
-  // Back to the footer, where the control is now the same gray as its neighbours.
+  // Back to the footer, where the control is now the same gray as its neighbors.
   await page.keyboard.press("Escape");
   await page.waitForTimeout(2500);
 }
