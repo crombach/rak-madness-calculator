@@ -121,6 +121,9 @@
   // Stacking, one step per layer the page stacks, so what sits above what is
   // decided in one place. A z-index outside this list orders an element against
   // its own siblings and nothing else.
+  // Behind everything the page lays out and in front of the page's own fill,
+  // which is the one layer under the content rather than over it.
+  --rak-z-below: -1;
   --rak-z-sticky-header: 20;
   // The header cell of the column that also sticks left. Above the header cells
   // after it in the table, which pass under it as the table scrolls sideways.
@@ -141,6 +144,10 @@
   // frames, so the column keeps an edge without the case reading as a dark bezel
   // around a light page.
   --rak-case: #dcdcdc;
+  // What a pull to refresh draws the content off. Taken to the end of the ramp
+  // rather than to the case, so the gap the finger opens reads as a hole behind
+  // the page and not as more of the same grey the page is framed in.
+  --rak-pull-ground: #fff;
 
   // Primary scale: the navbar, table header, and key chrome. Light here, so that
   // chrome reads as a light panel with dark ink on it, the same as the rest of
@@ -602,6 +609,7 @@ html {
   // moving, and the light one only moved to stop framing a light page in near
   // black.
   --rak-case: #373737;
+  --rak-pull-ground: #000;
 
   --rak-success-400: #4ade80;
   --rak-danger-400: #f87171;
