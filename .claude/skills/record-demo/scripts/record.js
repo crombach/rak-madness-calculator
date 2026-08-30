@@ -9,6 +9,7 @@ function parseArgs(argv) {
     viewportWidth: 430,
     viewportHeight: 900,
     screenshot: false,
+    touch: false,
     mp4: false,
   };
   for (let i = 0; i < argv.length; i++) {
@@ -32,6 +33,9 @@ function parseArgs(argv) {
       case "--screenshot":
         args.screenshot = true;
         break;
+      case "--touch":
+        args.touch = true;
+        break;
       case "--mp4":
         args.mp4 = true;
         break;
@@ -41,7 +45,7 @@ function parseArgs(argv) {
   }
   if (!args.scenario || !args.out) {
     throw new Error(
-      "Usage: record.js --scenario <path> --out <file> [--screenshot] [--base-url <url>] [--viewport WxH] [--mp4]",
+      "Usage: record.js --scenario <path> --out <file> [--screenshot] [--base-url <url>] [--viewport WxH] [--touch] [--mp4]",
     );
   }
   return args;
@@ -56,6 +60,7 @@ async function main() {
     outPath: path.resolve(process.cwd(), args.out),
     screenshot: args.screenshot,
     viewport: { width: args.viewportWidth, height: args.viewportHeight },
+    touch: args.touch,
     mp4: args.mp4,
   });
 

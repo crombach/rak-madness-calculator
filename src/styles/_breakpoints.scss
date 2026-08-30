@@ -49,6 +49,23 @@ $breakpoint-wide: 601px;
 }
 
 /**
+ * A phone, and nothing else. The one `max-width` in this file, because it is the
+ * one rule that has to stop at a phone rather than start there.
+ *
+ * Width alone would take in a desktop window dragged narrow, where the gesture
+ * this guards cannot be performed at all. The pointer is what tells the two
+ * apart: a mouse reports `hover` and a fine pointer, so asking for neither leaves
+ * only touch.
+ */
+$phone-touch-query: "(max-width: #{$breakpoint-roomy - 1px}) and (hover: none) and (pointer: coarse)";
+
+@mixin phone-touch {
+  @media #{$phone-touch-query} {
+    @content;
+  }
+}
+
+/**
  * A phone turned on its side. Three things have to agree, because the overlay
  * takes the whole screen and there is no way past it.
  *

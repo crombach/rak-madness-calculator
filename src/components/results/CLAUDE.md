@@ -11,7 +11,8 @@ week worth showing.
 - `ScoreboardRoute` and `PicksRoute`: one table each, from context.
 - `ResultsFrame`: the page and wireframe both `ResultsLayout` and
   `CurrentWeekRedirect` render into. Holds the app's `PlayerAnalysisDialog` and
-  `GameStatusDialog` and both providers around the tables, and reads
-  `useIsWinnerDecided` for `ScoresNavbar`'s `isWeekLive`.
+  `GameStatusDialog` and both providers around the tables. Its
+  `useIsWinnerDecided` arms `ScoresNavbar`'s `isWeekLive` and `PageLayout`'s
+  `pull` together.
 - `ResultsFrame.scss`: the column the table and the wireframe are laid in, and the
   caption naming the week over both.

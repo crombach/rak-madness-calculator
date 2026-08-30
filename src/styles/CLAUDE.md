@@ -5,10 +5,11 @@ files `@use` it. `_skeleton.scss` is the one exception, and says so: it holds
 keyframes. Design tokens live in `src/index.scss` instead.
 
 - `_breakpoints.scss`: `roomy-screen`, `labelled-navbar`, `wide-screen`,
-  `can-hover`, `phone-landscape`, `reduced-motion`. Mixins rather than custom
-  properties, because a custom property does not work inside a media query. Reach
-  them with `@use "…/styles/breakpoints" as *;`. Every one is `min-width`, so the
-  phone's rules are the base.
+  `can-hover`, `phone-landscape`, `phone-touch`, `reduced-motion`. Mixins rather
+  than custom properties, because a custom property does not work inside a media
+  query. Reach them with `@use "…/styles/breakpoints" as *;`. Every width one is
+  `min-width` and the phone's rules are the base, except `phone-touch`, which is a
+  swap rather than extra room.
 - `_focus.scss`: `focus-ring`, the app's one focus ring, and `$focus-ring-reach`,
   the room it needs outside a control a scrolling ancestor would clip it against
 - `_ink.scss`: `ink-height`, an icon drawn as tall as the text beside it
