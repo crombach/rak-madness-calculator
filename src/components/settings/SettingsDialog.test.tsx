@@ -151,16 +151,16 @@ describe("SettingsDialog, the reader's own name", () => {
 });
 
 describe("SettingsDialog, the live player analysis", () => {
-  it("offers enable then disable", () => {
+  it("offers on then off", () => {
     mountDialog();
 
-    expect(choiceLabels("Live Player Analysis")).toEqual(["Enable", "Disable"]);
+    expect(choiceLabels("Live Player Analysis")).toEqual(["On", "Off"]);
   });
 
-  it("starts enabled", () => {
+  it("starts on", () => {
     mountDialog();
 
-    expect(screen.getByRole("button", { name: "Enable" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "On" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
@@ -168,9 +168,9 @@ describe("SettingsDialog, the live player analysis", () => {
 
   it("saves the choice to disable, and shows it as chosen", async () => {
     const user = mountDialog();
-    await user.click(screen.getByRole("button", { name: "Disable" }));
+    await user.click(screen.getByRole("button", { name: "Off" }));
 
-    expect(screen.getByRole("button", { name: "Disable" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "Off" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
@@ -179,8 +179,8 @@ describe("SettingsDialog, the live player analysis", () => {
 
   it("forgets the choice on the way back to enabled, the default", async () => {
     const user = mountDialog();
-    await user.click(screen.getByRole("button", { name: "Disable" }));
-    await user.click(screen.getByRole("button", { name: "Enable" }));
+    await user.click(screen.getByRole("button", { name: "Off" }));
+    await user.click(screen.getByRole("button", { name: "On" }));
 
     expect(localStorage.getItem(LIVE_ANALYSIS_KEY)).toBeNull();
   });
@@ -189,7 +189,7 @@ describe("SettingsDialog, the live player analysis", () => {
     localStorage.setItem(LIVE_ANALYSIS_KEY, "off");
     mountDialog();
 
-    expect(screen.getByRole("button", { name: "Disable" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "Off" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );

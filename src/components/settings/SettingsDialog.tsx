@@ -16,8 +16,8 @@ const THEMES: Array<{ value: Theme; label: string }> = [
 // The on choice first, against the alphabetical order above, because these two are
 // one setting's two states rather than three peers.
 const LIVE_ANALYSIS: Array<{ value: boolean; label: string }> = [
-  { value: true, label: "Enable" },
-  { value: false, label: "Disable" },
+  { value: true, label: "On" },
+  { value: false, label: "Off" },
 ];
 
 /** How the app looks, who the reader is, and how much it tells them. */
