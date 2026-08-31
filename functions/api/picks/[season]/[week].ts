@@ -10,12 +10,12 @@ import { serviceUnavailable } from "../env";
 const CACHE_CONTROL = "public, max-age=3600, must-revalidate";
 
 /**
- * One week's picks workbook, from the season named by the `year` segment. A season
+ * One week's picks workbook, from the season named by the `season` segment. A season
  * runs into the following January, so the 2025 season's week 18 was played in
  * January 2026 and is still filed under 2025.
  */
 export const onRequestGet: PagesFunction<Env> = async (context) => {
-  const season = Number(context.params.year);
+  const season = Number(context.params.season);
   const week = Number(context.params.week);
   if (!Number.isInteger(season) || !Number.isInteger(week)) {
     return new Response("Not Found", { status: 404 });
@@ -59,8 +59,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
   return new Response(spreadsheet.body, {
     status: 200,
     headers: {
-      // Keep in sync with XLSX_CONTENT_TYPE in src/utils/buildSpreadsheetBuffer.ts;
-      // the Functions bundle separately and can't import it.
+      // Keep in sync with XLSX_CONTENT_TYPE in src/utils/buildSpreadsheetBuffer.ts.
+      // The Functions bundle separately and can't import it.
       "Content-Type":
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "Content-Disposition": `attachment; filename=${season}-week-${week}-picks.xlsx`,

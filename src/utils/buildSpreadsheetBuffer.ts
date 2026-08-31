@@ -2,7 +2,7 @@ import { Status, RakMadnessScores } from "../types/RakMadnessScores";
 import { PICK_STATUS_FILL } from "./pickStatusFill";
 import rangeWithPrefix from "./rangeWithPrefix";
 
-/** Keep in sync with the header `functions/api/picks/[year]/[week].ts` responds with. */
+/** Keep in sync with the header `functions/api/picks/[season]/[week].ts` responds with. */
 export const XLSX_CONTENT_TYPE =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 

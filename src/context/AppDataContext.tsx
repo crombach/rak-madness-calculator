@@ -60,7 +60,7 @@ const WinnerDecidedContext = createContext(false);
  */
 const ScoreChangesContext = createContext<ScoreChanges>(NO_SCORE_CHANGES);
 
-/** The season and week a results URL names, from `/<year>/<week>/…`. Empty elsewhere. */
+/** The season and week a results URL names, from `/<season>/<week>/…`. Empty elsewhere. */
 function routeFromPath(pathname: string): {
   season?: number;
   weekNumber?: number;

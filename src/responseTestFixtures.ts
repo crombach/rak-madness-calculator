@@ -18,8 +18,8 @@ export function htmlResponse(): Response {
   });
 }
 
-export function seasonsResponse(years: Array<number>): Response {
-  return new Response(JSON.stringify({ years }), {
+export function seasonsResponse(seasons: Array<number>): Response {
+  return new Response(JSON.stringify({ seasons }), {
     status: 200,
     headers: { "content-type": "application/json" },
   });

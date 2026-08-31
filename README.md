@@ -16,7 +16,7 @@ This was thrown together using KISS principles for a small, family-and-friends f
 
 Built with [Vite](https://vite.dev/), React 19, TypeScript, [react-router](https://reactrouter.com/), and [Base UI](https://base-ui.com/).
 
-Picks come from `/api/picks/<year>/<week>` first, then from a cache of anything uploaded in that browser for that season and week. A week with no picks either way sends you home with an explanation. Requires the Node version `.nvmrc` pins, `v22.23` or a later 22.x. Run `nvm use` first.
+Picks come from `/api/picks/<season>/<week>` first, then from a cache of anything uploaded in that browser for that season and week. A week with no picks either way sends you home with an explanation. Requires the Node version `.nvmrc` pins, `v22.23` or a later 22.x. Run `nvm use` first.
 
 ```
 make setup      # install dependencies from the lockfile
@@ -33,7 +33,7 @@ make format     # eslint --fix, then prettier
 
 `make help` lists every target.
 
-`npm run pages:dev` builds first, then serves `./build` through wrangler on port 3000. Use it to exercise the Cloudflare side; use `make run` for hot reload. The `/api/picks` route lists the seasons that have picks, and `/api/picks/<year>/<week>` reads `picks/<year>/<week>.xlsx` from the `RAK_MADNESS_BUCKET` binding declared in `wrangler.toml`. Locally that bucket is simulated and starts empty, so both routes come back empty or 404 and the app falls back to manual spreadsheet upload. `wrangler.toml` carries the command that seeds it.
+`npm run pages:dev` builds first, then serves `./build` through wrangler on port 3000. Use it to exercise the Cloudflare side; use `make run` for hot reload. The `/api/picks` route lists the seasons that have picks, and `/api/picks/<season>/<week>` reads `picks/<season>/<week>.xlsx` from the `RAK_MADNESS_BUCKET` binding declared in `wrangler.toml`. Locally that bucket is simulated and starts empty, so both routes come back empty or 404 and the app falls back to manual spreadsheet upload. `wrangler.toml` carries the command that seeds it.
 
 ## Deploying
 

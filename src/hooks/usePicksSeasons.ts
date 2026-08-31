@@ -3,7 +3,7 @@ import { contentTypeOf, isContentType } from "../utils/contentType";
 import latestOnly from "../utils/latestOnly";
 
 type SeasonsResponse = {
-  years: Array<number>;
+  seasons: Array<number>;
 };
 
 /**
@@ -27,7 +27,7 @@ export default function usePicksSeasons() {
           }
           const body: SeasonsResponse = await response.json();
           if (isCurrent()) {
-            setSeasons(body.years);
+            setSeasons(body.seasons);
           }
         } catch (error) {
           console.warn("Could not list the seasons that have picks", error);

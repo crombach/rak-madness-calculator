@@ -3,7 +3,7 @@ import { serviceUnavailable } from "./env";
 
 const PICKS_PREFIX = "picks/";
 /** A whole season folder, `picks/2025/`, and nothing else. */
-const YEAR_PREFIX = /^picks\/(\d{4})\/$/;
+const SEASON_PREFIX = /^picks\/(\d{4})\/$/;
 
 /**
  * The seasons that have picks, newest first.
@@ -14,7 +14,7 @@ const YEAR_PREFIX = /^picks\/(\d{4})\/$/;
  * 2026.
  */
 export const onRequestGet: PagesFunction<Env> = async (context) => {
-  const years: Array<number> = [];
+  const seasons: Array<number> = [];
   let cursor: string | undefined;
 
   try {
@@ -25,9 +25,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         cursor,
       });
       listed.delimitedPrefixes.forEach((prefix) => {
-        const match = YEAR_PREFIX.exec(prefix);
+        const match = SEASON_PREFIX.exec(prefix);
         if (match != null) {
-          years.push(Number(match[1]));
+          seasons.push(Number(match[1]));
         }
       });
       cursor = listed.truncated ? listed.cursor : undefined;
@@ -36,13 +36,16 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     return serviceUnavailable("Failed to list picks seasons", error);
   }
 
-  return new Response(JSON.stringify({ years: years.sort((a, b) => b - a) }), {
-    status: 200,
-    headers: {
-      "Content-Type": "application/json",
-      // Short, because a newly uploaded season should show up without waiting on
-      // a cache, and the list changes at most once a year.
-      "Cache-Control": "public, max-age=60",
+  return new Response(
+    JSON.stringify({ seasons: seasons.sort((a, b) => b - a) }),
+    {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        // Short, because a newly uploaded season should show up without waiting
+        // on a cache, and the list changes at most once a year.
+        "Cache-Control": "public, max-age=60",
+      },
     },
-  });
+  );
 };
