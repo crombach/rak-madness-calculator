@@ -59,7 +59,7 @@
   // week is long, and nothing knows that until the week is scored, so a panel sized
   // to it would move both its edges when the week landed. The table centers itself
   // inside this instead, and a wide one scrolls.
-  &.--scores {
+  &.--results {
     width: 100%;
     // The scrolling box's own fill, which is what Firefox paints into a region it
     // has not rasterized yet. It reads this element rather than whatever is drawn

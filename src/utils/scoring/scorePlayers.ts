@@ -59,7 +59,7 @@ export default function scorePlayers(
       unscoreableCollege,
     );
     const scoreCollege = sumPointValues(
-      collegePickResults.filter((result) => result.isCompleted),
+      collegePickResults.filter((result) => result.isFinal),
     );
 
     const proPickResults = getPickResults(
@@ -68,7 +68,7 @@ export default function scorePlayers(
       unscoreablePro,
     );
     const proPickResultsCompleted = proPickResults.filter(
-      (result) => result.isCompleted,
+      (result) => result.isFinal,
     );
     const scorePro = sumPointValues(proPickResultsCompleted);
     const scoreProAgainstTheSpread = sumPointValues(

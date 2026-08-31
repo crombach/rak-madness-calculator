@@ -26,7 +26,7 @@ export default function useExportScores(
       try {
         const spreadsheetBuffer = await buildSpreadsheetBuffer(scores, {
           season,
-          week: week.value,
+          weekNumber: week.value,
         });
 
         const blob = new Blob([spreadsheetBuffer], {

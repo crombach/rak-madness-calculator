@@ -60,10 +60,13 @@ const scores: RakMadnessScores = {
 
 async function readBack(
   scoresObject: RakMadnessScores = scores,
-  week = WEEK,
+  weekNumber = WEEK,
   season = SEASON,
 ): Promise<XLSX.WorkBook> {
-  const buffer = await buildSpreadsheetBuffer(scoresObject, { season, week });
+  const buffer = await buildSpreadsheetBuffer(scoresObject, {
+    season,
+    weekNumber,
+  });
   return XLSX.read(buffer, { type: "array", cellStyles: true });
 }
 

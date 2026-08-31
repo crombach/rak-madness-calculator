@@ -11,8 +11,8 @@ import latestOnly from "../utils/latestOnly";
  * compares its options by reference, so copying or rebuilding a `WeekInfo`
  * anywhere downstream leaves the picker unable to show a selection.
  *
- * `initialWeek` wins over the season's active week when the season has such a
- * week. A results URL names the week it wants, and without this the current week
+ * `initialWeekNumber` wins over the season's active week when the season has
+ * such a week. A results URL names the week it wants, and without this the current week
  * would be selected and scored first, only to be replaced. It is read when the
  * calendar lands, so it can change without costing another lookup.
  *
@@ -25,7 +25,7 @@ import latestOnly from "../utils/latestOnly";
  * which is the wrong season whenever the pool is between seasons.
  */
 export default function useLeagueWeeks(
-  initialWeek?: number,
+  initialWeekNumber?: number,
   season?: number,
   enabled = true,
 ) {
@@ -40,12 +40,12 @@ export default function useLeagueWeeks(
   // Read when the calendar lands rather than depended on, so changing week does
   // not fetch the whole season again. The URL is what moves it, and the schedule
   // is the same either way.
-  const initialWeekRef = useRef(initialWeek);
+  const initialWeekNumberRef = useRef(initialWeekNumber);
   // Declared above the lookup, so a season and week that change together are in
   // step before the lookup they both belong to starts.
   useEffect(() => {
-    initialWeekRef.current = initialWeek;
-  }, [initialWeek]);
+    initialWeekNumberRef.current = initialWeekNumber;
+  }, [initialWeekNumber]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -76,8 +76,9 @@ export default function useLeagueWeeks(
       // last regular week once the season is over, and none at all until its
       // opener has been played.
       setSelectedWeek(
-        calendarWeeks.find((week) => week.value === initialWeekRef.current) ??
-          proLeagueInfo.activeWeek,
+        calendarWeeks.find(
+          (week) => week.value === initialWeekNumberRef.current,
+        ) ?? proLeagueInfo.activeWeek,
       );
       setLoading(false);
     });

@@ -42,15 +42,15 @@ const workbooks = localStorageCache<ArrayBuffer>({
 /** The cached workbook for a week, or undefined if there isn't a usable one. */
 export function readCachedPicks(
   season: number,
-  week: number,
+  weekNumber: number,
 ): ArrayBuffer | undefined {
-  return workbooks.read(`${season}:${week}`);
+  return workbooks.read(`${season}:${weekNumber}`);
 }
 
 export function writeCachedPicks(
   season: number,
-  week: number,
+  weekNumber: number,
   buffer: ArrayBuffer,
 ): void {
-  workbooks.write(`${season}:${week}`, buffer);
+  workbooks.write(`${season}:${weekNumber}`, buffer);
 }

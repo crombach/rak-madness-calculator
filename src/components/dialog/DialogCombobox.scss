@@ -59,7 +59,7 @@
 
 .dialog__positioner {
   // Above the dialog it opens inside of, which the backdrop already sits under.
-  z-index: calc(var(--rak-z-modal) + 2);
+  z-index: calc(var(--rak-z-dialog) + 2);
 }
 
 .dialog__list {

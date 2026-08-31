@@ -134,7 +134,7 @@ describe("the app, export", () => {
     await waitFor(() => {
       expect(buildSpreadsheetBufferMock).toHaveBeenCalledWith(scores, {
         season: SEASON,
-        week: CURRENT_WEEK,
+        weekNumber: CURRENT_WEEK,
       });
     });
     expect(click).toHaveBeenCalledTimes(1);
