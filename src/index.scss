@@ -145,7 +145,7 @@
   --rak-z-toast: 400;
   // Above the toasts, since the dialog's scrim covers them anyway. The two layers
   // over it are the popup and the list it opens, taken from this with `calc`.
-  --rak-z-modal: 1000;
+  --rak-z-dialog: 1000;
 
   // What the app is mounted in, and the ground every page stands on. A shade
   // under the navbar it runs down from and a shade over the white column it
@@ -442,7 +442,7 @@
   --rak-shadow-overlay:
     0 2px 8px -2px rgb(var(--rak-shadow-color) / 10%),
     0 6px 12px -2px rgb(var(--rak-shadow-color) / 8%);
-  --rak-shadow-modal:
+  --rak-shadow-dialog:
     0 8px 24px -4px rgb(var(--rak-shadow-color) / 18%),
     0 16px 40px -8px rgb(var(--rak-shadow-color) / 12%);
 
@@ -691,7 +691,7 @@ html {
   // A dialog stands a plane above the page here, because neither thing that
   // separates the two in light mode works at this end of the ramp.
   // `--rak-scrim` is 45% of `--rak-shadow-color`, which is #151515: laid over
-  // this surface it lands on #171717, a 1.02 step. `--rak-shadow-modal` is the
+  // this surface it lands on #171717, a 1.02 step. `--rak-shadow-dialog` is the
   // same near-black, so it draws nothing either. Lifting the fill is the only
   // separation left, and it is a 1.04 step. Too small to read on its own, so the
   // edge below is what actually separates the two planes.

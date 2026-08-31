@@ -10,7 +10,7 @@ export type GameScore = {
    * the workbook contradicts itself about the game's spread. `explanation` says
    * which.
    */
-  isInvalid: boolean;
-  isCompleted: boolean;
+  isUnscoreable: boolean;
+  isFinal: boolean;
   hasSpread: boolean;
 };

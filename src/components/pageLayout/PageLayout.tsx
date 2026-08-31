@@ -11,7 +11,7 @@ export default function PageLayout({
   title,
   navbarLeft,
   navbarRight,
-  showingScores = false,
+  showingResults = false,
   scrollable = true,
   pull,
   children,
@@ -24,7 +24,7 @@ export default function PageLayout({
   title: string;
   navbarLeft: ReactNode;
   navbarRight?: ReactNode;
-  showingScores?: boolean;
+  showingResults?: boolean;
   /**
    * Set false to refuse the pointer, so what is on screen cannot be scrolled or
    * clicked. The content keeps whatever scrollbars it asks for either way.
@@ -51,7 +51,7 @@ export default function PageLayout({
         id="main"
         ref={contentRef}
         className={getClasses("page__content", {
-          "--scores": showingScores,
+          "--results": showingResults,
           "--frozen": !scrollable,
         })}
       >

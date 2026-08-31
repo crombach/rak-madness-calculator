@@ -161,11 +161,11 @@ export function resultsCaption(): HTMLElement | null {
 /** Answers the seasons list, and everything else the way the case asked for. */
 export function routedFetch(
   picks: () => Response,
-  years = [SEASON, SEASON - 1],
+  seasons = [SEASON, SEASON - 1],
 ) {
   return vi.fn((input: RequestInfo | URL) =>
     Promise.resolve(
-      String(input) === "/api/picks" ? seasonsResponse(years) : picks(),
+      String(input) === "/api/picks" ? seasonsResponse(seasons) : picks(),
     ),
   ) as unknown as MockedFunction<typeof fetch>;
 }

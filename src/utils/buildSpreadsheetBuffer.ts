@@ -2,7 +2,7 @@ import { Status, RakMadnessScores } from "../types/RakMadnessScores";
 import { PICK_STATUS_FILL } from "./pickStatusFill";
 import rangeWithPrefix from "./rangeWithPrefix";
 
-/** Keep in sync with the header `functions/api/picks/[year]/[week].ts` responds with. */
+/** Keep in sync with the header `functions/api/picks/[season]/[week].ts` responds with. */
 export const XLSX_CONTENT_TYPE =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
@@ -112,8 +112,8 @@ function normalCell({
  * and week 10 is over it, and the workbook it is a tab of is already named after
  * the pool.
  */
-function sheetName(season: number, week: number, view: string): string {
-  return `${season} Week ${week} ${view}`;
+function sheetName(season: number, weekNumber: number, view: string): string {
+  return `${season} Week ${weekNumber} ${view}`;
 }
 
 /**
@@ -124,7 +124,7 @@ export default async function buildSpreadsheetBuffer(
   scoresObject: RakMadnessScores,
   // Named rather than positional: two numbers side by side, and a call with them
   // the wrong way round would come out as a workbook for week 2025.
-  { season, week }: { season: number; week: number },
+  { season, weekNumber }: { season: number; weekNumber: number },
 ): Promise<ArrayBuffer> {
   const XLSX = await import("xlsx-js-style");
   const workbook = XLSX.utils.book_new();
@@ -168,7 +168,7 @@ export default async function buildSpreadsheetBuffer(
   XLSX.utils.book_append_sheet(
     workbook,
     resultsSheet,
-    sheetName(season, week, "Results"),
+    sheetName(season, weekNumber, "Results"),
   );
 
   const firstPlayer = scoresObject.scores[0];
@@ -214,7 +214,7 @@ export default async function buildSpreadsheetBuffer(
   XLSX.utils.book_append_sheet(
     workbook,
     picksSheet,
-    sheetName(season, week, "Picks"),
+    sheetName(season, weekNumber, "Picks"),
   );
 
   return XLSX.write(workbook, { type: "array" });

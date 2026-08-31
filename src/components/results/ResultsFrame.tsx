@@ -96,7 +96,7 @@ export default function ResultsFrame({
       }
       // True while loading too: the wireframe is shaped like the table it stands
       // in for, so it wants the same content area.
-      showingScores
+      showingResults
       scrollable={isReady}
       // Exact parity with the refresh button beside it: the same live week, and
       // only once there is a table to pull on.

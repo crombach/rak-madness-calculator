@@ -81,10 +81,10 @@ export function matchupKey(teams: Set<string>): string {
 /** The games this browser has stored for a week, keyed by matchup. */
 export function readCachedResults(
   season: number,
-  week: number,
+  weekNumber: number,
   league: League,
 ): Record<string, CachedGame> {
-  const stored = results.read(`${season}:${week}:${league}`);
+  const stored = results.read(`${season}:${weekNumber}:${league}`);
   // An entry of the version in hand can still be nonsense, since anything at all can
   // be written to storage this shares with the rest of the origin.
   if (typeof stored !== "object") {
@@ -105,7 +105,7 @@ export function readCachedResults(
  */
 export function writeCachedResults(
   season: number,
-  week: number,
+  weekNumber: number,
   league: League,
   games: Record<string, CachedGame>,
 ): void {
@@ -114,7 +114,7 @@ export function writeCachedResults(
     stored[key] =
       game == null ? null : { ...game, date: game.date.toISOString() };
   });
-  results.write(`${season}:${week}:${league}`, stored);
+  results.write(`${season}:${weekNumber}:${league}`, stored);
 }
 
 /** Whether an answer is one this browser can hold on to for good. */

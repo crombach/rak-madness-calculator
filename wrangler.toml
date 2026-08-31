@@ -4,7 +4,7 @@ name = "rak-sadness"
 # The date the runtime behavior was last verified against, not the project's age.
 compatibility_date = "2026-08-10"
 
-# Serves picks/<year>/<week>.xlsx to functions/api/picks/[year]/[week].ts, and
+# Serves picks/<season>/<week>.xlsx to functions/api/picks/[season]/[week].ts,
 # lists seasons for functions/api/picks/index.ts.
 # Simulated locally by `wrangler pages dev`; seed it with
 # `wrangler r2 object put rak-madness-calculator/picks/2025/1.xlsx --file <path> --local`.

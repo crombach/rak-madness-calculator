@@ -21,9 +21,9 @@ const KICKOFF_DATE = new Intl.DateTimeFormat("en-US", {
 });
 
 export function getStatus(score: GameScore): Status {
-  if (score.isInvalid) {
+  if (score.isUnscoreable) {
     return "unscoreable";
-  } else if (!score.isCompleted) {
+  } else if (!score.isFinal) {
     return "incomplete";
   } else if (score.pointValue === 1) {
     return "yes";
@@ -47,7 +47,7 @@ export const MISSING_PICK = "Missing Pick";
 
 /**
  * A pick with no point in it either way. Every reason a game cannot be scored ends
- * here, and they share `isInvalid` because they share that outcome. Only the
+ * here, and they share `isUnscoreable` because they share that outcome. Only the
  * explanation differs, since only the user can act on the difference.
  */
 function unscoreable(
@@ -58,8 +58,8 @@ function unscoreable(
   return {
     pointValue: 0,
     explanation: { header, message },
-    isInvalid: true,
-    isCompleted: false,
+    isUnscoreable: true,
+    isFinal: false,
     hasSpread,
   };
 }
@@ -110,7 +110,7 @@ export function getPickResults(
 
     // From the picked team's side, since that is the side the cell's spread is
     // written from. A push counts as a win, which is why this is >= rather than >.
-    // Nothing reads `pointValue` until `isCompleted`, which is when the margin
+    // Nothing reads `pointValue` until `isFinal`, which is when the margin
     // means anything.
     const margin = marginAgainstSpread(gameResult, selectedTeam, spread);
     const pointValue = margin >= 0 ? 1 : 0;
@@ -155,8 +155,8 @@ export function getPickResults(
             ? gameResult.possession.downDistanceText
             : "",
       },
-      isInvalid: false,
-      isCompleted: gameResult.status === GameStatus.FINAL,
+      isUnscoreable: false,
+      isFinal: gameResult.status === GameStatus.FINAL,
       hasSpread,
     };
   });

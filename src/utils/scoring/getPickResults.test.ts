@@ -112,7 +112,7 @@ describe("getPickResults, missing data", () => {
       indexResultsByTeam([bufBeatKcBy10]),
     )[0];
     expect(result.pointValue).toBe(0);
-    expect(result.isInvalid).toBe(true);
+    expect(result.isUnscoreable).toBe(true);
     expect(result.explanation.header).toBe("Missing Game");
   });
 
@@ -122,7 +122,7 @@ describe("getPickResults, missing data", () => {
       indexResultsByTeam([bufBeatKcBy10]),
     )[0];
     expect(result.pointValue).toBe(0);
-    expect(result.isInvalid).toBe(true);
+    expect(result.isUnscoreable).toBe(true);
     expect(result.explanation.header).toBe("Missing Pick");
   });
 });
@@ -133,7 +133,7 @@ describe("getPickResults, game state", () => {
       ["BUF"],
       indexResultsByTeam([bufBeatKcBy10]),
     )[0];
-    expect(result.isCompleted).toBe(true);
+    expect(result.isFinal).toBe(true);
     expect(result.explanation.header).toBe("Final Score");
     expect(result.explanation.message).toBe("KC 20 - 30 BUF");
   });
@@ -146,7 +146,7 @@ describe("getPickResults, game state", () => {
       possession: { homeAway: HomeAway.AWAY, downDistanceText: "2nd & 7" },
     };
     const result = getPickResults(["BUF"], indexResultsByTeam([live]))[0];
-    expect(result.isCompleted).toBe(false);
+    expect(result.isFinal).toBe(false);
     expect(result.explanation.header).toBe("Live Score | 3rd Quarter");
     expect(result.explanation.message).toBe("▸ KC 20 - 30 BUF");
     expect(result.explanation.downDistanceText).toBe("2nd & 7");
@@ -158,7 +158,7 @@ describe("getPickResults, game state", () => {
       status: GameStatus.UPCOMING,
     };
     const result = getPickResults(["BUF"], indexResultsByTeam([upcoming]))[0];
-    expect(result.isCompleted).toBe(false);
+    expect(result.isFinal).toBe(false);
     expect(result.explanation.header).toBe("Upcoming");
     expect(result.explanation.message).toContain("KC @ BUF begins at");
   });
@@ -202,7 +202,7 @@ describe("getPickResults, statuses outside the enum", () => {
       detailMessage: "Postponed",
     };
     const result = getPickResults(["BUF"], indexResultsByTeam([postponed]))[0];
-    expect(result.isCompleted).toBe(false);
+    expect(result.isFinal).toBe(false);
     expect(result.explanation.header).toBe("Live Score | Postponed");
   });
 
@@ -222,7 +222,7 @@ describe("getPickResults, statuses outside the enum", () => {
       indexResultsByTeam([canceled]),
     );
     expect(results.map((result) => result.pointValue)).toEqual([1, 1]);
-    expect(results[0].isCompleted).toBe(false);
+    expect(results[0].isFinal).toBe(false);
     expect(results[0].explanation.header).toBe("Live Score | Canceled");
   });
 });
@@ -252,8 +252,8 @@ describe("getPickResults, unscoreable games", () => {
     const [unscoreable] = scoreFirstOfTwo("BUF +7");
 
     expect(unscoreable.pointValue).toBe(0);
-    expect(unscoreable.isInvalid).toBe(true);
-    expect(unscoreable.isCompleted).toBe(false);
+    expect(unscoreable.isUnscoreable).toBe(true);
+    expect(unscoreable.isFinal).toBe(false);
     expect(getStatus(unscoreable)).toBe("unscoreable");
     expect(unscoreable.explanation.header).toBe("Invalid Spread");
     expect(unscoreable.explanation.message).toBe(reason);

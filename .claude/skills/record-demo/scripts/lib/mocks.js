@@ -156,7 +156,7 @@ export async function registerAppMocks(
     const { pathname } = url;
 
     if (pathname === "/api/picks") {
-      return route.fulfill({ json: { years: [season] } });
+      return route.fulfill({ json: { seasons: [season] } });
     }
     if (pathname === `/api/picks/${season}/${week}`) {
       return route.fulfill({
