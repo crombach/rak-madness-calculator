@@ -1,4 +1,11 @@
-import { PropsWithChildren, useCallback, useState } from "react";
+import {
+  PropsWithChildren,
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { useNavigate, useParams } from "react-router";
 import { useIsWinnerDecided } from "../../context/AppDataContext";
 import { GameStatusContextProvider } from "../../context/GameStatusContext";
@@ -7,13 +14,26 @@ import { WeekInfo } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
-import GameStatusDialog from "../gameStatus/GameStatusDialog";
 import LogoButton, { APP_NAME } from "../navbar/LogoButton";
 import ScoresNavbar, { ScoresView } from "../navbar/ScoresNavbar";
 import PageLayout from "../pageLayout/PageLayout";
-import PlayerAnalysisDialog from "../playerAnalysis/PlayerAnalysisDialog";
 import SkeletonTable from "../table/SkeletonTable";
 import "./ResultsFrame.scss";
+
+/*
+  Neither dialog is on the path to a table, and between them they carry Base UI's
+  combobox, the whole of `getPlayerAnalysis`, and the scoreline: 18kB gzipped of
+  the chunk every route waits on, including the home page, which has no dialog to
+  open at all.
+
+  Held apart from the loaders below so the warm and the render ask for the same
+  module. `lazy` alone would leave the first click waiting on the fetch.
+*/
+const loadPlayerAnalysisDialog = () =>
+  import("../playerAnalysis/PlayerAnalysisDialog");
+const loadGameStatusDialog = () => import("../gameStatus/GameStatusDialog");
+const PlayerAnalysisDialog = lazy(loadPlayerAnalysisDialog);
+const GameStatusDialog = lazy(loadGameStatusDialog);
 
 /** The pool the app scores, which is not the app's own name. */
 const POOL_NAME = "Rak Madness";
@@ -71,6 +91,32 @@ export default function ResultsFrame({
   // and the divider beside it go rather than sit there doing nothing.
   const isWinnerDecided = useIsWinnerDecided();
   const [opened, setOpened] = useState<Opened>();
+  // Which dialogs have been opened at all, and so which are past their fetch.
+  // Kept once set rather than following `opened`, because Base UI plays the close
+  // animation from a dialog still mounted, and unmounting on close would cut it.
+  const [hasOpened, setHasOpened] = useState({ player: false, game: false });
+  if (opened?.kind === "player" && !hasOpened.player) {
+    setHasOpened((seen) => ({ ...seen, player: true }));
+  }
+  if (opened?.kind === "game" && !hasOpened.game) {
+    setHasOpened((seen) => ({ ...seen, game: true }));
+  }
+
+  // Fetched as soon as the page is quiet, so a reader who opens a dialog finds it
+  // already there. Without this the split would trade the load every reader pays
+  // for a wait the ones who open a dialog pay.
+  useEffect(() => {
+    const warm = () => {
+      void loadPlayerAnalysisDialog();
+      void loadGameStatusDialog();
+    };
+    if (typeof window.requestIdleCallback !== "function") {
+      const timer = window.setTimeout(warm, 0);
+      return () => window.clearTimeout(timer);
+    }
+    const handle = window.requestIdleCallback(warm);
+    return () => window.cancelIdleCallback(handle);
+  }, []);
 
   // Stable, so the memoized tables below do not re-render for a dialog opening.
   const showPlayerAnalysis = useCallback(
@@ -145,22 +191,32 @@ export default function ResultsFrame({
           </GameStatusContextProvider>
         </PlayerAnalysisContextProvider>
       </div>
-      <PlayerAnalysisDialog
-        open={opened?.kind === "player"}
-        onOpenChange={close}
-        player={opened?.kind === "player" ? opened.name : undefined}
-        scores={scores}
-        weekNumber={weekParam != null ? Number(weekParam) : undefined}
-      />
-      <GameStatusDialog
-        open={opened?.kind === "game"}
-        onOpenChange={close}
-        gameLabel={opened?.kind === "game" ? opened.label : undefined}
-        scores={scores}
-        week={week}
-        season={season}
-        onGameFinal={onRefresh}
-      />
+      {/* No fallback: the dialog is what a reader is waiting for, and a spinner
+          where it will be reads as the dialog having opened empty. */}
+      {hasOpened.player && (
+        <Suspense fallback={null}>
+          <PlayerAnalysisDialog
+            open={opened?.kind === "player"}
+            onOpenChange={close}
+            player={opened?.kind === "player" ? opened.name : undefined}
+            scores={scores}
+            weekNumber={weekParam != null ? Number(weekParam) : undefined}
+          />
+        </Suspense>
+      )}
+      {hasOpened.game && (
+        <Suspense fallback={null}>
+          <GameStatusDialog
+            open={opened?.kind === "game"}
+            onOpenChange={close}
+            gameLabel={opened?.kind === "game" ? opened.label : undefined}
+            scores={scores}
+            week={week}
+            season={season}
+            onGameFinal={onRefresh}
+          />
+        </Suspense>
+      )}
     </PageLayout>
   );
 }
