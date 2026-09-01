@@ -34,6 +34,12 @@ type CacheableContext = {
  * or a 503 carries no `Cache-Control` to bound how long a wrong answer would
  * stand. A stored 200 still answers a later `If-None-Match` with a 304, because
  * `match` reads the `ETag` it was stored with.
+ *
+ * So a colo whose copy has expired refills only when a reader who holds no `ETag`
+ * arrives. Everyone else revalidates, gets a 304 built from R2's metadata, and
+ * stores nothing. Storing on a 304 would mean reading the whole workbook from R2
+ * on the requests that currently read none of it, which costs more than the colo
+ * copy is worth at a minute of edge TTL. Left as it is on purpose.
  */
 export async function cachedGet(
   context: CacheableContext,
@@ -49,7 +55,15 @@ export async function cachedGet(
   if (response.status === 200) {
     // Cloned rather than read here, so the caller gets the body as it arrives
     // instead of waiting on the copy the cache keeps.
-    context.waitUntil(cache.put(context.request, response.clone()));
+    //
+    // `put` rejects on a response it will not store, a 413 among them. The caller
+    // already has its answer, so the invocation is not failed over a cache write
+    // that did not land.
+    context.waitUntil(
+      cache.put(context.request, response.clone()).catch((error) => {
+        console.error("Failed to cache picks response", error);
+      }),
+    );
   }
   return response;
 }

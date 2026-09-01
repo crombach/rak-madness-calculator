@@ -6,8 +6,13 @@ import { cachedGet, serviceUnavailable } from "../env";
  * picks are rewritten when the sheet turns out to carry an error, and the URL for
  * them never changes, so a copy that can outlive a correction has to be able to
  * find out about one.
+ *
+ * `s-maxage` holds the colo's own copy to a minute, which the browser ignores and
+ * a shared cache does not. `cache.match` never asks R2, so a colo copy that lived
+ * as long as the browser's would answer that hourly question itself and keep a
+ * correction hidden for a second hour.
  */
-const CACHE_CONTROL = "public, max-age=3600, must-revalidate";
+const CACHE_CONTROL = "public, max-age=3600, s-maxage=60, must-revalidate";
 
 /**
  * One week's picks workbook, from the season named by the `season` segment. A season
