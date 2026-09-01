@@ -94,7 +94,12 @@ export default function ResultsFrame({
   // and the divider beside it go rather than sit there doing nothing.
   const isWinnerDecided = useIsWinnerDecided();
   const [opened, setOpened] = useState<Opened>();
-  // Which dialogs have been opened at all, and so which are past their fetch.
+  // Set once both dialogs are fetched, which mounts them closed. Each one reads
+  // the week as it mounts, and `PlayerAnalysisDialog` walks every pick of every
+  // player to do it, so a mount held back until the click would put that walk
+  // between the click and the dialog.
+  const [hasLoaded, setHasLoaded] = useState(false);
+  // Which dialogs have been opened at all, for the click that beats the fetch.
   // Kept once set rather than following `opened`, because Base UI plays the close
   // animation from a dialog still mounted, and unmounting on close would cut it.
   const [hasOpened, setHasOpened] = useState({ player: false, game: false });
@@ -116,23 +121,32 @@ export default function ResultsFrame({
     showToast(errorToast("Failed to open that. Reload the page to try again."));
   }, [showToast]);
 
-  // Fetched as soon as the page is quiet, so a reader who opens a dialog finds it
-  // already there. Without this the split would trade the load every reader pays
-  // for a wait the ones who open a dialog pay.
+  // Fetched as soon as the page is quiet, so the click that opens a dialog waits
+  // for neither the fetch nor the mount. Without this the split would trade the
+  // load every reader pays for a wait the ones who open a dialog pay.
   useEffect(() => {
-    // A failed fetch is caught rather than left to the console. It costs the
-    // reader nothing here, because the click that opens the dialog asks for the
-    // module again.
+    let isOnScreen = true;
+    // A failed fetch leaves both dialogs unmounted, and the click that wants one
+    // asks for its module again. `DialogLoadBoundary` holds it if that fails too.
     const warm = () => {
-      loadPlayerAnalysisDialog().catch(doNothing);
-      loadGameStatusDialog().catch(doNothing);
+      Promise.all([loadPlayerAnalysisDialog(), loadGameStatusDialog()])
+        .then(() => {
+          if (isOnScreen) setHasLoaded(true);
+        })
+        .catch(doNothing);
     };
     if (typeof window.requestIdleCallback !== "function") {
       const timer = window.setTimeout(warm, 0);
-      return () => window.clearTimeout(timer);
+      return () => {
+        isOnScreen = false;
+        window.clearTimeout(timer);
+      };
     }
     const handle = window.requestIdleCallback(warm);
-    return () => window.cancelIdleCallback(handle);
+    return () => {
+      isOnScreen = false;
+      window.cancelIdleCallback(handle);
+    };
   }, []);
 
   // Stable, so the memoized tables below do not re-render for a dialog opening.
@@ -208,9 +222,10 @@ export default function ResultsFrame({
           </GameStatusContextProvider>
         </PlayerAnalysisContextProvider>
       </div>
-      {/* No fallback: the dialog is what a reader is waiting for, and a spinner
-          where it will be reads as the dialog having opened empty. */}
-      {hasOpened.player && (
+      {/* No fallback: nothing is on screen to stand in for. A dialog mounts
+          closed, and the click that beats the fetch wants the dialog rather than
+          a spinner where it will be. */}
+      {(hasLoaded || hasOpened.player) && (
         <DialogLoadBoundary onError={onDialogLoadError}>
           <Suspense fallback={null}>
             <PlayerAnalysisDialog
@@ -223,7 +238,7 @@ export default function ResultsFrame({
           </Suspense>
         </DialogLoadBoundary>
       )}
-      {hasOpened.game && (
+      {(hasLoaded || hasOpened.game) && (
         <DialogLoadBoundary onError={onDialogLoadError}>
           <Suspense fallback={null}>
             <GameStatusDialog
