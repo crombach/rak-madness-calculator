@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import useArrival from "../../hooks/useArrival";
 import useLiveGame from "../../hooks/useLiveGame";
 import { GameStatus } from "../../types/ESPN";
@@ -6,7 +6,6 @@ import { WeekInfo } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
 import matching from "../../utils/matching";
-import warmImage from "../../utils/warmImage";
 import DialogCombobox from "../dialog/DialogCombobox";
 import DialogShell from "../dialog/DialogShell";
 import { CheckIcon, EventIcon, WarningIcon } from "../icon/Icon";
@@ -140,20 +139,6 @@ export default function GameStatusDialog({
   // Held still between renders, since the combobox reads the chosen game back off
   // this list by identity.
   const games = useMemo(() => scores?.games ?? [], [scores]);
-
-  // Every logo the week could show, asked for as soon as the week is scored rather
-  // than when a game is opened, so the scoreline comes up with its marks already on
-  // it. In an effect rather than in the render, which a search keystroke repeats and
-  // React may throw away.
-  useEffect(() => {
-    games.forEach((it) => {
-      [it.result?.home.team.logoUrl, it.result?.away.team.logoUrl].forEach(
-        (url) => {
-          if (url != null) warmImage(url);
-        },
-      );
-    });
-  }, [games]);
 
   // A column arriving from outside stands in for a choice made in the search.
   useArrival(named, (label) => {

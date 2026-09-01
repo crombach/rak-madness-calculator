@@ -8,8 +8,10 @@ import {
 } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useIsWinnerDecided } from "../../context/AppDataContext";
+import { errorToast, useToastActions } from "../../context/ToastContext";
 import { GameStatusContextProvider } from "../../context/GameStatusContext";
 import { PlayerAnalysisContextProvider } from "../../context/PlayerAnalysisContext";
+import useWarmTeamLogos from "../../hooks/useWarmTeamLogos";
 import { WeekInfo } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import doNothing from "../../utils/doNothing";
@@ -18,6 +20,7 @@ import LogoButton, { APP_NAME } from "../navbar/LogoButton";
 import ScoresNavbar, { ScoresView } from "../navbar/ScoresNavbar";
 import PageLayout from "../pageLayout/PageLayout";
 import SkeletonTable from "../table/SkeletonTable";
+import DialogLoadBoundary from "./DialogLoadBoundary";
 import "./ResultsFrame.scss";
 
 /*
@@ -102,13 +105,27 @@ export default function ResultsFrame({
     setHasOpened((seen) => ({ ...seen, game: true }));
   }
 
+  // The logos belong to the week rather than to the dialog that draws them, so
+  // they are warmed from here. `useWarmTeamLogos` says why.
+  useWarmTeamLogos(scores?.games);
+
+  const { showToast } = useToastActions();
+  // Said once, for either dialog. Neither can be retried, so the only way on is a
+  // reload.
+  const onDialogLoadError = useCallback(() => {
+    showToast(errorToast("Failed to open that. Reload the page to try again."));
+  }, [showToast]);
+
   // Fetched as soon as the page is quiet, so a reader who opens a dialog finds it
   // already there. Without this the split would trade the load every reader pays
   // for a wait the ones who open a dialog pay.
   useEffect(() => {
+    // A failed fetch is caught rather than left to the console. It costs the
+    // reader nothing here, because the click that opens the dialog asks for the
+    // module again.
     const warm = () => {
-      void loadPlayerAnalysisDialog();
-      void loadGameStatusDialog();
+      loadPlayerAnalysisDialog().catch(doNothing);
+      loadGameStatusDialog().catch(doNothing);
     };
     if (typeof window.requestIdleCallback !== "function") {
       const timer = window.setTimeout(warm, 0);
@@ -194,28 +211,32 @@ export default function ResultsFrame({
       {/* No fallback: the dialog is what a reader is waiting for, and a spinner
           where it will be reads as the dialog having opened empty. */}
       {hasOpened.player && (
-        <Suspense fallback={null}>
-          <PlayerAnalysisDialog
-            open={opened?.kind === "player"}
-            onOpenChange={close}
-            player={opened?.kind === "player" ? opened.name : undefined}
-            scores={scores}
-            weekNumber={weekParam != null ? Number(weekParam) : undefined}
-          />
-        </Suspense>
+        <DialogLoadBoundary onError={onDialogLoadError}>
+          <Suspense fallback={null}>
+            <PlayerAnalysisDialog
+              open={opened?.kind === "player"}
+              onOpenChange={close}
+              player={opened?.kind === "player" ? opened.name : undefined}
+              scores={scores}
+              weekNumber={weekParam != null ? Number(weekParam) : undefined}
+            />
+          </Suspense>
+        </DialogLoadBoundary>
       )}
       {hasOpened.game && (
-        <Suspense fallback={null}>
-          <GameStatusDialog
-            open={opened?.kind === "game"}
-            onOpenChange={close}
-            gameLabel={opened?.kind === "game" ? opened.label : undefined}
-            scores={scores}
-            week={week}
-            season={season}
-            onGameFinal={onRefresh}
-          />
-        </Suspense>
+        <DialogLoadBoundary onError={onDialogLoadError}>
+          <Suspense fallback={null}>
+            <GameStatusDialog
+              open={opened?.kind === "game"}
+              onOpenChange={close}
+              gameLabel={opened?.kind === "game" ? opened.label : undefined}
+              scores={scores}
+              week={week}
+              season={season}
+              onGameFinal={onRefresh}
+            />
+          </Suspense>
+        </DialogLoadBoundary>
       )}
     </PageLayout>
   );
