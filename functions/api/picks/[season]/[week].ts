@@ -1,5 +1,5 @@
 import type { Env } from "../env";
-import { serviceUnavailable } from "../env";
+import { cachedGet, serviceUnavailable } from "../env";
 
 /**
  * An hour of reuse, then the browser asks whether its copy still stands. A week's
@@ -14,7 +14,12 @@ const CACHE_CONTROL = "public, max-age=3600, must-revalidate";
  * runs into the following January, so the 2025 season's week 18 was played in
  * January 2026 and is still filed under 2025.
  */
-export const onRequestGet: PagesFunction<Env> = async (context) => {
+export const onRequestGet: PagesFunction<Env> = (context) =>
+  cachedGet(context, () => readWeek(context));
+
+async function readWeek(
+  context: Parameters<PagesFunction<Env>>[0],
+): Promise<Response> {
   const season = Number(context.params.season);
   const week = Number(context.params.week);
   if (!Number.isInteger(season) || !Number.isInteger(week)) {
@@ -68,4 +73,4 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
       "Cache-Control": CACHE_CONTROL,
     },
   });
-};
+}
