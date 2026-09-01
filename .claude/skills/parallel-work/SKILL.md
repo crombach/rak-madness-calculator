@@ -30,7 +30,7 @@ One `package.json`, but two TypeScript roots. The root `tsconfig.json` excludes 
 - `public/` — static assets.
 - `src/hooks/` — one hook per file, and no hook imports another.
 - `src/utils/scoring/` — one concern per file, though `getPlayerScores.ts` sequences the others, so a change to the pipeline's shape still touches it.
-- `src/utils/` at the ends of its graph: `doNothing`, `getClasses`, `latestOnly`, `matching`, `plural`, `prefetchLink`, `readFileToBuffer`, `settingsStore`, and `warmImage`. Each imports nothing here, and nothing here imports it. `loadStoredPicks` and `getLeagueResults` sit at the top, imported by nothing here. The edges between: `loadStoredPicks` imports `buildSpreadsheetBuffer`, `contentType`, and `picksCache`. `getLeagueResults` imports `getLeagueInfo`, `debugLog`, and `espnCache`. `getLeagueInfo` imports `espnCache`. `espnCache` and `picksCache` both sit on `localStorageCache`. `buildSpreadsheetBuffer` imports `pickStatusFill` and `rangeWithPrefix`.
+- `src/utils/` at the ends of its graph: `doNothing`, `getClasses`, `latestOnly`, `matching`, `plural`, `readFileToBuffer`, `settingsStore`, and `warmImage`. Each imports nothing here, and nothing here imports it. `loadStoredPicks` and `getLeagueResults` sit at the top, imported by nothing here. The edges between: `loadStoredPicks` imports `buildSpreadsheetBuffer`, `contentType`, and `picksCache`. `getLeagueResults` imports `getLeagueInfo`, `debugLog`, and `espnCache`. `getLeagueInfo` imports `espnCache`. `espnCache` and `picksCache` both sit on `localStorageCache`. `buildSpreadsheetBuffer` imports `pickStatusFill` and `rangeWithPrefix`.
 
 ## Coupled, not safe
 
