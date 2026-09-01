@@ -38,10 +38,13 @@ import "./index.scss";
 // the first to paint arrives after that paint has committed to the fallback. Asking
 // for each one here fetches and decodes it up front instead.
 //
-// This is the only list. A `rel=prefetch` for the same files used to sit above it and
-// raced it, so every face downloaded twice: 75kB of the home page's transfer, for
-// nothing. Fetching is already what a decode does, so add a weight here and nowhere
-// else.
+// This is the only list of what to fetch. A `rel=prefetch` for the same files used
+// to sit above it and raced it, so every face downloaded twice: 75kB of the home
+// page's transfer, for nothing.
+//
+// A weight added here also needs its `@fontsource` stylesheet imported above, which
+// is what declares the face. `document.fonts.load` resolves quietly when no face
+// matches, so the half-done version of that edit fetches nothing and says nothing.
 //
 // DSEG14 Classic is not here. index.html declares that face and preloads it, and
 // `font-display: block` there holds the paint until it lands, so a decode asked
