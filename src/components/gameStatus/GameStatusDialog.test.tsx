@@ -15,7 +15,6 @@ import {
   upcomingGame as upcomingGameFixture,
 } from "../../utils/scoring/leagueResultFixtures";
 import { POLL_MS } from "../../hooks/useLiveGame";
-import { warmedImageUrls } from "../../utils/warmImage";
 
 vi.mock("../../utils/getLeagueResults");
 
@@ -157,17 +156,6 @@ describe("GameStatusDialog", () => {
     expect(
       screen.getByRole("progressbar", { name: "Fetching the game" }),
     ).toHaveAttribute("aria-busy", "true");
-
-    // Every mark the week could draw, asked for before any game is opened, so a
-    // scoreline never comes up and then fills in.
-    expect(warmedImageUrls()).toEqual([
-      "https://espn.com/OSU.png",
-      "https://espn.com/MICH.png",
-      "https://espn.com/BUF.png",
-      "https://espn.com/KC.png",
-      "https://espn.com/PHI.png",
-      "https://espn.com/DAL.png",
-    ]);
 
     // The game, not the column the cell that opened it was in, and the week's own
     // copy of it already up rather than a wait for the fetch that is out.

@@ -7,4 +7,7 @@ binding. The bracketed file names are Pages placeholders, part of the path.
   rather than written down, so a new season appears with its first upload
 - `[season]/[week].ts`: one week's xlsx as a download, ETag revalidated, because
   a corrected sheet keeps the URL the browser already cached
-- `env.ts`: the `Env` binding type and the shared 503 helper
+- `env.ts`: the `Env` type, the 503 helper, and `cachedGet`, which caches both
+  routes per colo at each route's own `Cache-Control`. Cloudflare caches a
+  Function's JSON or xlsx only when asked, so without it every request cost an
+  R2 round trip.

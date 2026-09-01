@@ -1,0 +1,16 @@
+# Cloudflare Pages reads this from the build root, which is where Vite copies
+# public/. Pages' own default is `max-age=14400, must-revalidate`, and the
+# must-revalidate is what makes the edge ask the origin on every hit: measured
+# `cf-cache-status: REVALIDATED` and 290-350ms TTFB on the chunk the first paint
+# waits for, when a cache hit would cost neither.
+#
+# Vite content-hashes every name under /assets/, so a changed file is a different
+# URL and immutable can never serve a stale one.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Not /fonts/. index.html names dseg14-classic-700.woff2 by a fixed path, so
+# immutable there would strand a replacement behind every reader's cache. A week
+# is long enough to be worth having and short enough to recover from.
+/fonts/*
+  Cache-Control: public, max-age=604800

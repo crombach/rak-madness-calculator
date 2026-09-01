@@ -19,7 +19,6 @@
 - `rangeWithPrefix`: labeled index arrays (C1, C2…)
 - `matching`: case-folded substring search, shared by both dialogs' item lists
 - `readFileToBuffer`: an upload's bytes
-- `prefetchLink`: prefetch, no unused-preload console warning
 - `warmImage`: an image into the browser's cache, once, where prefetch does not reach
 
 ## Subdirectories

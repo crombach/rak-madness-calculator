@@ -10,6 +10,7 @@ The data layer, plus the two page measurements. The first four mount once in
   the throttle
 - `useLiveGame`: one game, refetched every twenty seconds
 - `useArrival`: an outside value, taken as it arrives
+- `useWarmTeamLogos`: the week's logos, fetched before a game is opened
 - `useMediaQuery`: whether a media query holds, kept in step
 - `usePullToRefresh`: a phone's pull on a scrolling box, written to the root
 - `useExportScores`: the scores, as a workbook
