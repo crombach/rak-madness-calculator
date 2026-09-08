@@ -12,6 +12,7 @@ const ROUTES_SHOWN_AT_FIRST = 4;
 /** The alternatives, fewest games first, with the long tail folded away. */
 export default function AnalysisRoutes({
   title,
+  conjoined,
   routes,
   hiddenCount,
   // Off where every route asks the same of the tiebreaker, which the section
@@ -19,6 +20,7 @@ export default function AnalysisRoutes({
   showMondayNight,
 }: {
   title: string;
+  conjoined?: boolean;
   routes: Array<VictoryRoute>;
   hiddenCount: number;
   showMondayNight: boolean;
@@ -27,7 +29,7 @@ export default function AnalysisRoutes({
   const folded = routes.length - ROUTES_SHOWN_AT_FIRST;
   const shown = isExpanded ? routes : routes.slice(0, ROUTES_SHOWN_AT_FIRST);
   return (
-    <Section title={title}>
+    <Section conjoined={conjoined} title={title}>
       <ol className="analysis__routes">
         {shown.map((route) => (
           <li

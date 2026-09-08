@@ -51,10 +51,16 @@ function Lead({ result }: { result: PathsResult }) {
   );
 }
 
-function NeedsHelp({ games }: { games: Array<UncontrolledGame> }) {
+function NeedsHelp({
+  games,
+  conjoined,
+}: {
+  games: Array<UncontrolledGame>;
+  conjoined?: boolean;
+}) {
   if (games.length === 0) return null;
   return (
-    <Section title="Out of your hands">
+    <Section conjoined={conjoined} title="Out of your hands">
       <ul className="analysis__help">
         {games.map((game) => (
           <li key={game.label} className="analysis__line">
@@ -131,11 +137,28 @@ export default function AnalysisBody({
     );
   }
 
+  const hasMustWin = result.mustWin.length > 0;
+  const hasWaysThrough =
+    result.pool != null || (result.routes?.length ?? 0) > 0;
+  // A settled total says the games above decide the week, which is the opposite of
+  // one more thing to do. Only a range is a condition of its own.
+  const asksMondayNight = result.mondayNight?.kind === "range";
+
+  // A win needs every block below, and stacked they read as separate facts. So
+  // each block that has one above it opens with `AND`. The first never does.
+  const isConjoined = {
+    waysThrough: hasMustWin,
+    help: hasMustWin || hasWaysThrough,
+    mondayNight:
+      asksMondayNight &&
+      (hasMustWin || hasWaysThrough || result.needsHelp.length > 0),
+  };
+
   return (
     <>
       <Lead result={result} />
 
-      {result.mustWin.length > 0 && (
+      {hasMustWin && (
         <Section title="Must win">
           <Picks className="analysis__must-win" games={result.mustWin} />
         </Section>
@@ -143,7 +166,8 @@ export default function AnalysisBody({
 
       {result.pool && (
         <Section
-          title={`${result.mustWin.length > 0 ? "Then any" : "Any"} ${result.pool.choose} of these`}
+          conjoined={isConjoined.waysThrough}
+          title={`Any ${result.pool.choose} of these`}
         >
           <Picks games={result.pool.games} />
         </Section>
@@ -151,7 +175,8 @@ export default function AnalysisBody({
 
       {result.routes != null && result.routes.length > 0 && (
         <AnalysisRoutes
-          title={result.mustWin.length > 0 ? "Then one of" : "One of"}
+          conjoined={isConjoined.waysThrough}
+          title="One of"
           routes={result.routes}
           hiddenCount={result.hiddenRouteCount}
           showMondayNight={result.mondayNight == null}
@@ -166,8 +191,11 @@ export default function AnalysisBody({
         </p>
       )}
 
-      <NeedsHelp games={result.needsHelp} />
-      <MondayNight outlook={result.mondayNight} />
+      <NeedsHelp conjoined={isConjoined.help} games={result.needsHelp} />
+      <MondayNight
+        conjoined={isConjoined.mondayNight}
+        outlook={result.mondayNight}
+      />
     </>
   );
 }

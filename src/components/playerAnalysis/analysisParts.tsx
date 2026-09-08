@@ -6,13 +6,18 @@ export const NAMES = new Intl.ListFormat("en-US");
 
 export function Section({
   title,
+  // On where a block above this one is needed too. A gap between two blocks does
+  // not say that, and `AND` is what makes the two read as one condition.
+  conjoined,
   children,
 }: {
   title: string;
+  conjoined?: boolean;
   children: ReactNode;
 }) {
   return (
     <section className="analysis__section">
+      {conjoined && <p className="analysis__and">AND</p>}
       <h3 className="analysis__section-title">{title}</h3>
       {children}
     </section>

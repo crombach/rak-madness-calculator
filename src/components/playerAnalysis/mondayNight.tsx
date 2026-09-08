@@ -47,10 +47,16 @@ export function RouteMondayNight({ outlook }: { outlook: MondayNightRange }) {
   );
 }
 
-export function MondayNight({ outlook }: { outlook?: MondayNightOutlook }) {
+export function MondayNight({
+  outlook,
+  conjoined,
+}: {
+  outlook?: MondayNightOutlook;
+  conjoined?: boolean;
+}) {
   if (outlook == null || outlook.kind === "notNeeded") return null;
   return (
-    <Section title="MNF Points">
+    <Section conjoined={conjoined} title="MNF Points">
       <p className="analysis__line">{mondayNightSentence(outlook)}</p>
     </Section>
   );

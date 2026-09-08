@@ -41,6 +41,18 @@
   @include stacked(var(--rak-space-2));
 }
 
+// The word that holds two blocks together, set like the `AND` inside a route line
+// and inset to the picks' own text. It opens the block under it rather than
+// sitting between the two, so it reads as part of what it asks for.
+.analysis__and {
+  margin: 0;
+  padding-inline-start: var(--rak-pick-inset);
+  color: var(--rak-text-tertiary);
+  font-family: var(--rak-font-mono);
+  font-size: var(--rak-text-sm);
+  font-weight: var(--rak-weight-bold);
+}
+
 // A win and a knockout, in the hues the tables and the search already mark those
 // players with.
 .analysis__headline {

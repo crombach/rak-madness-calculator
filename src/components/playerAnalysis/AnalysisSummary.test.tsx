@@ -20,6 +20,12 @@ function under(title: string): Array<string> {
     .map((item) => item.textContent ?? "");
 }
 
+/** Whether the block a heading opens carries the word that conjoins it. */
+function isConjoined(title: string): boolean {
+  const heading = screen.getByRole("heading", { name: title });
+  return heading.previousElementSibling?.textContent === "AND";
+}
+
 /** The one tiebreaker range the cases below need: beat Rak on 45 points. */
 const RAK_BY_45 = {
   kind: "range" as const,
@@ -149,11 +155,38 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(under("Must win")).toEqual(["C4UGA -7"]);
-    expect(under("Then any 2 of these")).toEqual([
+    expect(under("Any 2 of these")).toEqual([
       "P2KC -3",
       "P9BUF +1",
       "P11SF -6",
     ]);
+  });
+
+  it("conjoins every block a win needs, and opens on the first", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      mustWin: [{ label: "C4", pick: "UGA -7" }],
+      pool: { choose: 2, games: [{ label: "P2", pick: "KC -3" }] },
+      needsHelp: [{ label: "P7", needsToMiss: ["Rak"] }],
+      mondayNight: RAK_BY_45,
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(isConjoined("Must win")).toBe(false);
+    expect(isConjoined("Any 2 of these")).toBe(true);
+    expect(isConjoined("Out of your hands")).toBe(true);
+    expect(isConjoined("MNF Points")).toBe(true);
+  });
+
+  it("leaves a settled tiebreaker unconjoined, since it asks for nothing", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      mustWin: [{ label: "C4", pick: "UGA -7" }],
+      mondayNight: { kind: "settled" },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(isConjoined("MNF Points")).toBe(false);
   });
 
   it("says something for a player the games can no longer separate", () => {
