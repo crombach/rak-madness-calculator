@@ -9,18 +9,23 @@ import { LeagueResult } from "../../types/LeagueResult";
 import { toLeagueResult } from "../getLeagueResults";
 
 /**
- * The size a real week runs to, taken from the shape `SkeletonTable` draws: six
- * college games and thirteen pro, played by a field past sixty.
+ * The size the worst week runs to, read off every week published to the picks API:
+ * six college games and sixteen pro, the twenty-two of Thanksgiving week, against a
+ * median of nineteen. The field is the eighty the pool is sized for, above the
+ * sixty-eight of its biggest week so far. Both cost the scoring a walk per game per
+ * player, so a benchmark is worth having at the top of the range.
  */
-export const BENCH_PLAYERS = 60;
+export const BENCH_PLAYERS = 80;
 export const BENCH_COLLEGE_GAMES = 6;
-export const BENCH_PRO_GAMES = 13;
+export const BENCH_PRO_GAMES = 16;
 
 /**
  * How far through the week the fixture stands. `kickoff` has every game ahead,
  * `sundayNight` leaves one live and one ahead, and `settled` is the finished week.
+ * A number leaves that many of the last games to be played, which is what the cost
+ * of working out the routes is set by.
  */
-export type WeekPhase = "kickoff" | "sundayNight" | "settled";
+export type WeekPhase = "kickoff" | "sundayNight" | "settled" | number;
 
 // Fixed, or a run cannot be compared against the one before it.
 const SEASON = 2024;
@@ -136,6 +141,14 @@ export async function benchPicksBuffer(): Promise<ArrayBuffer> {
 function statusAt(phase: WeekPhase, league: League, index: number): GameStatus {
   if (phase === "kickoff") return GameStatus.UPCOMING;
   if (phase === "settled") return GameStatus.FINAL;
+  if (typeof phase === "number") {
+    // Counted from the end, so the games left are the ones the week runs last.
+    const column =
+      league === League.COLLEGE ? index : BENCH_COLLEGE_GAMES + index;
+    return column >= BENCH_COLLEGE_GAMES + BENCH_PRO_GAMES - phase
+      ? GameStatus.UPCOMING
+      : GameStatus.FINAL;
+  }
   // One live and one ahead, which keeps the week open and the cache missing.
   if (league === League.PRO && index === BENCH_PRO_GAMES - 1) {
     return GameStatus.UPCOMING;

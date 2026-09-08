@@ -63,6 +63,12 @@ export type PlayerAnalysis =
       minimumWins: number;
       /** Whether the player only draws level at that count, leaving Monday night to decide. */
       needsMondayNight: boolean;
+      /**
+       * Games no floor above reaches a rival without, so every way of winning needs
+       * them. Proven from the same arithmetic, which can prove fewer of them than a
+       * full search finds but never names one wrongly.
+       */
+      mustWin: Array<RemainingPick>;
     }
   | {
       kind: "paths";

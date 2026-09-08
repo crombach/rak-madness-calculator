@@ -9,6 +9,7 @@ import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import { comparePlayerScoresOnMerit } from "./comparePlayerScores";
 import isWinnerDecided from "./isWinnerDecided";
 import remainingGames, {
+  PickDifference,
   pickDifference,
   RemainingGame,
 } from "./remainingGames";
@@ -16,8 +17,13 @@ import remainingGames, {
 /**
  * The most games still to play the routes are worked out for. Only the contested
  * ones are searched, and the search doubles per one, so this is a loose ceiling.
+ *
+ * Set by what a phone can hold the thread for. At fifteen the worst row of an
+ * eighty-player week is tens of milliseconds on a laptop, and every game past it
+ * doubles that. A week above it still names the must-win games, which cost a walk
+ * of the players rather than a search.
  */
-const MAX_SEARCHED_GAMES = 10;
+export const MAX_SEARCHED_GAMES = 15;
 
 /** How many routes are carried before the rest are only counted. */
 const MAX_LISTED_ROUTES = 8;
@@ -72,6 +78,26 @@ function subMasks(mask: number): Array<number> {
     if (subset === 0) break;
   }
   return masks;
+}
+
+/**
+ * The same subsets, bucketed by how many bits they hold and ascending inside a
+ * bucket, which is the order the search reads them in.
+ *
+ * Bucketed rather than sorted, because a week at the ceiling holds tens of
+ * thousands of subsets and sorting them costs more than reading them all does.
+ */
+function subMasksBySize(mask: number): Array<Array<number>> {
+  const bySize: Array<Array<number>> = Array.from(
+    { length: bitCount(mask) + 1 },
+    () => [],
+  );
+  for (const subset of subMasks(mask)) {
+    bySize[bitCount(subset)].push(subset);
+  }
+  // `subMasks` walks largest first, so every bucket comes out descending.
+  bySize.forEach((bucket) => bucket.reverse());
+  return bySize;
 }
 
 function gainsFor(
@@ -346,22 +372,72 @@ function fewestWinsToCatch(
   return onOwn > playerOnly ? undefined : onDifferent + onOwn;
 }
 
+/** One rival, as the arithmetic above reads them. */
+type Measured = { index: number; gap: number; against: PickGap };
+
+/** The same rival once one of the player's games is written off as lost. */
+function withoutGame(rival: Measured, difference: PickDifference): Measured {
+  const { opposed, playerOnly } = rival.against;
+  // An opposed game hands its point to the rival, so the gap grows by one and the
+  // swing left to close it shrinks. A game only the player picked is a point they
+  // simply do not take.
+  return difference === "opposed"
+    ? {
+        ...rival,
+        gap: rival.gap + 1,
+        against: { opposed: opposed - 1, playerOnly },
+      }
+    : { ...rival, against: { opposed, playerOnly: playerOnly - 1 } };
+}
+
+/**
+ * The games the player cannot afford to lose, on the arithmetic `minimumWins` runs.
+ *
+ * A game is here when losing it puts a rival out of reach. `fewestWinsToCatch` is
+ * a floor, optimistic about the rival, so a game it calls unaffordable really is
+ * one. It can miss a game a full search would catch, which is the safe direction:
+ * a week too big to search names must-win games it can prove and no others.
+ */
+function mustWinGames(
+  playerIndex: number,
+  rivals: Array<Measured>,
+  games: Array<RemainingGame>,
+): Array<RemainingPick> {
+  return games
+    .filter((game) =>
+      rivals.some((rival) => {
+        const difference = pickDifference(game, playerIndex, rival.index);
+        // The player left it blank, or the two picked the same team, so the game
+        // moves both scores together and cannot put anyone out of reach.
+        if (difference === "none") return false;
+        const lost = withoutGame(rival, difference);
+        return fewestWinsToCatch(lost.against, lost.gap, false) == null;
+      }),
+    )
+    .map((game) => ({
+      label: game.label,
+      pick: game.cells[playerIndex].text,
+    }));
+}
+
 function headline(
   player: PlayerScore,
   playerIndex: number,
   rivals: Array<{ player: PlayerScore; index: number }>,
   games: Array<RemainingGame>,
 ): PlayerAnalysis {
-  const counts = rivals.map((rival) => {
-    const gap = rival.player.score.total - player.score.total;
-    // Both targets read off one walk. They differ only by the point that clears a
-    // draw, never in what the two players have left to differ on.
-    const against = countAgainst(playerIndex, rival.index, games);
-    return {
-      toLevel: fewestWinsToCatch(against, gap, false),
-      toClear: fewestWinsToCatch(against, gap, true),
-    };
-  });
+  const measured: Array<Measured> = rivals.map((rival) => ({
+    index: rival.index,
+    gap: rival.player.score.total - player.score.total,
+    // Read once and handed on. The targets below and the must-win walk all ask
+    // the same question of what the two players have left to differ on.
+    against: countAgainst(playerIndex, rival.index, games),
+  }));
+  const counts = measured.map((rival) => ({
+    // The two targets differ only by the point that clears a draw.
+    toLevel: fewestWinsToCatch(rival.against, rival.gap, false),
+    toClear: fewestWinsToCatch(rival.against, rival.gap, true),
+  }));
 
   // `toLevel` is only absent where `applyKnockouts` has already knocked the player
   // out on total score, which `getPlayerAnalysis` answers before reaching here.
@@ -381,6 +457,7 @@ function headline(
     needsMondayNight: counts.some(
       (count) => count.toClear == null || count.toClear > minimumWins,
     ),
+    mustWin: mustWinGames(playerIndex, measured, games),
   };
 }
 
@@ -391,27 +468,29 @@ type Search = { minimal: Array<Route>; outrightAt?: number };
 /**
  * The sets of the player's own picks that take the week, each one minimal.
  *
- * `ordered` is read fewest games first, so a set holding a winner already found adds
- * nothing. It is still read while `outrightAt` is open, since a bigger set can win
+ * `ordered` is read fewest games first, a bucket at a time, so a set holding a
+ * winner already found adds nothing. It is still read while `outrightAt` is open, since a bigger set can win
  * outright where the one inside it only draws level.
  */
 function search(
-  ordered: Array<number>,
+  ordered: Array<Array<number>>,
   outcomeOf: (hits: number) => RouteOutcome,
 ): Search {
   const minimal: Array<Route> = [];
   let outrightAt: number | undefined;
-  for (const hits of ordered) {
-    const isRedundant = minimal.some(
-      (found) => (found.hits & hits) === found.hits,
-    );
-    if (isRedundant && outrightAt != null) continue;
-    const outcome = outcomeOf(hits);
-    if (outcome.verdict.kind === "loss") continue;
-    if (outcome.verdict.kind === "win" && outrightAt == null) {
-      outrightAt = bitCount(hits);
+  for (const [size, bucket] of ordered.entries()) {
+    for (const hits of bucket) {
+      const isRedundant = minimal.some(
+        (found) => (found.hits & hits) === found.hits,
+      );
+      if (isRedundant && outrightAt != null) continue;
+      const outcome = outcomeOf(hits);
+      if (outcome.verdict.kind === "loss") continue;
+      if (outcome.verdict.kind === "win" && outrightAt == null) {
+        outrightAt = size;
+      }
+      if (!isRedundant) minimal.push({ hits, outcome });
     }
-    if (!isRedundant) minimal.push({ hits, outcome });
   }
   return { minimal, outrightAt };
 }
@@ -632,20 +711,6 @@ export default function getPlayerAnalysis(
     gains: gainsFor(rival.index, contested, coverers),
   }));
   const isMondayNightSettled = scores.tiebreaker != null;
-  const verdicts = new Map<number, ReturnType<typeof evaluate>>();
-  const read = (outcome: number) => {
-    const held = verdicts.get(outcome);
-    if (held != null) return held;
-    const verdict = evaluate(
-      player,
-      gains,
-      scoredRivals,
-      outcome,
-      isMondayNightSettled,
-    );
-    verdicts.set(outcome, verdict);
-    return verdict;
-  };
 
   let mineMask = 0;
   let luckMask = 0;
@@ -654,10 +719,25 @@ export default function getPlayerAnalysis(
     else luckMask |= 1 << bit;
   });
 
-  const ordered = subMasks(mineMask)
-    .map((mask) => ({ mask, bits: bitCount(mask) }))
-    .sort((a, b) => a.bits - b.bits || a.mask - b.mask)
-    .map((counted) => counted.mask);
+  // A player who picked every open game has one way each set of their picks can
+  // land, so every outcome is read once and holding them costs more than it saves.
+  const verdicts =
+    luckMask === 0 ? undefined : new Map<number, ReturnType<typeof evaluate>>();
+  const read = (outcome: number) => {
+    const held = verdicts?.get(outcome);
+    if (held != null) return held;
+    const verdict = evaluate(
+      player,
+      gains,
+      scoredRivals,
+      outcome,
+      isMondayNightSettled,
+    );
+    verdicts?.set(outcome, verdict);
+    return verdict;
+  };
+
+  const ordered = subMasksBySize(mineMask);
   const luckOutcomes = subMasks(luckMask);
 
   // Held against the player first, so a route that survives every way the games

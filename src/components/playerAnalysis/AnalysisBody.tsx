@@ -1,5 +1,6 @@
 import { PlayerAnalysis, UncontrolledGame } from "../../types/PlayerAnalysis";
 import plural from "../../utils/plural";
+import { MAX_SEARCHED_GAMES } from "../../utils/scoring/getPlayerAnalysis";
 import { Message, NAMES, Picks, Section } from "./analysisParts";
 import { MondayNight } from "./mondayNight";
 import AnalysisRoutes from "./AnalysisRoutes";
@@ -113,9 +114,17 @@ export default function AnalysisBody({
               : undefined,
           ]}
         />
-        {/* Why there is nothing below it, in the place the paths count theirs. */}
+
+        {/* The games the floor proves, which a week this size can still name. */}
+        {result.mustWin.length > 0 && (
+          <Section title="Must win">
+            <Picks className="analysis__must-win" games={result.mustWin} />
+          </Section>
+        )}
+
+        {/* Why there is nothing more below it, in the place the paths count theirs. */}
         <p className="analysis__note">
-          Detailed paths are worked out once ten games are left.
+          {`Every path to victory is worked out once ${MAX_SEARCHED_GAMES} games are left.`}
         </p>
       </>
     );

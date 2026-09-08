@@ -571,11 +571,11 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
     );
   }
 
-  it("gives a floor rather than routes above ten open games", () => {
-    // Eleven games the two picked differently, Alice five points back. Each one
-    // she takes is one Bob does not, so eight of them draw her level and a ninth
-    // takes it outright.
-    const count = 11;
+  it("gives a floor rather than routes above fifteen open games", () => {
+    // Sixteen games the two picked differently, Alice six points back. Each one
+    // she takes is one Bob does not, so eleven of them draw her level and a
+    // twelfth takes it outright.
+    const count = 16;
     const scores = week([
       player({
         name: "Alice",
@@ -584,7 +584,7 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
       }),
       player({
         name: "Bob",
-        total: 5,
+        total: 6,
         pro: opposed(count, "B", "+3"),
       }),
     ]);
@@ -592,36 +592,56 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "headline",
       player: "Alice",
-      remainingPickCount: 11,
-      minimumWins: 8,
+      remainingPickCount: 16,
+      minimumWins: 11,
       needsMondayNight: true,
+      // Eleven of sixteen is slack enough that no single game is unaffordable.
+      mustWin: [],
     });
   });
 
   it("leaves Monday night out where winning enough clears every rival", () => {
-    // The same eleven games with Alice four points back. Eight of them put her on
-    // eight and Bob on seven, so the count that draws her level is the count that
-    // takes the week, and the guesses never come into it.
-    const count = 11;
+    // The same sixteen games with Alice five points back. Eleven of them put her
+    // on eleven and Bob on ten, so the count that draws her level is the count
+    // that takes the week, and the guesses never come into it.
+    const count = 16;
     const scores = week([
       player({ name: "Alice", total: 0, pro: opposed(count, "A", "-3") }),
-      player({ name: "Bob", total: 4, pro: opposed(count, "B", "+3") }),
+      player({ name: "Bob", total: 5, pro: opposed(count, "B", "+3") }),
     ]);
 
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "headline",
       player: "Alice",
-      remainingPickCount: 11,
-      minimumWins: 8,
+      remainingPickCount: 16,
+      minimumWins: 11,
       needsMondayNight: false,
+      mustWin: [],
     });
   });
 
-  it("counts the games left, whether or not they are in dispute", () => {
-    // Eleven games left, ten of them picked the same way by both. Only one can
-    // change the order, and a week this far out still gives a floor rather than
-    // routes.
-    const agreed = Array.from({ length: 10 }, (_, index) =>
+  it("names the must-win games on a week too big to search", () => {
+    // Sixteen games the two picked differently, Alice sixteen points back. Every
+    // one of them is a two-point swing and she needs all thirty-two, so losing
+    // any single game puts Bob out of reach.
+    const count = 16;
+    const scores = week([
+      player({ name: "Alice", total: 0, pro: opposed(count, "A", "-3") }),
+      player({ name: "Bob", total: 16, pro: opposed(count, "B", "+3") }),
+    ]);
+
+    const result = getPlayerAnalysis(scores, "Alice");
+    expect(result?.kind).toBe("headline");
+    expect(
+      labels((result as { mustWin: Array<{ label: string }> }).mustWin),
+    ).toEqual(Array.from({ length: count }, (_, index) => `P${index + 1}`));
+  });
+
+  it("never names a game the player cannot lose ground in", () => {
+    // Sixteen games left and Alice a point back, fifteen of them picked the same
+    // way by both. Only the one they differ in can change the order, and she has
+    // to take it, so the games they agree on are named by nothing.
+    const agreed = Array.from({ length: 15 }, (_, index) =>
       pick(`S${index} -3`),
     );
     const scores = week([
@@ -629,18 +649,22 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
       player({ name: "Bob", total: 1, pro: [...agreed, pick("DEN +3")] }),
     ]);
 
-    expect(getPlayerAnalysis(scores, "Alice")?.kind).toBe("headline");
+    const result = getPlayerAnalysis(scores, "Alice");
+    expect(result?.kind).toBe("headline");
+    expect(
+      labels((result as { mustWin: Array<{ label: string }> }).mustWin),
+    ).toEqual(["P16"]);
   });
 
-  it("works the routes out at ten", () => {
-    const count = 10;
+  it("works the routes out at fifteen", () => {
+    const count = 15;
     const scores = week([
       player({ name: "Alice", total: 0, pro: opposed(count, "A", "-3") }),
       player({ name: "Bob", total: 0, pro: opposed(count, "B", "+3") }),
     ]);
 
     const result = paths(getPlayerAnalysis(scores, "Alice"));
-    expect(result.pool?.choose).toBe(5);
-    expect(result.pool?.games).toHaveLength(10);
+    expect(result.pool?.choose).toBe(8);
+    expect(result.pool?.games).toHaveLength(15);
   });
 });

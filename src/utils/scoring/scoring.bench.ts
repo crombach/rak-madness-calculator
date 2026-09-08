@@ -8,7 +8,7 @@ import {
   benchResults,
   WeekPhase,
 } from "./benchFixtures";
-import getPlayerAnalysis from "./getPlayerAnalysis";
+import getPlayerAnalysis, { MAX_SEARCHED_GAMES } from "./getPlayerAnalysis";
 import { getPlayerScores } from "./getPlayerScores";
 import getTiebreakerScore from "./getTiebreakerScore";
 import isEveryGameSettled from "./isEveryGameSettled";
@@ -48,6 +48,7 @@ function weekAt(phase: WeekPhase) {
 const kickoff = weekAt("kickoff");
 const sundayNight = weekAt("sundayNight");
 const settled = weekAt("settled");
+const atSearchLimit = weekAt(MAX_SEARCHED_GAMES);
 
 describe("getPlayerScores, end to end", () => {
   const run = (phase: WeekPhase) => async () => {
@@ -100,5 +101,18 @@ describe("getPlayerAnalysis", () => {
   });
   bench("settled", () => {
     getPlayerAnalysis(settled.scores, chased);
+  });
+  // The dialog's ceiling: as many games open as the routes are worked out for, so
+  // this is the slowest answer a reader can ask for, and what moving
+  // `MAX_SEARCHED_GAMES` is measured on.
+  bench("at the search limit", () => {
+    getPlayerAnalysis(
+      atSearchLimit.scores,
+      atSearchLimit.scores.scores[10].name,
+    );
+  });
+  // A game more than the limit, which answers off a walk of the players instead.
+  bench("above the search limit", () => {
+    getPlayerAnalysis(kickoff.scores, kickoff.scores.scores[10].name);
   });
 });

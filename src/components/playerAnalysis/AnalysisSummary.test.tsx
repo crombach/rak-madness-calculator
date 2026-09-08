@@ -1,6 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PlayerAnalysis, VictoryRoute } from "../../types/PlayerAnalysis";
+import { MAX_SEARCHED_GAMES } from "../../utils/scoring/getPlayerAnalysis";
 import AnalysisSummary from "./AnalysisSummary";
 
 /** Routes of one game each, all different, so only their number matters. */
@@ -101,6 +102,7 @@ describe("AnalysisSummary", () => {
       remainingPickCount: 13,
       minimumWins: 6,
       needsMondayNight: true,
+      mustWin: [],
     };
     render(<AnalysisSummary result={result} />);
 
@@ -109,11 +111,26 @@ describe("AnalysisSummary", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/MNF Points tiebreaker/)).toBeInTheDocument();
     const why = screen.getByText(
-      "Detailed paths are worked out once ten games are left.",
+      `Every path to victory is worked out once ${MAX_SEARCHED_GAMES} games are left.`,
     );
     expect(why).toBe(
       document.querySelector(".analysis__body")?.lastElementChild,
     );
+  });
+
+  it("names the must-win games a week too big to search can prove", () => {
+    const result: PlayerAnalysis = {
+      kind: "headline",
+      player: "Alice",
+      remainingPickCount: 18,
+      minimumWins: 18,
+      needsMondayNight: false,
+      mustWin: [{ label: "P3", pick: "KC -7" }],
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(screen.getByText("Must win")).toBeInTheDocument();
+    expect(screen.getByText("KC -7")).toBeInTheDocument();
   });
 
   it("lists the must-win games and the pool behind them", () => {
