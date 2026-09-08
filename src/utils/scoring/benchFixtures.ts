@@ -9,11 +9,14 @@ import { LeagueResult } from "../../types/LeagueResult";
 import { toLeagueResult } from "../getLeagueResults";
 
 /**
- * The size the worst week runs to, read off every week published to the picks API:
- * six college games and sixteen pro, the twenty-two of Thanksgiving week, against a
- * median of nineteen. The field is the eighty the pool is sized for, above the
- * sixty-eight of its biggest week so far. Both cost the scoring a walk per game per
- * player, so a benchmark is worth having at the top of the range.
+ * The size of the worst week, since every game and every player costs the scoring
+ * another walk and a benchmark is worth having at the top of the range.
+ *
+ * Read in September 2026 off the 54 weeks `GET /api/picks/<season>/<week>` served
+ * for 2023 to 2025, counting the `C` and `P` columns of each: six college games and
+ * sixteen pro, the twenty-two of Thanksgiving week, against a median of nineteen
+ * and a field topping out at sixty-eight. Re-read them the same way to move these,
+ * and keep the field at the eighty the pool is sized for.
  */
 export const BENCH_PLAYERS = 80;
 export const BENCH_COLLEGE_GAMES = 6;

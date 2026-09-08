@@ -129,8 +129,7 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(screen.getByText("Must win")).toBeInTheDocument();
-    expect(screen.getByText("KC -7")).toBeInTheDocument();
+    expect(under("Must win")).toEqual(["P3KC -7"]);
   });
 
   it("lists the must-win games and the pool behind them", () => {

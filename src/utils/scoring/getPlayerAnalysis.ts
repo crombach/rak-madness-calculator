@@ -18,10 +18,11 @@ import remainingGames, {
  * The most games still to play the routes are worked out for. Only the contested
  * ones are searched, and the search doubles per one, so this is a loose ceiling.
  *
- * Set by what a phone can hold the thread for. At fifteen the worst row of an
- * eighty-player week is tens of milliseconds on a laptop, and every game past it
- * doubles that. A week above it still names the must-win games, which cost a walk
- * of the players rather than a search.
+ * Set by what a phone can hold the thread for, since the search holds it while it
+ * runs. `scoring.bench.ts` measures a move of this number: at fifteen its worst
+ * week answers in about 50ms on an M-series laptop, fourteen in 24ms, and every
+ * game added from here roughly doubles the last. A week above the ceiling still
+ * names the must-win games, which cost a walk of the players rather than a search.
  */
 export const MAX_SEARCHED_GAMES = 15;
 
