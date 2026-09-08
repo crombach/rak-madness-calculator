@@ -1,6 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { PlayerAnalysis, VictoryRoute } from "../../types/PlayerAnalysis";
+import { MAX_SEARCHED_GAMES } from "../../utils/scoring/getPlayerAnalysis";
 import AnalysisSummary from "./AnalysisSummary";
 
 /** Routes of one game each, all different, so only their number matters. */
@@ -11,20 +12,25 @@ function routesOf(count: number): Array<VictoryRoute> {
   }));
 }
 
+/** The heading a block opens with, whether or not `And` conjoins it. */
+function blockHeading(title: string): HTMLElement {
+  return screen.getByRole("heading", { name: new RegExp(`^(And )?${title}$`) });
+}
+
 /** The picks under a heading, as the chips read on screen. */
 function under(title: string): Array<string> {
-  const heading = screen.getByRole("heading", { name: title });
-  return within(heading.parentElement as HTMLElement)
+  return within(blockHeading(title).parentElement as HTMLElement)
     .getAllByRole("listitem")
     .map((item) => item.textContent ?? "");
 }
 
-/** The one tiebreaker range the cases below need: beat Rak on 45 points. */
-const RAK_BY_45 = {
-  kind: "range" as const,
-  max: 45,
-  rivals: ["Rak"],
-};
+/** Whether a block's heading carries the word that conjoins it to the one above. */
+function isConjoined(title: string): boolean {
+  return blockHeading(title).firstElementChild?.textContent === "And";
+}
+
+/** The one tiebreaker range the cases below need: a week won at 45 or under. */
+const RAK_BY_45 = { kind: "range" as const, max: 45 };
 
 const base = {
   kind: "paths" as const,
@@ -74,7 +80,7 @@ describe("AnalysisSummary", () => {
     // The header calls Alice the winner without naming the week, so this does.
     expect(screen.getByText("Alice has won week 12.")).toBeInTheDocument();
     expect(
-      screen.getByText("Nothing still to be played can take it away."),
+      screen.getByText("No other player can surpass them."),
     ).toBeInTheDocument();
   });
 
@@ -101,6 +107,7 @@ describe("AnalysisSummary", () => {
       remainingPickCount: 13,
       minimumWins: 6,
       needsMondayNight: true,
+      mustWin: [],
     };
     render(<AnalysisSummary result={result} />);
 
@@ -109,11 +116,25 @@ describe("AnalysisSummary", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/MNF Points tiebreaker/)).toBeInTheDocument();
     const why = screen.getByText(
-      "Detailed paths are worked out once ten games are left.",
+      `Detailed analysis is performed once ${MAX_SEARCHED_GAMES} games remain.`,
     );
     expect(why).toBe(
       document.querySelector(".analysis__body")?.lastElementChild,
     );
+  });
+
+  it("names the must-win games a week too big to search can prove", () => {
+    const result: PlayerAnalysis = {
+      kind: "headline",
+      player: "Alice",
+      remainingPickCount: 18,
+      minimumWins: 18,
+      needsMondayNight: false,
+      mustWin: [{ label: "P3", pick: "KC -7" }],
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(under("Must win")).toEqual(["P3KC -7"]);
   });
 
   it("lists the must-win games and the pool behind them", () => {
@@ -133,11 +154,34 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(under("Must win")).toEqual(["C4UGA -7"]);
-    expect(under("Then any 2 of these")).toEqual([
-      "P2KC -3",
-      "P9BUF +1",
-      "P11SF -6",
-    ]);
+    expect(under("Any 2 of")).toEqual(["P2KC -3", "P9BUF +1", "P11SF -6"]);
+  });
+
+  it("conjoins every block a win needs, and opens on the first", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      mustWin: [{ label: "C4", pick: "UGA -7" }],
+      pool: { choose: 2, games: [{ label: "P2", pick: "KC -3" }] },
+      needsHelp: [{ label: "P7", needsToMiss: ["Rak"] }],
+      mondayNight: RAK_BY_45,
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(isConjoined("Must win")).toBe(false);
+    expect(isConjoined("Any 2 of")).toBe(true);
+    expect(isConjoined("Out of your hands")).toBe(true);
+    expect(isConjoined("MNF Points ≤ 45")).toBe(true);
+  });
+
+  it("leaves a settled tiebreaker unconjoined, since it asks for nothing", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      mustWin: [{ label: "C4", pick: "UGA -7" }],
+      mondayNight: { kind: "settled" },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(isConjoined("MNF Points")).toBe(false);
   });
 
   it("says something for a player the games can no longer separate", () => {
@@ -154,22 +198,16 @@ describe("AnalysisSummary", () => {
     ).toBeInTheDocument();
   });
 
-  it("writes a bounded Monday night range as a sentence", () => {
+  it("sets a bounded Monday night range as the block's whole title", () => {
     const result: PlayerAnalysis = {
       ...base,
       mustWin: [{ label: "P1", pick: "KC -3" }],
-      mondayNight: {
-        kind: "range",
-        min: 38,
-        max: 44,
-        rivals: ["Rak", "Bill"],
-      },
+      mondayNight: { kind: "range", min: 38, max: 44 },
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(
-      screen.getByText("38 ≤ MNF Points ≤ 44 to beat Rak and Bill."),
-    ).toBeInTheDocument();
+    const heading = blockHeading("38 ≤ MNF Points ≤ 44");
+    expect(heading.parentElement?.childElementCount).toBe(1);
   });
 
   it("writes an open-ended range from the end it is bounded on", () => {
@@ -180,9 +218,7 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(
-      screen.getByText("MNF Points ≤ 45 to beat Rak."),
-    ).toBeInTheDocument();
+    expect(blockHeading("MNF Points ≤ 45")).toBeInTheDocument();
   });
 
   it("says what it takes to win without the tiebreaker at all", () => {
@@ -195,7 +231,9 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(
-      screen.getByText("Winning 3 games takes it outright. Otherwise:"),
+      screen.getByText(
+        "Alice wins the week outright with 3 game wins. Otherwise:",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -224,7 +262,9 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(screen.queryByText(/takes it outright/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/wins the week outright with \d+ game wins?/),
+    ).not.toBeInTheDocument();
   });
 
   it("names the player standing where nothing takes the week outright", () => {
@@ -236,7 +276,7 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(
-      screen.getByText("Alice is still live to win the week. What it takes:"),
+      screen.getByText("Alice can still win the week. What it takes:"),
     ).toBeInTheDocument();
   });
 
@@ -267,7 +307,7 @@ describe("AnalysisSummary", () => {
             { label: "P2", pick: "BUF -1" },
             { label: "P3", pick: "SF -6" },
           ],
-          mondayNight: { kind: "range", max: 32, rivals: ["Rak"] },
+          mondayNight: { kind: "range", max: 32 },
         },
       ],
     };
@@ -278,7 +318,7 @@ describe("AnalysisSummary", () => {
     const routes = [...document.querySelectorAll(".analysis__route")];
     expect(routes.map((route) => route.textContent)).toEqual([
       "P1KC -3",
-      "P2BUF -1P3SF -6ANDMNF Points ≤ 32TO BEAT Rak",
+      "P2BUF -1P3SF -6ANDMNF Points ≤ 32",
     ]);
   });
 
@@ -314,25 +354,8 @@ describe("AnalysisSummary", () => {
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 
-  it("names every player a route's total has to beat", () => {
-    const result: PlayerAnalysis = {
-      ...base,
-      routes: [
-        {
-          games: [{ label: "P1", pick: "KC -3" }],
-          mondayNight: { kind: "range", min: 30, rivals: ["Rak", "Bill"] },
-        },
-      ],
-    };
-    render(<AnalysisSummary result={result} />);
-
-    expect(document.querySelector(".analysis__route")?.textContent).toBe(
-      "P1KC -3ANDMNF Points ≥ 30TO BEAT Rak, Bill",
-    );
-  });
-
   it("states a total every route shares once, not on each of them", () => {
-    const shared = { kind: "range" as const, max: 32, rivals: ["Rak"] };
+    const shared = { kind: "range" as const, max: 32 };
     const result: PlayerAnalysis = {
       ...base,
       routes: [
@@ -348,9 +371,7 @@ describe("AnalysisSummary", () => {
       "P1KC -3",
       "P2BUF -1",
     ]);
-    expect(
-      screen.getByText("MNF Points ≤ 32 to beat Rak."),
-    ).toBeInTheDocument();
+    expect(blockHeading("MNF Points ≤ 32")).toBeInTheDocument();
   });
 
   it("holds four routes open and folds the rest behind a button", () => {

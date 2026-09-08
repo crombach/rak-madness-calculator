@@ -1,5 +1,6 @@
 import { PlayerAnalysis, UncontrolledGame } from "../../types/PlayerAnalysis";
 import plural from "../../utils/plural";
+import { MAX_SEARCHED_GAMES } from "../../utils/scoring/getPlayerAnalysis";
 import { Message, NAMES, Picks, Section } from "./analysisParts";
 import { MondayNight } from "./mondayNight";
 import AnalysisRoutes from "./AnalysisRoutes";
@@ -36,13 +37,13 @@ function Lead({ result }: { result: PathsResult }) {
       ? "Takes the week outright, whatever the MNF Points come to."
       : // Only worth saying where it asks more than the routes below already do.
         result.outrightAt != null && result.outrightAt > fewestWins(result)
-        ? `Winning ${plural(result.outrightAt, "game")} takes it outright.`
+        ? `${result.player} wins the week outright with ${plural(result.outrightAt, "game win")}.`
         : null;
   // Nothing below to lead into, and the closing sentence there is the answer.
   if (outright == null && !hasGames(result)) return null;
   return (
     <p className="analysis__line">
-      {outright ?? `${result.player} is still live to win the week.`}
+      {outright ?? `${result.player} can still win the week.`}
       {/* Hands over to the sections under it, which ask for less. */}
       {hasGames(result) &&
         (outright != null ? " Otherwise:" : " What it takes:")}
@@ -50,10 +51,16 @@ function Lead({ result }: { result: PathsResult }) {
   );
 }
 
-function NeedsHelp({ games }: { games: Array<UncontrolledGame> }) {
+function NeedsHelp({
+  games,
+  conjoined,
+}: {
+  games: Array<UncontrolledGame>;
+  conjoined?: boolean;
+}) {
   if (games.length === 0) return null;
   return (
-    <Section title="Out of your hands">
+    <Section conjoined={conjoined} title="Out of your hands">
       <ul className="analysis__help">
         {games.map((game) => (
           <li key={game.label} className="analysis__line">
@@ -94,9 +101,7 @@ export default function AnalysisBody({
       <Message
         lines={[
           `${result.player} has won ${weekNumber != null ? `week ${weekNumber}` : "the week"}.`,
-          isEveryGameSettled
-            ? undefined
-            : "Nothing still to be played can take it away.",
+          isEveryGameSettled ? undefined : "No other player can surpass them.",
         ]}
       />
     );
@@ -109,23 +114,49 @@ export default function AnalysisBody({
           lines={[
             `${result.player} needs at least ${result.minimumWins} of their ${result.remainingPickCount} remaining picks.`,
             result.needsMondayNight
-              ? "That is only enough to draw level, so the MNF Points tiebreaker would still decide it."
+              ? "That is only enough to tie, so the MNF Points tiebreaker would still decide it."
               : undefined,
           ]}
         />
-        {/* Why there is nothing below it, in the place the paths count theirs. */}
+
+        {/* Every must-win game there is, or none: `provenMustWin` holds nothing
+            back, and answers empty where it can prove nothing. */}
+        {result.mustWin.length > 0 && (
+          <Section title="Must win">
+            <Picks className="analysis__must-win" games={result.mustWin} />
+          </Section>
+        )}
+
+        {/* Why there is nothing more below it, in the place the paths count theirs. */}
         <p className="analysis__note">
-          Detailed paths are worked out once ten games are left.
+          {`Detailed analysis is performed once ${MAX_SEARCHED_GAMES} games remain.`}
         </p>
       </>
     );
   }
 
+  const hasMustWin = result.mustWin.length > 0;
+  const hasWaysThrough =
+    result.pool != null || (result.routes?.length ?? 0) > 0;
+  // A settled total says the games above decide the week, which is the opposite of
+  // one more thing to do. Only a range is a condition of its own.
+  const asksMondayNight = result.mondayNight?.kind === "range";
+
+  // A win needs every block below, and stacked they read as separate facts. So
+  // each block that has one above it opens with `AND`. The first never does.
+  const isConjoined = {
+    waysThrough: hasMustWin,
+    help: hasMustWin || hasWaysThrough,
+    mondayNight:
+      asksMondayNight &&
+      (hasMustWin || hasWaysThrough || result.needsHelp.length > 0),
+  };
+
   return (
     <>
       <Lead result={result} />
 
-      {result.mustWin.length > 0 && (
+      {hasMustWin && (
         <Section title="Must win">
           <Picks className="analysis__must-win" games={result.mustWin} />
         </Section>
@@ -133,7 +164,8 @@ export default function AnalysisBody({
 
       {result.pool && (
         <Section
-          title={`${result.mustWin.length > 0 ? "Then any" : "Any"} ${result.pool.choose} of these`}
+          conjoined={isConjoined.waysThrough}
+          title={`Any ${result.pool.choose} of`}
         >
           <Picks games={result.pool.games} />
         </Section>
@@ -141,7 +173,8 @@ export default function AnalysisBody({
 
       {result.routes != null && result.routes.length > 0 && (
         <AnalysisRoutes
-          title={result.mustWin.length > 0 ? "Then one of" : "One of"}
+          conjoined={isConjoined.waysThrough}
+          title="One of"
           routes={result.routes}
           hiddenCount={result.hiddenRouteCount}
           showMondayNight={result.mondayNight == null}
@@ -156,8 +189,11 @@ export default function AnalysisBody({
         </p>
       )}
 
-      <NeedsHelp games={result.needsHelp} />
-      <MondayNight outlook={result.mondayNight} />
+      <NeedsHelp conjoined={isConjoined.help} games={result.needsHelp} />
+      <MondayNight
+        conjoined={isConjoined.mondayNight}
+        outlook={result.mondayNight}
+      />
     </>
   );
 }

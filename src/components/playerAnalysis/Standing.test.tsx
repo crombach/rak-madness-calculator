@@ -42,13 +42,13 @@ describe("Standing", () => {
   it("counts the player picked back to the leader", () => {
     render(<Standing scores={scores} playerName="Alice" />);
 
-    expect(standingText()).toBe("2 points behind Rak · 1 game still to play");
+    expect(standingText()).toBe("2 points behind Rak · 1 game remaining");
   });
 
   it("ties the player picked to the lead where they hold it", () => {
     render(<Standing scores={scores} playerName="Rak" />);
 
-    expect(standingText()).toBe("Tied for the lead · 1 game still to play");
+    expect(standingText()).toBe("Tied for the lead · 1 game remaining");
   });
 
   /** The same week with nothing left open, which is a week that has a winner. */
@@ -114,7 +114,7 @@ describe("Standing", () => {
       />,
     );
 
-    expect(standingText()).toBe("Winner · 1 game still to play");
+    expect(standingText()).toBe("Winner · 1 game remaining");
   });
 
   it("ties a clinched player for the win where the top is shared", () => {
@@ -129,7 +129,7 @@ describe("Standing", () => {
       />,
     );
 
-    expect(standingText()).toBe("Tied for the win · 1 game still to play");
+    expect(standingText()).toBe("Tied for the win · 1 game remaining");
   });
 
   it("ignores a clinch that answers for a different player", () => {
@@ -141,7 +141,7 @@ describe("Standing", () => {
       />,
     );
 
-    expect(standingText()).toBe("Tied for the lead · 1 game still to play");
+    expect(standingText()).toBe("Tied for the lead · 1 game remaining");
   });
 
   /** The same week with one player out of it. */
@@ -160,7 +160,7 @@ describe("Standing", () => {
       <Standing scores={knockedOut(scores, "Alice")} playerName="Alice" />,
     );
 
-    expect(standingText()).toBe("Knocked out · 1 game still to play");
+    expect(standingText()).toBe("Knocked out · 1 game remaining");
   });
 
   it("colors a win and a knockout, and leaves an open standing plain", () => {
@@ -244,6 +244,6 @@ describe("Standing", () => {
     };
     render(<Standing scores={fresh} playerName="Rak" />);
 
-    expect(standingText()).toBe("No finished games · 2 games still to play");
+    expect(standingText()).toBe("No finished games · 2 games remaining");
   });
 });

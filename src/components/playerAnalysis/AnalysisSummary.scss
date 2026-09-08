@@ -115,6 +115,14 @@
   color: var(--rak-text);
 }
 
+// The one word saying a reader needs both sides of it, over a title and inside a
+// route alike. Set in the blue the app points with, so it carries what it says
+// against the tertiary ink of the labels it sits among. After those, since it
+// overrules the color they set.
+.analysis__and {
+  color: var(--rak-attention-ink);
+}
+
 .analysis__routes {
   @include stacked(var(--rak-space-2));
   margin: 0;

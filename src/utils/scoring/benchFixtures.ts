@@ -9,18 +9,26 @@ import { LeagueResult } from "../../types/LeagueResult";
 import { toLeagueResult } from "../getLeagueResults";
 
 /**
- * The size a real week runs to, taken from the shape `SkeletonTable` draws: six
- * college games and thirteen pro, played by a field past sixty.
+ * The size of the worst week, since every game and every player costs the scoring
+ * another walk and a benchmark is worth having at the top of the range.
+ *
+ * Read in September 2026 off the 54 weeks `GET /api/picks/<season>/<week>` served
+ * for 2023 to 2025, counting the `C` and `P` columns of each: six college games and
+ * sixteen pro, the twenty-two of Thanksgiving week, against a median of nineteen
+ * and a field topping out at sixty-eight. Re-read them the same way to move these,
+ * and keep the field at the eighty the pool is sized for.
  */
-export const BENCH_PLAYERS = 60;
+export const BENCH_PLAYERS = 80;
 export const BENCH_COLLEGE_GAMES = 6;
-export const BENCH_PRO_GAMES = 13;
+export const BENCH_PRO_GAMES = 16;
 
 /**
  * How far through the week the fixture stands. `kickoff` has every game ahead,
  * `sundayNight` leaves one live and one ahead, and `settled` is the finished week.
+ * A number leaves that many of the last games to be played, which is what the cost
+ * of working out the routes is set by.
  */
-export type WeekPhase = "kickoff" | "sundayNight" | "settled";
+export type WeekPhase = "kickoff" | "sundayNight" | "settled" | number;
 
 // Fixed, or a run cannot be compared against the one before it.
 const SEASON = 2024;
@@ -136,6 +144,14 @@ export async function benchPicksBuffer(): Promise<ArrayBuffer> {
 function statusAt(phase: WeekPhase, league: League, index: number): GameStatus {
   if (phase === "kickoff") return GameStatus.UPCOMING;
   if (phase === "settled") return GameStatus.FINAL;
+  if (typeof phase === "number") {
+    // Counted from the end, so the games left are the ones the week runs last.
+    const column =
+      league === League.COLLEGE ? index : BENCH_COLLEGE_GAMES + index;
+    return column >= BENCH_COLLEGE_GAMES + BENCH_PRO_GAMES - phase
+      ? GameStatus.UPCOMING
+      : GameStatus.FINAL;
+  }
   // One live and one ahead, which keeps the week open and the cache missing.
   if (league === League.PRO && index === BENCH_PRO_GAMES - 1) {
     return GameStatus.UPCOMING;
