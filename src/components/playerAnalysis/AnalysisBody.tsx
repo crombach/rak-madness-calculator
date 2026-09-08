@@ -110,7 +110,7 @@ export default function AnalysisBody({
           lines={[
             `${result.player} needs at least ${result.minimumWins} of their ${result.remainingPickCount} remaining picks.`,
             result.needsMondayNight
-              ? "That is only enough to draw level, so the MNF Points tiebreaker would still decide it."
+              ? "That is only enough to tie, so the MNF Points tiebreaker would still decide it."
               : undefined,
           ]}
         />
@@ -124,7 +124,7 @@ export default function AnalysisBody({
 
         {/* Why there is nothing more below it, in the place the paths count theirs. */}
         <p className="analysis__note">
-          {`Detailed paths are calculated once ${MAX_SEARCHED_GAMES} games are left.`}
+          {`Detailed paths are calculated once ${MAX_SEARCHED_GAMES} games remain.`}
         </p>
       </>
     );

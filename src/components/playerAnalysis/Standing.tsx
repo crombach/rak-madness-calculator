@@ -110,7 +110,7 @@ export default function Standing({
       <span className={`analysis__headline ${tone ?? ""}`}>{text}</span>
       {" · "}
       {remaining > 0
-        ? `${plural(remaining, "game")} still to play`
+        ? `${plural(remaining, "game")} remaining`
         : unscoreable > 0
           ? `${plural(unscoreable, "game")} could not be scored`
           : "Week complete"}
