@@ -231,7 +231,9 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(
-      screen.getByText("Winning 3 games takes the week outright. Otherwise:"),
+      screen.getByText(
+        "Alice wins the week outright with 3 game wins. Otherwise:",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -261,7 +263,7 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(
-      screen.queryByText(/Winning \d+ games? takes the week outright/),
+      screen.queryByText(/wins the week outright with \d+ game wins?/),
     ).not.toBeInTheDocument();
   });
 
