@@ -64,9 +64,9 @@ export type PlayerAnalysis =
       /** Whether the player only draws level at that count, leaving Monday night to decide. */
       needsMondayNight: boolean;
       /**
-       * Games no floor above reaches a rival without, so every way of winning needs
-       * them. Proven from the same arithmetic, which can prove fewer of them than a
-       * full search finds but never names one wrongly.
+       * Games no win can do without, and all of them: this is what the search
+       * would name, read a game at a time. Empty where nothing can be proven,
+       * never a part of the list.
        */
       mustWin: Array<RemainingPick>;
     }

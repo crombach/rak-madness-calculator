@@ -115,7 +115,8 @@ export default function AnalysisBody({
           ]}
         />
 
-        {/* The games the floor proves, which a week this size can still name. */}
+        {/* Every must-win game there is, or none: `provenMustWin` holds nothing
+            back, and answers empty where it can prove nothing. */}
         {result.mustWin.length > 0 && (
           <Section title="Must win">
             <Picks className="analysis__must-win" games={result.mustWin} />
@@ -124,7 +125,7 @@ export default function AnalysisBody({
 
         {/* Why there is nothing more below it, in the place the paths count theirs. */}
         <p className="analysis__note">
-          {`Detailed paths are calculated once ${MAX_SEARCHED_GAMES} games remain.`}
+          {`Detailed analysis is performed once ${MAX_SEARCHED_GAMES} games remain.`}
         </p>
       </>
     );

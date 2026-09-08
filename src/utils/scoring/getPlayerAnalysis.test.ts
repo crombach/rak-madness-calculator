@@ -67,6 +67,14 @@ function labels(games: Array<{ label: string }>): Array<string> {
   return games.map((game) => game.label);
 }
 
+/** The must-win labels of an answer that carries them, in its own order. */
+function mustWin(result: PlayerAnalysis | undefined): Array<string> {
+  expect(result?.kind === "headline" || result?.kind === "paths").toBe(true);
+  return labels(
+    (result as Extract<PlayerAnalysis, { kind: "headline" }>).mustWin,
+  );
+}
+
 describe("getPlayerAnalysis, whether there is anything to work out", () => {
   it("has no answer for a name the sheet does not hold", () => {
     const scores = week([player({ name: "Alice" })]);
@@ -632,9 +640,73 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
 
     const result = getPlayerAnalysis(scores, "Alice");
     expect(result?.kind).toBe("headline");
-    expect(
-      labels((result as { mustWin: Array<{ label: string }> }).mustWin),
-    ).toEqual(Array.from({ length: count }, (_, index) => `P${index + 1}`));
+    expect(mustWin(result)).toEqual(
+      Array.from({ length: count }, (_, index) => `P${index + 1}`),
+    );
+  });
+
+  it("names nothing where a game the player left blank has to fall their way", () => {
+    // Fifteen games the two picked differently and one only Bob picked, Alice
+    // fifteen points back. Winning all fifteen of her own only draws her level,
+    // and only while Bob's extra game misses, so no game of hers is enough on its
+    // own terms and the week names none of them.
+    const count = 15;
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 0,
+        pro: [...opposed(count, "A", "-3"), pick("")],
+      }),
+      player({
+        name: "Bob",
+        total: 15,
+        pro: [...opposed(count, "B", "+3"), pick("SEA -3")],
+      }),
+    ]);
+
+    const result = getPlayerAnalysis(scores, "Alice");
+    expect(result?.kind).toBe("headline");
+    expect(mustWin(result)).toEqual([]);
+  });
+
+  /** The same week twice, with `blanks` games only a third player picked. */
+  function withBlanks(blanks: number) {
+    const count = 16;
+    const spare = (prefix: string) =>
+      Array.from({ length: blanks }, (_, index) =>
+        pick(`${prefix}${index} -3`),
+      );
+    return week([
+      player({
+        name: "Alice",
+        total: 0,
+        pro: [...opposed(count, "A", "-3"), ...spare("X").map(() => pick(""))],
+      }),
+      player({
+        name: "Bob",
+        total: 16,
+        pro: [...opposed(count, "B", "+3"), ...spare("X").map(() => pick(""))],
+      }),
+      // Far enough back that her extra games cannot reach anyone, so they only
+      // widen the outcomes a proof has to hold across.
+      player({
+        name: "Carol",
+        total: -40,
+        pro: [...opposed(count, "C", "-3"), ...spare("X")],
+      }),
+    ]);
+  }
+
+  it("names the must-win games while the blanks are few enough to walk", () => {
+    const result = getPlayerAnalysis(withBlanks(8), "Alice");
+    expect(result?.kind).toBe("headline");
+    expect(mustWin(result)).toHaveLength(16);
+  });
+
+  it("names nothing once too many games are left blank to walk", () => {
+    const result = getPlayerAnalysis(withBlanks(9), "Alice");
+    expect(result?.kind).toBe("headline");
+    expect(mustWin(result)).toEqual([]);
   });
 
   it("never names a game the player cannot lose ground in", () => {
@@ -651,9 +723,7 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
 
     const result = getPlayerAnalysis(scores, "Alice");
     expect(result?.kind).toBe("headline");
-    expect(
-      labels((result as { mustWin: Array<{ label: string }> }).mustWin),
-    ).toEqual(["P16"]);
+    expect(mustWin(result)).toEqual(["P16"]);
   });
 
   it("works the routes out at fifteen", () => {

@@ -9,7 +9,6 @@ import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import { comparePlayerScoresOnMerit } from "./comparePlayerScores";
 import isWinnerDecided from "./isWinnerDecided";
 import remainingGames, {
-  PickDifference,
   pickDifference,
   RemainingGame,
 } from "./remainingGames";
@@ -22,7 +21,7 @@ import remainingGames, {
  * runs. `scoring.bench.ts` measures a move of this number: at fifteen its worst
  * week answers in about 50ms on an M-series laptop, fourteen in 24ms, and every
  * game added from here roughly doubles the last. A week above the ceiling still
- * names the must-win games, which cost a walk of the players rather than a search.
+ * names its must-win games, which `provenMustWin` reads without a search.
  */
 export const MAX_SEARCHED_GAMES = 15;
 
@@ -257,6 +256,46 @@ function guaranteedVerdict(
 }
 
 /**
+ * How many games a player can leave blank before the ways they can fall stop being
+ * worth a walk. Each one doubles the outcomes the proof below reads.
+ */
+const MAX_UNPICKED_GAMES = 8;
+
+/**
+ * The games no win can do without, proven one game at a time rather than searched.
+ *
+ * Winning one of your own picks never costs you ground. It adds a point in every
+ * tier it touches and denies the rival who picked the other side, so the best a
+ * player can do without a game is to win every other pick they made. A game is
+ * must-win exactly when even that loses, which is one verdict per game where the
+ * search reads one per subset of them.
+ *
+ * Empty rather than partial, in the two cases it can prove nothing about: a player
+ * who cannot take the week on their own picks alone, so they need a game they left
+ * blank to fall their way, and one who left so many blank that the ways they fall
+ * are not worth walking. A list this returns holds every must-win game there is.
+ */
+function provenMustWin(
+  mineMask: number,
+  luckOutcomes: Array<number>,
+  read: (outcome: number) => Verdict,
+  contested: Array<RemainingGame>,
+  playerIndex: number,
+): Array<RemainingPick> {
+  if (guaranteedVerdict(mineMask, luckOutcomes, read).kind === "loss") {
+    return [];
+  }
+  return contested.flatMap((game, bit) => {
+    const mask = 1 << bit;
+    if ((mineMask & mask) === 0) return [];
+    const without = guaranteedVerdict(mineMask & ~mask, luckOutcomes, read);
+    return without.kind === "loss"
+      ? [{ label: game.label, pick: game.cells[playerIndex].text }]
+      : [];
+  });
+}
+
+/**
  * The best those same picks can do once the games the player left blank are allowed
  * to fall their way, and the way they have to fall, which is where `needsHelp` comes
  * from.
@@ -373,72 +412,23 @@ function fewestWinsToCatch(
   return onOwn > playerOnly ? undefined : onDifferent + onOwn;
 }
 
-/** One rival, as the arithmetic above reads them. */
-type Measured = { index: number; gap: number; against: PickGap };
-
-/** The same rival once one of the player's games is written off as lost. */
-function withoutGame(rival: Measured, difference: PickDifference): Measured {
-  const { opposed, playerOnly } = rival.against;
-  // An opposed game hands its point to the rival, so the gap grows by one and the
-  // swing left to close it shrinks. A game only the player picked is a point they
-  // simply do not take.
-  return difference === "opposed"
-    ? {
-        ...rival,
-        gap: rival.gap + 1,
-        against: { opposed: opposed - 1, playerOnly },
-      }
-    : { ...rival, against: { opposed, playerOnly: playerOnly - 1 } };
-}
-
-/**
- * The games the player cannot afford to lose, on the arithmetic `minimumWins` runs.
- *
- * A game is here when losing it puts a rival out of reach. `fewestWinsToCatch` is
- * a floor, optimistic about the rival, so a game it calls unaffordable really is
- * one. It can miss a game a full search would catch, which is the safe direction:
- * a week too big to search names must-win games it can prove and no others.
- */
-function mustWinGames(
-  playerIndex: number,
-  rivals: Array<Measured>,
-  games: Array<RemainingGame>,
-): Array<RemainingPick> {
-  return games
-    .filter((game) =>
-      rivals.some((rival) => {
-        const difference = pickDifference(game, playerIndex, rival.index);
-        // The player left it blank, or the two picked the same team, so the game
-        // moves both scores together and cannot put anyone out of reach.
-        if (difference === "none") return false;
-        const lost = withoutGame(rival, difference);
-        return fewestWinsToCatch(lost.against, lost.gap, false) == null;
-      }),
-    )
-    .map((game) => ({
-      label: game.label,
-      pick: game.cells[playerIndex].text,
-    }));
-}
-
 function headline(
   player: PlayerScore,
   playerIndex: number,
   rivals: Array<{ player: PlayerScore; index: number }>,
   games: Array<RemainingGame>,
+  mustWin: Array<RemainingPick>,
 ): PlayerAnalysis {
-  const measured: Array<Measured> = rivals.map((rival) => ({
-    index: rival.index,
-    gap: rival.player.score.total - player.score.total,
-    // Read once and handed on. The targets below and the must-win walk all ask
-    // the same question of what the two players have left to differ on.
-    against: countAgainst(playerIndex, rival.index, games),
-  }));
-  const counts = measured.map((rival) => ({
-    // The two targets differ only by the point that clears a draw.
-    toLevel: fewestWinsToCatch(rival.against, rival.gap, false),
-    toClear: fewestWinsToCatch(rival.against, rival.gap, true),
-  }));
+  const counts = rivals.map((rival) => {
+    const gap = rival.player.score.total - player.score.total;
+    // Both targets read off one walk. They differ only by the point that clears a
+    // draw, never in what the two players have left to differ on.
+    const against = countAgainst(playerIndex, rival.index, games);
+    return {
+      toLevel: fewestWinsToCatch(against, gap, false),
+      toClear: fewestWinsToCatch(against, gap, true),
+    };
+  });
 
   // `toLevel` is only absent where `applyKnockouts` has already knocked the player
   // out on total score, which `getPlayerAnalysis` answers before reaching here.
@@ -458,7 +448,7 @@ function headline(
     needsMondayNight: counts.some(
       (count) => count.toClear == null || count.toClear > minimumWins,
     ),
-    mustWin: mustWinGames(playerIndex, measured, games),
+    mustWin,
   };
 }
 
@@ -686,13 +676,9 @@ export default function getPlayerAnalysis(
   const { playerIndex, player, rivals } = settled;
   const players = scores.scores;
 
+  const games = remainingGames(players);
   // A game every live player picked the same way moves all their scores together,
   // in the total and in both tiebreaker tiers, so it cannot change the order.
-  const games = remainingGames(players);
-  if (games.length > MAX_SEARCHED_GAMES) {
-    return headline(player, playerIndex, rivals, games);
-  }
-
   const live = [playerIndex, ...rivals.map((it) => it.index)];
   const contested = games.filter(
     (game) => new Set(live.map((index) => game.cells[index].team)).size > 1,
@@ -737,6 +723,22 @@ export default function getPlayerAnalysis(
     verdicts?.set(outcome, verdict);
     return verdict;
   };
+
+  // Above the ceiling the week is answered off the floor, plus the must-win games
+  // the outcomes above prove, which cost a verdict each rather than a search.
+  if (games.length > MAX_SEARCHED_GAMES) {
+    const isWalkable = bitCount(luckMask) <= MAX_UNPICKED_GAMES;
+    const mustWin = isWalkable
+      ? provenMustWin(
+          mineMask,
+          subMasks(luckMask),
+          read,
+          contested,
+          playerIndex,
+        )
+      : [];
+    return headline(player, playerIndex, rivals, games, mustWin);
+  }
 
   const ordered = subMasksBySize(mineMask);
   const luckOutcomes = subMasks(luckMask);
