@@ -18,12 +18,13 @@ import remainingGames, {
  * ones are searched, and the search doubles per one, so this is a loose ceiling.
  *
  * Set by what a phone can hold the thread for, since the search holds it while it
- * runs. `scoring.bench.ts` measures a move of this number: at fifteen its worst
- * week answers in about 50ms on an M-series laptop, fourteen in 24ms, and every
- * game added from here roughly doubles the last. A week above the ceiling still
- * names its must-win games, which `provenMustWin` reads without a search.
+ * runs. `scoring.bench.ts` measures a move of this number, and at sixteen its
+ * worst week answers in about 18ms on an M-series laptop. The same week in
+ * Chromium under CPU throttling, which is how a phone is read from a laptop,
+ * answers in 63ms at 4x and 147ms at 10x. A week above the ceiling still names
+ * its must-win games, which `provenMustWin` reads without a search.
  */
-export const MAX_SEARCHED_GAMES = 15;
+export const MAX_SEARCHED_GAMES = 16;
 
 /** How many routes are carried before the rest are only counted. */
 const MAX_LISTED_ROUTES = 8;

@@ -5,7 +5,10 @@ import {
   RakMadnessScores,
   Status,
 } from "../../types/RakMadnessScores";
-import getPlayerAnalysis, { getSettledAnalysis } from "./getPlayerAnalysis";
+import getPlayerAnalysis, {
+  getSettledAnalysis,
+  MAX_SEARCHED_GAMES,
+} from "./getPlayerAnalysis";
 
 /** A game still to be played unless a status says otherwise. */
 function pick(text: string, status: Status = "incomplete"): PickResult {
@@ -564,6 +567,13 @@ describe("getPlayerAnalysis, games out of the player's hands", () => {
 });
 
 describe("getPlayerAnalysis, weeks too big to search", () => {
+  /**
+   * One game past the ceiling, so every week below answers off the floor rather
+   * than a search. Each deficit is written against this count, since what draws
+   * the player level turns on whether the count and the deficit share a parity.
+   */
+  const ABOVE_LIMIT = MAX_SEARCHED_GAMES + 1;
+
   /** Two sides of one game, on the same spread, so no tiebreaker tier splits them. */
   function opposed(count: number, prefix: string, spread: string) {
     return Array.from({ length: count }, (_, index) =>
@@ -571,11 +581,11 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
     );
   }
 
-  it("gives a floor rather than routes above fifteen open games", () => {
-    // Sixteen games the two picked differently, Alice six points back. Each one
-    // she takes is one Bob does not, so eleven of them draw her level and a
-    // twelfth takes it outright.
-    const count = 16;
+  it("gives a floor rather than routes above the ceiling", () => {
+    // Every open game picked the other way, and a deficit six under that count.
+    // Each game she takes is one Bob does not, so three short of all of them
+    // draws her exactly level and nothing takes it outright.
+    const count = ABOVE_LIMIT;
     const scores = week([
       player({
         name: "Alice",
@@ -584,7 +594,7 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
       }),
       player({
         name: "Bob",
-        total: 6,
+        total: count - 6,
         pro: opposed(count, "B", "+3"),
       }),
     ]);
@@ -592,42 +602,42 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "headline",
       player: "Alice",
-      remainingPickCount: 16,
-      minimumWins: 11,
+      remainingPickCount: count,
+      minimumWins: count - 3,
       needsMondayNight: true,
-      // Eleven of sixteen is slack enough that no single game is unaffordable.
+      // Three games of slack, so no single one of them is unaffordable.
       mustWin: [],
     });
   });
 
   it("leaves Monday night out where winning enough clears every rival", () => {
-    // The same sixteen games with Alice five points back. Eleven of them put her
-    // on eleven and Bob on ten, so the count that draws her level is the count
-    // that takes the week, and the guesses never come into it.
-    const count = 16;
+    // The same games with the deficit one point wider, which no count of them can
+    // land level on. So the count that draws her level is the count that takes the
+    // week, and the guesses never come into it.
+    const count = ABOVE_LIMIT;
     const scores = week([
       player({ name: "Alice", total: 0, pro: opposed(count, "A", "-3") }),
-      player({ name: "Bob", total: 5, pro: opposed(count, "B", "+3") }),
+      player({ name: "Bob", total: count - 5, pro: opposed(count, "B", "+3") }),
     ]);
 
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "headline",
       player: "Alice",
-      remainingPickCount: 16,
-      minimumWins: 11,
+      remainingPickCount: count,
+      minimumWins: count - 2,
       needsMondayNight: false,
       mustWin: [],
     });
   });
 
   it("names the must-win games on a week too big to search", () => {
-    // Sixteen games the two picked differently, Alice sixteen points back. Every
-    // one of them is a two-point swing and she needs all thirty-two, so losing
-    // any single game puts Bob out of reach.
-    const count = 16;
+    // A deficit as wide as the count of games. Every one of them is a two-point
+    // swing and she needs all of them, so losing any single game puts Bob out of
+    // reach.
+    const count = ABOVE_LIMIT;
     const scores = week([
       player({ name: "Alice", total: 0, pro: opposed(count, "A", "-3") }),
-      player({ name: "Bob", total: 16, pro: opposed(count, "B", "+3") }),
+      player({ name: "Bob", total: count, pro: opposed(count, "B", "+3") }),
     ]);
 
     const result = getPlayerAnalysis(scores, "Alice");
@@ -638,11 +648,11 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
   });
 
   it("names nothing where a game the player left blank has to fall their way", () => {
-    // Fifteen games the two picked differently and one only Bob picked, Alice
-    // fifteen points back. Winning all fifteen of her own only draws her level,
-    // and only while Bob's extra game misses, so no game of hers is enough on its
-    // own terms and the week names none of them.
-    const count = 15;
+    // All but one open game picked the other way, the last one only Bob picked,
+    // and a deficit as wide as her own count. Winning all of hers only draws her
+    // level, and only while Bob's extra game misses, so no game of hers is enough
+    // on its own terms and the week names none of them.
+    const count = ABOVE_LIMIT - 1;
     const scores = week([
       player({
         name: "Alice",
@@ -651,7 +661,7 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
       }),
       player({
         name: "Bob",
-        total: 15,
+        total: count,
         pro: [...opposed(count, "B", "+3"), pick("SEA -3")],
       }),
     ]);
@@ -663,7 +673,7 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
 
   /** The same week twice, with `blanks` games only a third player picked. */
   function withBlanks(blanks: number) {
-    const count = 16;
+    const count = ABOVE_LIMIT;
     // Half a point, so none of these can push. A game that can is held to its push
     // and leaves nothing to walk, which is what `walkMask` drops.
     const spare = (prefix: string) =>
@@ -694,7 +704,7 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
   it("names the must-win games while the blanks are few enough to walk", () => {
     const result = getPlayerAnalysis(withBlanks(8), "Alice");
     expect(result?.kind).toBe("headline");
-    expect(mustWin(result)).toHaveLength(16);
+    expect(mustWin(result)).toHaveLength(ABOVE_LIMIT);
   });
 
   it("names nothing once too many games are left blank to walk", () => {
@@ -704,10 +714,10 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
   });
 
   it("never names a game the player cannot lose ground in", () => {
-    // Sixteen games left and Alice a point back, fifteen of them picked the same
-    // way by both. Only the one they differ in can change the order, and she has
-    // to take it, so the games they agree on are named by nothing.
-    const agreed = Array.from({ length: 15 }, (_, index) =>
+    // Alice a point back, and all but one of the open games picked the same way by
+    // both. Only the one they differ in can change the order, and she has to take
+    // it, so the games they agree on are named by nothing.
+    const agreed = Array.from({ length: ABOVE_LIMIT - 1 }, (_, index) =>
       pick(`S${index} -3`),
     );
     const scores = week([
@@ -717,7 +727,7 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
 
     const result = getPlayerAnalysis(scores, "Alice");
     expect(result?.kind).toBe("headline");
-    expect(mustWin(result)).toEqual(["P16"]);
+    expect(mustWin(result)).toEqual([`P${ABOVE_LIMIT}`]);
   });
 
   it("works the routes out at fifteen", () => {
