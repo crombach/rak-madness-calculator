@@ -664,9 +664,11 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
   /** The same week twice, with `blanks` games only a third player picked. */
   function withBlanks(blanks: number) {
     const count = 16;
+    // Half a point, so none of these can push. A game that can is held to its push
+    // and leaves nothing to walk, which is what `walkMask` drops.
     const spare = (prefix: string) =>
       Array.from({ length: blanks }, (_, index) =>
-        pick(`${prefix}${index} -3`),
+        pick(`${prefix}${index} -3.5`),
       );
     return week([
       player({

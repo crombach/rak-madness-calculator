@@ -100,28 +100,37 @@ function subMasksBySize(mask: number): Array<Array<number>> {
   return bySize;
 }
 
+/**
+ * What each way the games can fall is worth to one player.
+ *
+ * A game named in `pushMask` is held to its push, where both sides take the point,
+ * so this player scores it whichever way the bit falls.
+ */
 function gainsFor(
   playerIndex: number,
   contested: Array<RemainingGame>,
   coverers: Array<string>,
+  pushMask: number,
 ): Gains {
   const gains = { ...NO_GAINS };
   contested.forEach((game, bit) => {
     const cell = game.cells[playerIndex];
     if (cell.team == null) return;
     const mask = 1 << bit;
-    const scoresWhenSet = cell.team === coverers[bit];
+    const covers = cell.team === coverers[bit];
+    const onSet = covers || (pushMask & mask) !== 0;
+    const onClear = !covers || (pushMask & mask) !== 0;
     if (game.league === "college") {
-      if (scoresWhenSet) gains.setCollege |= mask;
-      else gains.clearCollege |= mask;
+      if (onSet) gains.setCollege |= mask;
+      if (onClear) gains.clearCollege |= mask;
     } else if (cell.hasSpread) {
       // Pro against the spread is a tiebreaker tier of its own, and counts only
       // the pro games that carry a spread.
-      if (scoresWhenSet) gains.setSpread |= mask;
-      else gains.clearSpread |= mask;
+      if (onSet) gains.setSpread |= mask;
+      if (onClear) gains.clearSpread |= mask;
     }
-    if (scoresWhenSet) gains.setTotal |= mask;
-    else gains.clearTotal |= mask;
+    if (onSet) gains.setTotal |= mask;
+    if (onClear) gains.clearTotal |= mask;
   });
   return gains;
 }
@@ -588,6 +597,15 @@ function reduceRoutes(
  * Answers for every player, knocked out or not, and for a week already decided as
  * well as one being played. Undefined where the sheet holds nobody by that name,
  * which is the only way the question has no answer at all.
+ *
+ * A game of the player's own that lands on the line is read as their win alone. The
+ * pool scores a push for both sides, so it also scores for the rival who picked the
+ * other side, and a route named here can fall to that. Read the other way this
+ * answers nothing: winning every game they picked would leave the gap where it
+ * started, so a player even a point back could never be told they are live. Every
+ * other answer holds either way. A knockout and a must-win game only become more
+ * true, and a clinch reads a week where none of the player's own picks land, which
+ * is a week with no push in them to read.
  */
 /**
  * The answer where the week already holds one, and undefined where the search below
@@ -689,47 +707,78 @@ export default function getPlayerAnalysis(
       live.map((index) => game.cells[index].team).find((team) => team != null)!,
   );
 
-  const gains = gainsFor(playerIndex, contested, coverers);
-  const scoredRivals: Array<Rival> = rivals.map((rival) => ({
-    player: rival.player,
-    gains: gainsFor(rival.index, contested, coverers),
-  }));
   const isMondayNightSettled = scores.tiebreaker != null;
 
   let mineMask = 0;
   let luckMask = 0;
+  let pushMask = 0;
   contested.forEach((game, bit) => {
-    if (game.cells[playerIndex].team != null) mineMask |= 1 << bit;
-    else luckMask |= 1 << bit;
+    const mask = 1 << bit;
+    if (game.cells[playerIndex].team != null) {
+      mineMask |= mask;
+      return;
+    }
+    luckMask |= mask;
+    if (game.canPush) pushMask |= mask;
   });
+
+  /**
+   * The games the player left blank that are still worth a walk.
+   *
+   * A push scores for everyone who picked the game, and the player picked none of
+   * these, so it lifts every rival at once and lifts the player not at all. Taking
+   * the week means standing level with each rival on that rival's own comparison,
+   * and a walk of the game's two sides already holds the side each rival scores on.
+   * So the push asks the same question in one read where the walk takes two, which
+   * `pushEquivalence.test.ts` holds to and `scoring.bench.ts` measures: the worst
+   * week answers in 14ms where the walk of the same week costs 47ms.
+   */
+  const walkMask = luckMask & ~pushMask;
+
+  const gains = gainsFor(playerIndex, contested, coverers, pushMask);
+  const rivalGains = (pushed: number) =>
+    rivals.map((rival) => ({
+      player: rival.player,
+      gains: gainsFor(rival.index, contested, coverers, pushed),
+    }));
 
   // A player who picked every open game has one way each set of their picks can
   // land, so every outcome is read once and holding them costs more than it saves.
-  const verdicts =
-    luckMask === 0 ? undefined : new Map<number, ReturnType<typeof evaluate>>();
-  const read = (outcome: number) => {
-    const held = verdicts?.get(outcome);
-    if (held != null) return held;
-    const verdict = evaluate(
-      player,
-      gains,
-      scoredRivals,
-      outcome,
-      isMondayNightSettled,
-    );
-    verdicts?.set(outcome, verdict);
-    return verdict;
+  const reader = (against: Array<Rival>, walk: number) => {
+    const verdicts =
+      walk === 0 ? undefined : new Map<number, ReturnType<typeof evaluate>>();
+    return (outcome: number) => {
+      const held = verdicts?.get(outcome);
+      if (held != null) return held;
+      const verdict = evaluate(
+        player,
+        gains,
+        against,
+        outcome,
+        isMondayNightSettled,
+      );
+      verdicts?.set(outcome, verdict);
+      return verdict;
+    };
   };
+
+  // Two readings of the same week. `read` lets every blank game fall the best way
+  // it can, which is what the routes past a dead end are found on. `readHeld` holds
+  // the ones that can push to their push, which is what a route reported without
+  // conditions has to survive. With nothing to push they are one reading.
+  const read = reader(rivalGains(0), luckMask);
+  const readHeld =
+    pushMask === 0 ? read : reader(rivalGains(pushMask), walkMask);
 
   // Above the ceiling the week is answered off the floor, plus the must-win games
   // the outcomes above prove, which cost a verdict each rather than a search.
   if (games.length > MAX_SEARCHED_GAMES) {
-    const isWalkable = bitCount(luckMask) <= MAX_UNPICKED_GAMES;
+    const isWalkable = bitCount(walkMask) <= MAX_UNPICKED_GAMES;
     const mustWin = isWalkable
       ? provenMustWin(
           mineMask,
-          subMasks(luckMask),
-          read,
+          subMasks(walkMask),
+          readHeld,
           contested,
           playerIndex,
         )
@@ -738,12 +787,13 @@ export default function getPlayerAnalysis(
   }
 
   const ordered = subMasksBySize(mineMask);
+  const heldOutcomes = subMasks(walkMask);
   const luckOutcomes = subMasks(luckMask);
 
   // Held against the player first, so a route that survives every way the games
   // they left blank can fall is reported without conditions.
   let { minimal, outrightAt } = search(ordered, (hits) => ({
-    verdict: guaranteedVerdict(hits, luckOutcomes, read),
+    verdict: guaranteedVerdict(hits, heldOutcomes, readHeld),
     luck: 0,
   }));
   let needsHelp: Array<UncontrolledGame> = [];

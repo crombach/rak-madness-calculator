@@ -37,7 +37,7 @@ function Lead({ result }: { result: PathsResult }) {
       ? "Takes the week outright, whatever the MNF Points come to."
       : // Only worth saying where it asks more than the routes below already do.
         result.outrightAt != null && result.outrightAt > fewestWins(result)
-        ? `Winning ${plural(result.outrightAt, "game")} takes it outright.`
+        ? `Winning ${plural(result.outrightAt, "game")} takes the week outright.`
         : null;
   // Nothing below to lead into, and the closing sentence there is the answer.
   if (outright == null && !hasGames(result)) return null;

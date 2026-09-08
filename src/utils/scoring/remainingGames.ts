@@ -12,6 +12,12 @@ type Cell = {
 export type RemainingGame = {
   label: string;
   league: LeagueKey;
+  /**
+   * Whether the game can land on its own line, which scores it for both sides at
+   * once. True where the line is a whole number, and where there is none at all,
+   * since a straight pick does the same on a tie.
+   */
+  canPush: boolean;
   /** Every row's cell, in the order the scores hold their players. */
   cells: Array<Cell>;
 };

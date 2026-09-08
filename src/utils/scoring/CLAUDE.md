@@ -14,7 +14,8 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 - `scorePlayers`: per-player totals, sorted
 - `comparePlayerScores`: rank order, on merit
 - `isWinnerDecided`: whether knockouts settled it
-- `weekShape`: open games, holes, and whether the week ran out
+- `weekShape`: open games, holes, whether a line can push, and whether the week
+  ran out
 - `remainingGames`: the open games
 - `unscoreableGames`: games nobody scores
 - `isEveryGameSettled`: whether the week finished

@@ -52,14 +52,25 @@ export default function weekShape(players: Array<PlayerScore>): WeekShape {
         if (isOpen && isHole) break;
       }
       if (isOpen) {
+        const picks = players.map((player) => {
+          const text = player[league][index].pick ?? "";
+          return { text, ...parsePick(text) };
+        });
         remaining.push({
           label: labels[index],
           league,
-          cells: players.map((player) => {
-            const text = player[league][index].pick ?? "";
-            const { teamAbbreviation, spread } = parsePick(text);
-            return { team: teamAbbreviation, hasSpread: spread !== 0, text };
-          }),
+          // A pick scores on a margin of zero or better, so a whole-number line is
+          // one the margin can land exactly on, and both sides take the point.
+          // Half a point rules that out. Read off any row that wrote the line,
+          // since `validateSpreads` holds a column to one.
+          canPush: Number.isInteger(
+            picks.find((pick) => pick.spread !== 0)?.spread ?? 0,
+          ),
+          cells: picks.map(({ teamAbbreviation, spread, text }) => ({
+            team: teamAbbreviation,
+            hasSpread: spread !== 0,
+            text,
+          })),
         });
       }
       if (isHole) unscoreable.push(labels[index]);
