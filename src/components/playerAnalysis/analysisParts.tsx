@@ -14,7 +14,8 @@ export function Section({
 }: {
   title: string;
   conjoined?: boolean;
-  children: ReactNode;
+  // Absent where the title says the whole of what the block asks for.
+  children?: ReactNode;
 }) {
   return (
     <section className="analysis__section">

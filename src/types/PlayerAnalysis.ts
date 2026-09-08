@@ -25,13 +25,7 @@ export type UncontrolledGame = {
 export type MondayNightOutlook =
   | { kind: "notNeeded" }
   | { kind: "settled" }
-  | {
-      kind: "range";
-      min?: number;
-      max?: number;
-      /** Who the player is level with on points, and so measured against. */
-      rivals: Array<string>;
-    };
+  | { kind: "range"; min?: number; max?: number };
 
 /** One way past the must-win games, and how it ends. */
 export type VictoryRoute = {
@@ -75,7 +69,7 @@ export type PlayerAnalysis =
       player: string;
       /** Games every route needs. */
       mustWin: Array<RemainingPick>;
-      /** Set when the routes past `mustWin` are exactly "any `choose` of these". */
+      /** Set when the routes past `mustWin` are exactly any `choose` of one pool. */
       pool?: { choose: number; games: Array<RemainingPick> };
       /** Set instead of `pool`, when the routes are not one pool of one size. */
       routes?: Array<VictoryRoute>;

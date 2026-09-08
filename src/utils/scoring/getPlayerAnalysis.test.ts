@@ -359,7 +359,6 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
       kind: "range",
       min: undefined,
       max: 45,
-      rivals: ["Bob"],
     });
     expect(result.outrightAt).toBeUndefined();
   });
@@ -385,7 +384,6 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
       kind: "range",
       min: 46,
       max: undefined,
-      rivals: ["Bob"],
     });
   });
 
@@ -414,7 +412,6 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
       kind: "range",
       min: 45,
       max: undefined,
-      rivals: ["Bob"],
     });
   });
 
@@ -449,12 +446,7 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
       },
       {
         games: [{ label: "P2", pick: "BUF -1" }],
-        mondayNight: {
-          kind: "range",
-          min: undefined,
-          max: 32,
-          rivals: ["Bob"],
-        },
+        mondayNight: { kind: "range", min: undefined, max: 32 },
       },
     ]);
   });

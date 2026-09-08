@@ -325,16 +325,13 @@ function outlookOf(verdict: Verdict, isSettled: boolean): MondayNightOutlook {
     kind: "range",
     min: verdict.lo > 0 ? verdict.lo : undefined,
     max: Number.isFinite(verdict.hi) ? verdict.hi : undefined,
-    rivals: verdict.rivals,
   };
 }
 
 function sameOutlook(a: MondayNightOutlook, b: MondayNightOutlook): boolean {
   if (a.kind !== b.kind) return false;
   if (a.kind !== "range" || b.kind !== "range") return true;
-  return (
-    a.min === b.min && a.max === b.max && a.rivals.join() === b.rivals.join()
-  );
+  return a.min === b.min && a.max === b.max;
 }
 
 function combinations(count: number, size: number): number {

@@ -43,7 +43,7 @@ function Lead({ result }: { result: PathsResult }) {
   if (outright == null && !hasGames(result)) return null;
   return (
     <p className="analysis__line">
-      {outright ?? `${result.player} is still live to win the week.`}
+      {outright ?? `${result.player} can still win the week.`}
       {/* Hands over to the sections under it, which ask for less. */}
       {hasGames(result) &&
         (outright != null ? " Otherwise:" : " What it takes:")}
@@ -101,9 +101,7 @@ export default function AnalysisBody({
       <Message
         lines={[
           `${result.player} has won ${weekNumber != null ? `week ${weekNumber}` : "the week"}.`,
-          isEveryGameSettled
-            ? undefined
-            : "Nothing still to be played can take it away.",
+          isEveryGameSettled ? undefined : "No other player can surpass them.",
         ]}
       />
     );
@@ -167,7 +165,7 @@ export default function AnalysisBody({
       {result.pool && (
         <Section
           conjoined={isConjoined.waysThrough}
-          title={`Any ${result.pool.choose} of these`}
+          title={`Any ${result.pool.choose} of`}
         >
           <Picks games={result.pool.games} />
         </Section>
