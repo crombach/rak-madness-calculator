@@ -180,8 +180,8 @@ export default function applyKnockouts(
             return knockedOut(
               activeScore,
               `Knocked out on MNF Points tiebreaker by ${rivalScore.name}. ` +
-                `Off by ${plural(activeDistance, "point")}, and ${rivalScore.name} is ` +
-                `off by ${plural(rivalDistance, "point")}.`,
+                `${activeScore.name} is ${plural(activeDistance, "point")} off, and ${rivalScore.name} is ` +
+                `${plural(rivalDistance, "point")} off.`,
             );
           }
         }
