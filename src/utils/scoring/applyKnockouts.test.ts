@@ -329,7 +329,7 @@ describe("applyKnockouts", () => {
     expect(result[1].status.isKnockedOut).toBe(true);
     expect(result[1].status.explanation).toBe(
       "Knocked out on MNF Points tiebreaker by Alice. " +
-        "Bob is 13 points off, and Alice is 2 points off.",
+        "Off by 13 points, and Alice is off by 2 points.",
     );
   });
 

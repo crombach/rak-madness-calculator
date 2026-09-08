@@ -59,14 +59,14 @@ describe("AnalysisSummary", () => {
     expect(
       screen.getByText("Knocked out on Total Score by Alice."),
     ).toBeInTheDocument();
-    expect(screen.queryByText("Bob cannot win this week.")).toBeNull();
+    expect(screen.queryByText("Cannot win this week.")).toBeNull();
   });
 
   it("tells a knocked out player carrying no reason that they cannot win", () => {
     const result: PlayerAnalysis = { kind: "knockedOut", player: "Bob" };
     render(<AnalysisSummary result={result} />);
 
-    expect(screen.getByText("Bob cannot win this week.")).toBeInTheDocument();
+    expect(screen.getByText("Cannot win this week.")).toBeInTheDocument();
   });
 
   it("says nothing left can undo a clinch with games still to play", () => {
@@ -78,9 +78,9 @@ describe("AnalysisSummary", () => {
     );
 
     // The header calls Alice the winner without naming the week, so this does.
-    expect(screen.getByText("Alice has won week 12.")).toBeInTheDocument();
+    expect(screen.getByText("Won week 12.")).toBeInTheDocument();
     expect(
-      screen.getByText("No other player can surpass them."),
+      screen.getByText("No other player can surpass this score."),
     ).toBeInTheDocument();
   });
 
@@ -93,7 +93,7 @@ describe("AnalysisSummary", () => {
       />,
     );
 
-    expect(screen.getByText("Alice has won week 12.")).toBeInTheDocument();
+    expect(screen.getByText("Won week 12.")).toBeInTheDocument();
     // Nothing is still to be played, so saying it cannot be undone adds nothing.
     expect(
       screen.queryByText(/Nothing still to be played/),
@@ -112,7 +112,7 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(
-      screen.getByText("Alice needs at least 6 of their 13 remaining picks."),
+      screen.getByText("Needs at least 6 of 13 remaining picks."),
     ).toBeInTheDocument();
     expect(screen.getByText(/MNF Points tiebreaker/)).toBeInTheDocument();
     const why = screen.getByText(
@@ -265,7 +265,7 @@ describe("AnalysisSummary", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("names the player standing where nothing takes the week outright", () => {
+  it("gives the standing where nothing takes the week outright", () => {
     const result: PlayerAnalysis = {
       ...base,
       mustWin: [{ label: "P1", pick: "KC -3" }],
@@ -274,7 +274,7 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(
-      screen.getByText("Alice can still win the week. What it takes:"),
+      screen.getByText("Can still win the week. What it takes:"),
     ).toBeInTheDocument();
   });
 

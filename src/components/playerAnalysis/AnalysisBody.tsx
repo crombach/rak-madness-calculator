@@ -28,8 +28,8 @@ function fewestWins(result: PathsResult): number {
 
 /**
  * Winning the week on points alone leads, since it settles the tiebreaker before
- * the reader has to think about it. Where there is no such line the player is
- * named as standing instead, so the sections below never open on their own.
+ * the reader has to think about it. Where there is no such line the standing is
+ * given instead, so the sections below never open on their own.
  */
 function Lead({ result }: { result: PathsResult }) {
   const outright =
@@ -43,7 +43,7 @@ function Lead({ result }: { result: PathsResult }) {
   if (outright == null && !hasGames(result)) return null;
   return (
     <p className="analysis__line">
-      {outright ?? `${result.player} can still win the week.`}
+      {outright ?? "Can still win the week."}
       {/* Hands over to the sections under it, which ask for less. */}
       {hasGames(result) &&
         (outright != null ? " Otherwise:" : " What it takes:")}
@@ -86,11 +86,7 @@ export default function AnalysisBody({
   if (result.kind === "knockedOut") {
     // The explanation names who knocked them out and by how much, so it says they
     // cannot win on its own. Only a player without one needs telling.
-    return (
-      <Message
-        lines={[result.explanation ?? `${result.player} cannot win this week.`]}
-      />
-    );
+    return <Message lines={[result.explanation ?? "Cannot win this week."]} />;
   }
 
   if (result.kind === "clinched") {
@@ -100,8 +96,10 @@ export default function AnalysisBody({
     return (
       <Message
         lines={[
-          `${result.player} has won ${weekNumber != null ? `week ${weekNumber}` : "the week"}.`,
-          isEveryGameSettled ? undefined : "No other player can surpass them.",
+          `Won ${weekNumber != null ? `week ${weekNumber}` : "the week"}.`,
+          isEveryGameSettled
+            ? undefined
+            : "No other player can surpass this score.",
         ]}
       />
     );
@@ -112,7 +110,7 @@ export default function AnalysisBody({
       <>
         <Message
           lines={[
-            `${result.player} needs at least ${result.minimumWins} of their ${result.remainingPickCount} remaining picks.`,
+            `Needs at least ${result.minimumWins} of ${result.remainingPickCount} remaining picks.`,
             result.needsMondayNight
               ? "That is only enough to tie, so the MNF Points tiebreaker would still decide it."
               : undefined,
