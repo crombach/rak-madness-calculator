@@ -15,29 +15,43 @@ const THEME = process.env.ANALYSIS_THEME ?? "light";
 
 const THEME_KEY = "rak-madness:settings:theme";
 
-/** Four college then sixteen pro, the order a sheet's columns run in. */
+/**
+ * Four college then sixteen pro, the order a sheet's columns run in.
+ *
+ * `line` is what the home side gives up, so a sheet writes the home cell `-line`
+ * and the away cell `+line`. Every one is under the seven points the home side
+ * wins a settled game by, so the home side covers each of them and a phase reads
+ * its settled games the way it names them. A half point is a game no margin can
+ * land on, which is how `canPush` tells the two apart.
+ */
 const GAMES = [
-  { key: "C1", league: "college", home: "UGA", away: "ALA" },
-  { key: "C2", league: "college", home: "OSU", away: "MICH" },
-  { key: "C3", league: "college", home: "TEX", away: "OU" },
-  { key: "C4", league: "college", home: "ORE", away: "WASH" },
-  { key: "P1", league: "pro", home: "KC", away: "BUF" },
-  { key: "P2", league: "pro", home: "SF", away: "DAL" },
-  { key: "P3", league: "pro", home: "PHI", away: "NYG" },
-  { key: "P4", league: "pro", home: "BAL", away: "CIN" },
-  { key: "P5", league: "pro", home: "DET", away: "GB" },
-  { key: "P6", league: "pro", home: "MIA", away: "NYJ" },
-  { key: "P7", league: "pro", home: "HOU", away: "IND" },
-  { key: "P8", league: "pro", home: "LAR", away: "SEA" },
-  { key: "P9", league: "pro", home: "TB", away: "ATL" },
-  { key: "P10", league: "pro", home: "MIN", away: "CHI" },
-  { key: "P11", league: "pro", home: "PIT", away: "CLE" },
-  { key: "P12", league: "pro", home: "DEN", away: "LAC" },
-  { key: "P13", league: "pro", home: "NO", away: "CAR" },
-  { key: "P14", league: "pro", home: "JAX", away: "TEN" },
-  { key: "P15", league: "pro", home: "WSH", away: "ARI" },
-  { key: "P16", league: "pro", home: "LV", away: "NE" },
+  { key: "C1", league: "college", home: "UGA", away: "ALA", line: 3 },
+  { key: "C2", league: "college", home: "OSU", away: "MICH", line: 6.5 },
+  { key: "C3", league: "college", home: "TEX", away: "OU", line: 2.5 },
+  { key: "C4", league: "college", home: "ORE", away: "WASH", line: 6 },
+  { key: "P1", league: "pro", home: "KC", away: "BUF", line: 3 },
+  { key: "P2", league: "pro", home: "SF", away: "DAL", line: 1.5 },
+  { key: "P3", league: "pro", home: "PHI", away: "NYG", line: 6 },
+  { key: "P4", league: "pro", home: "BAL", away: "CIN", line: 2.5 },
+  { key: "P5", league: "pro", home: "DET", away: "GB", line: 3 },
+  { key: "P6", league: "pro", home: "MIA", away: "NYJ", line: 4.5 },
+  { key: "P7", league: "pro", home: "HOU", away: "IND", line: 6 },
+  { key: "P8", league: "pro", home: "LAR", away: "SEA", line: 1.5 },
+  { key: "P9", league: "pro", home: "TB", away: "ATL", line: 4 },
+  { key: "P10", league: "pro", home: "MIN", away: "CHI", line: 5.5 },
+  { key: "P11", league: "pro", home: "PIT", away: "CLE", line: 3 },
+  { key: "P12", league: "pro", home: "DEN", away: "LAC", line: 2.5 },
+  { key: "P13", league: "pro", home: "NO", away: "CAR", line: 6 },
+  { key: "P14", league: "pro", home: "JAX", away: "TEN", line: 3.5 },
+  { key: "P15", league: "pro", home: "WSH", away: "ARI", line: 4 },
+  { key: "P16", league: "pro", home: "LV", away: "NE", line: 1.5 },
 ];
+
+/** One side of a game as a sheet writes it, the team then the line it gives up. */
+function cell(game, side) {
+  const spread = side === "home" ? -game.line : game.line;
+  return `${game[side]} ${spread > 0 ? "+" : ""}${spread}`;
+}
 
 const KEYS = GAMES.map((game) => game.key);
 
@@ -191,13 +205,16 @@ function rows() {
     const cells = { Name: row.name };
     GAMES.forEach((game) => {
       if (isSettled(game.key)) {
-        cells[game.key] = row.wins.includes(game.key) ? game.home : game.away;
+        cells[game.key] = cell(
+          game,
+          row.wins.includes(game.key) ? "home" : "away",
+        );
         return;
       }
       const side = game.key in row.picks ? row.picks[game.key] : row.open;
       // `null` rather than a key left off, which the sheet builder would append
       // after the columns every row does carry, and so relabel the games.
-      cells[game.key] = side == null ? null : game[side];
+      cells[game.key] = side == null ? null : cell(game, side);
     });
     cells.Pts = row.points;
     return cells;
