@@ -124,7 +124,7 @@ export default function AnalysisBody({
 
         {/* Why there is nothing more below it, in the place the paths count theirs. */}
         <p className="analysis__note">
-          {`Every path to victory is worked out once ${MAX_SEARCHED_GAMES} games are left.`}
+          {`Detailed paths are calculated once ${MAX_SEARCHED_GAMES} games are left.`}
         </p>
       </>
     );

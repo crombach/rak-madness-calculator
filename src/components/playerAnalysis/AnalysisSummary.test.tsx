@@ -111,7 +111,7 @@ describe("AnalysisSummary", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/MNF Points tiebreaker/)).toBeInTheDocument();
     const why = screen.getByText(
-      `Every path to victory is worked out once ${MAX_SEARCHED_GAMES} games are left.`,
+      `Detailed paths are calculated once ${MAX_SEARCHED_GAMES} games are left.`,
     );
     expect(why).toBe(
       document.querySelector(".analysis__body")?.lastElementChild,
