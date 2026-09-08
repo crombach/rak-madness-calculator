@@ -6,14 +6,14 @@ import {
 
 const SEASON = 2024;
 const WEEK = 5;
-// One of the rows below, and the row the dialog is opened on.
-const SUBJECT = "Alice";
 
-/**
- * Which branch to show. `headline` leaves eighteen games open, above
- * `MAX_SEARCHED_GAMES`. `paths` leaves five, under it.
- */
+/** Which shape of answer to show. One of `PHASES`. */
 const PHASE = process.env.ANALYSIS_PHASE ?? "headline";
+
+/** Which theme to render in, since the blue an `And` is set in has one of each. */
+const THEME = process.env.ANALYSIS_THEME ?? "light";
+
+const THEME_KEY = "rak-madness:settings:theme";
 
 /** Four college then sixteen pro, the order a sheet's columns run in. */
 const GAMES = [
@@ -39,76 +39,158 @@ const GAMES = [
   { key: "P16", league: "pro", home: "LV", away: "NE" },
 ];
 
+const KEYS = GAMES.map((game) => game.key);
+
+/** Every column up to and including `key`, which is how a phase names its settled games. */
+function upTo(key) {
+  return KEYS.slice(0, KEYS.indexOf(key) + 1);
+}
+
 /**
- * `opposed` is open and picked both ways, which is what a route can turn on. Every
- * other open game is picked the same way by everyone, so it moves the field
- * together and decides nothing. `aliceWins` are the settled games Alice took, and
- * Bob took the rest, which is what puts him ahead of her.
+ * A row in the sheet.
+ *
+ * `wins` names the settled games this player got right, and every settled game
+ * left out is one they missed. `open` is the side they back in every game still to
+ * be played, and `picks` names the open games they back the other way, or leave
+ * blank with `null`. The home side wins every settled game, so `wins` is read
+ * against `home`.
+ */
+function player(name, points, wins, open, picks = {}) {
+  return { name, points, wins, open, picks };
+}
+
+/** The settled games a player wins to land on a given score, college first. */
+const AT = Object.fromEntries(
+  [1, 2, 8, 9, 19].map((score) => [score, KEYS.slice(0, score)]),
+);
+
+/**
+ * One week each, built to land on a shape the dialog renders differently. Every
+ * score below is a count of settled wins, and each rival's gap to Alice is what
+ * decides how many open games she needs and whether they only leave her tied.
  */
 const PHASES = {
+  // Eighteen games open, over `MAX_SEARCHED_GAMES`: the floor, the must-win games
+  // proven off it, and the note saying what is held back.
   headline: {
     settled: ["C1", "C2"],
-    aliceWins: [],
-    opposed: ["C3", "C4", "P1"],
-  },
-  paths: {
-    settled: [
-      "C1",
-      "C2",
-      "C3",
-      "C4",
-      "P1",
-      "P2",
-      "P3",
-      "P4",
-      "P5",
-      "P6",
-      "P7",
-      "P8",
-      "P9",
-      "P10",
-      "P11",
+    subject: "Alice",
+    rows: [
+      player("Alice", 45, [], "home"),
+      player("Bob", 48, ["C1", "C2"], "home", {
+        C3: "away",
+        C4: "away",
+        P1: "away",
+      }),
+      player("Carol", 41, [], "home"),
     ],
-    aliceWins: ["C1", "C2", "C3", "C4", "P1", "P2", "P3"],
-    opposed: ["P12", "P13", "P14", "P15", "P16"],
+  },
+  // One rival a point ahead across five opposed games, which is one pool of one
+  // size: any three of them, and then the tiebreaker.
+  paths: {
+    settled: upTo("P11"),
+    subject: "Alice",
+    rows: [
+      player("Alice", 45, ["C1", "C2", "C3", "C4", "P1", "P2", "P3"], "home"),
+      player(
+        "Bob",
+        48,
+        ["P4", "P5", "P6", "P7", "P8", "P9", "P10", "P11"],
+        "away",
+      ),
+      player("Carol", 41, [], "home"),
+    ],
+  },
+  // Carol cannot be caught up, read off the same week as `paths`.
+  knockedOut: null,
+  // Two rivals at different distances. Dave is only reachable through P12, which
+  // makes it must-win, and Bob is level, which makes the rest a pool of two.
+  chain: {
+    settled: upTo("P11"),
+    subject: "Alice",
+    rows: [
+      player("Alice", 45, AT[8], "home"),
+      player("Bob", 48, AT[8], "home", {
+        P13: "away",
+        P14: "away",
+        P15: "away",
+        P16: "away",
+      }),
+      player("Dave", 50, AT[9], "home", { P12: "away" }),
+      player("Carol", 41, AT[2], "home"),
+    ],
+  },
+  // Three rivals over overlapping sets of games, so no one pool covers them and
+  // the answer is a list of routes, each with its own total to hit.
+  routes: {
+    settled: upTo("P11"),
+    subject: "Alice",
+    rows: [
+      player("Alice", 45, AT[8], "home"),
+      player("Bob", 48, AT[9], "home", {
+        P12: "away",
+        P13: "away",
+        P14: "away",
+      }),
+      player("Dave", 50, AT[9], "home", {
+        P14: "away",
+        P15: "away",
+        P16: "away",
+      }),
+      player("Erin", 41, AT[8], "home", { P12: "away", P16: "away" }),
+      player("Carol", 38, AT[2], "home"),
+    ],
+  },
+  // Alice left P15 blank, so nothing she does decides it and Bob has to miss it.
+  help: {
+    settled: upTo("P14"),
+    subject: "Alice",
+    rows: [
+      player("Alice", 45, AT[8], "home", { P15: null }),
+      player("Bob", 48, AT[9], "home", { P16: "away" }),
+      player("Carol", 41, AT[1], "home"),
+    ],
+  },
+  // Nineteen games gone Alice's way and none anyone else's, so the last one cannot
+  // take the week off her.
+  clinched: {
+    settled: upTo("P15"),
+    subject: "Alice",
+    rows: [
+      player("Alice", 45, AT[19], "home"),
+      player("Bob", 48, [], "home"),
+      player("Carol", 41, [], "away"),
+    ],
   },
 };
 
-const shape = PHASES[PHASE];
-if (shape == null) {
-  throw new Error(`ANALYSIS_PHASE has to be headline or paths, not ${PHASE}`);
+PHASES.knockedOut = { ...PHASES.paths, subject: "Carol" };
+
+const phase = PHASES[PHASE];
+if (phase == null) {
+  throw new Error(
+    `ANALYSIS_PHASE has to be one of ${Object.keys(PHASES).join(", ")}, not ${PHASE}`,
+  );
 }
 
-const isSettled = (key) => shape.settled.includes(key);
-const isOpposed = (key) => shape.opposed.includes(key);
+const isSettled = (key) => phase.settled.includes(key);
 
 function rows() {
-  const pick = (game, who) => {
-    if (isSettled(game.key)) {
-      // Carol misses every settled game, so she trails without being knocked out.
-      if (who === "carol") return game.away;
-      const alice = shape.aliceWins.includes(game.key) ? "home" : "away";
-      const mine = who === "alice" ? alice : alice === "home" ? "away" : "home";
-      return game[mine];
-    }
-    // Carol shadows Alice through the open games, so she never bears on Alice's
-    // own routes.
-    if (isOpposed(game.key) && who === "bob") return game.away;
-    return game.home;
-  };
-  const row = (name, who, tiebreaker) => {
-    const cells = { Name: name };
+  return phase.rows.map((row) => {
+    const cells = { Name: row.name };
     GAMES.forEach((game) => {
-      cells[game.key] = pick(game, who);
+      if (isSettled(game.key)) {
+        cells[game.key] = row.wins.includes(game.key) ? game.home : game.away;
+        return;
+      }
+      const side = game.key in row.picks ? row.picks[game.key] : row.open;
+      // `null` rather than a key left off, which the sheet builder would append
+      // after the columns every row does carry, and so relabel the games.
+      cells[game.key] = side == null ? null : game[side];
     });
-    cells.Pts = tiebreaker;
+    cells.Pts = row.points;
     return cells;
-  };
-  return [
-    row("Alice", "alice", 45),
-    row("Bob", "bob", 48),
-    row("Carol", "carol", 41),
-  ];
+  });
 }
 
 /** The home side won every game that has been played. */
@@ -122,7 +204,7 @@ function eventsFor(league) {
   };
 }
 
-/** Opens Player Analysis on a player who is behind, and ends on the dialog. */
+/** Opens Player Analysis on the phase's own row, and ends on the dialog. */
 export default async function run({ page, context, baseUrl }) {
   await registerAppMocks(context, {
     season: SEASON,
@@ -133,7 +215,12 @@ export default async function run({ page, context, baseUrl }) {
   });
 
   await page.goto(`${baseUrl}/${SEASON}/${WEEK}/scoreboard`);
-  await page.getByRole("button", { name: new RegExp(SUBJECT) }).click();
+  await page.evaluate(
+    ([key, theme]) => localStorage.setItem(key, theme),
+    [THEME_KEY, THEME],
+  );
+  await page.goto(`${baseUrl}/${SEASON}/${WEEK}/scoreboard`);
+  await page.getByRole("button", { name: new RegExp(phase.subject) }).click();
   await page.getByText("Player Analysis").waitFor({ timeout: 10000 });
   // The answer replaces the bar that stands over the search while it runs.
   await page

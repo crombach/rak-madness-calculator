@@ -12,18 +12,21 @@ function routesOf(count: number): Array<VictoryRoute> {
   }));
 }
 
+/** The heading a block opens with, whether or not `And` conjoins it. */
+function blockHeading(title: string): HTMLElement {
+  return screen.getByRole("heading", { name: new RegExp(`^(And )?${title}$`) });
+}
+
 /** The picks under a heading, as the chips read on screen. */
 function under(title: string): Array<string> {
-  const heading = screen.getByRole("heading", { name: title });
-  return within(heading.parentElement as HTMLElement)
+  return within(blockHeading(title).parentElement as HTMLElement)
     .getAllByRole("listitem")
     .map((item) => item.textContent ?? "");
 }
 
-/** Whether the block a heading opens carries the word that conjoins it. */
+/** Whether a block's heading carries the word that conjoins it to the one above. */
 function isConjoined(title: string): boolean {
-  const heading = screen.getByRole("heading", { name: title });
-  return heading.previousElementSibling?.textContent === "AND";
+  return blockHeading(title).firstElementChild?.textContent === "And";
 }
 
 /** The one tiebreaker range the cases below need: beat Rak on 45 points. */
@@ -217,7 +220,7 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(
-      screen.getByText("38 ≤ MNF Points ≤ 44 to beat Rak and Bill."),
+      screen.getByText("38 ≤ Points ≤ 44 to beat Rak and Bill."),
     ).toBeInTheDocument();
   });
 
@@ -229,9 +232,7 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(
-      screen.getByText("MNF Points ≤ 45 to beat Rak."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Points ≤ 45 to beat Rak.")).toBeInTheDocument();
   });
 
   it("says what it takes to win without the tiebreaker at all", () => {
@@ -397,9 +398,7 @@ describe("AnalysisSummary", () => {
       "P1KC -3",
       "P2BUF -1",
     ]);
-    expect(
-      screen.getByText("MNF Points ≤ 32 to beat Rak."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Points ≤ 32 to beat Rak.")).toBeInTheDocument();
   });
 
   it("holds four routes open and folds the rest behind a button", () => {

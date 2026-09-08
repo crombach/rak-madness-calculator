@@ -9,19 +9,28 @@ type DecidingOutlook = Exclude<MondayNightOutlook, { kind: "notNeeded" }>;
 /** The one outlook a route of its own carries, which is a total still to come. */
 type MondayNightRange = Extract<MondayNightOutlook, { kind: "range" }>;
 
-/** The MNF Points that win, named the way the scoreboard column is. */
-function mondayNightPoints({ min, max }: MondayNightRange): string {
+/**
+ * The totals that win, as a comparison. `term` names the scoreboard column, in
+ * full only where nothing beside the line already names it.
+ */
+function mondayNightPoints(
+  { min, max }: MondayNightRange,
+  term: string,
+): string {
   if (min != null && max != null) {
-    return min === max ? `MNF Points = ${min}` : `${min} ≤ MNF Points ≤ ${max}`;
+    return min === max ? `${term} = ${min}` : `${min} ≤ ${term} ≤ ${max}`;
   }
-  return min != null ? `MNF Points ≥ ${min}` : `MNF Points ≤ ${max}`;
+  return min != null ? `${term} ≥ ${min}` : `${term} ≤ ${max}`;
 }
 
 function mondayNightSentence(outlook: DecidingOutlook): string {
   if (outlook.kind === "settled") {
     return "MNF Points are already final, so the games above settle it.";
   }
-  return `${mondayNightPoints(outlook)} to beat ${NAMES.format(outlook.rivals)}.`;
+  // The section title over this line is the column's name, so the line itself
+  // only has to say which number.
+  const points = mondayNightPoints(outlook, "Points");
+  return `${points} to beat ${NAMES.format(outlook.rivals)}.`;
 }
 
 /**
@@ -31,8 +40,9 @@ function mondayNightSentence(outlook: DecidingOutlook): string {
 export function RouteMondayNight({ outlook }: { outlook: MondayNightRange }) {
   return (
     <p className="analysis__line analysis__route-mnf">
-      <span className="analysis__pick-label">AND</span>
-      <span>{mondayNightPoints(outlook)}</span>
+      <span className="analysis__pick-label analysis__and">AND</span>
+      {/* In full, since the route this closes carries no title naming it. */}
+      <span>{mondayNightPoints(outlook, "MNF Points")}</span>
       <span>
         {/* A list rather than a sentence, since the line around it is one too. */}
         <span className="analysis__term">TO BEAT</span>{" "}

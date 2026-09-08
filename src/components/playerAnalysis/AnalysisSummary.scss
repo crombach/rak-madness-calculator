@@ -41,18 +41,6 @@
   @include stacked(var(--rak-space-2));
 }
 
-// The word that holds two blocks together, set like the `AND` inside a route line
-// and inset to the picks' own text. It opens the block under it rather than
-// sitting between the two, so it reads as part of what it asks for.
-.analysis__and {
-  margin: 0;
-  padding-inline-start: var(--rak-pick-inset);
-  color: var(--rak-text-tertiary);
-  font-family: var(--rak-font-mono);
-  font-size: var(--rak-text-sm);
-  font-weight: var(--rak-weight-bold);
-}
-
 // A win and a knockout, in the hues the tables and the search already mark those
 // players with.
 .analysis__headline {
@@ -125,6 +113,14 @@
 
 .analysis__pick-team {
   color: var(--rak-text);
+}
+
+// The one word saying a reader needs both sides of it, over a title and inside a
+// route alike. Set in the blue the app points with, so it carries what it says
+// against the tertiary ink of the labels it sits among. After those, since it
+// overrules the color they set.
+.analysis__and {
+  color: var(--rak-attention-ink);
 }
 
 .analysis__routes {
