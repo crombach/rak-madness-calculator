@@ -151,6 +151,17 @@ const PHASES = {
       player("Carol", 41, AT[1], "home"),
     ],
   },
+  // Alice and Bob hold the same picks and the same points guess, so no game and no
+  // tiebreaker can part them. Each has clinched a share of the week.
+  clinchedTie: {
+    settled: upTo("P15"),
+    subject: "Alice",
+    rows: [
+      player("Alice", 45, AT[19], "home"),
+      player("Bob", 45, AT[19], "home"),
+      player("Carol", 41, [], "away"),
+    ],
+  },
   // Nineteen games gone Alice's way and none anyone else's, so the last one cannot
   // take the week off her.
   clinched: {

@@ -57,8 +57,8 @@ instead of recording the whole run.
   against one build instead of rebuilding per candidate.
 - `scenarios/analysis-limit.js` — opens Player Analysis on a mocked week built to
   land on one shape of answer. `$ANALYSIS_PHASE` picks the shape: `headline`,
-  `paths`, `chain`, `routes`, `help`, `clinched`, `knockedOut`. `$ANALYSIS_THEME`
-  is `light` or `dark`.
+  `paths`, `chain`, `routes`, `help`, `clinched`, `clinchedTie`, `knockedOut`.
+  `$ANALYSIS_THEME` is `light` or `dark`.
 - `scenarios/live-refresh.js` — opens the Game Status dialog on a live pick,
   waits out its real poll interval, and shows the table update on its own
   once the mocked game goes final.
