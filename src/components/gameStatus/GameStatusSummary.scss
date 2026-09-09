@@ -33,16 +33,16 @@
 }
 
 // How big the scores, the dash between them and the possession marks are set. Named
-// once here because the four have to grow and shrink together: they sit in one row,
+// once here because the four have to grow and shrink together. They sit in one row,
 // and the room a phone has left over after them is what the two names get.
-// A phone sets them a step over those names and no further down: the scores are what
+// A phone sets them a step over those names and no further down. The scores are what
 // the row is about, and a pair set as big as the two names stops reading as the answer
 // to it.
 //
 // The mark is given as the height of the shape rather than of a box around it, and
 // the gap is every space around it: mark to edge, mark to score. One value, because
 // a mark spaced two different ways from what it stands beside reads as two different
-// marks. The score meets the dash with no gap at all: the pair reads as one number
+// marks. The score meets the dash with no gap at all. The pair reads as one number
 // split by the line between them, not as two numbers with room to spare.
 .game-status {
   --rak-score-size: 1.5rem;
@@ -79,7 +79,7 @@
   text-align: center;
 }
 
-// The line itself, in the face the picks table sets every number in. `None` too: it
+// The line itself, in the face the picks table sets every number in. `None` too. It
 // answers the same question, and a value that changes face with its own value reads
 // as two different fields. Set in the gray the records under the two names carry,
 // which is the same gray their labels do, so the face is what tells the answer from
@@ -88,12 +88,12 @@
   color: var(--rak-text-secondary);
   font-family: var(--rak-font-mono);
   // Off the label's own weight, which is the other half of telling the answer from
-  // the question: the label is what is bold here, and the line it gives is read.
+  // the question. The label is what is bold here, and the line it gives is read.
   font-weight: normal;
 }
 
-// What is the same about the game however it is going: when it starts and where it
-// is being played. Under the scoreline, as a footnote to it.
+// What is the same about the game however it is going. It starts at a fixed time and
+// is played at a fixed place. Under the scoreline, as a footnote to it.
 //
 // One line where the dialog is wide enough to hold both halves, wrapping back to two
 // where it is not. Set apart by the space between them rather than by a glyph, since
@@ -145,8 +145,8 @@
 //
 // Laid in the name's own row rather than across all three. Across them it centers on
 // the grid, whose first row is as tall as the line over the scores rather than as
-// tall as a side's label, which stood the mark above the name, the record block and
-// the glass alike. In this row it is level with all three.
+// tall as a side's label, which would stand the mark above the name, the record block
+// and the glass alike. In this row it is level with all three.
 //
 // Whether there is room for it at all is `useScorelineFit`'s to say, since what it costs
 // the name beside it is what that name is. The last thing that hook gives up, and only
@@ -159,7 +159,7 @@
   height: 32px;
   // None outside dark mode, so this only ever draws the edge `--rak-logo-outline`
   // gives a crest that mode cannot otherwise be sure will show. A filter rather
-  // than an outline or a border: both of those trace the image's own rectangular
+  // than an outline or a border. Both of those trace the image's own rectangular
   // box, where this traces the crest's own alpha channel, so a round logo gets a
   // round edge instead of a square one.
   filter: var(--rak-logo-outline);
@@ -246,11 +246,11 @@
 }
 
 // Held to the scores it joins, so it grows with them. Lit plain white rather than in
-// either side's hue: it belongs to neither of them, and on a readout a cell that is on
+// either side's hue. It belongs to neither of them, and on a readout a cell that is on
 // is on.
 //
 // A cell of the same readout, in the same face, which is what stands it level with the
-// digits either side: its hyphen is the bar across the middle of a cell, drawn on the
+// digits either side. Its hyphen is the bar across the middle of a cell, drawn on the
 // line the digits leave a gap on. Any drawn face puts its dash somewhere of its own.
 .game-status__dash {
   @include segment-face;
@@ -268,7 +268,7 @@
 }
 
 // A step up on the rest of the side text, since the score beside it is what the row is
-// otherwise all about, and set tighter than the app's own leading: a name of two or
+// otherwise all about, and set tighter than the app's own leading. A name of two or
 // three words is one name, and reads as one thing only if its lines are set close.
 .game-status__team-name {
   color: var(--rak-text);
@@ -360,9 +360,8 @@
   position: relative;
   min-width: 2ch;
   font-variant-numeric: tabular-nums;
-  // A score in single figures fills the units cell, its own place, and leaves the
-  // tens cell unlit, the way a hardware scoreboard blanks that digit rather than
-  // showing it as a zero. Centering across both would stand the number over neither.
+  // A score in single figures fills the units cell, tens unlit, as a hardware
+  // scoreboard blanks a digit, not zero. Centering both stands over neither.
   text-align: right;
 }
 
@@ -377,24 +376,24 @@
   // A cell has no color of its own until it is lit.
   color: var(--rak-glass-unlit);
   // Out of any selection dragged over the scoreline. Selectable, copying the score
-  // carried the row of eights out with it.
+  // would carry the row of eights out with it.
   user-select: none;
 }
 
 // A drawn shape rather than a triangle character, and no nudge off the middle of its
 // box. The shape is cut to its own edges, and a seven-segment digit runs the whole em
 // box, so both are centered in the line the row centers on and the mark lands on the
-// bar across the middle of the digit. A glyph landed wherever the reader's font stack
-// drew it.
+// bar across the middle of the digit. A glyph would land wherever the reader's font
+// stack draws it.
 .game-status__marker {
   display: flex;
-  // Lit like the dash between the scores, and for the same reason: the mark belongs
+  // Lit like the dash between the scores, and for the same reason. The mark belongs
   // to neither side's hue, and on a readout a cell that is on is on.
   color: var(--rak-glass-ink);
 
   // Sized outright rather than in `em`, because `.icon` sets a font size of its
   // own that an `em` here would be read against. Across, whatever that height makes
-  // it: the shape is 440 units wide over 560 tall in the box it is cut to, and the
+  // it. The shape is 440 units wide over 560 tall in the box it is cut to, and the
   // gap either side of the mark is the readout's to set rather than the box's.
   > svg {
     width: calc(var(--rak-marker-size) * 440 / 560);
@@ -404,7 +403,7 @@
   // Both sides carry a marker whatever the game is doing, and the side without the
   // ball wears an unlit one. It holds the room the lit one takes, so the scores stay
   // either side of the middle as the ball changes hands, and it is the same cell the
-  // digits beside it show waiting: the readout has a shape for possession whether or
+  // digits beside it show waiting. The readout has a shape for possession whether or
   // not anybody has it.
   &.--blank {
     color: var(--rak-glass-unlit);
@@ -433,7 +432,7 @@
   justify-self: center;
   // The same space a side's own marker sits its score apart by, so the glass keeps
   // one rhythm rather than two. The plate below is drawn outside this box, so it is
-  // not room the readout has to find: what is spaced here is what is lit.
+  // not room the readout has to find. What is spaced here is what is lit.
   padding-inline: var(--rak-score-gap);
   // One screen holding both scores and the dash they meet at, sunk into the dialog the
   // way the app name is sunk into the navbar. The pair is one reading, so it is lit
@@ -461,7 +460,7 @@
   font-weight: var(--rak-weight-semibold);
 }
 
-// Smaller than the line above it: a down and distance runs to `2nd & 7 at ATL 34`,
+// Smaller than the line above it. A down and distance runs to `2nd & 7 at ATL 34`,
 // and the middle column is only as wide as its widest line, so every character here
 // is width taken off the names either side.
 .game-status__down,

@@ -3,7 +3,7 @@
 
 // CheckIcon's own aspect in Icon.tsx, `viewBox="257 -654 451 333"`. Named once
 // here because the slot below is sized to it whichever mark is showing, not
-// only when the checkmark itself is: it is the widest of the four shapes.
+// only when the checkmark itself is. It is the widest of the four shapes.
 $check-icon-ratio: math.div(451, 333);
 
 // An entry reads as its column then its game. Both at the one size, in the monospace
@@ -32,14 +32,14 @@ $check-icon-ratio: math.div(451, 333);
 // A mark is set against the text it stands beside, and an entry's two lines are set
 // smaller than the popup they sit in, so the size is said again here rather than left
 // at the one the search's own mark reads. Above the pills below, which say their own
-// size: two classes each, so the later of the two is the one that lands.
+// size. Two classes each, so the later of the two is the one that lands.
 .dialog__option .game-status__mark {
   font-size: var(--rak-text-sm);
 }
 
 // What every mark is shaped like, the four sharing everything but their hue.
 //
-// Monospace, and every word four letters, so all four come out the same size: set in
+// Monospace, and every word four letters, so all four come out the same size. Set in
 // the body face, `WARN` would run wider than `LIVE` and the list's right edge would
 // step in and out as a game kicked off.
 @mixin mark-pill($background, $foreground) {
@@ -126,9 +126,9 @@ $check-icon-ratio: math.div(451, 333);
   @include ink-height(var(--rak-caps-ink), $ink-share-event);
 }
 
-// Already cropped to its own edges rather than a square Material box, so it fills
-// the slot's own width exactly rather than needing a share to divide it. `font-size:
-// inherit` counters `.icon`'s own font-size, the same way `ink-height` does.
+// Already cropped to its own edges rather than a square Material box, so it fills the
+// slot's own width exactly rather than needing a share to divide it. `font-size: inherit`
+// counters `.icon`'s own font-size, the same way `ink-height` does.
 .game-status__mark.--final .game-status__mark-icon svg {
   font-size: inherit;
   width: 100%;

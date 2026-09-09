@@ -10,7 +10,7 @@ import "./GameStatusSummary.scss";
 /**
  * Joins the two scores, which meet in the middle of the scoreline at every width.
  *
- * A hyphen rather than an en dash, because the readout is what draws it: DSEG7 has
+ * A hyphen rather than an en dash, because the readout is what draws it. DSEG7 has
  * no en dash, and its hyphen is the bar across the middle of a cell, which is the
  * one glyph in the face guaranteed to stand level with the digits either side.
  */
@@ -31,7 +31,7 @@ const HAS_BALL_LABEL = "Has the ball";
  * Said in place of the down and distance while a game being played has none, which is
  * every ball that is not yet dead and every break in the game.
  *
- * A line either way, rather than one that comes and goes: the game is asked about again
+ * A line either way, rather than one that comes and goes. The game is asked about again
  * every `POLL_MS`, and an answer with no down in it would otherwise take the line away
  * and move the scoreline under it.
  */
@@ -64,7 +64,7 @@ function Detail({ result }: { result: LeagueResult }) {
 }
 
 /**
- * Under the scores: what the offense is facing while the game is being played, and
+ * Under the scores is what the offense is facing while the game is being played, and
  * what the pool made of it once the game is over.
  *
  * Who has the ball is left to the marker beside their score.
@@ -134,9 +134,8 @@ function Score({
       {/* Held apart from the marker beside it so a number of one digit takes the
           room two do. */}
       <span className="game-status__points">
-        {/* Both cells, lit or not, so a score in single figures shows the one it is
-            not using rather than a zero standing in it. The face is monospaced, so
-            the row lands exactly under the number without being measured. */}
+        {/* Both cells render, lit or not, so a single-figure score shows the unused
+            cell, not a zero. Monospaced, the row lands under the number unmeasured. */}
         <span className="game-status__points-ghost" aria-hidden="true">
           {DSEG7_ALL_SEGMENTS.repeat(SCORE_CELLS)}
         </span>

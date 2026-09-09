@@ -13,7 +13,8 @@ import GameStatusSummary from "./GameStatusSummary";
 import "./GameStatusDialog.scss";
 
 /**
- * What a query is matched against: the column the game is, then the game itself.
+ * A query is matched against the column the game is. Then it is matched against
+ * the game itself.
  *
  * Wider than the input reads once a game is chosen, which is the game alone. The
  * column is how a reader who came from a cell knows which game they clicked, so it
@@ -23,14 +24,15 @@ export function gameSearchText(game: WeekGame): string {
   return `${game.label}  ${game.name}`;
 }
 
-/** What one mark is: the state it says, in the shape, the word and the label. */
+/** What one mark is. It says the state in the shape, the word and the label. */
 type Mark = { modifier: string; label: string; icon: ReactNode; word: string };
 
 /**
- * Which mark a game wears, tested in the order the states rule each other out: a
- * column ESPN lists no game for before any status, since there is no game to have
- * one, then the game as its own status says it, with anything ESPN reports that the
- * app does not model falling through to the calendar.
+ * Which mark a game wears, tested in the order the states rule each other out.
+ *
+ * A column ESPN lists no game for comes before any status, since there is no game
+ * to have one. Then the game is tested as its own status says it. Anything ESPN
+ * reports that the app does not model falls through to the calendar.
  */
 function markFor(game: WeekGame, status?: GameStatus): Mark {
   if (game.result == null) {
@@ -70,7 +72,7 @@ function markFor(game: WeekGame, status?: GameStatus): Mark {
 /**
  * Where a game stands, in one mark, on every game the search offers.
  *
- * Every state says so in a word beside its shape: LIVE beside a red dot for a game
+ * Every state says so in a word beside its shape. LIVE beside a red dot for a game
  * being played, WARN beside a warning for a column ESPN lists no game for, which is
  * the one game the dialog can say nothing else about, DONE beside a tick once the
  * game is over, and SOON beside a calendar before kickoff. That a live game is being
@@ -122,7 +124,7 @@ export default function GameStatusDialog({
   /** The column the dialog was opened on, by clicking one of its cells. */
   gameLabel?: string;
   scores?: RakMadnessScores;
-  /** Which week the games belong to, which fetching one again needs. */
+  /** Which week the games belong to, needed to fetch one again. */
   week?: WeekInfo;
   season?: number;
   /**
@@ -179,9 +181,8 @@ export default function GameStatusDialog({
           // search matches, and saying it back here only crowds the game's name.
           itemToStringLabel={(option) => option.name}
           itemKey={(option) => option.label}
-          // The chosen game's own mark, on the freshest status rather than the one
-          // the week was scored at, so a game going final stops pulsing. The week's
-          // own stands until the first answer lands.
+          // The chosen game's mark uses the freshest status, not the week's, so going
+          // final stops pulsing. The week's stands until the first answer lands.
           adornment={
             game != null && (
               <GameMark

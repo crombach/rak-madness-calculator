@@ -42,18 +42,18 @@ export const MARKS_OFF = 2;
 /**
  * How much of the scoreline there is room for, measured rather than read off a width.
  *
- * What a side needs is what it is called, and no width tells `CONN` and `BUF` apart:
- * the same phone holds one game's scoreline and breaks the next one's. So the whole
+ * What a side needs is what it is called, and no width tells `CONN` and `BUF` apart.
+ * The same phone holds one game's scoreline and breaks the next one's. So the whole
  * thing goes in, the scoreline is measured, and it is cut back a step at a time for as
  * long as a name is still running over the room it was given.
  *
- * Two steps rather than one because a phone names both sides in full nowhere: below
+ * Two steps rather than one because a phone names both sides in full nowhere. Below
  * `$breakpoint-roomy` the first step is already what is on screen, so it changes nothing
  * and the marks are what has to go.
  *
  * The verdict is held against the game it was reached on and the width it was reached
  * at, rather than as a flag. Either one moving puts the whole scoreline back and asks
- * again: another game is another pair of names, and another width is other room to hold
+ * again. Another game is another pair of names, and another width is other room to hold
  * them.
  *
  * @param id the game on screen, which is what the verdict is about.
@@ -82,9 +82,8 @@ export default function useScorelineFit(
     }
   }, [id, step, width]);
 
-  // Every render, since what the scoreline holds is what decides this and a game going
-  // final rewrites half of it. Before the browser paints, so a step the scoreline is
-  // about to give up is never one the reader saw it holding.
+  // Every render, since what the scoreline holds decides this, and going final rewrites
+  // half of it. Runs before paint, so a dropped step was never seen holding it.
   useLayoutEffect(measure);
 
   // A name measured in the fallback font was measured at the wrong width, and the swap
