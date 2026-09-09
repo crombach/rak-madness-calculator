@@ -106,6 +106,18 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
     });
   });
 
+  it("knocks out a player no set of their own picks can save", () => {
+    // Two games open, both picked the other way, and four points behind. Winning
+    // both leaves her two short, so no set of her picks takes the week and the
+    // knockouts never said so.
+    const scores = week([
+      player({ name: "Bob", total: 5, pro: [pick("DEN +3"), pick("SF +1")] }),
+      player({ name: "Alice", total: 0, pro: [pick("KC -3"), pick("BUF -1")] }),
+    ]);
+
+    expect(getPlayerAnalysis(scores, "Alice")?.kind).toBe("knockedOut");
+  });
+
   it("clinches a week no remaining game can change", () => {
     // Both picked the same team, so the game moves both scores together and
     // cannot close the gap.

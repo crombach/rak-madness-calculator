@@ -141,8 +141,13 @@ function eventSides(
 }
 
 /** A side's name as every index and every matchup key spells it. */
+/**
+ * Empty where ESPN lists a side it has no team for, which a bowl slot still to be
+ * filled arrives as. The type says the field is always there and the answers do
+ * not, which is what the reads below guard against.
+ */
 function teamAbbreviation(competitor: EspnCompetitor): string {
-  return competitor.team.abbreviation?.toUpperCase();
+  return competitor.team.abbreviation?.toUpperCase() ?? "";
 }
 
 /**
@@ -159,6 +164,9 @@ function isWanted(
   if (sides == null) return false;
   const home = teamAbbreviation(sides.home);
   const away = teamAbbreviation(sides.away);
+  // A side ESPN named no team for matches no column, and `matchupKey` cannot fold
+  // a name it does not have.
+  if (home === "" || away === "") return false;
   return (
     wantedPairs.has(matchupKey(new Set([home, away]))) ||
     wantedTeams.has(home) ||

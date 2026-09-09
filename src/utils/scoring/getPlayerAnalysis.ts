@@ -167,7 +167,7 @@ function threats(me: Side, rivals: Array<Side>): Array<Side> {
 /** What the ranking reads off this player, as one outcome leaves them. */
 function meritIn(side: Side, total: number, outcome: number): Merit {
   return {
-    hasNoPicks: side.player.status.hasNoPicks,
+    cannotWin: side.player.status.hasNoPicks || side.player.status.hasBlankPick,
     total,
     distance: side.player.tiebreaker.distance,
     college: scoreIn(side.college, outcome),
@@ -696,12 +696,13 @@ export default function getPlayerAnalysis(
     return headline(player, playerIndex, rivals, games, mustWin);
   }
 
-  /** Winning every pick is the best the player can do, so it settles the rest. */
-  const { minimal, outrightAt } = search(
-    mineMask,
-    read,
-    read(mineMask).kind === "win",
-  );
+  // Winning every pick is the best the player can do, so it settles the rest. A
+  // player it does not save is one no set of their picks saves, and a search told
+  // that only reads all `2^n` of them to say so.
+  const best = read(mineMask);
+  if (best.kind === "loss") return knockedOut(player);
+
+  const { minimal, outrightAt } = search(mineMask, read, best.kind === "win");
 
   if (minimal.length === 0) {
     return knockedOut(player);

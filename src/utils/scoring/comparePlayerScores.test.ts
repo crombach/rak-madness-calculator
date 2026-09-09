@@ -15,12 +15,14 @@ function player(
     proAgainstTheSpread = 0,
     distance,
     hasNoPicks = false,
+    hasBlankPick = hasNoPicks,
   }: {
     total?: number;
     college?: number;
     proAgainstTheSpread?: number;
     distance?: number;
     hasNoPicks?: boolean;
+    hasBlankPick?: boolean;
   } = {},
 ): PlayerScore {
   return {
@@ -29,7 +31,7 @@ function player(
     tiebreaker: { distance },
     college: [],
     pro: [],
-    status: { hasNoPicks, hasBlankPick: hasNoPicks, isKnockedOut: false },
+    status: { hasNoPicks, hasBlankPick, isKnockedOut: false },
   };
 }
 
@@ -50,6 +52,17 @@ describe("comparePlayerScores", () => {
     expect(
       ranked(
         player("Bob", { total: 9, hasNoPicks: true }),
+        player("Alice", { total: 1 }),
+      ),
+    ).toEqual(["Alice", "Bob"]);
+  });
+
+  it("ranks a player who left one game blank last, whatever their score", () => {
+    // `applyKnockouts` reads a blank as a row that cannot win, so the standings
+    // read the leader off the first row only while such a row sorts under it.
+    expect(
+      ranked(
+        player("Bob", { total: 9, hasBlankPick: true }),
         player("Alice", { total: 1 }),
       ),
     ).toEqual(["Alice", "Bob"]);

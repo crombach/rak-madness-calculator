@@ -413,6 +413,22 @@ describe("getLeagueResults, matchup filtering", () => {
     ]);
     expect(results).toHaveLength(0);
   });
+
+  it("keeps the week where ESPN lists a side it has no team for", async () => {
+    // A bowl slot still to be filled arrives with no abbreviation, and the type
+    // says every side has one. One of those cannot cost the week its scoring.
+    mockFetch([
+      espnEvent({
+        home: "TBD",
+        away: "TBD",
+        id: "2",
+        homeExtras: { team: { displayName: "TBD" } } as Partial<EspnCompetitor>,
+      }),
+      bufVsKc,
+    ]);
+    const results = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+    expect(results.map((it) => it.shortName)).toEqual(["KC @ BUF"]);
+  });
 });
 
 describe("getLeagueResults, what it does not ask twice", () => {
