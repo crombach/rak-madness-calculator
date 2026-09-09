@@ -33,8 +33,8 @@ export default function Button({
   disabled?: boolean;
   /**
    * Unavailable for now rather than unavailable outright. Keeps the button in the
-   * tab order and looking like itself, which `disabled` does neither of, for a
-   * control that is only waiting on something.
+   * tab order and looking like itself, for a control that is only waiting on
+   * something. `disabled` does neither.
    */
   ariaDisabled?: boolean;
   /** Set while the button's own work is running. Draws the shared loading sheen. */
@@ -58,7 +58,7 @@ export default function Button({
       // Set whenever `selected` is passed at all, true or false, not just when
       // held. `--selected` alone cannot carry this: it disappears the moment
       // the route deselects the button, which is exactly when the release
-      // delay below still needs to apply.
+      // delay in `Button.scss`'s `--selectable` rule still needs to apply.
       "--selectable": selected !== undefined,
       "--selected": !!selected,
       "--busy": busy,

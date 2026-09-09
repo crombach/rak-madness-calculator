@@ -1,7 +1,7 @@
 .icon {
   // 1em at 1.5rem is the 24px box the Material icons are drawn in, and is what
-  // `SvgIcon` sized them at. Anything wanting another size overrides it, the way
-  // `PlayerStatusIcon.scss` asks for 16px.
+  // `Icon`, defined in `Icon.tsx`, sized them at. Anything wanting another size
+  // overrides it, the way `PlayerStatusIcon.scss` asks for 16px.
   width: 1em;
   height: 1em;
   font-size: 1.5rem;

@@ -32,17 +32,16 @@ export default function DialogShell({
   /** The control that picks what the body is about. */
   search?: ReactNode;
   /**
-   * Set while the next answer is being worked out. Draws the bar on the rule,
-   * named by `label`, which says what is being worked out.
+   * Set while the next answer is being worked out. Draws the bar on the rule.
+   * `label` names what is being worked out.
    *
    * The name travels with the flag rather than beside it, so a dialog cannot draw
    * a bar with nothing to call it. A dialog that never waits passes nothing.
    */
   busy?: false | { label: string };
 }>) {
-  // Tapping a search opens a keyboard over the bottom of the screen, which the
-  // sheet is sized and padded against. Only while the dialog is up, since nothing
-  // else on any page has an input to open one.
+  // A search opens a keyboard over the screen's bottom, which the sheet sizes and
+  // pads against. Only while the dialog is up, since no other page has an input.
   useViewportInsets(open);
 
   return (
