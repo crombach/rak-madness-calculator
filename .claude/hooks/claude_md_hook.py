@@ -14,7 +14,7 @@ over its upstream. Either way a directory is dropped once the same change touche
 the CLAUDE.md that covers it, so a documented addition never nags.
 
 Deliberately ignores in-place edits to existing files: rewriting a function body
-rarely changes a one-line directory summary. The hook only detects; Claude judges
+rarely changes a one-line directory summary. The hook only detects. Claude judges
 whether the summary actually needs to change and rewrites it.
 
 Self-gating: silent when the command is neither, when cwd is not a git repo, when
@@ -63,7 +63,7 @@ def emit(context):
 
 def working_tree_changes(root):
     """(paths added, CLAUDE.md paths touched) in the working tree."""
-    # -z avoids porcelain's quoting of unusual paths; a rename or copy entry
+    # -z avoids porcelain's quoting of unusual paths. A rename or copy entry
     # carries its source path as an extra NUL-separated field.
     fields = git(root, "status", "--porcelain", "-z",
                  "--untracked-files=all").split("\0")
@@ -174,7 +174,7 @@ def main():
         file_dir = os.path.join(root, rel_dir) if rel_dir else root
         nearest = nearest_claude_md(file_dir, root)
         if nearest is None:
-            continue  # no CLAUDE.md tree here; skill hasn't been run
+            continue  # no CLAUDE.md tree here. Skill hasn't been run
         rel_md = os.path.relpath(nearest, root)
         if rel_md in touched_md:
             continue  # already answered for, in this same change

@@ -1,12 +1,12 @@
-# The Pages project, which Cloudflare cannot rename, so it keeps the old name
-# while the app and the bucket carry the new one.
+# Cloudflare cannot rename the Pages project. It keeps the old name while the
+# app and the bucket carry the new one.
 name = "rak-sadness"
 # The date the runtime behavior was last verified against, not the project's age.
 compatibility_date = "2026-08-10"
 
 # Serves picks/<season>/<week>.xlsx to functions/api/picks/[season]/[week].ts,
 # lists seasons for functions/api/picks/index.ts.
-# Simulated locally by `wrangler pages dev`; seed it with
+# Simulated locally by `wrangler pages dev`. Seed it with
 # `wrangler r2 object put rak-madness-calculator/picks/2025/1.xlsx --file <path> --local`.
 # The binding also has to exist on the Pages project, for preview and production
 # both, or the deployed Function has nothing to read.

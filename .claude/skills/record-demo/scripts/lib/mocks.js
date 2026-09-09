@@ -132,7 +132,7 @@ export function calendarJson(slug, weeksCount) {
  * tree (`AppDataContextProvider` down) renders against mocked picks and ESPN
  * data instead of the network. Matches the exact request shapes
  * `functions/api/picks/**`, `src/utils/getLeagueInfo.ts`, and
- * `src/utils/getLeagueResults.ts` make; keep this in step with those if their
+ * `src/utils/getLeagueResults.ts` make. Keep this in step with those if their
  * URLs or query params change.
  *
  * @param {import("playwright").BrowserContext} context

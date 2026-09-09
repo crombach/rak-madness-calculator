@@ -2,12 +2,12 @@
 """PreToolUse hook: point Claude at the repo's build-run-test skill.
 
 Pairs with the agentify-build skill. The skill holds what a Makefile target name
-cannot carry — toolchain versions, ports, prereqs, offline-test handling — and a
-skill only loads when the model picks it. This hook makes that pick deterministic:
+cannot carry: toolchain versions, ports, prereqs, offline-test handling. A skill
+only loads when the model picks it. This hook makes that pick deterministic:
 before the first build-shaped Bash command of a session it injects one line naming
 the skill.
 
-Never blocks. The command runs either way; the hook only adds context.
+Never blocks. The command runs either way. The hook only adds context.
 
 Fires once per session, keyed on session_id, so a build-fix loop costs one
 reminder. Silent when the skill is absent, when the command is not build-shaped,
@@ -60,7 +60,7 @@ PYTHON_MODULES = {"pytest", "unittest", "build", "tox", "nox", "py_compile"}
 
 SEPARATORS = re.compile(r"&&|\|\||;|\||&|\n")
 ENV_ASSIGN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=\S*\s+")
-# Wrappers Claude Code strips before matching; strip them here for the same reason.
+# Wrappers Claude Code strips before matching. Strip them here for the same reason.
 WRAPPERS = {"timeout", "time", "nice", "nohup", "stdbuf", "command", "builtin",
             "noglob", "xargs", "env", "sudo"}
 DURATION = re.compile(r"^\d+(\.\d+)?[smhd]?$")

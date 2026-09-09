@@ -61,8 +61,8 @@ async function pull({ cdp, page, distance, steps }) {
  *
  * The candidate is CSS injected over the running app, read from `$CLOSE_CSS` and
  * `$CLOSE_CSS_SLOW`, so every variant runs against one unmodified build. The slow
- * pass stretches the CSS rather than the clock, because the timer that drops
- * `data-pull` is JavaScript and would cut a stretched transition off mid-flight.
+ * pass stretches the CSS rather than the clock. The timer that drops `data-pull`
+ * is JavaScript and would cut a stretched transition off mid-flight.
  */
 export default async function run({ page, context, baseUrl }) {
   await registerAppMocks(context, {

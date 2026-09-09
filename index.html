@@ -10,12 +10,12 @@
          layout viewport, so the dialog sheet's `bottom: 0`, every `dvh`, and Base
          UI's own idea of the room a popup has are all the screen the reader can
          see. Measuring that instead left the search behind the keyboard wherever
-         the measurement was wrong, which on Firefox for Android is always: it
-         shrinks the layout viewport, so `window.innerHeight` drops with the visual
-         viewport and the two report no keyboard at all.
+         the measurement was wrong, which on Firefox for Android is always the
+         case. It shrinks the layout viewport, so `window.innerHeight` drops with
+         the visual viewport and the two report no keyboard at all.
 
          It costs the rotate overlay a guard. A small phone with a keyboard up is
-         wider than it is tall, which reads as landscape; `phone-landscape` in
+         wider than it is tall, which reads as landscape. `phone-landscape` in
          src/styles/_breakpoints.scss holds it off with an aspect ratio.
 
          src/hooks/useViewportInsets.ts stays for iOS Safari, which ignores this. -->

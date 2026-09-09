@@ -128,8 +128,8 @@ export default async function run({ page, context, baseUrl }) {
   await page.waitForSelector("td.table__pick", { timeout: 20000 });
   await page.waitForTimeout(500);
 
-  // Row 0 ranks first already (score ties resolve to insertion order here);
-  // its first `.table__pick` cell is P1, since this fixture has no college
+  // Row 0 ranks first already (score ties resolve to insertion order here).
+  // Its first `.table__pick` cell is P1, since this fixture has no college
   // columns. Click it to open the Game Status dialog on the still-live game.
   const firstPickButton = page
     .locator("tbody tr")
@@ -141,15 +141,15 @@ export default async function run({ page, context, baseUrl }) {
   await page.getByText("Game Status").waitFor({ timeout: 5000 });
   await page.waitForTimeout(1500);
 
-  state.gameOneFinal = true; // the next poll reads this; nothing else pokes the app
+  state.gameOneFinal = true; // The next poll reads this. Nothing else pokes the app
 
   await page.waitForTimeout(POLL_WAIT_MS);
 
   // The dialog's own search-combobox label resets around here (a pre-existing
   // Base UI Combobox quirk: `scores.games` is rebuilt fresh on every scoring
-  // pass, so the combobox's stale item reference stops matching) — orthogonal
-  // to this fix, so close the dialog to end on the table's own updated colors
-  // rather than dwelling on it.
+  // pass, so the combobox's stale item reference stops matching). This is
+  // orthogonal to this fix, so close the dialog to end on the table's own
+  // updated colors rather than dwelling on it.
   await page.getByRole("button", { name: "Close" }).click();
   await page.waitForTimeout(600);
 }

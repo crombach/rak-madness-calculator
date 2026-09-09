@@ -20,12 +20,11 @@ type CacheableContext = {
 /**
  * `build`'s answer, served from the colo's cache when it is already there.
  *
- * Both routes send a `Cache-Control` that says how long their answer stands, and
- * neither was reaching a cache: Cloudflare will not cache a Function's JSON or
- * xlsx without being asked, so every request ran an R2 round trip and measured
- * 430-540ms of TTFB. The Cache API is the asking. It honors the same
- * `Cache-Control` already on the response, so the TTL stays where the route
- * declares it.
+ * Both routes send a `Cache-Control` that says how long their answer stands.
+ * Cloudflare caches neither a Function's JSON nor its xlsx without being asked,
+ * so skipping that ask costs an R2 round trip on every request and 430-540ms of
+ * TTFB. The Cache API is the asking. It honors the same `Cache-Control` already
+ * on the response, so the TTL stays where the route declares it.
  *
  * Per-colo and not tiered, so this earns nothing for the first reader to want a
  * week in their region and everything for the next one.
@@ -35,10 +34,10 @@ type CacheableContext = {
  * stand. A stored 200 still answers a later `If-None-Match` with a 304, because
  * `match` reads the `ETag` it was stored with.
  *
- * So a colo whose copy has expired refills only when a reader who holds no `ETag`
- * arrives. Everyone else revalidates, gets a 304 built from R2's metadata, and
- * stores nothing. Storing on a 304 would mean reading the whole workbook from R2
- * on the requests that currently read none of it, which costs more than the colo
+ * A colo's copy can expire. It refills again only when a reader arrives holding
+ * no `ETag`. Everyone else revalidates, gets a 304 built from R2's metadata, and
+ * stores nothing. Storing on a 304 would mean reading the whole workbook from R2,
+ * on the requests that currently read none of it. That costs more than the colo
  * copy is worth at a minute of edge TTL. Left as it is on purpose.
  */
 export async function cachedGet(

@@ -69,8 +69,8 @@ async function openIn(page, baseUrl, theme, route) {
 }
 
 /**
- * Shows the lamp that says which key in a row is chosen, on both controls that
- * draw one, in both themes.
+ * Shows the lamp that says which key in a row is chosen. It appears on both
+ * controls that draw one, in both themes.
  *
  * The navbar's Scoreboard/Picks switch sits on the darker `--rak-key-face` the
  * bar sets for itself. The settings dialog's theme switch sits on the default
