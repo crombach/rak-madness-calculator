@@ -58,7 +58,7 @@ type Settings = {
   setLiveAnalysis: (enabled: boolean) => void;
 };
 
-// Defaults rather than a throw, following `PlayerAnalysisContext`: the tables read
+// Defaults rather than a throw, following `PlayerAnalysisContext`. The tables read
 // this per row and both suites mount them on their own, with no provider above.
 const SettingsContext = createContext<Settings>({
   theme: DEFAULT_THEME,
@@ -136,8 +136,8 @@ function applyTheme(theme: Theme): void {
  * The color the browser paints its own chrome in, which no stylesheet can say.
  *
  * `auto` has to resolve the OS preference here, unlike the attribute above. The
- * default is `auto`, so leaving this on the dark value stood a dark chrome bar over
- * a light navbar for every reader who never opened the settings at all.
+ * default is `auto`, so leaving this on the dark value stands a dark chrome bar
+ * over a light navbar for every reader who never opens the settings at all.
  */
 function applyThemeColor(theme: Theme): void {
   const meta = document.querySelector('meta[name="theme-color"]');
@@ -221,7 +221,7 @@ export function useSettings(): Settings {
 /**
  * Whether a player in a table is the reader themselves.
  *
- * Trimmed and case-folded, which nothing else comparing these names is: they come
+ * Trimmed and case-folded, which nothing else comparing these names is. They come
  * out of the picks sheet as whoever typed them left them, and every other consumer
  * matches one sheet value against another with `===`. This one matches a sheet
  * value against something a reader typed from memory.

@@ -44,8 +44,7 @@ export default function AnalysisRoutes({
         ))}
       </ol>
       {/* Worked out, then left off, so the count is what the reader is missing.
-          Held back while there are routes folded away, which are the ones to read
-          before hearing what came after them. */}
+          Held back while folded routes remain, since those come first to read. */}
       {(isExpanded || folded <= 0) && hiddenCount > 0 && (
         <p className="analysis__note --upright">
           {plural(hiddenCount, "other path")} found but not shown.

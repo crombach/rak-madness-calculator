@@ -11,13 +11,13 @@ const SYMBOLS_VIEW_BOX = "0 -960 960 960";
 /**
  * The icon set, drawn from Material Symbols Sharp at weight 400, which Google
  * ships under Apache 2.0. Sharp because its terminals are square and its corners
- * unrounded, which is the same panel the app's keys and bezels are pressed out of.
+ * unrounded. That is the same panel the app's keys and bezels are pressed out of.
  *
  * Inlined as path data rather than imported, because an icon package built on
  * components pulls a UI library and a CSS-in-JS runtime into the bundle for the
  * sake of a dozen shapes.
  *
- * One shape is not Material at all: `GitHubIcon` is a wordmark, and passes the
+ * One shape is not Material at all. `GitHubIcon` is a wordmark, and passes the
  * `viewBox` it was drawn in.
  */
 function Icon({
@@ -129,7 +129,7 @@ export function SkullOutlinedIcon() {
  * A player still standing, drawn as an outline beside the other two a status
  * wears. Filled, the face is a disc with the eyes and the mouth cut out of it in
  * the same direction the disc is drawn, which the non-zero fill rule reads as one
- * shape rather than as holes: it came out as a blot.
+ * shape rather than as holes. It came out as a blot.
  */
 export function SentimentVerySatisfiedOutlinedIcon() {
   return (

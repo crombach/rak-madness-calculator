@@ -17,7 +17,7 @@ const ESPN_LEAGUE: Record<LeagueKey, League> = {
  * it from the underdog's side.
  *
  * The first row that names a team settles it. Every other row describes the same
- * game, from one side or the other, and a sheet whose rows disagree reaches here
+ * game, from one side or the other. A sheet whose rows disagree reaches here
  * without its game keys at all, since nothing can tell which of the two was meant.
  */
 function gameSpread(
@@ -66,8 +66,7 @@ export default function weekGames(
     const labels = rangeWithPrefix(keys.length, LEAGUE_PREFIX[league]);
     return keys.map((key, position) => {
       const teams = parsed.matchupsByGameKey.get(key);
-      // First match wins, which is how the picks themselves are resolved, so a
-      // team playing twice in a college bowl week lands on the same game here.
+      // The same first-match rule `ResultsIndex` is built with.
       const result = teams != null ? findMatchup(index, teams) : undefined;
       return {
         label: labels[position],

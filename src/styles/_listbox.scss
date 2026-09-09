@@ -19,9 +19,8 @@ $-max-rows: 5;
   );
   overflow-y: auto;
   padding: var(--rak-space-1) 0;
-  // The edge the table is framed in, squared off like everything else pressed out
-  // of the panel, so a list opening off a socket reads as part of the same device
-  // rather than as a card the browser dropped on top of it.
+  // The edge the table is framed in, squared off like everything pressed from the
+  // panel, so a list opening off a socket reads as one device, not a dropped card.
   border: var(--rak-border-width-hairline) solid var(--rak-panel-border);
   border-radius: var(--rak-radius-xs);
   background-color: var(--rak-surface);
@@ -40,9 +39,8 @@ $-max-rows: 5;
     background-color: var(--rak-fill-subtle);
   }
 
-  // The one already set, said in the app's own primary rather than a step further
-  // down the same grays the row under the pointer uses. Two neutrals one step
-  // apart cannot say which of them means chosen.
+  // The one already set, in the app's primary rather than a step down the grays
+  // the hovered row uses. Two neutrals a step apart cannot say which means chosen.
   &[data-selected] {
     background-color: var(--rak-selected-fill);
     font-weight: var(--rak-weight-semibold);

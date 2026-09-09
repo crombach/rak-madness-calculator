@@ -1,6 +1,6 @@
 # Cloudflare Pages reads this from the build root, which is where Vite copies
 # public/. Pages' own default is `max-age=14400, must-revalidate`, and the
-# must-revalidate is what makes the edge ask the origin on every hit: measured
+# must-revalidate is what makes the edge ask the origin on every hit. Measured
 # `cf-cache-status: REVALIDATED` and 290-350ms TTFB on the chunk the first paint
 # waits for, when a cache hit would cost neither.
 #

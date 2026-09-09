@@ -37,9 +37,8 @@ export default function useLeagueWeeks(
   const [selectedWeek, setSelectedWeek] = useState<WeekInfo>();
   const [isCalendarLoading, setLoading] = useState(true);
 
-  // Read when the calendar lands rather than depended on, so changing week does
-  // not fetch the whole season again. The URL is what moves it, and the schedule
-  // is the same either way.
+  // Read when the calendar lands, not depended on, so a week change skips
+  // refetching, since the URL moves it and the schedule stays the same either way.
   const initialWeekNumberRef = useRef(initialWeekNumber);
   // Declared above the lookup, so a season and week that change together are in
   // step before the lookup they both belong to starts.
@@ -49,9 +48,8 @@ export default function useLeagueWeeks(
 
   useEffect(() => {
     if (!enabled) return;
-    // A season switched away from while its lookup was still out must not land.
-    // It would leave `loadedSeason` naming a season nobody asked for, which reads
-    // as loading forever, with no further lookup queued to end it.
+    // A season switched away from mid-lookup must not land. `loadedSeason` would
+    // name one nobody asked for and loop forever, with no lookup queued to end it.
     return latestOnly(async (isCurrent) => {
       const proLeagueInfo = await getLeagueInfo(League.PRO, season);
       if (!isCurrent()) return;
@@ -72,9 +70,8 @@ export default function useLeagueWeeks(
       setWeeks(calendarWeeks);
       setCurrentWeekNumber(proLeagueInfo.activeWeek?.value);
       setLoadedSeason(proLeagueInfo.season);
-      // The week the URL named, or the one the season has reached. That is the
-      // last regular week once the season is over, and none at all until its
-      // opener has been played.
+      // The week the URL named, or the one the season has reached, which is the
+      // last regular week once it is over and none at all before the opener.
       setSelectedWeek(
         calendarWeeks.find(
           (week) => week.value === initialWeekNumberRef.current,
@@ -94,8 +91,8 @@ export default function useLeagueWeeks(
     (season != null && season !== loadedSeason);
 
   // Newest first, and never a week the season has not reached. A season with no
-  // week behind it offers none, which is what the 0 stands for: `slice` would read
-  // a missing end as the whole array.
+  // week behind it offers none, which is what the 0 stands for. `slice` would
+  // read a missing end as the whole array.
   const selectableWeeks = useMemo(
     () => (weeks ?? []).slice(0, currentWeekNumber ?? 0).reverse(),
     [weeks, currentWeekNumber],

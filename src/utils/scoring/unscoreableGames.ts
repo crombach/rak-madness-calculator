@@ -6,7 +6,7 @@ import weekShape from "./weekShape";
  *
  * A contradicted spread or a game the results do not hold is a hole in the week
  * itself, so a week carrying one is not finished however many of its games are.
- * A cell left blank is not one of those: it scores the player nothing and says
+ * A cell left blank is not one of those. It scores the player nothing and says
  * nothing about the game, and every week has some.
  */
 export default function unscoreableGames(

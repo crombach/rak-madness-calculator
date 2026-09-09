@@ -11,12 +11,12 @@ bash .claude/skills/upload-pr-media/scripts/upload_pr_media.sh \
 ```
 
 Prints `RESULT: OK` then one `https://raw.githubusercontent.com/...` URL per
-file. Embed it in the PR body: `![before](<url>)` for an image, `<video
-src="<url>" controls></video>` for an `.mp4`/`.webm` (GitHub's markdown
+file. Embed it in the PR body: `![before](<url>)` for an image,
+`<video src="<url>" controls></video>` for an `.mp4`/`.webm` (GitHub's markdown
 renders both).
 
 `--feature` should read like a slug for what the PR is about, not the git
-branch name character for character: readable in a URL, and stable if the
+branch name character for character. Readable in a URL, and stable if the
 branch gets renamed. Reuse the same `--feature` for every file in one PR,
 and reuse it again on a later commit to that PR instead of inventing a new
 name, so a repeat run lands in the same directory rather than scattering it.

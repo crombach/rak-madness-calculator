@@ -59,9 +59,8 @@ export default function PageLayout({
         {children}
       </main>
       {/*
-        Drawn only on a phone turned on its side, where the stylesheet covers the
-        page with it. `display: none` the rest of the time, so it is out of the
-        accessibility tree rather than merely off screen.
+        Drawn only on a sideways phone, covering the page. Otherwise
+        `display: none`, out of the accessibility tree, not just off screen.
       */}
       <div className="page__rotate">
         <span className="page__rotate-icon">

@@ -45,8 +45,7 @@ export default function Toaster() {
             key={toast.id}
             className={`toast --${toast.type}`}
             // Only a failure interrupts. Tapping a pick raises a toast about it,
-            // and that should wait its turn rather than cut off whatever is being
-            // read.
+            // and that waits its turn rather than cut off whatever is being read.
             role={isPersistent(toast) ? "alert" : "status"}
           >
             <span className="toast__icon">

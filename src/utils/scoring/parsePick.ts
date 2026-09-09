@@ -6,7 +6,7 @@ const trailingSpread = /([+-]?\s*\d+(?:\.\d+)?)\s*$/;
  *
  * The spread is taken off the end and whatever is left is the abbreviation, rather
  * than reading the abbreviation up to the first space or sign. Abbreviations hold
- * both: `M-OH` has a hyphen and `OLE MISS` has a space, and looking for the first
+ * both. `M-OH` has a hyphen and `OLE MISS` has a space, and looking for the first
  * one would cut either in half.
  *
  * These cells are typed by hand, so a spread with no sign is taken as written, and a

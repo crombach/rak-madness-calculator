@@ -5,7 +5,7 @@ import { Component, PropsWithChildren } from "react";
  *
  * `lazy` throws the failed import at the render that needs the module, and with
  * nothing to catch it React unmounts the whole app rather than the dialog. A
- * deploy is the ordinary way in: Pages serves only the current build's assets, so
+ * deploy is the ordinary way in. Pages serves only the current build's assets, so
  * a chunk named by a page left open since yesterday is already gone.
  *
  * There is nothing to retry. `lazy` keeps the rejected promise and throws it again

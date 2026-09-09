@@ -38,7 +38,7 @@ const events = {
 /**
  * Drags one finger down the table and lets go.
  *
- * Chrome DevTools Protocol rather than `page.dispatchEvent`, which builds a
+ * Uses Chrome DevTools Protocol rather than `page.dispatchEvent`. That builds a
  * `Touch` the page can read but the compositor never sees, so `preventDefault`
  * and the scroller do not actually contend. This is a real touch.
  */

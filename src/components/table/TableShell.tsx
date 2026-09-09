@@ -43,9 +43,9 @@ export default function TableShell({
    *
    * Set, the filler runs to whichever is the more of this and one row past the
    * bottom of the box. Filling to the bottom alone leaves a table exactly as tall
-   * as the box, which is one row short of scrolling, so on a tall enough screen a
-   * stand-in for a table that scrolls would not. The count matters as well as the
-   * overflow: it is what sets how far the bar thinks it has to go.
+   * as the box. That box is one row short of scrolling, so on a tall enough screen
+   * a stand-in for a table that scrolls would not. The count matters as well as
+   * the overflow. It is what sets how far the bar thinks it has to go.
    *
    * Left unset, the filler only makes up what the real rows do not reach.
    */

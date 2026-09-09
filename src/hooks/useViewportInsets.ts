@@ -106,9 +106,8 @@ export default function useViewportInsets(enabled: boolean): void {
     let last: ViewportInsets | undefined;
     let frame = 0;
 
-    // Answers whether the viewport held still, which is what the loop counts. The
-    // root is written only when it moved, so the frames either side of a keyboard
-    // cost a read and nothing else.
+    // Answers whether the viewport held still, what the loop counts. The root is
+    // written only when it moved, so frames beside a keyboard cost just a read.
     const measure = (): boolean => {
       const insets = viewportInsets({
         layoutHeight: window.innerHeight,

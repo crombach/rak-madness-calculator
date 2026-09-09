@@ -32,7 +32,7 @@ export function getStatus(score: GameScore): Status {
 
 /**
  * The header a cell left blank carries. Held apart from the other two because it is
- * the player's own doing rather than a game nobody can score: every week has blanks
+ * the player's own doing rather than a game nobody can score. Every week has blanks
  * in it, and a week full of them is still a week that finished.
  */
 export const MISSING_PICK = "Missing Pick";
@@ -61,7 +61,6 @@ function scoreCell(
   pick: string,
   resultsByTeam: Map<string, LeagueResult>,
 ): GameScore {
-  // Parse the pick text to extract the selected team abbreviation and spread (if present).
   const { teamAbbreviation: selectedTeam, spread } = parsePick(pick);
   const hasSpread = spread !== 0;
 
@@ -73,7 +72,6 @@ function scoreCell(
     );
   }
 
-  // Find the game result matching the selected team.
   const gameResult = resultsByTeam.get(selectedTeam);
   if (!gameResult) {
     console.warn(
@@ -87,10 +85,8 @@ function scoreCell(
     );
   }
 
-  // From the picked team's side, since that is the side the cell's spread is
-  // written from. A push counts as a win, which is why this is >= rather than >.
-  // Nothing reads `pointValue` until `isFinal`, which is when the margin
-  // means anything.
+  // From the picked team's side, since the cell's spread is written from it.
+  // A push counts as a win (>= not >). `pointValue` unread until `isFinal`.
   const margin = marginAgainstSpread(gameResult, selectedTeam, spread);
   const pointValue = margin >= 0 ? 1 : 0;
   debugLog("scored pick", {

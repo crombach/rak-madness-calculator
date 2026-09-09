@@ -55,8 +55,8 @@ export function indexResults(results: Array<LeagueResult>): ResultsIndex {
  * The one game a picks column describes.
  *
  * A column names two teams once anyone has picked either side of it, and one where
- * every player picked the same team. Both are looked up folded, because a workbook
- * could name a team any way at all while a result carries it already uppercased.
+ * every player picked the same team. Both are looked up folded. A workbook could
+ * name a team any way at all, while a result carries it already uppercased.
  */
 export function findMatchup(
   index: ResultsIndex,

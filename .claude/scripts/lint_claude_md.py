@@ -31,8 +31,8 @@ indexed. Pass-through directories (no direct files of their own, any number of
 children, e.g. `skills/` or a Java/Kotlin package prefix) are collapsed: they get
 no CLAUDE.md and parents link through them.
 
-File scope comes from `git ls-files` when available (respects .gitignore and lists
-only tracked files); otherwise it falls back to os.walk with a skip list.
+File scope comes from `git ls-files` when available, which respects .gitignore and
+lists only tracked files. Otherwise it falls back to os.walk with a skip list.
 """
 
 import json
@@ -142,7 +142,7 @@ def build(root):
     def depth(d):
         return 0 if d == "" else d.count(os.sep) + 1
 
-    # Deepest first; path as a stable tiebreaker so output is deterministic
+    # Deepest first. Path is used as a stable tiebreaker so output is deterministic
     # (all_dirs is a set, whose iteration order varies with hash seeding).
     ordered = sorted(all_dirs, key=lambda d: (-depth(d), d))
 
@@ -181,7 +181,7 @@ def build(root):
             continue
         kids = sorted({k for c in children[d] if meaningful[c] for k in resolve(c)})
         abs_dir = root if d == "" else os.path.join(root, d)
-        # Precomputed markdown link parts, relative to this dir; collapsed
+        # Precomputed markdown link parts, relative to this dir. Collapsed
         # pass-through chains make these multi-segment (kotlin/com/yahoo/...).
         child_links = [
             {
@@ -212,7 +212,7 @@ def structure_findings(root):
     """Where the tree on disk does not match the plan.
 
     Companion to the duplication check. That one catches a parent repeating a
-    child's summary; this one catches a parent not linking the child at all,
+    child's summary. This one catches a parent not linking the child at all,
     which is what breaks navigation.
     """
     tree = build(root)
@@ -282,7 +282,7 @@ def report_structure(root):
 MAX_POINTER_CHARS = 70
 # Word-overlap (Jaccard) at or above this between pointer and child summary =
 # near-copy. A correct short pointer reuses the child's role words (child leads
-# with the same phrase), so a subset alone is fine; only high overlap = a copy.
+# with the same phrase), so a subset alone is fine. Only high overlap = a copy.
 JACCARD_FLAG = 0.6
 
 # - [`child/`](child/CLAUDE.md) — description text
@@ -422,7 +422,7 @@ LIST_ITEM = re.compile(r"^\s*(?:[-*+]|\d+\.)\s+")
 def counted_lines(text):
     """The lines that count toward the ceiling, in order.
 
-    A heading at level 1 or 2 opens or closes an exemption; deeper headings stay
+    A heading at level 1 or 2 opens or closes an exemption. Deeper headings stay
     inside whatever section they belong to.
 
     No heading counts, at any level. A section title is navigation rather than

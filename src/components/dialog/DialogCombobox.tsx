@@ -7,7 +7,7 @@ import "./DialogCombobox.scss";
 /**
  * The search a dialog is pointed at one of its subjects with.
  *
- * Fully controlled: both the choice and the text in the input are held by the
+ * Fully controlled. Both the choice and the text in the input are held by the
  * caller, so a subject arriving from outside can be taken without the combobox
  * being torn down and rebuilt around it.
  */
@@ -62,8 +62,8 @@ export default function DialogCombobox<T>({
   /**
    * Choosing is the end of the search, so the input gives the focus up.
    *
-   * A phone's keyboard covers the bottom of the screen while the input holds it,
-   * which is where the answer that was just chosen reads. The dialog itself takes
+   * A phone's keyboard covers the bottom of the screen while the input holds it.
+   * That is where the answer that was just chosen reads. The dialog itself takes
    * the focus rather than nothing, so it is still what Escape and a screen reader
    * are working in.
    */
@@ -102,7 +102,7 @@ export default function DialogCombobox<T>({
       // Tapping the search is the start of looking something else up, so what is
       // already in it goes rather than being deleted by hand. A press on the input
       // and a press on the trigger over the rest of the field report their own
-      // reason, and both are the same tap to the reader. Only a press: opening by
+      // reason, and both are the same tap to the reader. Only a press. Opening by
       // typing reports `input-change`, and wiping that would take the letters that
       // opened the list.
       onOpenChange={(listOpen, details) => {
@@ -127,8 +127,9 @@ export default function DialogCombobox<T>({
           keyboard to type into it. The click covers that, and it is the gesture a
           phone raises the keyboard on.
 
-          Out of a reader's way, which has the input's own `combobox` role for all
-          of this and would otherwise be offered a second, nameless control.
+          The trigger stays hidden from a reader. The input already carries the
+          combobox role for all of this, so an exposed trigger would only be a
+          second, nameless control.
         */}
         <Combobox.Trigger
           className="dialog__search-trigger"
@@ -150,7 +151,7 @@ export default function DialogCombobox<T>({
       <Combobox.Portal>
         {/* Wherever there is room for it, which is under the input in all but the
             tightest case. Held below it and nowhere else, the list ran off the
-            bottom of a phone; `index.html` hands a keyboard's height back to the
+            bottom of a phone. `index.html` hands a keyboard's height back to the
             layout viewport, so a list flipped over the input lands on screen. */}
         <Combobox.Positioner className="dialog__positioner" sideOffset={4}>
           <Combobox.Popup className="dialog__list">

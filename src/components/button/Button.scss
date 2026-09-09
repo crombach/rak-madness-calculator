@@ -5,7 +5,7 @@
 // A key at rest and a key sunk under a finger. The top face travels by the
 // difference between the two lifts, so the face lands where the lower edge was
 // and nothing around the key moves. Transform rather than margin for that
-// reason, and a state rather than an animation: the travel is eased by the
+// reason, and a state rather than an animation. The travel is eased by the
 // transition below, and where motion is turned off the key still lands sunk.
 @mixin key($lift) {
   transform: translateY(calc(var(--rak-key-lift) - #{$lift}));
@@ -31,7 +31,7 @@
   }
 }
 
-// Fixed white ink rather than `--rak-on-solid`: that token now inverts with the
+// Fixed white ink rather than `--rak-on-solid`. That token now inverts with the
 // primary ramp's own chrome, but these fills each stay their own fixed color in
 // both modes, so their ink has to stay fixed too.
 @mixin fixed-white-ink {
@@ -63,7 +63,7 @@
   //
   // This order (background-color, color, transform, box-shadow) is read
   // positionally by every `transition-delay` override below, `--selectable`'s
-  // included, since a custom property cannot carry a delay: one that changes
+  // included, since a custom property cannot carry a delay. One that changes
   // value on the same state change it delays reads its own stale value, and
   // never delays anything.
   transition:
@@ -100,9 +100,9 @@
     aspect-ratio: 1;
   }
 
-  // A key molded out of the panel: lit along its top edge, standing on a lower
-  // edge in its own color one step down. Each variant names that step below, so
-  // a key is never edged in a color it does not otherwise carry.
+  // A key molded out of the panel. It is lit along its top edge and stands on a
+  // lower edge in its own color one step down. Each variant names that step
+  // below, so a key is never edged in a color it does not otherwise carry.
   &.--solid {
     --rak-key-edge: var(--rak-disabled-edge);
 
@@ -150,9 +150,9 @@
       @include key(var(--rak-key-pressed));
     }
 
-    // Two fills, not three or four: a pointer on the key, a finger down on it, and
+    // Two fills, not three or four. A pointer on the key, a finger down on it, and
     // the route holding it selected all land on the same fill. A step apart, and
-    // two eased moves land back to back — the browser drops `:active` the instant
+    // two eased moves land back to back. The browser drops `:active` the instant
     // the pointer lifts, a render tick before React can add `--selected`, so a fill
     // a step darker flashes through the one below it on every click. The press is
     // said in the travel and the edge instead, which is what a molded key says it
@@ -161,7 +161,7 @@
     // Properties rather than an override, because a fill that varies by surface
     // cannot be overridden at one specificity without also beating the rules below.
     // The navbar shifts the whole set a step to stand its keys off a bar in the same
-    // color, and they move together: a rest fill raised on its own leaves a press
+    // color, and they move together. A rest fill raised on its own leaves a press
     // crossing two steps at once.
     &.--primary {
       @include button-color(
@@ -199,7 +199,7 @@
     }
 
     // The key that goes somewhere rather than reports something, in the same blue
-    // the lamp is lit in: a fill that stays one saturated blue in both modes,
+    // the lamp is lit in. A fill that stays one saturated blue in both modes,
     // 5.45:1 on white ink.
     &.--info {
       @include button-color(
@@ -213,7 +213,7 @@
 
     // The key that hands the week to something outside the app, in the orange
     // the tables already spend on a knockout, so it reads as neither a result
-    // nor a route: 5.02:1 on white ink.
+    // nor a route. That's 5.02:1 on white ink.
     &.--warning {
       @include button-color(
         var(--rak-warning-700),
@@ -226,7 +226,7 @@
   }
 
   // Which one is chosen, said in something other than a fill one step from its
-  // neighbors': a lamp set into the key's bottom lip, on the edge it shares
+  // neighbors'. A lamp set into the key's bottom lip, on the edge it shares
   // with the page. A key that could be chosen carries the lamp unlit, so the
   // row reads as lamps with one of them on rather than as one key wearing a
   // rule under it.
@@ -294,7 +294,7 @@
 
     // A key is disabled for as long as it is working, so this is where most of the
     // app's waiting is seen. The sweep is white, which is invisible on the gray a
-    // disabled key stands in, and the key looked switched off rather than busy.
+    // disabled key stands in, and the key would look switched off rather than busy.
     &:disabled {
       --rak-loading-sheen: var(--rak-loading-sheen-on-light);
     }

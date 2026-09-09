@@ -4,9 +4,8 @@ import "./AnalysisSummary.scss";
 
 export function Section({
   title,
-  // On where a block above this one is needed too. A gap between two blocks does
-  // not say that, and `And` on the title is what makes the two read as one
-  // condition.
+  // On whether a block above this one is needed too. A gap between blocks
+  // doesn't say that. `And` on the title makes the two read as one condition.
   conjoined,
   children,
 }: {
@@ -17,8 +16,8 @@ export function Section({
 }) {
   return (
     <section className="analysis__section">
-      {/* In the title rather than over it, which costs no height, and read out
-          with it, since a reader hearing the blocks needs the word too. */}
+      {/* In the title rather than over it, which costs no height. Read out with
+          it too, since a reader hearing the blocks needs the word. */}
       <h3 className="analysis__section-title">
         {conjoined && <span className="analysis__and">And</span>} {title}
       </h3>

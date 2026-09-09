@@ -211,8 +211,8 @@ describe("getSettledAnalysis, the answers that need no search", () => {
     });
   });
 
-  // The case that sent a reader here: a week whose games are all in, where the
-  // bar used to run over an answer the knockouts had already given.
+  // A week whose games are all in clinches off the knockouts, so the bar never
+  // runs over an answer they already gave.
   it("clinches a week whose games are all played", () => {
     const scores = week(
       [

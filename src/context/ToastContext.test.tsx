@@ -236,7 +236,7 @@ describe("the toast hooks outside a provider", () => {
   });
 });
 
-// Counting renders in the component body rather than through React.Profiler:
+// Counting renders in the component body rather than through React.Profiler.
 // Profiler does not report a commit when only a nested context consumer
 // re-renders, which is exactly the case under test.
 const renders = { actionsOnly: 0, toastList: 0 };

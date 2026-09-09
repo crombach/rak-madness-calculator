@@ -54,8 +54,8 @@ describe("fillerRowCount", () => {
   });
 
   it("settles even when a filler row is not exactly one row tall", () => {
-    // Subpixel rounding used to move the answer on every pass, because the height
-    // of the rows already added was assumed rather than measured.
+    // The height of the rows already added is measured rather than assumed, so
+    // subpixel rounding cannot move the answer on a later pass.
     const content = 260;
     const realRowHeight = ROW_HEIGHT + 0.4;
     let current = 0;

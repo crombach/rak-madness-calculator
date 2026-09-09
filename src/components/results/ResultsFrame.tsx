@@ -24,10 +24,10 @@ import DialogLoadBoundary from "./DialogLoadBoundary";
 import "./ResultsFrame.scss";
 
 /*
-  Neither dialog is on the path to a table, and between them they carry Base UI's
-  combobox, the whole of `getPlayerAnalysis`, and the scoreline: 18kB gzipped of
-  the chunk every route waits on, including the home page, which has no dialog to
-  open at all.
+  Neither dialog is on the path to a table. Between them they carry Base UI's
+  combobox, the whole of `getPlayerAnalysis`, and the scoreline. That's 18kB
+  gzipped of the chunk every route waits on, including the home page, which has no
+  dialog to open at all.
 
   Held apart from the loaders below so the warm and the render ask for the same
   module. `lazy` alone would leave the first click waiting on the fetch.
@@ -58,9 +58,9 @@ type Opened =
  * The page a week's results are shown on, and the wireframe that stands in for
  * them.
  *
- * Shared by every route that can end up waiting, so the wireframe a redirect
- * shows while it works out where it is going is the same one the results
- * themselves arrive in.
+ * Shared by every route that can end up waiting. A redirect shows this wireframe
+ * while it works out where it is going. The results arrive in that same
+ * wireframe.
  */
 export default function ResultsFrame({
   view,
@@ -99,9 +99,8 @@ export default function ResultsFrame({
   // player to do it, so a mount held back until the click would put that walk
   // between the click and the dialog.
   const [hasLoaded, setHasLoaded] = useState(false);
-  // Which dialogs have been opened at all, for the click that beats the fetch.
-  // Kept once set rather than following `opened`, because Base UI plays the close
-  // animation from a dialog still mounted, and unmounting on close would cut it.
+  // Which dialogs have opened, for the click that beats the fetch. Kept once
+  // set, unlike `opened`, since unmounting would cut Base UI's close animation.
   const [hasOpened, setHasOpened] = useState({ player: false, game: false });
   if (opened?.kind === "player" && !hasOpened.player) {
     setHasOpened((seen) => ({ ...seen, player: true }));
@@ -121,9 +120,8 @@ export default function ResultsFrame({
     showToast(errorToast("Failed to open that. Reload the page to try again."));
   }, [showToast]);
 
-  // Fetched as soon as the page is quiet, so the click that opens a dialog waits
-  // for neither the fetch nor the mount. Without this the split would trade the
-  // load every reader pays for a wait the ones who open a dialog pay.
+  // Fetched as soon as the page is quiet, so opening a dialog waits for neither
+  // fetch nor mount. Skipping this trades everyone's load for a wait openers pay.
   useEffect(() => {
     let isOnScreen = true;
     // A failed fetch leaves both dialogs unmounted, and the click that wants one
@@ -171,20 +169,19 @@ export default function ResultsFrame({
           ? `${seasonParam} Week ${weekParam} ${view}`
           : `${APP_NAME} ${view}`
       }
-      // True while loading too: the wireframe is shaped like the table it stands
+      // True while loading too. The wireframe is shaped like the table it stands
       // in for, so it wants the same content area.
       showingResults
       scrollable={isReady}
-      // Exact parity with the refresh button beside it: the same live week, and
-      // only once there is a table to pull on.
+      // This matches the refresh button beside it exactly. Both gate on the
+      // same live week, and only once there is a table to pull on.
       pull={
         isReady && !isWinnerDecided ? { onRefresh, isRefreshing } : undefined
       }
       navbarLeft={<LogoButton onClick={() => navigate("/")} />}
       navbarRight={
-        // Rendered while the week loads, so the navbar does not change shape
-        // under the pointer once it arrives. Disabled until there is something to
-        // switch between.
+        // Rendered while the week loads, so the navbar's shape won't shift under
+        // the pointer once it lands. Disabled until there's anything to switch to.
         <ScoresNavbar
           view={view}
           disabled={!isReady}
@@ -201,7 +198,7 @@ export default function ResultsFrame({
           from a screen reader because that heading already says it, and says the
           view too.
 
-          Not held back until the scores land: the week is in the URL before they
+          Not held back until the scores land. The week is in the URL before they
           are, so the wireframe wears the caption the table will and nothing under
           it moves when the week arrives.
         */}
@@ -222,7 +219,7 @@ export default function ResultsFrame({
           </GameStatusContextProvider>
         </PlayerAnalysisContextProvider>
       </div>
-      {/* No fallback: nothing is on screen to stand in for. A dialog mounts
+      {/* No fallback. Nothing is on screen to stand in for. A dialog mounts
           closed, and the click that beats the fetch wants the dialog rather than
           a spinner where it will be. */}
       {(hasLoaded || hasOpened.player) && (

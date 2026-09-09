@@ -3,7 +3,7 @@ import { cachedGet, serviceUnavailable } from "../env";
 
 /**
  * An hour of reuse, then the browser asks whether its copy still stands. A week's
- * picks are rewritten when the sheet turns out to carry an error, and the URL for
+ * picks are rewritten when the sheet turns out to carry an error. The URL for
  * them never changes, so a copy that can outlive a correction has to be able to
  * find out about one.
  *
@@ -31,7 +31,7 @@ async function readWeek(
     return new Response("Not Found", { status: 404 });
   }
 
-  // Only this one header, rather than the request's own: R2 reads every
+  // Only this one header is set, rather than the request's own. R2 reads every
   // conditional in whatever it is handed, and the rest belong to requests this
   // route has no answer for.
   const conditional = new Headers();
@@ -40,7 +40,6 @@ async function readWeek(
     conditional.set("If-None-Match", ifNoneMatch);
   }
 
-  // Get the spreadsheet from R2.
   const filePath = `picks/${season}/${week}.xlsx`;
   let spreadsheet;
   try {

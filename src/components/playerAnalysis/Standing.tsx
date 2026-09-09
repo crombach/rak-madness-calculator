@@ -9,7 +9,7 @@ import "./AnalysisSummary.scss";
 
 /**
  * Everyone the tiers leave tied at the top, which is everyone who won the week.
- * Points alone would not do: two players level on them can still be told apart by
+ * Points alone would not do. Two players level on them can still be told apart by
  * the tiebreakers, leaving one winner rather than two.
  */
 function winners(players: Array<PlayerScore>): Array<PlayerScore> {
@@ -29,10 +29,10 @@ function hasKickedOff(players: Array<PlayerScore>): boolean {
 }
 
 /**
- * Where the player picked stands. Nothing here repeats the answer below it: a
- * player who cannot win reads as knocked out and leaves the points to the
- * explanation, and a clinched player reads as the winner outright, games left or
- * not, leaving the body to say only why that holds where some remain.
+ * Where the player picked stands. Nothing here repeats the answer below it.
+ * A player who cannot win reads as knocked out and leaves the points to the
+ * explanation. A clinched player reads as the winner outright, games left or
+ * not. The body says only why that holds where some remain.
  */
 function headline(
   players: Array<PlayerScore>,
@@ -62,7 +62,7 @@ function headline(
  * Where the player picked stands, which the scores already say. Read straight off
  * them, so it is on screen while their routes are still being worked out.
  *
- * `result` is the analysis once it lands, read only for the "clinched" word: this
+ * `result` is the analysis once it lands, read only for the "clinched" word. This
  * standing and the answer below it are worked out from the same fact, so neither
  * has to guess what the other already said. Trusted only where it answers
  * for the same player named here, since the dialog keeps the last answer on
@@ -104,9 +104,8 @@ export default function Standing({
   );
   return (
     <p className="analysis__standing">
-      {/* Held apart from the tail, which says how much of the week is behind the
-          standing rather than what the standing is, so only the standing is
-          colored by it. */}
+      {/* Held apart from the tail, which says how much of the week remains rather
+          than what the standing is, so only the standing gets the color. */}
       <span className={`analysis__headline ${tone ?? ""}`}>{text}</span>
       {" · "}
       {remaining > 0

@@ -173,7 +173,7 @@ describe("PlayerAnalysisDialog", () => {
     );
 
     // Typing above left the list open, which in the app it never is when a name
-    // arrives: the dialog is modal, so the table that names one is out of reach
+    // arrives. The dialog is modal, so the table that names one is out of reach
     // until it closes and takes the search with it.
     await user.keyboard("{Escape}");
 

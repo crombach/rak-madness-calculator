@@ -34,7 +34,7 @@ node .claude/skills/record-demo/scripts/record.js \
   --out <path>.png --screenshot
 ```
 
-Same scenario files work for both; `--screenshot` takes one final-state PNG
+Same scenario files work for both. `--screenshot` takes one final-state PNG
 instead of recording the whole run.
 
 ## Existing scenarios
@@ -71,7 +71,7 @@ Copy an existing one under `scenarios/`. A scenario is a default-exported
 1. Calls `registerAppMocks(context, { season, week, xlsxBuffer, events })`
    from `lib/mocks.js`, so the real app renders against fixture data instead
    of the network. `buildPicksWorkbook(rows)` builds the xlsx `route.fulfill`
-   serves for `/api/picks/:season/:week`; `makeGame(...)` builds one ESPN
+   serves for `/api/picks/:season/:week`. `makeGame(...)` builds one ESPN
    scoreboard event for `events()` to return.
 2. Navigates and drives `page` with normal Playwright calls.
 

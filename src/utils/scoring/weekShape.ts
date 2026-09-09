@@ -21,7 +21,7 @@ const EMPTY: WeekShape = {
 
 /**
  * One walk per set of scores. The knockouts read the shape, the analysis dialog
- * reads it, and the search reads it again off the rows the knockouts returned, so a
+ * reads it, and the search reads it again off the rows the knockouts returned. A
  * refresh asks the same question of the same rows more than once.
  */
 const shapes = new WeakMap<Array<PlayerScore>, WeekShape>();

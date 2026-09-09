@@ -44,7 +44,7 @@ ISSUE_PATTERN = re.compile(r"^[a-z]+(?:\([^()\s]+\))?!?: \[([^\]\s]+)\]",
                            re.IGNORECASE)
 
 TEMPLATE = os.path.join(".github", "pull_request_template.md")
-# The template says so in its own comments; the hook only enforces what it finds.
+# The template says so in its own comments. The hook only enforces what it finds.
 PUNCTUATION_RULE = "No em-dashes, no semicolons"
 # The branch's key is the one ticket a hook can find. Any other ticket the work
 # belongs to is the agent's to link, which is why the skill states the rule too.

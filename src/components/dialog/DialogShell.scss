@@ -68,7 +68,7 @@
 
   padding-top: 20px;
   padding-bottom: 0;
-  // 2px tighter than the top padding: room enough for a game dialog's crest to
+  // 2px tighter than the top padding. Room enough for a game dialog's crest to
   // carry its dark-mode rim light without the sheet's own edge cutting it off.
   // `wide-screen` below restores the full 20px, since a centered window has room
   // to spare on the sides a phone's sheet does not.
@@ -165,7 +165,7 @@ $bar-height: 2px;
     height: 100%;
     background-color: var(--rak-progress-fill);
     // The app's one sweep speed, the same `_skeleton.scss` times its sheen to.
-    // The curve is this bar's own: a sheen crosses at a constant rate, and a
+    // The curve is this bar's own. A sheen crosses at a constant rate, and a
     // progress bar eases at each end of its run.
     animation: dialog-sweep var(--rak-duration-loop) ease-in-out infinite;
   }
@@ -203,10 +203,10 @@ $bar-height: 2px;
     bottom: auto;
     width: min(640px, calc(100vw - 32px));
     max-height: min(680px, calc(var(--rak-viewport-height, 100dvh) - 64px));
-    // No keyboard to stand over and no home indicator to clear: a centered
+    // No keyboard to stand over and no home indicator to clear. A centered
     // window is off both edges already. The body still carries it.
     --rak-dialog-floor: 20px;
-    // Back to the top padding: a centered window has room on its sides a
+    // Back to the top padding. A centered window has room on its sides a
     // phone's sheet does not, so it never needed the mobile-only 18px above.
     padding-inline: 20px;
     border-radius: var(--rak-radius-lg);

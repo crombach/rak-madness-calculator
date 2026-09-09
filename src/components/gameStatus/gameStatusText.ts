@@ -18,7 +18,7 @@ const PREGAME_DETAIL = "Pregame";
 
 /**
  * How a game that finished level, or on its number, was scored. Both are a point for
- * everybody: the pool counts a tie as picking the winner, and a margin that lands on
+ * everybody. The pool counts a tie as picking the winner, and a margin that lands on
  * the spread as covering it. Said in the word alone, because the scoreline above
  * marks both sides as having scored and would only be repeating itself here.
  */
@@ -88,8 +88,8 @@ export function detailText(result: LeagueResult): string {
   if (result.status === GameStatus.UPCOMING) {
     return PREGAME_DETAIL;
   }
-  // Postponed, delayed, canceled: a stage the app has no short form for, so ESPN's
-  // own word for it stands. Its wording of those carries no kickoff to repeat.
+  // Postponed, delayed, and canceled are a stage the app has no short form for, so
+  // ESPN's own word for it stands. Its wording of those carries no kickoff to repeat.
   if (result.status !== GameStatus.LIVE || result.period == null) {
     return result.detailMessage;
   }

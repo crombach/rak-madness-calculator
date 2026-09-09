@@ -18,7 +18,7 @@ One `package.json`, but two TypeScript roots. The root `tsconfig.json` excludes 
 - `src/components/button/` and `src/components/icon/` — the shared primitives. Every other component directory imports one or both, and neither imports anything.
 - `src/components/dialog/` — backs `gameStatus/`, `playerAnalysis/`, and `settings/`.
 - `src/appTestFixtures.tsx` and `src/weekFixtures.ts` — two fixture hotspots, not one. The three app-mounting suites at `src/` (`App.picks`, `App.routes`, `App.results`) share the first. The second was split out because the first mounts `App`, so `src/hooks/usePlayerScores.test.tsx` and `src/hooks/useWeekRouteGuard.test.tsx` cannot import it at all.
-- `src/setupTests.ts` — 44 lines holding four concerns, not one import line: a raised `asyncUtilTimeout`, a `ResizeObserver` stub, a `matchMedia` stub, and the `jest` global shim.
+- `src/setupTests.ts` — 44 lines holding more than an import line: a raised `asyncUtilTimeout`, a `ResizeObserver` stub, a `matchMedia` stub, and the `jest` global shim.
 - `src/index.scss` and `src/styles/_breakpoints.scss` — the design tokens and the breakpoint mixins. Small and append-mostly.
 - `src/types/` — imported across `src/`, append-mostly, and rarely a conflict.
 - Each `*.test.*` file pairs with one source file, so test work splits the way the source does. Two agents adding suites for different files do not collide.

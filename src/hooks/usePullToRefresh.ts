@@ -57,7 +57,7 @@ export function lockAxis(dx: number, dy: number): PullAxis {
  *
  * One to one up to the trigger, so up to the point it matters the content is
  * under the finger rather than lagging it. Past that it resists, and approaches
- * `PULL_MAX_PX` without reaching it: a hard stop reads as the gesture having
+ * `PULL_MAX_PX` without reaching it. A hard stop reads as the gesture having
  * broken, where getting heavier reads as the end of it.
  */
 export function pullOffset(distance: number): number {
@@ -84,8 +84,8 @@ function phoneTouchQuery(): string {
  *
  * A phone's replacement for the refresh button, which `phone-touch` takes off the
  * bar at the same width. Not the browser's own pull-to-refresh, which `index.scss`
- * turns off: that reloads the document, and the scores are rescored from a
- * workbook held in memory, which a reload would throw away.
+ * turns off. That reloads the document. The scores are rescored from a workbook
+ * held in memory, which a reload would throw away.
  *
  * Writes where the pull has got to onto the root element rather than into state,
  * the way `useViewportInsets` does, so a finger moving over a table of a thousand

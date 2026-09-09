@@ -55,9 +55,10 @@ function scrollBoxOf(table: HTMLElement): HTMLElement | undefined {
 }
 
 /**
- * How far down the rows are carried: the bottom of that box's client area rather
- * than of the window. A table wide enough to need a horizontal scrollbar has that
- * bar between the two, and filling to the window would leave a strip of it bare.
+ * How far down the rows are carried. It is the bottom of that box's client area
+ * rather than of the window. A table wide enough to need a horizontal scrollbar
+ * has that bar between the two, and filling to the window would leave a strip of
+ * it bare.
  */
 function fillToY(box: HTMLElement | undefined): number {
   if (box == null) return window.innerHeight;

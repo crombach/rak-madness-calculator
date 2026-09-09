@@ -14,9 +14,9 @@ const GAMECAST_LABEL = "Gamecast";
 /**
  * What each side is called over its name.
  *
- * Neither side of a game played at neither of their grounds is hosting anybody, so
- * both are said to be a team and nothing more. ESPN names a home side for one of them
- * anyway, and the pool scores the line against it, but the label would be wrong.
+ * In a game played at neither side's own ground, nobody is hosting, so both are said
+ * to be a team and nothing more. ESPN names a home side for one of them anyway, and
+ * the pool scores the line against it, but the label would be wrong.
  *
  * One word, where a label of two would wrap in the room a phone leaves beside a score
  * and take the name below it down a line.
@@ -98,7 +98,7 @@ function Side({
         >
           {/* The abbreviation on a phone and the name once there is width for it.
               Both are in the page, so neither costs a measurement to choose
-              between. Whichever one is drawn is the one read out: the other is
+              between. Whichever one is drawn is the one read out. The other is
               `display: none`, which takes it out of the accessibility tree as
               well, so hiding either from a reader by hand would leave the side
               with no name at all at the widths that hide the other. */}
@@ -117,7 +117,7 @@ function Side({
   );
 }
 
-/** Both marks or neither: one side wearing a logo and the other nothing reads as the
+/** Both marks or neither. One side wearing a logo and the other nothing reads as the
  *  app having lost track of a team. */
 function hasLogos(result: LeagueResult): boolean {
   return result.home.team.logoUrl != null && result.away.team.logoUrl != null;
@@ -127,7 +127,7 @@ function hasLogos(result: LeagueResult): boolean {
  * The game, laid out the same way whether it is the one just fetched or the week's own
  * copy of it standing in until that answer lands.
  *
- * One layout for both is what lets an answer replace the copy in place: a game the week
+ * One layout for both is what lets an answer replace the copy in place. A game the week
  * had live carries a down and a link out, one it had finished carries neither, and each
  * of those is read off the game on screen rather than guessed at.
  */
@@ -145,9 +145,8 @@ function Game({
   gamecastHref: string;
 }) {
   const [scoreline, fit] = useScorelineFit(result.id);
-  // The link rides with the place rather than the kickoff, so it ends the strip at
-  // every width rather than moving when the two halves stack. Both parts are their
-  // own, so a game ESPN sent no address for still carries the link.
+  // The link rides with the place, not the kickoff, so it holds the strip's end
+  // when the halves stack. A game ESPN sent no address for still carries it.
   const placeParts = [
     result.venue,
     <a
@@ -166,9 +165,9 @@ function Game({
   // same thing. A side ahead at half time has won nothing yet.
   const isOver = result.status === GameStatus.FINAL;
   const scored = isOver ? scoringTeam(result, spread) : undefined;
-  // Both sides where the game is over and nobody scored, which is a push or a tie
-  // with no line to push against. The pool gives everybody the point there, so
-  // whichever side a pick was on, it was on a side that scored.
+  // Both sides where the game is over and nobody scored, a push or tie with no line
+  // to beat, since the pool gives everybody the point, so any pick was on a scoring
+  // side.
   const outcomeOf = (side: GameSide): SideOutcome | undefined => {
     if (!isOver) return undefined;
     if (scored == null) return "scored";
@@ -204,7 +203,7 @@ function Game({
           outcome={outcomeOf(result.home)}
         />
       </div>
-      {/* Under the scoreline rather than over it: the game is what the dialog was
+      {/* Under the scoreline rather than over it. The game is what the dialog was
           opened for, and when and where it is played is the footnote. */}
       <div className="game-status__meta">
         <MetaGroup parts={kickoffParts(result.date)} />
@@ -215,7 +214,7 @@ function Game({
 }
 
 /**
- * A game the way ESPN's own boxscore says it: each side out on its own edge, the two
+ * A game the way ESPN's own boxscore says it. Each side out on its own edge, the two
  * scores meeting at a dash between them, with where the game is up to over those scores
  * and what the offense or the pool has to say under them.
  *
@@ -247,9 +246,8 @@ export default function GameStatusSummary({
     );
   }
 
-  // The game as last fetched, or the week's own copy until the first answer lands.
-  // Both are the same game, so the only thing the week's copy can be behind on is a
-  // score or a clock, and a live one is replaced in place a moment later.
+  // The game as last fetched, or the week's copy meanwhile. Same game either way, so
+  // the copy can only lag on a score or a clock, replaced in place a moment later.
   const shown = result ?? game.result;
   const logos = hasLogos(shown) && logolessId !== shown.id;
 
@@ -268,7 +266,7 @@ export default function GameStatusSummary({
                   // The team's name is beside it, so the mark says nothing a
                   // reader of the page in words is missing.
                   alt=""
-                  // `GameStatusDialog` has already warmed every logo the week could
+                  // `ResultsFrame` has already warmed every logo the week could
                   // show, so this is normally a cache hit, and decoding it before
                   // the frame goes up puts the mark on screen with the name beside
                   // it rather than a frame behind it.

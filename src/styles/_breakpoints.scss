@@ -54,7 +54,7 @@ $breakpoint-wide: 601px;
  *
  * Width alone would take in a desktop window dragged narrow, where the gesture
  * this guards cannot be performed at all. The pointer is what tells the two
- * apart: a mouse reports `hover` and a fine pointer, so asking for neither leaves
+ * apart. A mouse reports `hover` and a fine pointer, so asking for neither leaves
  * only touch.
  */
 $phone-touch-query: "(max-width: #{$breakpoint-roomy - 1px}) and (hover: none) and (pointer: coarse)";
@@ -70,17 +70,17 @@ $phone-touch-query: "(max-width: #{$breakpoint-roomy - 1px}) and (hover: none) a
  * takes the whole screen and there is no way past it.
  *
  * The pointer is what tells a phone from a desktop. A window dragged short and
- * wide answers every measurement below, and used to raise the overlay on a
- * machine that cannot be turned at all. A mouse reports `hover` and a fine
- * pointer, so asking for neither leaves only touch.
+ * wide answers every measurement below, and would raise the overlay on a
+ * machine that cannot be turned at all if not for the pointer check. A mouse
+ * reports `hover` and a fine pointer, so asking for neither leaves only touch.
  *
  * The height is what tells a phone from a tablet, which is also touch and also
- * turns: every phone in landscape is under 500px tall, and the shortest tablet is
+ * turns. Every phone in landscape is under 500px tall, and the shortest tablet is
  * well over it.
  *
  * The ratio is what tells it apart from a phone held upright with a keyboard up,
  * which `index.html` asks the browser to take out of the layout viewport. A 360px
- * phone left 300px tall is landscape by width against height, and 1.2 wide; a
+ * phone left 300px tall is landscape by width against height, and 1.2 wide. A
  * phone actually on its side is past 2.
  *
  * The app is portrait only. A week of picks is a wide table under a bar of
@@ -105,7 +105,7 @@ $phone-touch-query: "(max-width: #{$breakpoint-roomy - 1px}) and (hover: none) a
 
 /**
  * A reader who has asked for less movement. `index.scss` answers this app-wide by
- * making every animation instant; this is for the two placeholders that have
+ * making every animation instant. This is for the two placeholders that have
  * something smarter to do than stop.
  */
 @mixin reduced-motion {

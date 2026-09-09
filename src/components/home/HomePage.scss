@@ -4,8 +4,8 @@
 
 // Base UI ships the select unstyled, so these rules carry its whole look. Both
 // the season and the week select share them, read as a readout rather than a
-// form field: `lcd-field` is the well the app name, the scoreline, and the
-// dialog's own search are all cut into too.
+// form field. `lcd-field` is the well the dialog's search and the settings
+// dialog's clear button are cut into too.
 .select__trigger {
   @include lcd-field;
   @include focus-ring;
@@ -14,7 +14,7 @@
   align-items: center;
   justify-content: space-between;
   min-height: var(--rak-touch-target);
-  // No padding on the trailing edge: the chevron below has a bay of its own there.
+  // No padding on the trailing edge. The chevron below has a bay of its own there.
   padding: var(--rak-space-1) 0 var(--rak-space-1) var(--rak-space-3);
   font-family: var(--rak-font-mono);
   font-size: var(--rak-text-md);
@@ -24,7 +24,7 @@
 
   &[data-disabled] {
     cursor: default;
-    // A dim readout rather than a grayed field: the glass stays, only the
+    // A dim readout rather than a grayed field. The glass stays, only the
     // value goes dark, the same as a socket with nothing chosen yet.
     color: var(--rak-unlit);
   }
@@ -41,7 +41,7 @@
   align-items: center;
   align-self: stretch;
   padding-inline: var(--rak-space-2);
-  // Lit chrome, not muted UI: nothing else on a piece of glass carries a border.
+  // Lit chrome, not muted UI. Nothing else on a piece of glass carries a border.
   color: var(--rak-on-solid);
 }
 
@@ -62,13 +62,11 @@
   justify-content: center;
   width: min(340px, 100%);
   padding: var(--rak-space-4);
-  // What sits between every control. Carried as margins rather than a flex
-  // `gap`, because a button that hides itself collapses its own margin as part
-  // of that transition, which a gap on the container cannot do.
+  // What sits between every control. Margins rather than a flex `gap`, since a
+  // button that hides itself collapses its own margin, which a gap cannot do.
   --rak-control-gap: var(--rak-space-3);
-  // What every control down this column stands, fields and buttons alike. Taller
-  // than the touch target a button asks for on its own, so saying it here is what
-  // keeps the two from standing at different heights in the same stack.
+  // What every control in this column stands, fields and buttons alike. Taller than
+  // a button's own touch target, so setting it here keeps both at the same height.
   --rak-control-height: 3.5rem;
 }
 

@@ -35,8 +35,7 @@ export default function Footer() {
   const [isSettingsOpen, setSettingsOpen] = useState(false);
 
   // Only this stamp counts as having found the dialog. A reader with a theme or a
-  // name already saved still gets the pulse, since neither of those was chosen
-  // from here.
+  // name already saved still gets the pulse, since neither was chosen from here.
   const [hasSeenSettings, setSeenSettings] = useState(hasSeenLatestSettings);
 
   // Stamped on the way open rather than on the way closed, so the pulse stops as

@@ -14,7 +14,7 @@
 # misc
 .DS_Store
 
-# Local secrets. Vite reads .env and .env.<mode>; wrangler reads .dev.vars.
+# Local secrets. Vite reads .env and .env.<mode>. wrangler reads .dev.vars.
 # Ignore the whole family rather than naming modes, so a new one cannot slip in.
 .env
 .env.*

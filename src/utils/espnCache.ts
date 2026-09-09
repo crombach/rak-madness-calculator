@@ -2,9 +2,9 @@
 // is not asked again. A game that has been played keeps its score, a matchup ESPN
 // never listed keeps being a hole, and a season that is over keeps its schedule.
 //
-// Nothing about the pool is cached, only ESPN's side of it: a spread the workbook
+// Nothing about the pool is cached, only ESPN's side of it. A spread the workbook
 // contradicts itself on, and a cell nobody filled in, are worked out from the picks
-// every time, and they cost no request.
+// every time. They cost no request.
 //
 // Games are filed under the matchup the picks name, so a week whose matchups change
 // finds nothing for the ones that moved and asks about those again.
@@ -66,8 +66,8 @@ const calendars = versioned(
 /**
  * What a matchup is filed under.
  *
- * Folded and sorted, because the workbook could name the same two teams either way
- * around and in any case at all, while a result carries them already uppercased. A
+ * Folded and sorted. The workbook could name the same two teams either way around
+ * and in any case at all, while a result carries them already uppercased. A
  * column names one team where every player picked the same side, which is a matchup in
  * its own right.
  */

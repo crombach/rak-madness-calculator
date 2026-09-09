@@ -10,5 +10,5 @@ fill. Right, wrong, and unscoreable picks (`--yes`, `--no`, `--unscoreable`) eac
 a `PICK_STATUS_LABEL` entry as a `.table__sr-only` span, so a screen reader gets what
 the color otherwise carries alone. `incomplete` has none: it draws no color either.
 
-A cell a refresh just resolved also renders a `.table__cell-wipe`, in the status it
+A cell the refresh resolved also renders a `.table__cell-wipe`, in the status it
 left.

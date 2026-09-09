@@ -4,8 +4,8 @@
 
 // Base UI ships the combobox unstyled, so these rules carry its whole look. It
 // sits inside a popup and is shorter than a page-level control, so it keeps its own
-// box rather than the home page's, and borrows only the well: `lcd-field` is the
-// same one the app name, the scoreline, and the home page's own selects share.
+// box rather than the home page's, and borrows only the well. `lcd-field` is the
+// same one the home page's selects and the settings dialog's clear button share.
 .dialog__search {
   @include lcd-field;
 
@@ -21,9 +21,9 @@
   @include focus-ring(":focus-within");
 }
 
-// Fills the field. Positioned, so it sits above the icon and the adornment,
-// neither of which is, and a press on either reaches it. The input is lifted
-// back above it below.
+// Fills the field. It is positioned, so it sits above the icon and the
+// adornment. Neither of those is positioned, so a press on either reaches it
+// instead. The input is lifted back above it below.
 .dialog__search-trigger {
   position: absolute;
   inset: 0;
@@ -33,7 +33,7 @@
 }
 
 .dialog__input {
-  // Over the trigger, since a press here is the input's own: it is what opens a
+  // Over the trigger, since a press here is the input's own. It is what opens a
   // phone's keyboard, and it places the caret.
   position: relative;
   flex: 1;
