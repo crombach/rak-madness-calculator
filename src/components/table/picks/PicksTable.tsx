@@ -25,7 +25,7 @@ const FIXED_COLUMN_COUNT = 5;
 
 /**
  * A pick's status, in words, for the fill color a sighted reader gets instead.
- * `incomplete` carries no entry: it draws no color of its own either, so there is
+ * `incomplete` carries no entry. It draws no color of its own either, so there is
  * nothing sighted that a screen reader needs to catch up on.
  */
 const PICK_STATUS_LABEL: Partial<Record<Status, string>> = {

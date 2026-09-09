@@ -49,8 +49,7 @@ export default function SettingsDialog({
             <label htmlFor={nameInputId}>Player Name</label>
           </h3>
           {/* The well is the shell rather than the input, so the clear button
-              sits inside it in a bay of its own, the way the home page's selects
-              hold their chevron. */}
+              sits in a bay of its own, like the home page's select chevrons. */}
           <div className="settings__field">
             <input
               ref={nameInput}
@@ -73,7 +72,7 @@ export default function SettingsDialog({
             {/* Nothing to clear while the field is empty, and a button that does
                 nothing is one more thing to tab past. Clearing therefore takes
                 this button off screen, so the focus on it has to go somewhere
-                first: left alone it falls to `<body>`, and the next tab restarts
+                first. Left alone it falls to `<body>`, and the next tab restarts
                 from the top of the document with the dialog still open. */}
             {playerName !== "" && (
               <button

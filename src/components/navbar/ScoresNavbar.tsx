@@ -65,9 +65,8 @@ export default function ScoresNavbar({
   /** Cleared once the week is over, when rescoring cannot change anything. */
   isWeekLive: boolean;
 }) {
-  // A week arrives loading, so this is usually on screen by the time it turns out
-  // to be decided. Kept mounted for the length of the collapse so it animates out,
-  // and a week already known to be decided never renders it at all.
+  // A week arrives loading, so this is usually on screen before it's decided, kept
+  // through the collapse to animate out. Skipped once already decided.
   const [isLiveMounted, setLiveMounted] = useState(isWeekLive);
   if (isWeekLive && !isLiveMounted) setLiveMounted(true);
   useEffect(() => {
@@ -77,10 +76,10 @@ export default function ScoresNavbar({
   }, [isWeekLive, isLiveMounted]);
 
   // A results route always names a view, even while it loads, so that button
-  // keeps looking selected through the wait: only `aria-disabled`, never a real
-  // `disabled` that would grayscale its highlight. The home page has no view
-  // yet to show as selected, so there is nothing that look would protect, and
-  // it grays out for real instead.
+  // keeps looking selected through the wait. Only `aria-disabled` marks it,
+  // never a real `disabled` that would grayscale its highlight. The home page
+  // has no view yet to show as selected, so there is nothing that look would
+  // protect, and it grays out for real instead.
   const noViewYet = disabled && view == null;
 
   return (

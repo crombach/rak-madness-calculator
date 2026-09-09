@@ -72,9 +72,8 @@ export default function AnalysisBody({
   }
 
   if (result.kind === "clinched") {
-    // The standing calls a clinched player the winner without saying of what, so
-    // this names the week. Only a week still running needs the line under it,
-    // since a week with nothing left to play cannot be undone.
+    // The standing calls a clinched player the winner, not the week, so this names
+    // it. Only an open week needs it below, since a finished one can't be undone.
     return (
       <Message
         lines={[
@@ -97,7 +96,7 @@ export default function AnalysisBody({
           ]}
         />
 
-        {/* Every must-win game there is, or none: `provenMustWin` holds nothing
+        {/* Every must-win game there is, or none. `provenMustWin` holds nothing
             back, and answers empty where it can prove nothing. */}
         {result.mustWin.length > 0 && (
           <Section title="Must win">

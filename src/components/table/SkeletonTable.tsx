@@ -75,7 +75,7 @@ function headerClass(column: Column): string | undefined {
  * A wireframe of a results table, for while the real one is being worked out.
  *
  * Shaped like the view it stands in for, down to the width of every column. It holds
- * no rows of its own: `TableShell` fills the window with rows either way, so the
+ * no rows of its own. `TableShell` fills the window with rows either way, so the
  * wireframe is as tall as the table however many players turn out to have played.
  *
  * Memoized because it is well over a thousand cells and its route re-renders on

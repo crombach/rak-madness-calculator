@@ -27,7 +27,7 @@ export default function LogoButton({ onClick }: { onClick: () => void }) {
         </span>
         {/*
           The name in a box of its own, because the well around it is a flex
-          container: the glass has to fill the whole key, and `text-overflow`
+          container. The glass has to fill the whole key, and `text-overflow`
           reaches the text of a block, not a flex item the browser wrapped for it.
         */}
         <span className="logo-button__name-text">{APP_NAME}</span>

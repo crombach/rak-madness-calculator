@@ -67,8 +67,8 @@ export default function PlayerAnalysisDialog({
 
   // The answers the week already holds: a knocked out player, and a week the
   // knockouts have settled. Both are a walk of the players, so they are read here
-  // rather than waited for below, where the bar used to stand over an answer that
-  // was ready and then grow the dialog under it.
+  // rather than waited for below. That keeps the dialog's height steady while the
+  // search runs.
   const settled = useMemo(() => {
     if (scores == null || player == null) return undefined;
     const paths = getSettledAnalysis(scores, player.name);
@@ -95,9 +95,8 @@ export default function PlayerAnalysisDialog({
     };
   }, [scores, player, settled]);
 
-  // The answer already on screen stays there while the next one is worked out, so
-  // moving between players reads as one answer replacing another rather than as the
-  // dialog emptying and filling again. Only a rescore takes it away.
+  // The answer on screen stays until the next lands, so switching players swaps one
+  // for another rather than emptying and refilling. Only a rescore clears it.
   const searched = found?.scores === scores ? found : undefined;
   const shown = settled ?? searched;
   const isAnalysisLoading = player != null && shown?.name !== player.name;
@@ -126,9 +125,8 @@ export default function PlayerAnalysisDialog({
               "--knocked-out": option.isKnockedOut,
             })
           }
-          // The player named in the input is marked the way the tables mark them,
-          // so the search says where they stand before the answer below it has
-          // been worked out.
+          // The player named in the input is marked the way the tables do, so the
+          // search shows where they stand before the answer below finishes.
           adornment={
             player != null && (
               <span
