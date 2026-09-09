@@ -145,9 +145,8 @@ function Game({
   gamecastHref: string;
 }) {
   const [scoreline, fit] = useScorelineFit(result.id);
-  // The link rides with the place, not the kickoff, so it stays at the strip's end,
-  // not moving when the halves stack, and a game ESPN sent no address for still
-  // carries it.
+  // The link rides with the place, not the kickoff, so it holds the strip's end
+  // when the halves stack. A game ESPN sent no address for still carries it.
   const placeParts = [
     result.venue,
     <a
