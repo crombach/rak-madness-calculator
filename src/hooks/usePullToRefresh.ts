@@ -57,7 +57,7 @@ export function lockAxis(dx: number, dy: number): PullAxis {
  *
  * One to one up to the trigger, so up to the point it matters the content is
  * under the finger rather than lagging it. Past that it resists, and approaches
- * `PULL_MAX_PX` without reaching it: a hard stop reads as the gesture having
+ * `PULL_MAX_PX` without reaching it. A hard stop reads as the gesture having
  * broken, where getting heavier reads as the end of it.
  */
 export function pullOffset(distance: number): number {

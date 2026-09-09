@@ -14,7 +14,7 @@ description: How to build, run, and test this repo. Read before any npm, make, t
 - Vite 8, React 19, TypeScript 6, Vitest 4, ESLint 9 flat config, wrangler 4.
 - Base UI for behavior, react-router 8 for routing, SCSS for looks. There is no theme provider. `src/CLAUDE.md` covers the `--rak-*` design tokens, `src/styles/CLAUDE.md` the Sass mixins, `src/components/icon/CLAUDE.md` the icons.
 - Node `v22.23` (`.nvmrc`), npm 10 (`lockfileVersion: 3`). `nvm use` before anything. wrangler 4 refuses to run on Node 20, and jsdom 30 needs `>=22.22.2`, which is why the pin carries a minor. `make setup` fails with an actionable message on an older Node or another major.
-- Three CI signals on a PR: `check` (`.github/workflows/check.yml`) runs the same `make check` you run locally, `conventional-commit-title` (`.github/workflows/pr-title.yml`) matches the title format, and `Cloudflare Pages` builds from git using the dashboard's own settings. Break `make check` locally and CI breaks the same way.
+- CI signals on a PR: `check` (`.github/workflows/check.yml`) runs the same `make check` you run locally, `conventional-commit-title` (`.github/workflows/pr-title.yml`) matches the title format, and `Cloudflare Pages` builds from git using the dashboard's own settings. Break `make check` locally and CI breaks the same way.
 
 ## Verified
 
@@ -24,9 +24,9 @@ From a clean checkout: `make setup`, `make build`, `make run`, `make test`, `mak
 
 ## Tests
 
-Every suite sits beside the module it covers, and they all run offline. `npm test` is `vitest run`; `npm run test:watch` watches.
+Every suite sits beside the module it covers, and they all run offline. `npm test` is `vitest run`. `npm run test:watch` watches.
 
-Three suites at `src/` mount the routed app, each on its own axis, and each mocks `getPlayerScores` wholesale so none of them re-exercise scoring:
+Suites at `src/` mount the routed app, each on its own axis, and each mocks `getPlayerScores` wholesale so none of them re-exercise scoring:
 
 - `src/App.picks.test.tsx` — first load, the season and week pickers, the picks fetch, and upload.
 - `src/App.routes.test.tsx` — which week a `/:season/:week` URL fetches, and what shows while it does.
@@ -44,8 +44,8 @@ Writing a test here:
 - `getLeagueInfo` also caches week counts in a module-level `Map` that no reset clears, so a case that counts calendar requests needs a season number no other case in the file uses. The existing ones use 3001 upward.
 - `mountLoadedApp` waits for the home controls, so it only works for URLs that land on `/`. Deep-link cases use `mountApp` and await something on the results route.
 - The week `Select` compares option values by reference, so a fixture's `activeWeek` must be the same object as its entry in `weeks`.
-- Don't name a helper `render*` unless it returns the render result — `testing-library/render-result-naming-convention` is an error, not a warning.
-- `testing-library/no-node-access` is off for test files (`eslint.config.js` override): the file input is hidden and the navbar buttons are only identifiable by class. `testing-library/no-container` is on, so reach for `screen` queries.
+- Don't name a helper `render*` unless it returns the render result. `testing-library/render-result-naming-convention` is an error, not a warning.
+- `testing-library/no-node-access` is off for test files (`eslint.config.js` override). The file input is hidden and the navbar buttons are only identifiable by class. `testing-library/no-container` is on, so reach for `screen` queries.
 - `mockReset` is on in `vite.config.ts`. Set mock implementations in `beforeEach`, not at module scope.
 - A `waitFor` or `findBy` gets 5s, raised from the 1s default in `src/setupTests.ts`, and a test gets 15s (`testTimeout`). The app suites mount the whole app and wait on chained promises, which outran 1s on a loaded CI runner. Keep the test limit the larger of the two, so a wait that never resolves fails on its own assertion.
 - `src/setupTests.ts` shims a `jest` global. `@testing-library/dom` looks for it to decide whether fake timers are installed, and without it every interaction in a `vi.useFakeTimers()` suite times out. Don't remove it.
@@ -61,12 +61,12 @@ The scoring path logs through `src/utils/debugLog.ts`, which is silent when the 
 - Vite does not open a browser, so there is no `BROWSER=none` to set. `make run PORT=3001` moves the port, which is how you get two dev servers side by side. `strictPort` is on, so a busy port fails instead of silently sliding to the next one.
 - Sass prints deprecation warnings on compile. Noise, not breakage.
 - Breakpoints are Sass mixins. `src/styles/CLAUDE.md` names them and how to reach them.
-- `make check` does not build. Sass errors, an undefined mixin among them, surface only in `npm run build`, because `css: false` keeps stylesheets out of the test run. Run both before pushing a change to any stylesheet.
+- `make check` does not build. Sass errors, an undefined mixin among them, surface only in `npm run build`. Because `css: false` keeps stylesheets out of the test run. Run both before pushing a change to any stylesheet.
 - Never drop `viewport-fit=cover` or `interactive-widget=resizes-content` from `index.html`'s viewport meta. The comment above them names what breaks.
 - One ESLint config: `eslint.config.js` (flat). It names its plugins directly. `package.json` has no `eslintConfig` key and there is no `.eslintrc.json`.
 - `import/no-unresolved` is off. `tsc` already resolves modules for both tsconfigs, and the import plugin misreads ESM exports maps without its own resolver.
 - `.wrangler/` is in the ESLint ignore list. It holds generated bundles that fail every rule.
-- `make format` runs `eslint --fix`, then prettier. That order matters: eslint's fixes are not prettier-clean, so the formatter has to run last or `make check` fails right after `make format`.
+- `make format` runs `eslint --fix`, then prettier. That order matters. ESLint's fixes are not prettier-clean, so the formatter has to run last or `make check` fails right after `make format`.
 - Two tsconfigs, and root excludes `functions/**/*`, so `make typecheck` runs `tsc` twice. Both set `strict: true` explicitly, because TypeScript 6 changed the default and leaving it implicit hides which behavior is intended.
 - `src/vite-env.d.ts` carries the `vite/client` and `vitest/globals` references. Don't move them into `compilerOptions.types`: that switches off automatic `@types` inclusion and VS Code reports the entry point as missing.
 - `.vscode/settings.json` points the editor at the workspace TypeScript. VS Code bundles 5.x and misreads a TypeScript 6 config.
