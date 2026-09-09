@@ -131,8 +131,8 @@ function sideFor(
 
 /**
  * The most this rival can finish ahead of the player on points, over every way the
- * games can fall: every game the rival takes and the player does not, and none the
- * other way.
+ * games can fall. Every game the rival takes and the player does not widens it, and
+ * none the other way does.
  */
 function leadCeiling(me: Tier, rival: Tier): number {
   let most = 0;
@@ -247,9 +247,9 @@ function evaluate(
  * must-win exactly when even that loses, which is one verdict per game where the
  * search reads one per subset of them.
  *
- * Empty rather than partial where it can prove nothing: a player who cannot take
- * the week even with every pick landing. A list this returns holds every must-win
- * game there is.
+ * Empty rather than partial where it can prove nothing. That is a player who cannot
+ * take the week even with every pick landing. A list this returns holds every
+ * must-win game there is.
  */
 function provenMustWin(
   mineMask: number,
@@ -471,9 +471,8 @@ function search(
       const { kind } = verdict;
       if (kind !== "loss") {
         won[hits] = 1;
-        // A set inside this one that already wins makes this one no route of its
-        // own. Any such set has one a game smaller above it that wins too, and
-        // every one of those was read to get here, so the bits answer it.
+        // A subset that already wins makes this set redundant, since any
+        // winning set has a one-game-smaller winning subset, already read.
         let isRedundant = false;
         for (let bits = hits; bits !== 0; bits &= bits - 1) {
           if (won[hits ^ (bits & -bits)] === 1) {
@@ -558,22 +557,6 @@ function reduceRoutes(
 }
 
 /**
- * Where a player stands in a week, and what they still have to do to win it.
- *
- * Answers for every player, knocked out or not, and for a week already decided as
- * well as one being played. Undefined where the sheet holds nobody by that name,
- * which is the only way the question has no answer at all.
- *
- * A game of the player's own that lands on the line is read as their win alone. The
- * pool scores a push for both sides, so it also scores for the rival who picked the
- * other side, and a route named here can fall to that. Read the other way this
- * answers nothing: winning every game they picked would leave the gap where it
- * started, so a player even a point back could never be told they are live. Every
- * other answer holds either way. A knockout and a must-win game only become more
- * true, and a clinch reads a week where none of the player's own picks land, which
- * is a week with no push in them to read.
- */
-/**
  * The answer where the week already holds one, and undefined where the search below
  * is what has to find it.
  *
@@ -615,17 +598,14 @@ function settledAnalysis(
 
   const player = players[playerIndex];
   const clinched: PlayerAnalysis = { kind: "clinched", player: player.name };
-  // The blank read alongside the knockout, and not off it, because the search below
-  // reads every contested game as a pick of this player's. A caller writing its own
-  // scores can hand in a blank row `applyKnockouts` never marked.
+  // Checked beside the knockout, since the search assumes every contested
+  // game is a pick, and a caller's blank row may skip `applyKnockouts`.
   if (player.status.isKnockedOut || player.status.hasBlankPick) {
     return { playerIndex, player, rivals: [], analysis: knockedOut(player) };
   }
 
-  // Nothing is left to play, so the knockouts have already settled the week and
-  // whoever they left standing has won it. Said here rather than searched for,
-  // because the search reads the lower tiers in an order of its own, and on a
-  // week nobody can change it would sometimes disagree with the standings.
+  // Nothing left to play means the knockouts settled it, and whoever they
+  // left standing won, decided here since the search's tier order may differ.
   if (isWinnerDecided(scores)) {
     return { playerIndex, player, rivals: [], analysis: clinched };
   }
@@ -650,6 +630,22 @@ function liveRivals(
     .filter((it) => it.index !== playerIndex && !it.player.status.isKnockedOut);
 }
 
+/**
+ * Where a player stands in a week, and what they still have to do to win it.
+ *
+ * Answers for every player, knocked out or not, and for a week already decided as
+ * well as one being played. Undefined where the sheet holds nobody by that name,
+ * which is the only way the question has no answer at all.
+ *
+ * A game of the player's own that lands on the line is read as their win alone. The
+ * pool scores a push for both sides, so it also scores for the rival who picked the
+ * other side, and a route named here can fall to that. Read the other way this
+ * answers nothing. Winning every game they picked would leave the gap where it
+ * started, so a player even a point back could never be told they are live. Every
+ * other answer holds either way. A knockout and a must-win game only become more
+ * true, and a clinch reads a week where none of the player's own picks land, which
+ * is a week with no push in them to read.
+ */
 export default function getPlayerAnalysis(
   scores: RakMadnessScores,
   playerName: string,
@@ -668,10 +664,8 @@ export default function getPlayerAnalysis(
     (game) => new Set(live.map((index) => game.cells[index].team)).size > 1,
   );
 
-  // This player picked every game, since a blank row is answered above. So the bit
-  // for a game reads as their own pick landing, and every contested game is theirs
-  // to win. A rival's blank cell still reaches here, and `sideFor` scores it as no
-  // gain either way.
+  // This player has no blank pick, handled above, so every contested game
+  // is theirs to win. A rival's blank still scores no gain in `sideFor`.
   const coverers = contested.map((game) => game.cells[playerIndex].team!);
   const mineMask = (1 << contested.length) - 1;
 
@@ -697,9 +691,8 @@ export default function getPlayerAnalysis(
     return headline(player, playerIndex, rivals, games, mustWin);
   }
 
-  // Winning every pick is the best the player can do, so it settles the rest. A
-  // player it does not save is one no set of their picks saves, and a search told
-  // that only reads all `2^n` of them to say so.
+  // Winning every pick is the player's best case, so a loss there means no
+  // smaller set saves them, without reading all `2^n` subsets to say so.
   const best = read(mineMask);
   if (best.kind === "loss") return knockedOut(player);
 

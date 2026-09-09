@@ -28,7 +28,6 @@ const WEEKS_PRO_REGULAR_SEASON = 18;
 
 /**
  * Week 1 of Rak Madness is week 1 in the NFL, but week 2 in the NCAA.
- * We account for this by adding 1 to the week if NCAA results have been requested.
  */
 const WEEK_OFFSET_COLLEGE = 1;
 
@@ -56,9 +55,8 @@ async function getLeagueEvents(
   league: League,
   week: WeekInfo, // Rak Madness week, corresponds with NFL regular season week
   season?: number,
-  // Left off where one game is being looked up by id. Rak has put a game in the
-  // picks sheet outside the NFL week, and dropping it here would leave that game
-  // impossible to fetch again.
+  // Left off when looking up one game by id, since Rak has put a game
+  // outside the NFL week in the picks sheet, making it otherwise unfetchable.
   { datedFromWeekStart = true }: { datedFromWeekStart?: boolean } = {},
 ): Promise<Array<EspnEvent>> {
   // This league's calendar and no other. The other league's week count decides
@@ -80,7 +78,7 @@ async function getLeagueEvents(
       ? SeasonType.REGULAR
       : SeasonType.POST;
   // For college games, the postseason is all week 1
-  // because EPSN considers the entire postseason to be "the bowl week".
+  // because ESPN considers the entire postseason to be "the bowl week".
   if (league === League.COLLEGE && seasonType === SeasonType.POST) {
     adjustedWeekNumber = 1;
   }
@@ -91,15 +89,13 @@ async function getLeagueEvents(
   const seasonParam = season != null ? `&dates=${season}` : "";
   const baseRequestUrl = `https://site.api.espn.com/apis/site/v2/sports/football/${league}/scoreboard?week=${adjustedWeekNumber}&seasontype=${seasonType}${seasonParam}`;
 
-  // For college, we need to concatenate multiple groups.
   if (league === League.COLLEGE) {
     const collegePromises = COLLEGE_GROUPS.map((groupId: number) => {
       const requestUrl = `${baseRequestUrl}&limit=400&groups=${groupId}`;
       return fetchEspnEvents(requestUrl).then((events) => {
-        // ESPN jams the entire college postseason into one week.
-        // So, we need to remove events that happen before the given NFL week.
-        // We'd also like to remove events that happen after, but Rak has (once)
-        // put a game in the picks sheet outside the NFL week. Nice.
+        // ESPN jams the entire college postseason into one week. Events before
+        // the given NFL week are dropped. Events after are kept, because a
+        // picks sheet has once named a game outside the NFL week.
         if (!datedFromWeekStart) return events;
         return events.filter(
           (event) => new Date(event.date).valueOf() >= week.startDate.valueOf(),
@@ -119,7 +115,6 @@ async function getLeagueEvents(
       .map((dated) => dated.event);
   }
 
-  // For pro, we can just return the raw events list fetched from the API.
   return fetchEspnEvents(baseRequestUrl);
 }
 
@@ -140,8 +135,9 @@ function eventSides(
   return home != null && away != null ? { home, away } : null;
 }
 
-/** A side's name as every index and every matchup key spells it. */
 /**
+ * A side's name as every index and every matchup key spells it.
+ *
  * Empty where ESPN lists a side it has no team for, which a bowl slot still to be
  * filled arrives as. The type says the field is always there and the answers do
  * not, which is what the reads below guard against.
@@ -179,8 +175,8 @@ function gameSide(competitor: EspnCompetitor): GameSide {
     team: {
       name: competitor.team.displayName,
       // The two halves of that name, which the game status sets on their own lines.
-      // Kept only where ESPN sent both: half a name on a line of its own reads as
-      // the other half having gone missing.
+      // Kept only where ESPN sent both. Half a name on a line of its own reads
+      // as the other half having gone missing.
       location: competitor.team.location,
       mascot: competitor.team.name,
       abbreviation: teamAbbreviation(competitor),
@@ -199,7 +195,7 @@ function gameSide(competitor: EspnCompetitor): GameSide {
 /**
  * Where the game is played, as the town and nothing more.
  *
- * The ground's own name is left out: a reader who wants it has the Gamecast link the
+ * The ground's own name is left out. A reader who wants it has the Gamecast link the
  * dialog carries, and the name is stored in this browser for every game of every week
  * cached otherwise.
  */
@@ -220,8 +216,8 @@ export function matchesMatchup(
   result: LeagueResult,
   teams: Set<string>,
 ): boolean {
-  // Folded on both sides, because a result carries the abbreviations already
-  // uppercased while a workbook could name them any way at all.
+  // Folded on both sides. A result carries the abbreviations already
+  // uppercased, while a workbook could name them any way at all.
   const named = new Set([...teams].map((team) => team?.toUpperCase()));
   const home = result.home.team.abbreviation;
   const away = result.away.team.abbreviation;
@@ -277,7 +273,6 @@ export function toLeagueResult(event: EspnEvent): LeagueResult | null {
   // margin just because there is no winner yet.
   const scoreMargin = Math.abs(homeScore - awayScore);
 
-  // Calculate possession object
   const possession: Possession = {
     downDistanceText: competition.situation?.downDistanceText,
   };
@@ -352,11 +347,9 @@ function inDateOrder(
  * it. Changing the picks changes which matchups are asked about, and a matchup that
  * moved has nothing stored under its new name, so the week is fetched again.
  *
- * @param league league for which to get results
  * @param week week in the season (week 1 is the first NFL week)
  * @param matchups the games the picks describe
  * @param season the year the season started in, current season if left out
- * @returns league results
  */
 export async function getLeagueResults(
   league: League,
@@ -380,9 +373,8 @@ export async function getLeagueResults(
   const events = await getLeagueEvents(league, week, season);
   debugLog(`${league} events`, events);
 
-  // The keys the picks ask about, split by how a column names its game. A college
-  // answer runs to hundreds of events, so each one is looked up rather than walked
-  // against every matchup.
+  // The keys the picks ask about, split by how a column names its game.
+  // A college answer runs hundreds of events, looked up not walked per game.
   const wantedPairs = new Set<string>();
   const wantedTeams = new Set<string>();
   matchups.forEach((teams, index) => {
@@ -407,9 +399,8 @@ export async function getLeagueResults(
   const games: Record<string, CachedGame> = {};
   const kept: Array<LeagueResult> = [];
   found.forEach((result, key) => {
-    // A game the fetch no longer lists keeps the outcome this browser already had.
-    // ESPN moves a game out of a week's answer now and then, and without this the
-    // column would go from scored to missing.
+    // A game the fetch no longer lists keeps the outcome already held, since
+    // ESPN moves a game out of a week, or scored would go missing.
     const game = result ?? held[key] ?? null;
     if (result == null && game != null) {
       kept.push(game);
@@ -432,8 +423,8 @@ export async function getLeagueResults(
  *
  * The same league fetch the scoring pass makes, picked over by event id rather
  * than by matchup, so watching a live game needs no second endpoint and no second
- * way of reading one. Null where the week no longer holds that game, which a
- * season or week switch can do while a dialog is open on it.
+ * way of reading one. Null where the week no longer holds that game. A season
+ * or week switch can do that while a dialog is open on it.
  */
 export async function getGameResult(
   league: League,

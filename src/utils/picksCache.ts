@@ -1,6 +1,6 @@
 // A per-week copy of an uploaded workbook, so a results URL can be reopened
 // without asking for the file again. Only the workbook is cached, never the
-// scores: recomputing those is fast, and a cached score could go stale against a
+// scores. Recomputing those is fast, and a cached score could go stale against a
 // change to the scoring rules.
 
 import localStorageCache from "./localStorageCache";

@@ -25,7 +25,7 @@ export type ParsedPicks = {
 /**
  * One buffer to the parse already run on it, so a refresh rescoring the same
  * workbook does not pay for the xlsx parse again. Keyed by the buffer's own
- * identity rather than its bytes: the picks a `RakMadnessScores` was built from
+ * identity rather than its bytes. The picks a `RakMadnessScores` was built from
  * never change without a new buffer replacing it. A `WeakMap` rather than a
  * plain one, so a buffer this hook has moved on from can still be collected.
  */
@@ -51,13 +51,12 @@ async function parseWorkbook(picksBuffer: ArrayBuffer): Promise<ParsedPicks> {
   const picksSheet = workbook.Sheets[Object.keys(workbook.Sheets)[0]];
   const rows: Array<any> = XLSX.utils.sheet_to_json(picksSheet);
 
-  // From the header row, not from a player's row: `sheet_to_json` leaves a blank
+  // From the header row, not from a player's row. `sheet_to_json` leaves a blank
   // cell out of the object it builds, so a game the first player skipped would go
   // unscored for everyone, and the tiebreaker game would shift a column.
   //
-  // Kept only where some row actually carries the key. A header cell that is not
-  // text, or one repeated, does not name a property of any row, and reading a
-  // column nobody can be looked up by is worse than not knowing about it.
+  // Kept only where some row carries the key. A non-text or repeated header
+  // names no row property, and an unreachable column is worse than unlisted.
   const [headerRow = []] = XLSX.utils.sheet_to_json<Array<unknown>>(
     picksSheet,
     {
@@ -84,7 +83,6 @@ async function parseWorkbook(picksBuffer: ArrayBuffer): Promise<ParsedPicks> {
   const tiebreakerGameKey =
     tiebreakerPickIndex > 0 ? allKeys[tiebreakerPickIndex - 1] : undefined;
 
-  // Determine team matchups.
   const matchups: { [gameKey: string]: Set<string> } = {};
   rows.forEach((playerRow: any) => {
     const addToMatchups = (key: string) => {
@@ -108,7 +106,7 @@ async function parseWorkbook(picksBuffer: ArrayBuffer): Promise<ParsedPicks> {
     ...collegeKeys,
     ...proKeys,
   ]);
-  // Warned about in production, not just in a dev server: it means the workbook
+  // Warned about in production, not just in a dev server. It means the workbook
   // needs fixing, and only whoever published it can do that.
   inconsistentSpreadGames.forEach((reason, gameKey) => {
     console.error(`Cannot score game ${gameKey}. ${reason}`);

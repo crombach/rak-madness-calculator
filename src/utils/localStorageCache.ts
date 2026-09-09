@@ -2,8 +2,8 @@
 //
 // Everything kept this way is something a page load can do without, so a read or a
 // write that fails counts as a miss and never as an error. A failure of either clears
-// the cache, on the grounds that storage this browser cannot be trusted with is better
-// left empty than left half full.
+// the cache. Storage this browser cannot be trusted with is better left empty than
+// left half full.
 
 export type LocalStorageCache<T> = {
   /** The value stored under a name, or undefined for one this browser does not have. */
@@ -61,7 +61,6 @@ export default function localStorageCache<T>(options: {
       try {
         // Pruned before writing, so the entry being written is never the one dropped.
         // localStorage does not report insertion order, so which others go is arbitrary.
-        // The cap is only here to bound how much space this takes.
         const keys = ownKeys().filter((it) => it !== key);
         keys
           .slice(0, Math.max(keys.length - (cap - 1), 0))

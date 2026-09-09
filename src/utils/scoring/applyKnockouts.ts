@@ -62,8 +62,7 @@ function countDifferences(
 /**
  * Marks every player who can no longer catch the leader, with the reason.
  *
- * Assumes the team abbreviations are all correct. If they are not, or the games
- * cannot be found for some other reason, the results will be wrong.
+ * Assumes every team abbreviation is correct. A mismatch corrupts the scores.
  */
 export default function applyKnockouts(
   sortedScores: Array<PlayerScore>,
@@ -76,7 +75,6 @@ export default function applyKnockouts(
   const isCollegeDone = games.every((game) => game.league !== "college");
 
   return sortedScores.map((activeScore, activeIndex) => {
-    // If a player has no picks, they're knocked out.
     if (activeScore.status.hasNoPicks) {
       return knockedOut(activeScore, "Knocked out due to having no picks.");
     }
@@ -114,7 +112,6 @@ export default function applyKnockouts(
         const totalScoreDiff = rivalScore.score.total - activeScore.score.total;
         const totalDifferentPicks = differentCollegePicks + differentProPicks;
         if (totalDifferentPicks < totalScoreDiff) {
-          // If the active player can't catch up on points, they're knocked out.
           return knockedOut(
             activeScore,
             `Knocked out on Total Score by ${rivalScore.name}. ` +
@@ -135,8 +132,6 @@ export default function applyKnockouts(
             rivalScore.tiebreaker.pick === activeScore.tiebreaker.pick ||
             (tiebreakerScore != null && rivalDistance === activeDistance)
           ) {
-            // If the active player has the same tiebreaker pick as the rival, run through the list of other tiebreakers.
-            // If the rival has a better college score, check if the active player can catch up.
             const collegeScoreDiff =
               rivalScore.score.college - activeScore.score.college;
             if (
@@ -154,7 +149,6 @@ export default function applyKnockouts(
                   ),
               );
             }
-            // If college games are done and players are tied, check pro against the spread tiebreaker.
             if (collegeScoreDiff === 0 && isCollegeDone) {
               const proAgainstTheSpreadScoreDiff =
                 rivalScore.score.proAgainstTheSpread -

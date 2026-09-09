@@ -122,7 +122,7 @@ function sheetName(season: number, weekNumber: number, view: string): string {
  */
 export default async function buildSpreadsheetBuffer(
   scoresObject: RakMadnessScores,
-  // Named rather than positional: two numbers side by side, and a call with them
+  // Named rather than positional. Two numbers side by side, and a call with them
   // the wrong way round would come out as a workbook for week 2025.
   { season, weekNumber }: { season: number; weekNumber: number },
 ): Promise<ArrayBuffer> {

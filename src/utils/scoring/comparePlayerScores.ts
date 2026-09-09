@@ -41,10 +41,8 @@ function firstAlphabetically(a: string, b: string): number {
  * are a run of returns rather than a list walked with a call each.
  */
 export function compareOnMerit(a: Merit, b: Merit): number {
-  // A row the week cannot be won by sorts under every row that can, whatever it
-  // scored, so the standings can read the leader off the first row. A player who
-  // entered nothing sorts under one who only left a game blank, and a row with no
-  // picks has every cell blank, so the wider rule is read first.
+  // A row the week can't be won by sorts under one that can, so leaders read
+  // off row one. No-picks sorts under blank-pick, wider rule checked first.
   if (a.hasNoPicks !== b.hasNoPicks) return a.hasNoPicks ? 1 : -1;
   if (a.hasBlankPick !== b.hasBlankPick) return a.hasBlankPick ? 1 : -1;
   if (a.total !== b.total) return highestFirst(a.total, b.total);
@@ -79,7 +77,7 @@ export function comparePlayerScoresOnMerit(
  * The row order, which needs every pair separated even where the rules do not
  * separate them. Two players the tiers leave tied have both won the week, so the
  * name is a row order and not a tiebreaker, which is why it lives here rather than
- * in `TIERS`.
+ * in `compareOnMerit`.
  */
 export default function comparePlayerScores(
   a: PlayerScore,

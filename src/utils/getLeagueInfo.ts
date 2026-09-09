@@ -32,7 +32,7 @@ type Scoreboard = {
  * How many weeks a season's regular season has, or undefined if the calendar for
  * it could not be read.
  *
- * The count is not the same every year: the NCAA regular season ran 15 weeks in
+ * The count is not the same every year. The NCAA regular season ran 15 weeks in
  * 2023 and 16 in 2024, and it decides where the regular season ends and the
  * postseason begins. Cached per league and season, because it is fixed once the
  * calendar is published and scoring asks for it on every refresh.
@@ -42,8 +42,7 @@ export async function getRegularSeasonWeekCount(
   season?: number,
 ): Promise<number | undefined> {
   // A season left unspecified means "whichever one is current", which changes
-  // over time, so there is nothing to key a cache lookup on until the response
-  // names the season it actually described.
+  // over time, so nothing keys a cache lookup until the response names one.
   if (season != null) {
     const cached = regularSeasonWeekCounts.get(`${league}:${season}`);
     if (cached != null) {
@@ -180,9 +179,8 @@ function toLeagueInfo(
   // every year: Off Season. Leave it out of the running.
   const datedCalendars = calendars.filter((cal) => cal.weeks.length > 0);
 
-  // For the NFL, we always want to use the regular season calendar.
-  // For the NCAA, we go by date because we cross into the postseason.
-  // Fall back to the last calendar.
+  // The NCAA goes by date rather than by season type, because it crosses
+  // into the postseason partway through.
   const activeCalendar =
     league === League.PRO
       ? datedCalendars.find((cal) => cal.seasonType === SeasonType.REGULAR)
@@ -200,9 +198,8 @@ function toLeagueInfo(
     return null;
   }
 
-  // The week being played now, or the last one begun once the season is over. A
-  // season whose opener is still ahead has none. `findLast` would say this in one
-  // call, but it is ES2023 and this builds to ES2022.
+  // The week being played now, or the last one begun once the season is
+  // over. None where the opener is ahead. `findLast` needs ES2023, not ES2022.
   const activeWeek = activeCalendar.weeks
     .filter((week) => week.startDate <= now)
     .at(-1);
