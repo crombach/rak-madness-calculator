@@ -11,11 +11,11 @@ import {
 import getPlayerAnalysis, { MAX_SEARCHED_GAMES } from "./getPlayerAnalysis";
 import { getPlayerScores } from "./getPlayerScores";
 import getTiebreakerScore from "./getTiebreakerScore";
-import isEveryGameSettled from "./isEveryGameSettled";
 import parsePicksWorkbook from "./parsePicksWorkbook";
 import { indexResults } from "./resultsIndex";
 import scorePlayers from "./scorePlayers";
 import weekGames from "./weekGames";
+import weekShape from "./weekShape";
 
 const SEASON = 2024;
 
@@ -71,12 +71,14 @@ describe("scorePlayers", () => {
   });
 });
 
+// A fresh array per run, because `weekShape` holds its answer against the one it
+// was handed and the app always hands it rows `scorePlayers` has just built.
 describe("applyKnockouts", () => {
   bench("sunday night", () => {
-    applyKnockouts(sundayNight.sorted, sundayNight.tiebreaker);
+    applyKnockouts([...sundayNight.sorted], sundayNight.tiebreaker);
   });
   bench("settled", () => {
-    applyKnockouts(settled.sorted, settled.tiebreaker);
+    applyKnockouts([...settled.sorted], settled.tiebreaker);
   });
 });
 
@@ -86,9 +88,9 @@ describe("weekGames", () => {
   });
 });
 
-describe("isEveryGameSettled", () => {
+describe("weekShape", () => {
   bench("sunday night", () => {
-    isEveryGameSettled(sundayNight.scores.scores);
+    weekShape([...sundayNight.scores.scores]);
   });
 });
 

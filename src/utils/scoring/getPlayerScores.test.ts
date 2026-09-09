@@ -340,6 +340,40 @@ describe("getPlayerScores, knockouts", () => {
   });
 });
 
+describe("getPlayerScores, blank picks", () => {
+  it("reports a row that left one game blank, and knocks it out", async () => {
+    const result = await getPlayerScores(
+      WEEK,
+      picksBuffer([
+        { Name: "Alice", C1: "OSU -3", P1: "BUF -7", Pts: 41 },
+        { Name: "Bob", C1: "MICH +3", P1: "KC +7", P2: "PHI +3", Pts: 45 },
+      ]),
+    );
+
+    const byName = new Map(result.scores.map((score) => [score.name, score]));
+    expect(byName.get("Alice")?.status.hasBlankPick).toBe(true);
+    expect(byName.get("Alice")?.status.hasNoPicks).toBe(false);
+    expect(byName.get("Alice")?.status.isKnockedOut).toBe(true);
+    expect(byName.get("Bob")?.status.hasBlankPick).toBe(false);
+  });
+
+  it("reads a game the workbook contradicts as no blank of the player's", async () => {
+    // A column nobody can be scored on is the sheet's problem, not the row's, so
+    // it leaves every row still able to win.
+    const result = await getPlayerScores(
+      WEEK,
+      picksBuffer([
+        { Name: "Alice", C1: "OSU -3", P1: "BUF -7", P2: "DAL -3", Pts: 41 },
+        { Name: "Bob", C1: "MICH +9", P1: "KC +7", P2: "PHI +3", Pts: 45 },
+      ]),
+    );
+
+    expect(result.scores.every((score) => !score.status.hasBlankPick)).toBe(
+      true,
+    );
+  });
+});
+
 describe("getPlayerScores, league requests", () => {
   it("asks for both leagues for the given week", async () => {
     const collegeOnly: Array<LeagueResult> = [osuBeatMichBy10];

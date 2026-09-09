@@ -52,6 +52,7 @@ function player({
     pro,
     status: {
       hasNoPicks: false,
+      hasBlankPick: false,
       isKnockedOut,
       explanation: isKnockedOut ? `${name} is out` : undefined,
     },

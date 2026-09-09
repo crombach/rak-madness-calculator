@@ -29,6 +29,7 @@ function player(
     pro: [proPick(pick)],
     status: {
       hasNoPicks: false,
+      hasBlankPick: false,
       isKnockedOut: explanation != null,
       explanation,
     },

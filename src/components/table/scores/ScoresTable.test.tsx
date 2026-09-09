@@ -13,7 +13,12 @@ const showPlayerAnalysis = vi.fn();
 
 function player(overrides: Partial<PlayerScore> = {}): PlayerScore {
   return playerScore({
-    status: { hasNoPicks: false, isKnockedOut: false, explanation: "Winner!" },
+    status: {
+      hasNoPicks: false,
+      hasBlankPick: false,
+      isKnockedOut: false,
+      explanation: "Winner!",
+    },
     ...overrides,
   });
 }
@@ -24,6 +29,7 @@ const knockedOutBob = player({
   tiebreaker: { pick: 45, distance: 4 },
   status: {
     hasNoPicks: false,
+    hasBlankPick: false,
     isKnockedOut: true,
     explanation: "Knocked out on Total Score by Alice.",
   },

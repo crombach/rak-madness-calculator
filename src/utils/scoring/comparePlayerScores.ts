@@ -1,6 +1,18 @@
 import { PlayerScore } from "../../types/RakMadnessScores";
 
-type Tier = (a: PlayerScore, b: PlayerScore) => number;
+/**
+ * Everything the tiers read off a player, so a caller holding the numbers without a
+ * `PlayerScore` to put them in ranks on these rules rather than a copy of them.
+ */
+export type Merit = {
+  hasNoPicks: boolean;
+  hasBlankPick: boolean;
+  total: number;
+  /** Absent where the player left the Monday night points cell blank. */
+  distance?: number;
+  college: number;
+  proAgainstTheSpread: number;
+};
 
 /** Ranks the higher value first. */
 function highestFirst(a: number, b: number): number {
@@ -21,37 +33,46 @@ function firstAlphabetically(a: string, b: string): number {
 }
 
 /**
- * Tiebreakers in order: Monday night points distance, college games picked
- * correctly, then pro games with spreads picked correctly.
+ * Which of two players the pool itself ranks higher, ties left tied.
+ *
+ * Total score first, then the tiebreakers in order: Monday night points distance,
+ * college games picked correctly, then pro games with spreads picked correctly. The
+ * route search runs this once per rival per outcome it reads, which is why the tiers
+ * are a run of returns rather than a list walked with a call each.
  */
-const TIERS: Array<Tier> = [
-  // Players with no picks always sort last.
-  (a, b) =>
-    highestFirst(Number(!a.status.hasNoPicks), Number(!b.status.hasNoPicks)),
-  (a, b) => highestFirst(a.score.total, b.score.total),
-  (a, b) =>
-    // A player who left the points cell blank has no distance, so this tier
-    // cannot separate them and falls through to the next one.
-    a.tiebreaker.distance != null && b.tiebreaker.distance != null
-      ? lowestFirst(a.tiebreaker.distance, b.tiebreaker.distance)
-      : 0,
-  (a, b) => highestFirst(a.score.college, b.score.college),
-  (a, b) =>
-    highestFirst(a.score.proAgainstTheSpread, b.score.proAgainstTheSpread),
-];
+export function compareOnMerit(a: Merit, b: Merit): number {
+  // A row the week cannot be won by sorts under every row that can, whatever it
+  // scored, so the standings can read the leader off the first row. A player who
+  // entered nothing sorts under one who only left a game blank, and a row with no
+  // picks has every cell blank, so the wider rule is read first.
+  if (a.hasNoPicks !== b.hasNoPicks) return a.hasNoPicks ? 1 : -1;
+  if (a.hasBlankPick !== b.hasBlankPick) return a.hasBlankPick ? 1 : -1;
+  if (a.total !== b.total) return highestFirst(a.total, b.total);
+  // A player who left the points cell blank has no distance, so this tier cannot
+  // separate them and falls through to the next one.
+  if (a.distance != null && b.distance != null && a.distance !== b.distance) {
+    return lowestFirst(a.distance, b.distance);
+  }
+  if (a.college !== b.college) return highestFirst(a.college, b.college);
+  return highestFirst(a.proAgainstTheSpread, b.proAgainstTheSpread);
+}
 
-/** Which of two players the pool itself ranks higher, ties left tied. */
+export function meritOf(player: PlayerScore): Merit {
+  return {
+    hasNoPicks: player.status.hasNoPicks,
+    hasBlankPick: player.status.hasBlankPick,
+    total: player.score.total,
+    distance: player.tiebreaker.distance,
+    college: player.score.college,
+    proAgainstTheSpread: player.score.proAgainstTheSpread,
+  };
+}
+
 export function comparePlayerScoresOnMerit(
   a: PlayerScore,
   b: PlayerScore,
 ): number {
-  for (const tier of TIERS) {
-    const result = tier(a, b);
-    if (result !== 0) {
-      return result;
-    }
-  }
-  return 0;
+  return compareOnMerit(meritOf(a), meritOf(b));
 }
 
 /**

@@ -38,7 +38,7 @@ function player(overrides: Partial<PlayerScore> = {}): PlayerScore {
     tiebreaker: { pick: 41, distance: 0 },
     college: [pick("OSU -3", "yes"), pick("MICH +7", "no")],
     pro: [pick("BUF -7", "yes"), pick("DAL -3", "yes")],
-    status: { hasNoPicks: false, isKnockedOut: false },
+    status: { hasNoPicks: false, hasBlankPick: false, isKnockedOut: false },
     ...overrides,
   };
 }
@@ -53,7 +53,7 @@ const scores: RakMadnessScores = {
       tiebreaker: { pick: 45, distance: 4 },
       college: [pick("MICH +3", "no"), pick("PSU -7", "unscoreable")],
       pro: [pick("KC +7", "no"), pick("PHI +3", "incomplete")],
-      status: { hasNoPicks: false, isKnockedOut: true },
+      status: { hasNoPicks: false, hasBlankPick: false, isKnockedOut: true },
     }),
   ],
 };

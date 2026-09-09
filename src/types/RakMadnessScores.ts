@@ -36,6 +36,12 @@ export type PlayerScore = {
   pro: Array<PickResult>;
   status: {
     hasNoPicks: boolean;
+    /**
+     * Whether any one game was left blank, which the pool only ever means two ways:
+     * a player who forgot to pick, or a name added by hand to stand for the other
+     * side of a game everyone picked. Neither can win the week.
+     */
+    hasBlankPick: boolean;
     isKnockedOut: boolean;
     explanation?: string;
   };

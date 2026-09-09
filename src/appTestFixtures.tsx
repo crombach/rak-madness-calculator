@@ -81,7 +81,7 @@ export const scores: RakMadnessScores = {
           explanation: { header: "P1", message: "won" },
         },
       ],
-      status: { hasNoPicks: false, isKnockedOut: false },
+      status: { hasNoPicks: false, hasBlankPick: false, isKnockedOut: false },
     },
   ],
 };

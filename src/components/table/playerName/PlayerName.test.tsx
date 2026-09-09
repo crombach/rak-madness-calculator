@@ -23,7 +23,7 @@ const mockScoreChanges = useScoreChanges as Mock;
 
 const knockedOut = playerScore({
   name: "Bob",
-  status: { hasNoPicks: false, isKnockedOut: true },
+  status: { hasNoPicks: false, hasBlankPick: false, isKnockedOut: true },
 });
 
 function mountCell(player = knockedOut) {
