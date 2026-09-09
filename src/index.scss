@@ -187,7 +187,7 @@
   --rak-nav-key-edge: #3b3b3b;
   --rak-nav-ink: #fff;
   // The lit rim along a key's top edge, weaker than the one every other key in
-  // the app wears. That 70% white was set against a near-white key face; on the
+  // the app wears. That 70% white was set against a near-white key face. On the
   // dark face a key in this bar carries, it reads as a white line rather than as
   // an edge, and a key held down looks as raised as its neighbors.
   --rak-nav-key-top: inset 0 1px 0 rgb(255 255 255 / 25%);
@@ -245,10 +245,10 @@
   // stops saying which of the two things it means. This is forty off that orange
   // and fifty off the green it also sits beside.
   --rak-warning-300: #edfaa0;
-  // Orange rather than the amber this step used to be, six degrees round the
-  // wheel and more saturated with it, so the key the home page exports from
-  // reads as a color rather than as a brown slab. 5.02:1 on the white ink that
-  // key is set in. The toast's warning border is the same step and follows.
+  // Orange, six degrees round the wheel from amber and more saturated with it,
+  // so the key the home page exports from reads as a color rather than as a
+  // brown slab. 5.02:1 on the white ink that key is set in. The toast's warning
+  // border is the same step and follows.
   --rak-warning-500: #b45309;
   // The pressed and hovered step of a solid warning button, and the dark lip it
   // stands on. Between the 500 and the 700, so the fill darkens by the same
@@ -296,7 +296,7 @@
   --rak-gold-500: #d9a02b;
   --rak-gold-700: #8a6415;
 
-  // A player, by whether they can still win. 300 fills their name cell; -on-light
+  // A player, by whether they can still win. 300 fills their name cell. -on-light
   // is the same hue taken far enough down to read on a white surface, which the
   // fill cannot, and is what the player analysis search draws its status icon in.
   --rak-knocked-out-300: #fac99e;
@@ -533,7 +533,7 @@
   --rak-glass-well: inset 0 1px 2px rgb(0 0 0 / 35%);
   // A cell of a combobox's field that is not lit. Enough to read as a shape
   // that could light, not so much that it crowds the ones that are. Dark on
-  // the light fill the field is sunk into here; dark mode below inverts it to
+  // the light fill the field is sunk into here. Dark mode below inverts it to
   // light, on the dark fill it sinks into there.
   --rak-unlit: rgb(0 0 0 / 12%);
   // How far a key stands off the panel, and how far it has left to travel once a
@@ -740,7 +740,7 @@ html {
 
   // The toast's own darkened fills, off the same hues as their light
   // pastel. `primary` and `neutral` are both gray chrome, so they take the
-  // selected-row and muted-panel fills already this dark; `success` and
+  // selected-row and muted-panel fills already this dark. `success` and
   // `danger` reuse the table cell's own darkened green/red. `warning` gets
   // its own: its hue is the orange the rest of its ramp runs on, not the
   // yellow-green `--rak-cell-unscoreable` took.

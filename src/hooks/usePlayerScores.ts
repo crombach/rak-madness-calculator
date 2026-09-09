@@ -52,7 +52,7 @@ type ScoringRequest = {
  * are scored against. Nothing is attempted until it is known.
  *
  * `attemptedFor` names the season and week this hook has finished trying, which
- * is not always the pair asked for: switching either leaves the old scores in
+ * is not always the pair asked for. Switching either leaves the old scores in
  * place until the new ones arrive. Anything reacting to a missing score has to
  * wait for it to catch up, or it will act on the previous week's outcome. The
  * season belongs there as much as the week, since week 5 exists in every season.
@@ -70,9 +70,8 @@ export default function usePlayerScores(
   const [attemptedFor, setAttemptedFor] = useState<LastAttempt>();
   const [isScoresLoading, setScoresLoading] = useState(true);
   const [isRefreshing, setRefreshing] = useState(false);
-  // Counts scoring attempts, so a superseded one cannot write its week's scores
-  // over the week that replaced it. Two can be in flight whenever the selected
-  // week changes while the first is still loading.
+  // Counts scoring attempts, so a superseded one cannot write its scores over the
+  // week that replaced it. Two can be in flight when the week changes mid-load.
   const latestAttempt = useRef(0);
   // Set for the length of an attempt, so a second click cannot start another one
   // before the state update announcing the first has even landed.
@@ -206,7 +205,7 @@ export default function usePlayerScores(
     [selectedWeek, season, attemptScoring, showToast],
   );
 
-  // useMemo, not useCallback: the value is throttle()'s wrapper, not the
+  // useMemo, not useCallback. The value is throttle()'s wrapper, not the
   // function literal, so useCallback cannot see its dependencies.
   const refreshThrottled = useMemo(
     () =>
@@ -234,7 +233,7 @@ export default function usePlayerScores(
           }
           // No trailing edge: a second click inside the window is dropped rather
           // than queued, so it cannot fire a request of its own once the window
-          // ends. `attemptInFlight` below is what actually blocks it meanwhile.
+          // ends. `isAttemptInFlight` below is what blocks it meanwhile.
         },
         REFRESH_THROTTLE_MS,
         { trailing: false },
@@ -247,9 +246,9 @@ export default function usePlayerScores(
   useEffect(() => () => refreshThrottled.cancel(), [refreshThrottled]);
 
   const refresh = useCallback(async () => {
-    // A ref rather than the `isScoresLoading` state, which two clicks in the same
-    // tick would both still read as false: the state update announcing the first
-    // click's attempt has not landed yet.
+    // A ref rather than the `isScoresLoading` state. Two clicks in the same tick
+    // would both still read the state as false, since the update announcing the
+    // first click's attempt has not landed yet.
     if (isAttemptInFlight.current) return;
     await refreshThrottled();
   }, [refreshThrottled]);

@@ -48,7 +48,7 @@ export default function useWeekRouteGuard(
     currentWeekNumber != null &&
     weekNumber <= currentWeekNumber;
 
-  // The URL is the source of truth. Comparing before writing matters: setting
+  // The URL is the source of truth. Comparing before writing matters. Setting
   // the same week again would restart the fetch chain behind it. The season is
   // the provider's to follow, which it does while rendering, so it is already
   // right by the time this runs.

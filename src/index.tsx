@@ -38,9 +38,9 @@ import "./index.scss";
 // the first to paint arrives after that paint has committed to the fallback. Asking
 // for each one here fetches and decodes it up front instead.
 //
-// This is the only list of what to fetch. A `rel=prefetch` for the same files used
-// to sit above it and raced it, so every face downloaded twice: 75kB of the home
-// page's transfer, for nothing.
+// This is the only list of what to fetch. A `rel=prefetch` for the same files
+// above it would race it, downloading every face twice. That doubling costs
+// the home page's transfer 75kB, for nothing.
 //
 // A weight added here also needs its `@fontsource` stylesheet imported above, which
 // is what declares the face. `document.fonts.load` resolves quietly when no face
@@ -57,10 +57,8 @@ const FIRST_PAINT_FONTS = [
   ["400", "IBM Plex Mono"], // table cells
   ["600", "IBM Plex Mono"], // the home page's selected season row
   ["700", "IBM Plex Mono"], // a table's bold rank column
-  // The scoreline's readout. Nothing paints it until the game status dialog
-  // opens, so a decode left until then swaps the face under a dialog already on
-  // screen. `useScorelineFit` measures that dialog, and it measures the fallback
-  // when the swap has yet to land.
+  // The scoreline's readout, painted only once the dialog opens, so a late decode
+  // swaps the face under it. `useScorelineFit` measures the fallback meanwhile.
   ["700", "DSEG7 Classic"],
 ];
 for (const [weight, family] of FIRST_PAINT_FONTS) {

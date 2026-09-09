@@ -14,7 +14,7 @@ import doNothing from "../utils/doNothing";
 export const MAX_VISIBLE_TOASTS = 3;
 /**
  * How long a toast that closes itself stays up. Long enough to read one line of
- * confirmation, and no longer: the only toasts on this clock say something
+ * confirmation, and no longer. The only toasts on this clock say something
  * worked, and the reader is already looking at what it did.
  */
 export const TOAST_LIFETIME_MS = 2000;
@@ -68,9 +68,8 @@ type ToastActions = {
   resumeToasts: () => void;
 };
 
-// The actions sit in their own context because their identity never changes. That
-// keeps the parts of the app that only send toasts (every player cell, for one)
-// still while toasts appear and time out.
+// The actions sit in their own context, since their identity never changes,
+// keeping toast-only parts (a player cell) still while toasts appear and expire.
 const ToastActionsContext = createContext<ToastActions>({
   showToast: doNothing,
   removeToast: doNothing,

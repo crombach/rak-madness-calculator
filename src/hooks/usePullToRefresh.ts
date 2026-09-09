@@ -84,8 +84,8 @@ function phoneTouchQuery(): string {
  *
  * A phone's replacement for the refresh button, which `phone-touch` takes off the
  * bar at the same width. Not the browser's own pull-to-refresh, which `index.scss`
- * turns off: that reloads the document, and the scores are rescored from a
- * workbook held in memory, which a reload would throw away.
+ * turns off. That reloads the document. The scores are rescored from a workbook
+ * held in memory, which a reload would throw away.
  *
  * Writes where the pull has got to onto the root element rather than into state,
  * the way `useViewportInsets` does, so a finger moving over a table of a thousand

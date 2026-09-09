@@ -20,7 +20,7 @@ type AppData = ReturnType<typeof useLeagueWeeks> &
   ReturnType<typeof usePicksSeasons> & {
     /**
      * The `WeekInfo` for a week number, or undefined if the season has no such
-     * week. Always the calendar's own object: the week picker compares options by
+     * week. Always the calendar's own object. The week picker compares options by
      * reference, so a rebuilt one would leave it unable to show a selection.
      */
     findWeek: (value: number) => WeekInfo | undefined;
@@ -54,8 +54,8 @@ const WinnerDecidedContext = createContext(false);
 
 /**
  * What the most recent scoring attempt changed, so a table can flash only the
- * cells that moved. Its own context for the same reason `WinnerDecidedContext` is:
- * every pick and player cell reads it, and `AppData` re-renders on every loading
+ * cells that moved. Its own context for the same reason `WinnerDecidedContext` is.
+ * Every pick and player cell reads it, and `AppData` re-renders on every loading
  * flag it carries.
  */
 const ScoreChangesContext = createContext<ScoreChanges>(NO_SCORE_CHANGES);
@@ -84,9 +84,8 @@ export function AppDataContextProvider({
 }: PropsWithChildren<object>) {
   const { pathname } = useLocation();
   const route = routeFromPath(pathname);
-  // Undefined until a URL or the picker names one, which is what asks ESPN for
-  // the season running now. `loadedSeason` then comes back saying which one that
-  // was.
+  // Undefined until a URL or the picker names one, which asks ESPN for the season
+  // running now. `loadedSeason` then says which one that was.
   const [selectedSeason, setSelectedSeason] = useState(route.season);
 
   // A results URL is the last word on which season is being looked at. Adjusted
@@ -104,7 +103,7 @@ export function AppDataContextProvider({
   const picksSeasons = usePicksSeasons();
   const currentSeason = useCurrentSeason();
   // The newest season with picks, unless the URL or the picker named one. Never
-  // the season ESPN calls current between the Super Bowl and the opener: nothing
+  // the season ESPN calls current between the Super Bowl and the opener. Nothing
   // of it has been played, so `useCurrentSeason` withholds it too.
   const requestedSeason = selectedSeason ?? picksSeasons.seasons?.[0];
   const leagueWeeks = useLeagueWeeks(
