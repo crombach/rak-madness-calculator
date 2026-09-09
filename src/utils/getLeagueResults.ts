@@ -16,11 +16,7 @@ import {
   writeCachedResults,
 } from "./espnCache";
 import { getRegularSeasonWeekCount } from "./getLeagueInfo";
-import {
-  findMatchup,
-  indexResults,
-  resultMatchupKey,
-} from "./scoring/resultsIndex";
+import { findMatchup, indexResults } from "./scoring/resultsIndex";
 
 /**
  * Used only where the season's own calendar could not be read. The NCAA count
@@ -65,25 +61,22 @@ async function getLeagueEvents(
   // impossible to fetch again.
   { datedFromWeekStart = true }: { datedFromWeekStart?: boolean } = {},
 ): Promise<Array<EspnEvent>> {
-  const [collegeWeeks, proWeeks] = await Promise.all([
-    getRegularSeasonWeekCount(League.COLLEGE, season),
-    getRegularSeasonWeekCount(League.PRO, season),
-  ]);
-  const weeksInCollegeRegularSeason =
-    collegeWeeks ?? WEEKS_COLLEGE_REGULAR_SEASON;
-  const weeksInProRegularSeason = proWeeks ?? WEEKS_PRO_REGULAR_SEASON;
+  // This league's calendar and no other. The other league's week count decides
+  // nothing below, and asking for it is a round trip to ESPN the answer waits on.
+  const isCollege = league === League.COLLEGE;
+  const weeksInRegularSeason =
+    (await getRegularSeasonWeekCount(league, season)) ??
+    (isCollege ? WEEKS_COLLEGE_REGULAR_SEASON : WEEKS_PRO_REGULAR_SEASON);
 
   // After the regular season is over, ESPN resets the week counter to 1 for the postseason.
-  let adjustedWeekNumber =
-    league === League.COLLEGE
-      ? week.value + WEEK_OFFSET_COLLEGE
-      : week.value > weeksInProRegularSeason
-        ? week.value % weeksInProRegularSeason
-        : week.value;
+  let adjustedWeekNumber = isCollege
+    ? week.value + WEEK_OFFSET_COLLEGE
+    : week.value > weeksInRegularSeason
+      ? week.value % weeksInRegularSeason
+      : week.value;
   const seasonType: SeasonType =
-    (league === League.COLLEGE &&
-      adjustedWeekNumber <= weeksInCollegeRegularSeason) ||
-    (league === League.PRO && week.value <= weeksInProRegularSeason)
+    (isCollege && adjustedWeekNumber <= weeksInRegularSeason) ||
+    (!isCollege && week.value <= weeksInRegularSeason)
       ? SeasonType.REGULAR
       : SeasonType.POST;
   // For college games, the postseason is all week 1
@@ -108,21 +101,22 @@ async function getLeagueEvents(
         // We'd also like to remove events that happen after, but Rak has (once)
         // put a game in the picks sheet outside the NFL week. Nice.
         if (!datedFromWeekStart) return events;
-        return events.filter((event) => {
-          const eventDate = new Date(event.date);
-          return (
-            eventDate.valueOf() >= week.startDate.valueOf()
-            // && eventDate.valueOf() <= week.endDate.valueOf()
-          );
-        });
+        return events.filter(
+          (event) => new Date(event.date).valueOf() >= week.startDate.valueOf(),
+          // && eventDate.valueOf() <= week.endDate.valueOf()
+        );
       });
     });
 
     // Latest first. The postseason arrives as one bowl week spanning a month, so a
     // team can appear twice, and the later game is the one that week is about.
-    return (await Promise.all(collegePromises)).flat(1).sort((a, b) => {
-      return new Date(b.date).valueOf() - new Date(a.date).valueOf();
-    });
+    // Read once per event rather than twice per comparison, since a college week
+    // arrives as hundreds of them.
+    return (await Promise.all(collegePromises))
+      .flat(1)
+      .map((event) => ({ event, at: new Date(event.date).valueOf() }))
+      .sort((a, b) => b.at - a.at)
+      .map((dated) => dated.event);
   }
 
   // For pro, we can just return the raw events list fetched from the API.
@@ -131,6 +125,46 @@ async function getLeagueEvents(
 
 /** The season record, which ESPN sends beside the home and road splits. */
 const RECORD_TYPE_SEASON = "total";
+
+/** Both sides of an event, or null where ESPN sent one with a side missing. */
+function eventSides(
+  event: EspnEvent,
+): { home: EspnCompetitor; away: EspnCompetitor } | null {
+  const { competitors } = event.competitions[0];
+  const home = competitors.find(
+    (competitor: EspnCompetitor) => competitor.homeAway === "home",
+  );
+  const away = competitors.find(
+    (competitor: EspnCompetitor) => competitor.homeAway === "away",
+  );
+  return home != null && away != null ? { home, away } : null;
+}
+
+/** A side's name as every index and every matchup key spells it. */
+function teamAbbreviation(competitor: EspnCompetitor): string {
+  return competitor.team.abbreviation?.toUpperCase();
+}
+
+/**
+ * Whether any picks column asks about this event, read off the event rather than the
+ * game built from it. A college week arrives as hundreds of events and the picks name
+ * a handful, so the rest are dropped before anything is built out of them.
+ */
+function isWanted(
+  event: EspnEvent,
+  wantedPairs: Set<string>,
+  wantedTeams: Set<string>,
+): boolean {
+  const sides = eventSides(event);
+  if (sides == null) return false;
+  const home = teamAbbreviation(sides.home);
+  const away = teamAbbreviation(sides.away);
+  return (
+    wantedPairs.has(matchupKey(new Set([home, away]))) ||
+    wantedTeams.has(home) ||
+    wantedTeams.has(away)
+  );
+}
 
 function gameSide(competitor: EspnCompetitor): GameSide {
   return {
@@ -141,7 +175,7 @@ function gameSide(competitor: EspnCompetitor): GameSide {
       // the other half having gone missing.
       location: competitor.team.location,
       mascot: competitor.team.name,
-      abbreviation: competitor.team.abbreviation?.toUpperCase(),
+      abbreviation: teamAbbreviation(competitor),
       logoUrl: competitor.team.logo,
     },
     score: Number(competitor.score),
@@ -200,15 +234,11 @@ export function matchesMatchup(
 export function toLeagueResult(event: EspnEvent): LeagueResult | null {
   const status: GameStatus = event.status.type.id;
   const competition = event.competitions[0];
-  const home = competition.competitors.find(
-    (competitor: EspnCompetitor) => competitor.homeAway === "home",
-  );
-  const away = competition.competitors.find(
-    (competitor: EspnCompetitor) => competitor.homeAway === "away",
-  );
-  if (home == null || away == null) {
+  const sides = eventSides(event);
+  if (sides == null) {
     return null;
   }
+  const { home, away } = sides;
 
   const homeSide = gameSide(home);
   const awaySide = gameSide(away);
@@ -266,7 +296,7 @@ export function toLeagueResult(event: EspnEvent): LeagueResult | null {
     winner: {
       team: winner && {
         name: winner.team.displayName,
-        abbreviation: winner.team.abbreviation?.toUpperCase(),
+        abbreviation: teamAbbreviation(winner),
       },
       homeAway: winnerHomeAway,
       by: scoreMargin,
@@ -274,7 +304,7 @@ export function toLeagueResult(event: EspnEvent): LeagueResult | null {
     loser: {
       team: loser && {
         name: loser.team.displayName,
-        abbreviation: loser.team.abbreviation?.toUpperCase(),
+        abbreviation: teamAbbreviation(loser),
       },
       homeAway: loserHomeAway,
       by: scoreMargin,
@@ -353,15 +383,9 @@ export async function getLeagueResults(
   });
 
   const results = events
+    .filter((event) => isWanted(event, wantedPairs, wantedTeams))
     .map(toLeagueResult)
-    .filter((it) => it != null)
-    .filter((result) => {
-      const key = resultMatchupKey(result);
-      if (key != null && wantedPairs.has(key)) return true;
-      const home = result.home.team.abbreviation;
-      const away = result.away.team.abbreviation;
-      return wantedTeams.has(home) || wantedTeams.has(away);
-    });
+    .filter((it) => it != null);
 
   // Each matchup and the one game the fetch found for it. Indexed over results
   // already in fetch order, so it picks the same game every lookup by team will.

@@ -6,16 +6,6 @@ export type RemainingPick = {
 };
 
 /**
- * A game still to be played that the player left blank. Nothing they do decides it,
- * so a route through it needs the teams below to fall the right way.
- */
-export type UncontrolledGame = {
-  label: string;
-  /** The teams a player still standing picked there, which all have to miss. */
-  needsToMiss: Array<string>;
-};
-
-/**
  * How the week is settled once a route's games land.
  *
  * `settled` means the Monday night game is already final, so the standings carry its
@@ -79,6 +69,4 @@ export type PlayerAnalysis =
       mondayNight?: MondayNightOutlook;
       /** The fewest wins that take the week whatever Monday night's total is. */
       outrightAt?: number;
-      /** Empty unless no route wins regardless of the games the player left blank. */
-      needsHelp: Array<UncontrolledGame>;
     };

@@ -17,6 +17,11 @@ import { toLeagueResult } from "../getLeagueResults";
  * sixteen pro, the twenty-two of Thanksgiving week, against a median of nineteen
  * and a field topping out at sixty-eight. Re-read them the same way to move these,
  * and keep the field at the eighty the pool is sized for.
+ *
+ * The field picks every game, bar the one row that stands for a game everybody
+ * else picked one side of. A row with a blank is a row `applyKnockouts` reads as
+ * unable to win, so a fixture full of blanks is a fixture with nothing left to
+ * work out, and the routes it measures are not the ones a real week asks for.
  */
 export const BENCH_PLAYERS = 80;
 export const BENCH_COLLEGE_GAMES = 6;
@@ -73,19 +78,35 @@ function homeSpread(league: League, index: number): number {
     : -steps[index % steps.length];
 }
 
+/**
+ * The one row that leaves games blank, which the pool only ever writes to cover a
+ * game the whole field picked one side of. `applyKnockouts` reads a blank as a row
+ * that cannot win the week, so everybody else picks every game.
+ */
+const BENCH_FAKE_PLAYER = BENCH_PLAYERS - 1;
+
+/**
+ * Which side of a game one player took, scattered so no two rows hold the same
+ * picks. A field of a few repeated patterns is a field the search can answer by
+ * reading a handful of distinct rivals, which is not the pool it is sized for.
+ */
+function takesHome(gameIndex: number, playerIndex: number): boolean {
+  const scattered =
+    Math.imul(playerIndex + 1, 0x9e3779b1) ^ (gameIndex * 0x85eb);
+  return ((scattered >>> 13) & 1) === 0;
+}
+
 /** The cell one player writes for one game, or undefined where they skipped it. */
 function pickCell(
   league: League,
   gameIndex: number,
   playerIndex: number,
 ): string | undefined {
-  // Home, away, blank, so a run covers the matched pick, the opposed one, and the
-  // missing-pick branch the knockouts read.
-  const side = (playerIndex + gameIndex) % 3;
-  if (side === 2) return undefined;
   const id = gameId(league, gameIndex);
+  const isCovered = league === League.COLLEGE && gameIndex === 0;
+  if (playerIndex === BENCH_FAKE_PLAYER && !isCovered) return undefined;
   const spread = homeSpread(league, gameIndex);
-  return side === 0
+  return takesHome(gameIndex, playerIndex)
     ? `${homeTeam(id)} ${spread > 0 ? "+" : ""}${spread}`
     : `${awayTeam(id)} ${spread > 0 ? "-" : "+"}${Math.abs(spread)}`;
 }

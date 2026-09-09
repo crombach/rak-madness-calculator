@@ -29,7 +29,7 @@ function player(
     tiebreaker: { distance },
     college: [],
     pro: [],
-    status: { hasNoPicks, isKnockedOut: false },
+    status: { hasNoPicks, hasBlankPick: hasNoPicks, isKnockedOut: false },
   };
 }
 

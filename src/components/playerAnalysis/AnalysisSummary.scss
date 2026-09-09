@@ -157,13 +157,6 @@
   font-weight: var(--rak-weight-bold);
 }
 
-.analysis__help {
-  @include stacked(var(--rak-space-1));
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
 .analysis__line {
   margin: 0;
   color: var(--rak-text-secondary);

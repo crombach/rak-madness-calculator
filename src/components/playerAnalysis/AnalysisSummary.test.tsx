@@ -37,7 +37,6 @@ const base = {
   player: "Alice",
   mustWin: [],
   hiddenRouteCount: 0,
-  needsHelp: [],
 };
 
 describe("AnalysisSummary", () => {
@@ -162,14 +161,12 @@ describe("AnalysisSummary", () => {
       ...base,
       mustWin: [{ label: "C4", pick: "UGA -7" }],
       pool: { choose: 2, games: [{ label: "P2", pick: "KC -3" }] },
-      needsHelp: [{ label: "P7", needsToMiss: ["Rak"] }],
       mondayNight: RAK_BY_45,
     };
     render(<AnalysisSummary result={result} />);
 
     expect(isConjoined("Must win")).toBe(false);
     expect(isConjoined("Any 2 of")).toBe(true);
-    expect(isConjoined("Out of your hands")).toBe(true);
     expect(isConjoined("MNF Points ≤ 45")).toBe(true);
   });
 
@@ -277,20 +274,6 @@ describe("AnalysisSummary", () => {
 
     expect(
       screen.getByText("Alice can still win the week. What it takes:"),
-    ).toBeInTheDocument();
-  });
-
-  it("names the team that has to miss in a game the player left blank", () => {
-    const result: PlayerAnalysis = {
-      ...base,
-      mustWin: [{ label: "P1", pick: "KC -3" }],
-      needsHelp: [{ label: "P7", needsToMiss: ["DEN"] }],
-      mondayNight: { kind: "notNeeded" },
-    };
-    render(<AnalysisSummary result={result} />);
-
-    expect(
-      screen.getByText(/is blank on your sheet, so DEN has to miss/),
     ).toBeInTheDocument();
   });
 

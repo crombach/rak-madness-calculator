@@ -22,7 +22,7 @@ const THEME_KEY = "rak-madness:settings:theme";
  * and the away cell `+line`. Every one is under the seven points the home side
  * wins a settled game by, so the home side covers each of them and a phase reads
  * its settled games the way it names them. A half point is a game no margin can
- * land on, which is how `canPush` tells the two apart.
+ * land on, so neither side takes a push there.
  */
 const GAMES = [
   { key: "C1", league: "college", home: "UGA", away: "ALA", line: 3 },

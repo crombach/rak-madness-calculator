@@ -22,7 +22,7 @@ function player(
       status,
       explanation: { header: header ?? "Final Score", message: "" },
     })),
-    status: { hasNoPicks: false, isKnockedOut: false },
+    status: { hasNoPicks: false, hasBlankPick: false, isKnockedOut: false },
   };
 }
 

@@ -69,8 +69,8 @@ export default function applyKnockouts(
   sortedScores: Array<PlayerScore>,
   tiebreakerScore?: number,
 ): Array<PlayerScore> {
-  // One walk. Asking `remainingGames` and `isEveryGameSettled` apart reads every pick of
-  // every player three times over.
+  // One walk. Asking for the open games and the week's state apart reads every
+  // pick of every player three times over.
   const { remaining: games, isEveryGameSettled: everyGameSettled } =
     weekShape(sortedScores);
   const isCollegeDone = games.every((game) => game.league !== "college");
@@ -79,6 +79,12 @@ export default function applyKnockouts(
     // If a player has no picks, they're knocked out.
     if (activeScore.status.hasNoPicks) {
       return knockedOut(activeScore, "Knocked out due to having no picks.");
+    }
+
+    // A blank pick means the row is a forgetful player or a name added by hand to
+    // cover a game everyone picked one side of, and neither wins the week.
+    if (activeScore.status.hasBlankPick) {
+      return knockedOut(activeScore, "Knocked out due to a blank pick.");
     }
 
     // The leader sorts first and cannot be knocked out, so skip them.
@@ -94,8 +100,9 @@ export default function applyKnockouts(
       ) {
         const rivalScore = sortedScores[rivalIndex];
 
-        // No use comparing a player to themself or a player with no picks.
-        if (rivalIndex === activeIndex || rivalScore.status.hasNoPicks)
+        // No use comparing a player to themself, or to one who cannot win the week
+        // and so can take it off nobody.
+        if (rivalIndex === activeIndex || rivalScore.status.hasBlankPick)
           continue;
 
         const {

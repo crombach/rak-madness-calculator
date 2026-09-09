@@ -20,6 +20,7 @@ type PlayerOptions = {
   tiebreakerPick?: number;
   distance?: number;
   hasNoPicks?: boolean;
+  hasBlankPick?: boolean;
 };
 
 function player({
@@ -33,6 +34,7 @@ function player({
   tiebreakerPick,
   distance,
   hasNoPicks = false,
+  hasBlankPick = hasNoPicks,
 }: PlayerOptions): PlayerScore {
   return {
     name,
@@ -40,7 +42,7 @@ function player({
     tiebreaker: { pick: tiebreakerPick, distance },
     college,
     pro,
-    status: { hasNoPicks, isKnockedOut: hasNoPicks },
+    status: { hasNoPicks, hasBlankPick, isKnockedOut: hasNoPicks },
   };
 }
 
@@ -79,6 +81,34 @@ describe("applyKnockouts", () => {
 
     expect(result[1].status.isKnockedOut).toBe(false);
     expect(result[1].status.explanation).toBe("Not knocked out!");
+  });
+
+  it("knocks out a player who left one game blank, whatever their score", () => {
+    // The pool only writes a blank two ways: a player who forgot, or a name added
+    // by hand to cover a game everybody picked one side of. Neither can win.
+    const result = applyKnockouts([
+      player({ name: "Alice", total: 9, hasBlankPick: true }),
+      player({ name: "Bob", total: 1 }),
+    ]);
+
+    expect(result[0].status.isKnockedOut).toBe(true);
+    expect(result[0].status.explanation).toBe(
+      "Knocked out due to a blank pick.",
+    );
+    expect(result[1].status.isKnockedOut).toBe(false);
+  });
+
+  it("lets nobody be knocked out by a player who left a game blank", () => {
+    const result = applyKnockouts([
+      player({ name: "Alice", total: 9, hasBlankPick: true }),
+      player({
+        name: "Bob",
+        total: 1,
+        pro: [pickResult("BUF -3", "incomplete")],
+      }),
+    ]);
+
+    expect(result[1].status.isKnockedOut).toBe(false);
   });
 
   it("knocks out a player who submitted no picks", () => {

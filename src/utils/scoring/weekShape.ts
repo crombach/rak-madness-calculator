@@ -20,6 +20,13 @@ const EMPTY: WeekShape = {
 };
 
 /**
+ * One walk per set of scores. The knockouts read the shape, the analysis dialog
+ * reads it, and the search reads it again off the rows the knockouts returned, so a
+ * refresh asks the same question of the same rows more than once.
+ */
+const shapes = new WeakMap<Array<PlayerScore>, WeekShape>();
+
+/**
  * What is left of a week, read column by column in one pass.
  *
  * A column is read across every row rather than off one. A row that left a game
@@ -29,6 +36,14 @@ const EMPTY: WeekShape = {
  * unscoreable header that leaves no hole in the week.
  */
 export default function weekShape(players: Array<PlayerScore>): WeekShape {
+  const held = shapes.get(players);
+  if (held != null) return held;
+  const shape = readWeekShape(players);
+  shapes.set(players, shape);
+  return shape;
+}
+
+function readWeekShape(players: Array<PlayerScore>): WeekShape {
   const [first] = players;
   if (first == null) return EMPTY;
 
@@ -59,13 +74,6 @@ export default function weekShape(players: Array<PlayerScore>): WeekShape {
         remaining.push({
           label: labels[index],
           league,
-          // A pick scores on a margin of zero or better, so a whole-number line is
-          // one the margin can land exactly on, and both sides take the point.
-          // Half a point rules that out. Read off any row that wrote the line,
-          // since `validateSpreads` holds a column to one.
-          canPush: Number.isInteger(
-            picks.find((pick) => pick.spread !== 0)?.spread ?? 0,
-          ),
           cells: picks.map(({ teamAbbreviation, spread, text }) => ({
             team: teamAbbreviation,
             hasSpread: spread !== 0,

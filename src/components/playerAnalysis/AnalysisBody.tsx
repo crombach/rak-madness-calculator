@@ -1,7 +1,7 @@
-import { PlayerAnalysis, UncontrolledGame } from "../../types/PlayerAnalysis";
+import { PlayerAnalysis } from "../../types/PlayerAnalysis";
 import plural from "../../utils/plural";
 import { MAX_SEARCHED_GAMES } from "../../utils/scoring/getPlayerAnalysis";
-import { Message, NAMES, Picks, Section } from "./analysisParts";
+import { Message, Picks, Section } from "./analysisParts";
 import { MondayNight } from "./mondayNight";
 import AnalysisRoutes from "./AnalysisRoutes";
 // These render elements of the `analysis` block, which `AnalysisSummary` owns and styles.
@@ -48,28 +48,6 @@ function Lead({ result }: { result: PathsResult }) {
       {hasGames(result) &&
         (outright != null ? " Otherwise:" : " What it takes:")}
     </p>
-  );
-}
-
-function NeedsHelp({
-  games,
-  conjoined,
-}: {
-  games: Array<UncontrolledGame>;
-  conjoined?: boolean;
-}) {
-  if (games.length === 0) return null;
-  return (
-    <Section conjoined={conjoined} title="Out of your hands">
-      <ul className="analysis__help">
-        {games.map((game) => (
-          <li key={game.label} className="analysis__line">
-            <span className="analysis__pick-label">{game.label}</span> is blank
-            on your sheet, so {NAMES.format(game.needsToMiss)} has to miss.
-          </li>
-        ))}
-      </ul>
-    </Section>
   );
 }
 
@@ -146,10 +124,7 @@ export default function AnalysisBody({
   // each block that has one above it opens with `AND`. The first never does.
   const isConjoined = {
     waysThrough: hasMustWin,
-    help: hasMustWin || hasWaysThrough,
-    mondayNight:
-      asksMondayNight &&
-      (hasMustWin || hasWaysThrough || result.needsHelp.length > 0),
+    mondayNight: asksMondayNight && (hasMustWin || hasWaysThrough),
   };
 
   return (
@@ -189,7 +164,6 @@ export default function AnalysisBody({
         </p>
       )}
 
-      <NeedsHelp conjoined={isConjoined.help} games={result.needsHelp} />
       <MondayNight
         conjoined={isConjoined.mondayNight}
         outlook={result.mondayNight}

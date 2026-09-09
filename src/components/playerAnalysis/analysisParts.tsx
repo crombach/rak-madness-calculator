@@ -2,8 +2,6 @@ import { ReactNode } from "react";
 import { RemainingPick } from "../../types/PlayerAnalysis";
 import "./AnalysisSummary.scss";
 
-export const NAMES = new Intl.ListFormat("en-US");
-
 export function Section({
   title,
   // On where a block above this one is needed too. A gap between two blocks does
