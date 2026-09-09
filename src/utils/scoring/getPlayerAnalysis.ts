@@ -614,7 +614,10 @@ function settledAnalysis(
 
   const player = players[playerIndex];
   const clinched: PlayerAnalysis = { kind: "clinched", player: player.name };
-  if (player.status.isKnockedOut) {
+  // The blank read alongside the knockout, and not off it, because the search below
+  // reads every contested game as a pick of this player's. A caller writing its own
+  // scores can hand in a blank row `applyKnockouts` never marked.
+  if (player.status.isKnockedOut || player.status.hasBlankPick) {
     return { playerIndex, player, rivals: [], analysis: knockedOut(player) };
   }
 
@@ -664,10 +667,10 @@ export default function getPlayerAnalysis(
     (game) => new Set(live.map((index) => game.cells[index].team)).size > 1,
   );
 
-  // Every player still standing picked every game, since `applyKnockouts` reads a
-  // blank cell as a row that cannot win the week and a knocked out player is
-  // answered above. So the bit for a game reads as this player's own pick landing,
-  // and every one of the contested games is theirs to win.
+  // This player picked every game, since a blank row is answered above. So the bit
+  // for a game reads as their own pick landing, and every contested game is theirs
+  // to win. A rival's blank cell still reaches here, and `sideFor` scores it as no
+  // gain either way.
   const coverers = contested.map((game) => game.cells[playerIndex].team!);
   const mineMask = (1 << contested.length) - 1;
 

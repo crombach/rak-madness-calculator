@@ -25,6 +25,7 @@ type PlayerOptions = {
   tiebreakerPick?: number;
   distance?: number;
   isKnockedOut?: boolean;
+  hasBlankPick?: boolean;
 };
 
 function player({
@@ -37,6 +38,7 @@ function player({
   tiebreakerPick,
   distance,
   isKnockedOut = false,
+  hasBlankPick = false,
 }: PlayerOptions): PlayerScore {
   return {
     name,
@@ -49,7 +51,7 @@ function player({
     tiebreaker: { pick: tiebreakerPick, distance },
     college,
     pro,
-    status: { hasNoPicks: false, hasBlankPick: false, isKnockedOut },
+    status: { hasNoPicks: false, hasBlankPick, isKnockedOut },
   };
 }
 
@@ -504,6 +506,24 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
     const result = paths(getPlayerAnalysis(scores, "Bob"));
     expect(result.mustWin).toEqual([{ label: "C1", pick: "BAMA +7" }]);
     expect(result.mondayNight).toEqual({ kind: "settled" });
+  });
+});
+
+describe("getPlayerAnalysis, blank picks", () => {
+  it("answers a blank row as knocked out, whatever the knockouts said", () => {
+    // The search reads every contested game as a pick of the player's, so a row
+    // that left one blank has to be answered before it.
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 5,
+        pro: [pick("KC -3"), pick("")],
+        hasBlankPick: true,
+      }),
+      player({ name: "Bob", total: 5, pro: [pick("DEN +3"), pick("SF -6")] }),
+    ]);
+
+    expect(getPlayerAnalysis(scores, "Alice")?.kind).toBe("knockedOut");
   });
 });
 
