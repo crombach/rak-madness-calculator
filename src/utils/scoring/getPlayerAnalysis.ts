@@ -167,7 +167,8 @@ function threats(me: Side, rivals: Array<Side>): Array<Side> {
 /** What the ranking reads off this player, as one outcome leaves them. */
 function meritIn(side: Side, total: number, outcome: number): Merit {
   return {
-    cannotWin: side.player.status.hasNoPicks || side.player.status.hasBlankPick,
+    hasNoPicks: side.player.status.hasNoPicks,
+    hasBlankPick: side.player.status.hasBlankPick,
     total,
     distance: side.player.tiebreaker.distance,
     college: scoreIn(side.college, outcome),

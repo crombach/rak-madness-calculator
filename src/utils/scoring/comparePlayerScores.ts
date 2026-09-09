@@ -5,8 +5,8 @@ import { PlayerScore } from "../../types/RakMadnessScores";
  * `PlayerScore` to put them in ranks on these rules rather than a copy of them.
  */
 export type Merit = {
-  /** A row the week cannot be won by, which sorts under every row that can. */
-  cannotWin: boolean;
+  hasNoPicks: boolean;
+  hasBlankPick: boolean;
   total: number;
   /** Absent where the player left the Monday night points cell blank. */
   distance?: number;
@@ -41,9 +41,12 @@ function firstAlphabetically(a: string, b: string): number {
  * are a run of returns rather than a list walked with a call each.
  */
 export function compareOnMerit(a: Merit, b: Merit): number {
-  // A row that cannot win the week always sorts last, whatever it scored, so the
-  // first row is one the standings can read the leader off.
-  if (a.cannotWin !== b.cannotWin) return a.cannotWin ? 1 : -1;
+  // A row the week cannot be won by sorts under every row that can, whatever it
+  // scored, so the standings can read the leader off the first row. A player who
+  // entered nothing sorts under one who only left a game blank, and a row with no
+  // picks has every cell blank, so the wider rule is read first.
+  if (a.hasNoPicks !== b.hasNoPicks) return a.hasNoPicks ? 1 : -1;
+  if (a.hasBlankPick !== b.hasBlankPick) return a.hasBlankPick ? 1 : -1;
   if (a.total !== b.total) return highestFirst(a.total, b.total);
   // A player who left the points cell blank has no distance, so this tier cannot
   // separate them and falls through to the next one.
@@ -56,7 +59,8 @@ export function compareOnMerit(a: Merit, b: Merit): number {
 
 export function meritOf(player: PlayerScore): Merit {
   return {
-    cannotWin: player.status.hasNoPicks || player.status.hasBlankPick,
+    hasNoPicks: player.status.hasNoPicks,
+    hasBlankPick: player.status.hasBlankPick,
     total: player.score.total,
     distance: player.tiebreaker.distance,
     college: player.score.college,

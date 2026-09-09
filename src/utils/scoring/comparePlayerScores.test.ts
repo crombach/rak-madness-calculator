@@ -57,15 +57,16 @@ describe("comparePlayerScores", () => {
     ).toEqual(["Alice", "Bob"]);
   });
 
-  it("ranks a player who left one game blank last, whatever their score", () => {
-    // `applyKnockouts` reads a blank as a row that cannot win, so the standings
-    // read the leader off the first row only while such a row sorts under it.
+  it("ranks a blank pick under a full sheet and over an empty one", () => {
+    // Neither can win the week, which is why both sort under Alice. The pool still
+    // ranks a player who missed one game over one who entered nothing.
     expect(
       ranked(
+        player("Carol", { total: 9, hasNoPicks: true }),
         player("Bob", { total: 9, hasBlankPick: true }),
         player("Alice", { total: 1 }),
       ),
-    ).toEqual(["Alice", "Bob"]);
+    ).toEqual(["Alice", "Bob", "Carol"]);
   });
 
   it("breaks a tie on total by the closer Monday night guess", () => {
