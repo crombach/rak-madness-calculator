@@ -11,7 +11,7 @@ their name in either table.
 - `AnalysisSummary`: the standing above the body. Decides once whether the week
   is done, for both halves.
 - `analysisParts`: `Section`, `Picks`, `Message`, the pieces with no analysis
-  logic of their own, shared by the three files below.
+  logic of their own, shared by the files below.
 - `mondayNight`: the MNF Points tiebreaker, its own block and its route line.
 - `AnalysisRoutes`: the paths list, folded until asked to show more.
 - `AnalysisBody`: the switch on `PlayerAnalysis.kind` that picks what to render.

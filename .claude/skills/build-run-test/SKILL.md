@@ -68,14 +68,14 @@ The scoring path logs through `src/utils/debugLog.ts`, which is silent when the 
 - `.wrangler/` is in the ESLint ignore list. It holds generated bundles that fail every rule.
 - `make format` runs `eslint --fix`, then prettier. That order matters. ESLint's fixes are not prettier-clean, so the formatter has to run last or `make check` fails right after `make format`.
 - Two tsconfigs, and root excludes `functions/**/*`, so `make typecheck` runs `tsc` twice. Both set `strict: true` explicitly, because TypeScript 6 changed the default and leaving it implicit hides which behavior is intended.
-- `src/vite-env.d.ts` carries the `vite/client` and `vitest/globals` references. Don't move them into `compilerOptions.types`: that switches off automatic `@types` inclusion and VS Code reports the entry point as missing.
+- `src/vite-env.d.ts` carries the `vite/client` and `vitest/globals` references. Don't move them into `compilerOptions.types`. That switches off automatic `@types` inclusion and VS Code reports the entry point as missing.
 - `.vscode/settings.json` points the editor at the workspace TypeScript. VS Code bundles 5.x and misreads a TypeScript 6 config.
 
 ## Cloudflare Pages, not wrapped in make
 
 **Nothing in this repo deploys.** There is no deploy script, and adding one would create a second path to production that ignores the settings Cloudflare's own build uses. wrangler is here for local testing only. `README.md` carries the mechanism.
 
-- `npm run pages:dev` builds, then runs `wrangler pages dev ./build --port 3000`. Verified on wrangler 4: `/` serves 200, the Pages Function executes, assets serve. This is the supported form; the older `pages dev -- <command>` proxy form is deprecated and gone from this repo.
+- `npm run pages:dev` builds, then runs `wrangler pages dev ./build --port 3000`. Verified on wrangler 4: `/` serves 200, the Pages Function executes, assets serve. This is the supported form. The older `pages dev -- <command>` proxy form is deprecated and gone from this repo.
 - `pages:dev` serves a build, so there is no hot reload. Two workflows, on purpose: `make run` for iterating on the UI, `pages:dev` for anything touching the Function or the binding. Rerun it to pick up a code change.
 - No make target wraps `pages:dev` because it needs Cloudflare context that `make` targets deliberately stay out of.
 - `wrangler.toml` holds `name = "rak-sadness"` (the real Pages project, which Cloudflare cannot rename), `compatibility_date`, and the `RAK_MADNESS_BUCKET` R2 binding pointing at the `rak-madness-calculator` bucket. It configures `pages dev` and nothing else. The same binding has to exist on the Pages project itself, for preview and production both.

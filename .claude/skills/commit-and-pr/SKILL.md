@@ -12,7 +12,7 @@ description: This repo's commit and PR conventions. Read before writing any git 
 - PR body length: under 256 words, bullets one line each. Only what a reviewer needs to review the diff. No ticket retelling, no history, no counts or benchmark numbers, no per-file walkthrough, no self-assessment. Headings, an attribution footer, embedded screenshots and recordings don't count against the budget.
 - Commit body: only a why subject can't carry.
 - Prose in a subject, commit body, or PR body: the ASD-STE100 rules `.github/pull_request_template.md` lists. The hook reads them off that file at runtime.
-- Hook denies, never warns: the header format, the branch's ticket key opening the summary, a PR body built from the template with no leftover guidance comments and no empty sections, a body link to the branch's ticket, an em-dash, en-dash or semicolon in a PR body, the PR body word budget, and three prose rules over a subject, a `-m` body and a PR body: the 20-word sentence cap, a long word with a short swap, an `-ing` form used as a noun.
+- Hook denies, never warns: the header format, the branch's ticket key opening the summary, a PR body built from the template with no leftover guidance comments and no empty sections, a body link to the branch's ticket, an em-dash, en-dash or semicolon in a PR body, the PR body word budget, and prose rules over a subject, a `-m` body and a PR body: the 20-word sentence cap, a long word with a short swap, an `-ing` form used as a noun.
 - Yours to judge: every other template rule, active voice, tense, noun clusters, American spellings, and every ticket the branch does not name.
 - Enforced by `.claude/hooks/check_conventions.py`, `.github/workflows/pr-title.yml`.
 - No bypass. Rewrite text, don't work around hook.
