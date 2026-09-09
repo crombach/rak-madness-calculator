@@ -8,7 +8,6 @@ function byTeam(results: Array<LeagueResult>): Map<string, LeagueResult> {
   return indexResults(results).byTeam;
 }
 
-// BUF beat KC by 10.
 const bufBeatKcBy10 = finalGame({
   home: "BUF",
   away: "KC",
