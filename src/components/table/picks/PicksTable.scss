@@ -43,8 +43,8 @@
     width: var(--rak-live-dot-size);
     height: var(--rak-live-dot-size);
     border-radius: 50%;
-    // The fill off the dialog's own live mark, so the dot and that pill are the
-    // one red for a game being played.
-    background-color: var(--rak-mark-live-bg);
+    // The red the dot inside the dialog's live pill is drawn in, the one token
+    // holding the two of them together.
+    background-color: var(--rak-live-dot);
   }
 }

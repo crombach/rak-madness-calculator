@@ -359,6 +359,10 @@
   --rak-mark-final-text: var(--rak-success-600);
   --rak-mark-upcoming-bg: var(--rak-neutral-100);
   --rak-mark-upcoming-text: var(--rak-neutral-700);
+  // The dot for a game being played, read by the mark inside the dialog's live
+  // pill and by the picks table's column heading alike, so the two are the one
+  // red. No dark-mode step: this one carries on both header bands.
+  --rak-live-dot: var(--rak-danger-500);
   // The toast's own fill and ink, each variant its own token rather than a
   // direct read of its ramp step: `success` and `danger`'s 700 step also fills
   // `Button.scss`'s `--rak-key-edge` for that button, chrome that stays fixed

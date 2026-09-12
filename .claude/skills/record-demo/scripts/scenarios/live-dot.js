@@ -11,8 +11,7 @@ const THEME_KEY = "rak-madness:settings:theme";
 // How far down the table to crop, which is the header plus a few rows. The dot
 // is what the shot is about, and a full-height table shrinks it in the frame.
 const CROP_HEIGHT = 230;
-// Room above the table, so the dot in the heading's top corner is not cut by the
-// crop's own edge.
+// Room above the table, so its own top edge is not the crop's.
 const CROP_PAD = 8;
 
 const ROWS = [
@@ -70,11 +69,13 @@ async function shoot(page, theme) {
 }
 
 /**
- * The dot marking a game being played, in the corner of its column heading.
+ * The dot marking a game being played, beside its column heading's label.
  *
- * Shot in both themes, because the dot takes its own token there rather than the
- * fixed `--rak-danger-500` the game dialog's copy uses, and the header band it
- * sits on inverts between them.
+ * Shot in both themes, because the header band the dot sits on inverts between
+ * them while the dot's own red holds still.
+ *
+ * Run it at `--viewport 900x900`. The crop stops at the viewport's own edge, and
+ * a phone-width run ends before the columns being played.
  */
 export default async function run({ page, context, baseUrl }) {
   await registerAppMocks(context, {
