@@ -44,6 +44,10 @@ $check-icon-ratio: math.div(451, 333);
 // step in and out as a game kicked off.
 @mixin mark-pill($background, $foreground) {
   width: auto;
+  // The line box the word would have stood in, held here because the trim below
+  // takes that box away. Without it every mark would close to the height of its
+  // own capitals and stand shorter than the row it sits in.
+  height: calc(var(--rak-line-height) * 1em);
   gap: var(--rak-space-1);
   padding-inline: var(--rak-space-1);
   border-radius: var(--rak-radius-sm);
@@ -92,6 +96,14 @@ $check-icon-ratio: math.div(451, 333);
       var(--rak-mark-upcoming-text)
     );
   }
+}
+
+// The word's own box, cut back to the capitals it is set in. A line box carries the
+// font's descender space under the baseline, and none of the four words has a
+// descender, so centering that box instead stands every word high inside its fill by
+// half of it. Browsers without the trim center the box, which is where they were.
+.game-status__mark-word {
+  text-box: trim-both cap alphabetic;
 }
 
 // One width for every mark's shape, the checkmark's own, which is the widest of the
