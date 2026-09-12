@@ -56,15 +56,15 @@ function leagueHeaders({
         onClick={() => onClick(header)}
       >
         {header}
+        {liveLabels.has(header) && (
+          <>
+            <span className="table__live-dot" aria-hidden="true" />
+            {/* A column heading is read out again on every cell under it, so this
+                reaches a reader on any pick in the game, not just the heading. */}
+            <span className="table__sr-only">Live</span>
+          </>
+        )}
       </button>
-      {liveLabels.has(header) && (
-        <>
-          <span className="table__live-dot" aria-hidden="true" />
-          {/* A column heading is read out again on every cell under it, so this
-              reaches a reader on any pick in the game, not just the heading. */}
-          <span className="table__sr-only">Live</span>
-        </>
-      )}
     </th>
   ));
 }

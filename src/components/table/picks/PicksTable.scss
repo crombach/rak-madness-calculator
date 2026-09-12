@@ -29,20 +29,22 @@
     }
   }
 
-  // The dot marking a game being played, in the corner of its column heading.
-  // The heading is already sticky, so it is the containing block this sits in
-  // and no cell has to be positioned for it. Inset rather than flush, so it
-  // clears the heading's own border and reads as part of the cell.
+  // The dot marking a game being played, set after its column heading's own
+  // text. Sized off that text rather than in pixels, so it holds its weight
+  // beside the label at any text size.
   .table__header th .table__live-dot {
-    --rak-live-dot-size: 5px;
-    --rak-live-dot-inset: 3px;
+    --rak-live-dot-size: 0.6em;
 
-    position: absolute;
-    top: var(--rak-live-dot-inset);
-    right: var(--rak-live-dot-inset);
+    display: inline-block;
+    // Off the label's middle rather than its baseline, which would hang the dot
+    // below the uppercase letters it sits beside.
+    vertical-align: middle;
+    margin-left: 0.35em;
     width: var(--rak-live-dot-size);
     height: var(--rak-live-dot-size);
     border-radius: 50%;
-    background-color: var(--rak-live-dot);
+    // The fill off the dialog's own live mark, so the dot and that pill are the
+    // one red for a game being played.
+    background-color: var(--rak-mark-live-bg);
   }
 }
