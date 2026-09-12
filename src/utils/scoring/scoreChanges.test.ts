@@ -13,14 +13,17 @@ function pick(status: Status = "incomplete"): PickResult {
 
 function player({
   name,
+  id = name,
   pro = [pick()],
   isKnockedOut = false,
 }: {
   name: string;
+  id?: string;
   pro?: Array<PickResult>;
   isKnockedOut?: boolean;
 }): PlayerScore {
   return {
+    id,
     name,
     score: { total: 0, college: 0, pro: 0, proAgainstTheSpread: 0 },
     tiebreaker: {},
@@ -35,6 +38,23 @@ function scoresFor(players: Array<PlayerScore>): RakMadnessScores {
 }
 
 describe("scoreChanges", () => {
+  it("tells two players with one name apart by their rows", () => {
+    const before = scoresFor([
+      player({ id: "0", name: "Rip", pro: [pick()] }),
+      player({ id: "1", name: "Rip", pro: [pick("yes")] }),
+    ]);
+    const after = scoresFor([
+      player({ id: "0", name: "Rip", pro: [pick("no")] }),
+      player({ id: "1", name: "Rip", pro: [pick("yes")] }),
+    ]);
+
+    const changes = scoreChanges(before, after);
+
+    expect(changes.picks).toEqual(
+      new Map([[pickChangeKey("0", "P1"), "incomplete"]]),
+    );
+  });
+
   it("has nothing to compare a first load against", () => {
     const changes = scoreChanges(
       undefined,

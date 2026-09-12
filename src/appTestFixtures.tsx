@@ -64,6 +64,7 @@ export const scores: RakMadnessScores = {
   tiebreaker: 47,
   scores: [
     {
+      id: "0",
       name: "Alice",
       score: { total: 5, college: 2, pro: 3, proAgainstTheSpread: 3 },
       tiebreaker: { pick: 45, distance: 2 },

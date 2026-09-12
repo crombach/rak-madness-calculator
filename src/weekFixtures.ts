@@ -22,6 +22,7 @@ export function week(value: number): WeekInfo {
 
 export function playerScore(over: Partial<PlayerScore> = {}): PlayerScore {
   return {
+    id: over.name ?? "Alice",
     name: "Alice",
     score: { total: 3, college: 1, pro: 2, proAgainstTheSpread: 1 },
     tiebreaker: { pick: 41, distance: 0 },

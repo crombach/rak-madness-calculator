@@ -46,6 +46,15 @@ describe("AnalysisSummary", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it("refuses to answer for a name two players entered under", () => {
+    render(<AnalysisSummary playerName="Rip" hasNameConflict />);
+
+    expect(
+      screen.getByText("More than one player entered this week as Rip."),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+  });
+
   it("gives a knocked out player the reason they carry", () => {
     const result: PlayerAnalysis = {
       kind: "knockedOut",

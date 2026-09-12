@@ -19,6 +19,14 @@ export type RakMadnessScores = {
  * name are read, is `option`.
  */
 export type PlayerScore = {
+  /**
+   * Which row of the workbook this player is, as written there.
+   *
+   * The pool has had two players enter under one name, so a name is not what tells
+   * one row from another. This is what a row is keyed and diffed by. The name is
+   * still what a reader sees and what the analysis and the export read.
+   */
+  id: string;
   name: string;
   score: {
     total: number;

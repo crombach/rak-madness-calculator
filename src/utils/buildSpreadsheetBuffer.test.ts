@@ -33,6 +33,7 @@ function pick(pickText: string, status: Status): PickResult {
 
 function player(overrides: Partial<PlayerScore> = {}): PlayerScore {
   return {
+    id: overrides.name ?? "Alice",
     name: "Alice",
     score: { total: 3, college: 1, pro: 2, proAgainstTheSpread: 1 },
     tiebreaker: { pick: 41, distance: 0 },

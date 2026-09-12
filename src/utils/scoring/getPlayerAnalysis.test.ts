@@ -41,6 +41,7 @@ function player({
   hasBlankPick = false,
 }: PlayerOptions): PlayerScore {
   return {
+    id: name,
     name,
     score: {
       total,

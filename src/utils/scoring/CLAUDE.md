@@ -22,6 +22,7 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 - `unscoreableGames`: games nobody scores
 - `applyKnockouts`: who can still win, why not. A blank pick means a forgetful
   player or a name added to cover a game, so it cannot win
+- `repeatedNames`: the names more than one row was entered under
 - `scoreChanges`: what a refresh changed
 - `getPlayerAnalysis`: what a player must do, plus `getSettledAnalysis`,
   the answers a week already holds, which the dialog asks before it waits

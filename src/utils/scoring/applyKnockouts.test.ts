@@ -37,6 +37,7 @@ function player({
   hasBlankPick = hasNoPicks,
 }: PlayerOptions): PlayerScore {
   return {
+    id: name,
     name,
     score: { total, college: collegeScore, pro: proScore, proAgainstTheSpread },
     tiebreaker: { pick: tiebreakerPick, distance },

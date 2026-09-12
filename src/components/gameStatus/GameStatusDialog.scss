@@ -32,8 +32,9 @@ $cap-right-bearing: 0.065em;
  */
 @function edge-shift($ink) {
   @return calc(
-    (var(--rak-label-tracking) + #{$cap-right-bearing}) / 2 - var(--rak-caps-ink) *
-      #{math.div($check-icon-ratio, 4)} + (#{$ink}) / 4
+    (var(--rak-label-tracking) + #{$cap-right-bearing}) /
+      2 - var(--rak-caps-ink) * #{math.div($check-icon-ratio, 4)} + (#{$ink}) /
+      4
   );
 }
 
@@ -118,7 +119,10 @@ $cap-right-bearing: 0.065em;
     @include mark-pill(
       var(--rak-mark-invalid-bg),
       var(--rak-mark-invalid-text),
-      calc(var(--rak-caps-ink) * #{math.div($ink-across-warning, $ink-share-warning)})
+      calc(
+        var(--rak-caps-ink) *
+          #{math.div($ink-across-warning, $ink-share-warning)}
+      )
     );
   }
 
@@ -137,7 +141,9 @@ $cap-right-bearing: 0.065em;
     @include mark-pill(
       var(--rak-mark-upcoming-bg),
       var(--rak-mark-upcoming-text),
-      calc(var(--rak-caps-ink) * #{math.div($ink-across-event, $ink-share-event)})
+      calc(
+        var(--rak-caps-ink) * #{math.div($ink-across-event, $ink-share-event)}
+      )
     );
   }
 }
@@ -184,7 +190,9 @@ $ink-rise-warning: math.div(20, 960);
   @include ink-height(var(--rak-caps-ink), $ink-share-warning);
 
   transform: translateY(
-    calc(var(--rak-caps-ink) * #{math.div($ink-rise-warning, $ink-share-warning)})
+    calc(
+      var(--rak-caps-ink) * #{math.div($ink-rise-warning, $ink-share-warning)}
+    )
   );
 }
 

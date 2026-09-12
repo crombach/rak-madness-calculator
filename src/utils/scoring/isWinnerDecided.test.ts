@@ -16,6 +16,7 @@ function pickResult(status: Status): PickResult {
 
 function player(name: string, statuses: Array<Status>): PlayerScore {
   return {
+    id: name,
     name,
     score: { total: 10, college: 5, pro: 5, proAgainstTheSpread: 5 },
     tiebreaker: { pick: 40, distance: 1 },

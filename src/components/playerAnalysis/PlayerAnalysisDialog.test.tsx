@@ -23,6 +23,7 @@ function player(
   explanation?: string,
 ): PlayerScore {
   return playerScore({
+    id: name,
     name,
     score: { total, college: 0, pro: total, proAgainstTheSpread: 0 },
     tiebreaker: {},
