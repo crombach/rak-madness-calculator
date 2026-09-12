@@ -195,7 +195,10 @@ describe("GameStatusDialog", () => {
 
     held.settle(proGame);
     expect(await screen.findByText("0")).toBeInTheDocument();
-    expect(screen.queryByRole("progressbar")).toBeNull();
+    // The bar outstays the fetch, so a poll the cache answers at once still reads
+    // as a refresh rather than as a flicker.
+    expect(screen.getByRole("progressbar")).toBeInTheDocument();
+    await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
 
     // Another game chosen from the search. The one on screen stays there behind the
     // bar until the new one arrives, rather than the dialog emptying and filling.

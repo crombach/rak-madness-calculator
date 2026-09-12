@@ -10,6 +10,15 @@ import latestOnly from "../utils/latestOnly";
 export const POLL_MS = 15_000;
 
 /**
+ * How long `isGameLoading` stays set once a fetch raises it.
+ *
+ * A poll the cache answers comes back in single milliseconds, and a bar drawn for
+ * that long is gone before a reader can see it. This is what makes a refresh one
+ * they can read as a refresh.
+ */
+export const LOADING_MS = 500;
+
+/**
  * One game, kept up to date for as long as it is being looked at.
  *
  * The week's scores carry the game as it stood when they were worked out, which is
@@ -45,7 +54,7 @@ export default function useLiveGame({
   onGameFinal?: () => void;
 }): { shown?: LeagueResult; isGameLoading: boolean } {
   // Held in a ref, not read from the deps below, since a rescore mints a new
-  // callback that would tear down the poll and restart its 20s each rescore.
+  // callback that would tear down the poll and restart its wait each rescore.
   const onFinal = useRef(onGameFinal);
   useEffect(() => {
     onFinal.current = onGameFinal;
@@ -73,9 +82,11 @@ export default function useLiveGame({
     if (label == null || league == null || eventId == null) return;
     if (settled != null) return;
     let timer = 0;
+    let held = 0;
     const stop = latestOnly(async (isCurrent) => {
       const poll = async () => {
         let result: LeagueResult | null = null;
+        const asked = Date.now();
         setFetching(true);
         try {
           result = await getGameResult(league, week, eventId, season);
@@ -83,7 +94,13 @@ export default function useLiveGame({
           console.warn(`Failed to fetch game ${eventId}`, error);
         }
         if (!isCurrent()) return;
-        setFetching(false);
+        // Cleared on a delay rather than with the answer, so a poll the cache
+        // answers at once still says it happened. The answer itself goes up
+        // now, behind the bar this leaves standing.
+        held = window.setTimeout(
+          () => setFetching(false),
+          Math.max(LOADING_MS - (Date.now() - asked), 0),
+        );
         if (result != null) {
           setFound({ games, label, result });
         }
@@ -102,6 +119,7 @@ export default function useLiveGame({
     return () => {
       stop();
       window.clearTimeout(timer);
+      window.clearTimeout(held);
       // The answer to the fetch this leaves behind is dropped, so nothing is
       // outstanding whatever it comes back with.
       setFetching(false);
