@@ -448,9 +448,13 @@
   // behind one piece of glass rather than two. `lcd-glass` is the one well-and-plate
   // recipe `LogoButton.scss` cuts its own name into as well.
   padding-block: var(--rak-space-1);
-  // The plate is a spread shadow, so it takes no room in the row and the scoreline's
-  // own row-gap is spent clearing it rather than standing the lines off the glass.
-  // This is the gap the reader actually sees above the clock and below the down.
+  // The plate is a spread shadow, so it takes no room in the row and the row-gap is
+  // spent clearing it rather than standing the lines off the glass. This is the gap
+  // the reader sees above the clock and below the down.
+  //
+  // Row 2 is the sides' too, so this stands each side's label and record the same
+  // distance off its name. That is the price of the alignment: the three lines here
+  // are laid in the sides' own rows, so the readout cannot be spaced on its own.
   margin-block: var(--rak-space-2);
 
   @include lcd-glass;

@@ -16,23 +16,24 @@ const THEME = process.env.SCORELINE_THEME ?? "dark";
 const THEME_KEY = "rak-madness:settings:theme";
 
 const ROWS = [
-  { Name: "Alice", P1: "KC", P2: "SF", P3: "MIA", P4: "GB", P5: "BAL" },
-  { Name: "Bob", P1: "BUF", P2: "DAL", P3: "NYJ", P4: "CHI", P5: "CIN" },
+  { Name: "Alice", P1: "KC", P2: "SF", P3: "BAL", P4: "NE" },
+  { Name: "Bob", P1: "BUF", P2: "DAL", P3: "CIN", P4: "LV" },
 ];
 
 /**
- * P1 level at nothing and still being played, which is the pair of single figures
- * the two sides have to sit level about. P5 has not kicked off, so the list below
- * carries a `SOON` mark beside the other three.
+ * P1 is level at nothing and still being played, which is the pair of single figures
+ * the two sides have to sit level about.
+ *
+ * One game per mark, and four short enough that the list shows every one at once.
+ * `SOON` is read against the other three, so a shot missing any of them settles
+ * nothing. P4 has no event here, which is the column the app marks `WARN`.
  */
 function events() {
   return {
     events: [
       makeGame("P1EVT", "KC", "BUF", 0, 0, "2"),
       makeGame("P2EVT", "SF", "DAL", 27, 20, "3"),
-      makeGame("P3EVT", "NYJ", "MIA", 16, 20, "3"),
-      makeGame("P4EVT", "CHI", "GB", 10, 24, "2"),
-      makeGame("P5EVT", "BAL", "CIN", 0, 0, "1"),
+      makeGame("P3EVT", "BAL", "CIN", 0, 0, "1"),
     ],
   };
 }
