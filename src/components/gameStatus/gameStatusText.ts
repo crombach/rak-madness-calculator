@@ -8,6 +8,16 @@ import marginAgainstSpread from "../../utils/scoring/marginAgainstSpread";
 const REGULATION_PERIODS = 4;
 
 /**
+ * The break in the middle, said in ESPN's own word for it.
+ *
+ * ESPN gives halftime a status id of its own, which the app folds into `LIVE` so a
+ * game at the break still counts as being played. Read off the period alone it
+ * would come out `Q2`, which says a quarter is being played.
+ */
+const HALFTIME_PERIOD = 2;
+const HALFTIME_DETAIL = "Halftime";
+
+/**
  * What a game yet to kick off is doing, said in place of ESPN's own wording.
  *
  * ESPN says a scheduled game as its kickoff, in Eastern time. The strip under the
@@ -99,9 +109,11 @@ export function detailText(result: LeagueResult): string {
       : overtimeLabel(result.period);
   // A clock reading zero is a period that has ended rather than one being played, and
   // saying so adds nothing to the period itself.
-  return result.clock != null && !result.clock.startsWith("0:00")
-    ? `${period} ${result.clock}`
-    : period;
+  const running = result.clock != null && !result.clock.startsWith("0:00");
+  if (!running && result.period === HALFTIME_PERIOD) {
+    return HALFTIME_DETAIL;
+  }
+  return running ? `${period} ${result.clock}` : period;
 }
 
 /** The other team in the game, which the line is only ever written against one of. */

@@ -40,9 +40,9 @@
     gap: 0.35em;
   }
 
-  // The dot marking a game being played, set after its column heading's own
-  // text. Sized off that text rather than in pixels, so it holds its weight
-  // beside the label at any text size.
+  // The dot marking a game being played, before its column heading's own text.
+  // Sized off that text rather than in pixels, so it holds its weight beside the
+  // label at any text size.
   .table__header th .table__live-dot {
     --rak-live-dot-size: 0.6em;
 

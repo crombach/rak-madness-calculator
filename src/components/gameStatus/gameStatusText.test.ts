@@ -44,7 +44,11 @@ describe("detailText", () => {
   });
 
   it("drops a clock at zero, which is a quarter that has ended", () => {
-    expect(detailText({ ...LIVE, period: 2, clock: "0:00" })).toBe("Q2");
+    expect(detailText({ ...LIVE, period: 3, clock: "0:00" })).toBe("Q3");
+  });
+
+  it("says the break in the middle by name, not as the quarter it ends", () => {
+    expect(detailText({ ...LIVE, period: 2, clock: "0:00" })).toBe("Halftime");
   });
 
   it("keeps ESPN's own word for a stage the app has no short form for", () => {

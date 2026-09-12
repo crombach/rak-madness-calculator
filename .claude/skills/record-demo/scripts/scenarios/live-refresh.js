@@ -7,9 +7,9 @@ import {
 const SEASON = 2024;
 const WEEK = 5;
 // Real time, matching `POLL_MS` in `src/hooks/useLiveGame.ts`, plus slack for
-// the mocked fetch and rescoring pass to land. Track that constant when the app
-// changes it. Never edit it to cut this recording short, since a shortened poll
-// proves a fake interval rather than the one a reader waits out.
+// the mocked fetch and rescoring pass to land. Move this whenever the app moves
+// `POLL_MS`. Never move `POLL_MS` itself to make this recording shorter, since
+// the recording is worth having only while the poll it waits out is the real one.
 const POLL_WAIT_MS = 16_000;
 
 const ROWS = [
