@@ -10,13 +10,13 @@ import latestOnly from "../utils/latestOnly";
 export const POLL_MS = 15_000;
 
 /**
- * How long `isGameLoading` stays set once a fetch raises it.
+ * The floor on how long `isGameLoading` stays set.
  *
- * A poll the cache answers comes back in single milliseconds, and a bar drawn for
- * that long is gone before a reader can see it. This is what makes a refresh one
- * they can read as a refresh.
+ * Cleared at the later of this and the answer landing, so a slow request holds the
+ * bar for its whole run. A poll the cache answers comes back in single
+ * milliseconds, and a bar drawn for that long is gone before a reader sees it.
  */
-export const LOADING_MS = 500;
+export const LOADING_MS = 300;
 
 /**
  * One game, kept up to date for as long as it is being looked at.
