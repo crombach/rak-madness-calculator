@@ -260,11 +260,15 @@
   line-height: var(--rak-line-height-tight);
 }
 
+// Set with the record under the name, which is the other thing this column says about
+// the side in passing. Off the mixin's own bold, so the two read as one frame around
+// the name rather than as a heavy label over a light one.
 .game-status__side-label {
   @include micro-label;
 
   color: var(--rak-text-secondary);
   font-size: var(--rak-text-xs);
+  font-weight: normal;
 }
 
 // A step up on the rest of the side text, since the score beside it is what the row is
