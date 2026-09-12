@@ -33,13 +33,16 @@ function hasKickedOff(players: Array<PlayerScore>): boolean {
  * A player who cannot win reads as knocked out and leaves the points to the
  * explanation. A clinched player reads as the winner outright, games left or
  * not. The body says only why that holds where some remain.
+ *
+ * Only a knockout takes a tone. Every other standing is a player still alive in the
+ * week, which the sheet paints them as by default.
  */
 function headline(
   players: Array<PlayerScore>,
   isEveryGameSettled: boolean,
   player: PlayerScore,
   isClinched: boolean,
-): { text: string; tone?: "--won" | "--knocked-out" } {
+): { text: string; tone?: "--knocked-out" } {
   if (!hasKickedOff(players)) return { text: "No finished games" };
   const [leader] = players;
   if (player.status.isKnockedOut)
@@ -52,10 +55,7 @@ function headline(
   // Level on points and still beaten, which only the tiebreakers can do.
   if (!won.includes(player))
     return { text: `Loses the tiebreaker to ${leader.name}` };
-  return {
-    text: won.length > 1 ? "Tied for the win" : "Winner",
-    tone: "--won",
-  };
+  return { text: won.length > 1 ? "Tied for the win" : "Winner" };
 }
 
 /**

@@ -727,15 +727,16 @@ html {
 
   // The game dialog's marks, off the same darkened hues as the cells above:
   // `--live` off the danger cell's red, `--invalid` off the unscoreable cell's
-  // yellow-green, `--final` off the success cell's green. `--upcoming` has no
-  // cell to match, so it takes the neutral panel fill already this dark.
+  // yellow-green, `--final` off the success cell's green. `--upcoming` has no cell
+  // to match and no hue to be read by, so it carries its own gray, lifted until it
+  // stands off the popup behind it by the step the other three get from their hues.
   --rak-mark-live-bg: var(--rak-danger-300);
   --rak-mark-live-text: var(--rak-text);
   --rak-mark-invalid-bg: var(--rak-cell-unscoreable);
   --rak-mark-invalid-text: var(--rak-text);
   --rak-mark-final-bg: var(--rak-success-300);
   --rak-mark-final-text: var(--rak-text);
-  --rak-mark-upcoming-bg: var(--rak-fill-muted);
+  --rak-mark-upcoming-bg: #3d3d3d;
   --rak-mark-upcoming-text: var(--rak-text);
 
   // The toast's own darkened fills, off the same hues as their light

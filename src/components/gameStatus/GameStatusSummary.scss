@@ -345,6 +345,18 @@
     transform: scaleX(-1);
   }
 
+  // A score in single figures lights the cell beside the dash and leaves the outer
+  // one unlit, as a hardware scoreboard blanks a digit rather than showing a zero.
+  // Each side reads outward from the dash, so two single figures sit level about it
+  // rather than one of them a cell further out than the other.
+  &.--away .game-status__points {
+    text-align: right;
+  }
+
+  &.--home .game-status__points {
+    text-align: left;
+  }
+
   @include outcome;
 }
 
@@ -360,9 +372,6 @@
   position: relative;
   min-width: 2ch;
   font-variant-numeric: tabular-nums;
-  // A score in single figures fills the units cell, tens unlit, as a hardware
-  // scoreboard blanks a digit, not zero. Centering both stands over neither.
-  text-align: right;
 }
 
 // The segments the display leaves dark, laid under the number rather than beside it.
@@ -439,6 +448,14 @@
   // behind one piece of glass rather than two. `lcd-glass` is the one well-and-plate
   // recipe `LogoButton.scss` cuts its own name into as well.
   padding-block: var(--rak-space-1);
+  // The plate is a spread shadow, so it takes no room in the row and the row-gap is
+  // spent clearing it rather than standing the lines off the glass. This is the gap
+  // the reader sees above the clock and below the down.
+  //
+  // Row 2 is the sides' too, so this stands each side's label and record the same
+  // distance off its name. That is the price of the alignment: the three lines here
+  // are laid in the sides' own rows, so the readout cannot be spaced on its own.
+  margin-block: var(--rak-space-2);
 
   @include lcd-glass;
 }

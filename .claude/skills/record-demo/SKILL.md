@@ -62,6 +62,10 @@ instead of recording the whole run.
 - `scenarios/live-refresh.js` — opens the Game Status dialog on a live pick,
   waits out its real poll interval, and shows the table update on its own
   once the mocked game goes final.
+- `scenarios/scoreline-shape.js` — the Game Status readout on a live game level at
+  nothing, then the list its marks are read off. `$SCORELINE_THEME` is `light` or
+  `dark`, `$SCORELINE_SHOT_DIR` takes the crop and the full page, so `--out` is a
+  throwaway.
 
 ## Writing a new scenario
 
