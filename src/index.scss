@@ -361,7 +361,8 @@
   --rak-mark-upcoming-text: var(--rak-neutral-700);
   // The dot for a game being played, read by the mark inside the dialog's live
   // pill and by the picks table's column heading alike, so the two are the one
-  // red. No dark-mode step: this one carries on both header bands.
+  // red. A step per mode, since 1.4.11 asks 3:1 of a shape that carries meaning
+  // and this ramp step reaches that on one ground of the two.
   --rak-live-dot: var(--rak-danger-500);
   // The toast's own fill and ink, each variant its own token rather than a
   // direct read of its ramp step: `success` and `danger`'s 700 step also fills
@@ -735,6 +736,7 @@ html {
   // to match and no hue to be read by, so it carries its own gray, lifted until it
   // stands off the popup behind it by the step the other three get from their hues.
   --rak-mark-live-bg: var(--rak-danger-300);
+  --rak-live-dot: var(--rak-danger-400);
   --rak-mark-live-text: var(--rak-text);
   --rak-mark-invalid-bg: var(--rak-cell-unscoreable);
   --rak-mark-invalid-text: var(--rak-text);
