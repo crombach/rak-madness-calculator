@@ -20,16 +20,19 @@ export type PlayerOption = {
   id: string;
   name: string;
   isKnockedOut: boolean;
+  /** Whether another row of the week was entered under this same name. */
+  hasNameConflict: boolean;
 };
 
 export function playerOptions(scores?: RakMadnessScores): Array<PlayerOption> {
-  return (
-    scores?.scores.map((player) => ({
-      id: player.id,
-      name: player.name,
-      isKnockedOut: player.status.isKnockedOut,
-    })) ?? []
-  );
+  const players = scores?.scores ?? [];
+  const repeated = repeatedNames(players);
+  return players.map((player) => ({
+    id: player.id,
+    name: player.name,
+    isKnockedOut: player.status.isKnockedOut,
+    hasNameConflict: repeated.has(player.name),
+  }));
 }
 
 /**
@@ -138,6 +141,9 @@ export default function PlayerAnalysisDialog({
           optionClassName={(option) =>
             getClasses("player-analysis__option", {
               "--knocked-out": option.isKnockedOut,
+              // After the standing, which it stands over: a name two rows share
+              // has no standing of its own to show.
+              "--name-conflict": option.hasNameConflict,
             })
           }
           // The player named in the input is marked the way the tables do, so the
@@ -147,9 +153,13 @@ export default function PlayerAnalysisDialog({
               <span
                 className={getClasses("player-analysis__input-status", {
                   "--knocked-out": player.isKnockedOut,
+                  "--name-conflict": player.hasNameConflict,
                 })}
               >
-                <PlayerStatusIcon isKnockedOut={player.isKnockedOut} />
+                <PlayerStatusIcon
+                  isKnockedOut={player.isKnockedOut}
+                  hasNameConflict={player.hasNameConflict}
+                />
               </span>
             )
           }
@@ -160,7 +170,10 @@ export default function PlayerAnalysisDialog({
               <span className="player-analysis__option-name">
                 {option.name}
               </span>
-              <PlayerStatusIcon isKnockedOut={option.isKnockedOut} />
+              <PlayerStatusIcon
+                isKnockedOut={option.isKnockedOut}
+                hasNameConflict={option.hasNameConflict}
+              />
             </>
           )}
         />

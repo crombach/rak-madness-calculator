@@ -50,7 +50,7 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary playerName="Rip" hasNameConflict />);
 
     expect(
-      screen.getByText("More than one player entered this week as Rip."),
+      screen.getByText("There is more than one entry for player name Rip."),
     ).toBeInTheDocument();
     expect(screen.queryByRole("heading")).not.toBeInTheDocument();
   });

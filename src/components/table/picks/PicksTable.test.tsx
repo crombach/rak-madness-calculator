@@ -332,12 +332,20 @@ describe("PicksTable, two players under one name", () => {
     });
   });
 
+  it("marks both with the warning a game nobody can score wears", () => {
+    render(<PicksTable scores={sharedName} />);
+
+    const icons = document.querySelectorAll(".player-status-icon");
+    expect(icons).toHaveLength(2);
+    icons.forEach((icon) => expect(icon).toHaveClass("--name-conflict"));
+  });
+
   it("leaves a name only one row carries unmarked", () => {
     render(<PicksTable scores={scores} />);
 
-    expect(screen.getByText("Alice").closest("td")).not.toHaveClass(
-      "--name-conflict",
-    );
+    const cell = screen.getByText("Alice").closest("td") as HTMLElement;
+    expect(cell).not.toHaveClass("--name-conflict");
+    expect(cell.querySelector(".--name-conflict")).toBeNull();
   });
 });
 

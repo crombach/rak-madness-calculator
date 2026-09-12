@@ -47,10 +47,7 @@ export default function AnalysisSummary({
     return (
       <div className="analysis">
         <Message
-          lines={[
-            `More than one player entered this week as ${playerName}.`,
-            "Nothing can be worked out for either of them until the picks spreadsheet gives them different names.",
-          ]}
+          lines={[`There is more than one entry for player name ${playerName}.`]}
         />
       </div>
     );

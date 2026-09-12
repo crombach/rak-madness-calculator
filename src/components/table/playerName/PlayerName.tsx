@@ -31,7 +31,10 @@ function PlayerName({
       <span className="player-name">
         <span className="player-name__name">{player.name}</span>
         {showStatus && (
-          <PlayerStatusIcon isKnockedOut={player.status.isKnockedOut} />
+          <PlayerStatusIcon
+            isKnockedOut={player.status.isKnockedOut}
+            hasNameConflict={hasNameConflict}
+          />
         )}
       </span>
       {isMine && <span className="table__sr-only">Your row</span>}

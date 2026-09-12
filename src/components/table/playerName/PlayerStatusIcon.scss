@@ -3,6 +3,12 @@
   align-items: center;
   justify-content: center;
 
+  // The warning a game nobody can score wears in the game dialog, so a name two
+  // rows share is marked the one way wherever it shows.
+  &.--name-conflict > svg {
+    fill: var(--rak-mark-invalid-text);
+  }
+
   > svg {
     // Black on the tables' own fills, where the icon carries the same weight as
     // the name beside it. Somewhere with no fill behind it to say which status
