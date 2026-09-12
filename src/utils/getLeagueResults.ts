@@ -1,6 +1,7 @@
 import {
   EspnCompetitor,
   EspnEvent,
+  EspnStatus,
   EspnVenue,
   GameStatus,
   HomeAway,
@@ -230,13 +231,27 @@ export function matchesMatchup(
 }
 
 /**
+ * ESPN's status for a game, as the three the app models.
+ *
+ * `state` is what says a game is underway, not `id`: halftime and the end of a
+ * quarter carry ids of their own, and off the id alone a game at the half is
+ * neither live nor final.
+ *
+ * Everything else keeps its id, so a postponed or canceled game still falls
+ * through all three rather than passing for one of them.
+ */
+function gameStatus({ type }: EspnStatus): GameStatus {
+  return type.state === "in" ? GameStatus.LIVE : type.id;
+}
+
+/**
  * One ESPN event as the app describes a game.
  *
  * Null where ESPN sent an event with a side missing, which it never has. Skipping
  * it beats trusting half a game.
  */
 export function toLeagueResult(event: EspnEvent): LeagueResult | null {
-  const status: GameStatus = event.status.type.id;
+  const status = gameStatus(event.status);
   const competition = event.competitions[0];
   const sides = eventSides(event);
   if (sides == null) {

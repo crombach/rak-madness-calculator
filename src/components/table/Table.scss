@@ -172,6 +172,34 @@
       &.table__pick-col {
         width: var(--rak-table-pick-width);
       }
+
+      // A game's heading opens that game, the same way every cell under it does.
+      // The button carries the heading's padding so its hit area is the whole
+      // cell, which is what the cells below do too. Scoped to the headings that
+      // hold one, so the wireframe's own headings keep their padding.
+      &.table__pick-col:has(.table__cell-button) {
+        padding: 0;
+        cursor: pointer;
+        // The band is what a press mixes from here, standing in for the fill a
+        // row cell names for itself.
+        --rak-cell-fill: var(--rak-band-header);
+        transition: background-color 150ms;
+
+        .table__cell-button {
+          padding: var(--rak-table-cell-padding-y)
+            var(--rak-table-header-padding-x);
+        }
+
+        @include can-hover {
+          &:hover {
+            @include cell-darkened(var(--rak-hover-strength));
+          }
+        }
+
+        &:active {
+          @include cell-darkened(var(--rak-press-strength));
+        }
+      }
     }
   }
 

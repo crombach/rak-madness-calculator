@@ -28,4 +28,30 @@
       color: var(--rak-text-on-pale);
     }
   }
+
+  // The label and the dot on one line, each centered on the other. Flex rather
+  // than a baseline shift, since the heading is set in capitals and their middle
+  // sits above the baseline every `vertical-align` is measured from. Only the
+  // heading holding a dot, so the rest keep the ellipsis a block gives them.
+  .table__header th:has(.table__live-dot) .table__cell-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35em;
+  }
+
+  // The dot marking a game being played, before its column heading's own text.
+  // Sized off that text rather than in pixels, so it holds its weight beside the
+  // label at any text size.
+  .table__header th .table__live-dot {
+    --rak-live-dot-size: 0.6em;
+
+    flex: 0 0 auto;
+    width: var(--rak-live-dot-size);
+    height: var(--rak-live-dot-size);
+    border-radius: 50%;
+    // The red the dot inside the dialog's live pill is drawn in, the one token
+    // holding the two of them together.
+    background-color: var(--rak-live-dot);
+  }
 }

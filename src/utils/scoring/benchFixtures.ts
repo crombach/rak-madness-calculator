@@ -1,4 +1,5 @@
 import {
+  ESPN_STATE,
   EspnCompetitor,
   EspnEvent,
   GameStatus,
@@ -225,6 +226,7 @@ function event(
       displayClock: status === GameStatus.LIVE ? "8:42" : undefined,
       type: {
         id: status,
+        state: ESPN_STATE[status],
         shortDetail: status === GameStatus.FINAL ? "Final" : "Sun, October 6th",
       },
     },

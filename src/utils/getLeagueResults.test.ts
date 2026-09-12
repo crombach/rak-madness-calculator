@@ -1,5 +1,11 @@
 import { Mock, MockedFunction } from "vitest";
-import { EspnCompetitor, EspnEvent, GameStatus, HomeAway } from "../types/ESPN";
+import {
+  ESPN_STATE,
+  EspnCompetitor,
+  EspnEvent,
+  GameStatus,
+  HomeAway,
+} from "../types/ESPN";
 import { League, WeekInfo } from "../types/League";
 import { getGameResult, getLeagueResults } from "./getLeagueResults";
 
@@ -73,6 +79,7 @@ function espnEvent({
     status: {
       type: {
         id: status,
+        state: ESPN_STATE[status],
         shortDetail: status === GameStatus.FINAL ? "Final" : "3rd Quarter",
       },
     },
@@ -254,6 +261,34 @@ describe("getLeagueResults, mapping", () => {
     expect(result.status).toBe(GameStatus.LIVE);
     expect(result.winner.team).toBeNull();
     expect(result.detailMessage).toBe("3rd Quarter");
+  });
+
+  it("counts a game at halftime as live, which ESPN gives an id of its own", async () => {
+    const halftime = espnEvent({ home: "BUF", away: "KC" });
+    // One of several ids ESPN has for a game underway beyond plain `2`. The app
+    // models none of them, so the cast is the fixture saying what the wire says.
+    halftime.status.type = {
+      id: "23" as GameStatus,
+      state: "in",
+      shortDetail: "Halftime",
+    };
+    mockFetch([halftime]);
+    const [result] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+    expect(result.status).toBe(GameStatus.LIVE);
+    expect(result.winner.team).toBeNull();
+  });
+
+  it("leaves a postponed game outside all three, since ESPN calls it over", async () => {
+    const postponed = espnEvent({ home: "BUF", away: "KC" });
+    postponed.status.type = {
+      id: "6" as GameStatus,
+      state: "post",
+      shortDetail: "Postponed",
+    };
+    mockFetch([postponed]);
+    const [result] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+    expect(result.status).not.toBe(GameStatus.FINAL);
+    expect(result.status).not.toBe(GameStatus.LIVE);
   });
 
   it("reports an unsigned margin for a live game, even one the home team leads", async () => {

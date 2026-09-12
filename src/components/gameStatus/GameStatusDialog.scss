@@ -115,7 +115,7 @@ $check-icon-ratio: math.div(451, 333);
   width: var(--rak-caps-ink);
   height: var(--rak-caps-ink);
   border-radius: 50%;
-  background-color: var(--rak-danger-500);
+  background-color: var(--rak-live-dot);
 }
 
 .game-status__mark.--invalid .game-status__mark-icon svg {

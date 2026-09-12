@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { useScoreChanges } from "../../../context/AppDataContext";
 import { useShowGameStatus } from "../../../context/GameStatusContext";
+import { GameStatus } from "../../../types/ESPN";
 import {
   PickResult,
   PlayerScore,
@@ -34,12 +35,35 @@ const PICK_STATUS_LABEL: Partial<Record<Status, string>> = {
   unscoreable: "Unscoreable",
 };
 
-function leagueHeaders(labels: Array<string>) {
+function leagueHeaders({
+  labels,
+  liveLabels,
+  onClick,
+}: {
+  labels: Array<string>;
+  liveLabels: Set<string>;
+  onClick: (gameLabel: string) => void;
+}) {
   return labels.map((header) => (
     // The class is what gives a game's column its width, which the wireframe gives
     // the same column before there is a game in it.
     <th key={header} className={PICK_COL_CLASS} scope="col">
-      {header}
+      {/* Opens the same game every cell under this heading opens, which is the
+          one row of the column a reader with no pick of their own can reach. */}
+      <button
+        type="button"
+        className="table__cell-button"
+        onClick={() => onClick(header)}
+      >
+        {/* Before the label, where the dialog's own live mark carries its dot. */}
+        {liveLabels.has(header) && (
+          <span className="table__live-dot" aria-hidden="true" />
+        )}
+        {header}
+        {/* A column heading is read out again on every cell under it, so this
+            reaches a reader on any pick in the game, not just the heading. */}
+        {liveLabels.has(header) && <span className="table__sr-only">Live</span>}
+      </button>
     </th>
   ));
 }
@@ -130,6 +154,15 @@ function PicksTable({ scores }: { scores?: RakMadnessScores | null }) {
   // sits under cannot disagree about which game they mean.
   const collegeLabels = rangeWithPrefix(collegeCount, LEAGUE_PREFIX.college);
   const proLabels = rangeWithPrefix(proCount, LEAGUE_PREFIX.pro);
+  // The label is the one thing a game and the column it was picked in share, and
+  // it is what the dialog matches on too. Tested against `LIVE` rather than away
+  // from `FINAL`, because the statuses ESPN has that this app does not model,
+  // postponed among them, fall straight through the enum.
+  const liveLabels = new Set(
+    (scores.games ?? [])
+      .filter((game) => game.result?.status === GameStatus.LIVE)
+      .map((game) => game.label),
+  );
 
   return (
     <TableShell
@@ -141,9 +174,17 @@ function PicksTable({ scores }: { scores?: RakMadnessScores | null }) {
           <th className={PLAYER_COL_CLASS} scope="col">
             Player
           </th>
-          {leagueHeaders(collegeLabels)}
+          {leagueHeaders({
+            labels: collegeLabels,
+            liveLabels,
+            onClick: showGameStatus,
+          })}
           <th scope="col">College Score</th>
-          {leagueHeaders(proLabels)}
+          {leagueHeaders({
+            labels: proLabels,
+            liveLabels,
+            onClick: showGameStatus,
+          })}
           <th scope="col">Pro Score</th>
           <th scope="col">Total Score</th>
         </>

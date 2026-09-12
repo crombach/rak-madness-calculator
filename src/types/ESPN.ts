@@ -18,13 +18,28 @@ export type EspnEvent = {
   status: EspnStatus;
 };
 
+/** Whether a game has yet to start, is underway, or is over. */
+export type EspnState = "pre" | "in" | "post";
+
+/** The state ESPN sends beside each of the three ids above. */
+export const ESPN_STATE: Record<GameStatus, EspnState> = {
+  [GameStatus.UPCOMING]: "pre",
+  [GameStatus.LIVE]: "in",
+  [GameStatus.FINAL]: "post",
+};
+
 export type EspnStatus = {
   /** Which quarter the game is in, counting on past four into overtime. */
   period?: number;
   /** The clock as ESPN writes it, like `8:42`. */
   displayClock?: string;
   type: {
+    /**
+     * ESPN's fine-grained status. Far more ids than the three above: halftime,
+     * the end of a quarter, postponed and canceled each have their own.
+     */
     id: GameStatus;
+    state: EspnState;
     shortDetail: string;
   };
 };

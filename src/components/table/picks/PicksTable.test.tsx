@@ -1,5 +1,5 @@
 import { Mock } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import {
   PickResult,
@@ -7,6 +7,9 @@ import {
   RakMadnessScores,
   Status,
 } from "../../../types/RakMadnessScores";
+import { League } from "../../../types/League";
+import { LeagueResult } from "../../../types/LeagueResult";
+import { WeekGame } from "../../../types/WeekGame";
 import { useScoreChanges } from "../../../context/AppDataContext";
 import { GameStatusContextProvider } from "../../../context/GameStatusContext";
 import { PlayerAnalysisContextProvider } from "../../../context/PlayerAnalysisContext";
@@ -14,6 +17,11 @@ import {
   PLAYER_NAME_KEY,
   SettingsContextProvider,
 } from "../../../context/SettingsContext";
+import {
+  finalGame,
+  liveGame,
+  upcomingGame,
+} from "../../../utils/scoring/leagueResultFixtures";
 import { pickChangeKey } from "../../../utils/scoring/gameColumns";
 import { playerScore } from "../../../weekFixtures";
 import PicksTable from "./PicksTable";
@@ -325,5 +333,76 @@ describe("PicksTable, the reader's own row", () => {
     expect(screen.getByText("OSU").closest("td")).toHaveClass("--no");
     expect(screen.getByText("KC").closest("td")).toHaveClass("--incomplete");
     expect(screen.getByText("MIA").closest("td")).toHaveClass("--unscoreable");
+  });
+});
+
+describe("PicksTable, live games", () => {
+  function game(label: string, result?: LeagueResult): WeekGame {
+    return {
+      label,
+      league: label.startsWith("C") ? League.COLLEGE : League.PRO,
+      name: result?.name ?? label,
+      result,
+    };
+  }
+
+  // C1 is being played. The other three cover every state that is not: yet to
+  // kick off, over, and a column ESPN listed no game for.
+  const withGames: RakMadnessScores = {
+    ...scores,
+    games: [
+      game(
+        "C1",
+        liveGame({ home: "MICH", away: "OSU", homeScore: 14, awayScore: 10 }),
+      ),
+      game("C2", upcomingGame({ home: "PSU", away: "IOWA" })),
+      game(
+        "P1",
+        finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 20 }),
+      ),
+      game("P2"),
+    ],
+  };
+
+  function header(label: string) {
+    return screen.getByRole("columnheader", { name: new RegExp(`^${label}`) });
+  }
+
+  it("marks the column of a game being played", () => {
+    render(<PicksTable scores={withGames} />);
+
+    const live = header("C1");
+    expect(live.querySelector(".table__live-dot")).toBeInTheDocument();
+    expect(live).toHaveTextContent("Live");
+  });
+
+  it("leaves every column alone whose game is not being played", () => {
+    render(<PicksTable scores={withGames} />);
+
+    ["C2", "P1", "P2", "P3"].forEach((label) => {
+      const quiet = header(label);
+      expect(quiet.querySelector(".table__live-dot")).toBeNull();
+      expect(quiet).not.toHaveTextContent("Live");
+    });
+  });
+
+  it("opens a game from its column heading", async () => {
+    const showGameStatus = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <GameStatusContextProvider showGameStatus={showGameStatus}>
+        <PicksTable scores={withGames} />
+      </GameStatusContextProvider>,
+    );
+
+    await user.click(within(header("P1")).getByRole("button"));
+
+    expect(showGameStatus).toHaveBeenCalledWith("P1");
+  });
+
+  it("marks nothing where the week carries no games", () => {
+    render(<PicksTable scores={scores} />);
+
+    expect(document.querySelector(".table__live-dot")).toBeNull();
   });
 });
