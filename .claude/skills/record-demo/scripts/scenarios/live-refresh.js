@@ -8,9 +8,9 @@ const SEASON = 2024;
 const WEEK = 5;
 // Real time, matching `POLL_MS` in `src/hooks/useLiveGame.ts`, plus slack for
 // the mocked fetch and rescoring pass to land. Don't shorten `POLL_MS` in
-// source for this: the point is proving the real interval-driven poll fires
-// `onGameFinal`, not a fake one.
-const POLL_WAIT_MS = 21_000;
+// source to speed this up: the point is proving the real interval-driven poll
+// fires `onGameFinal`, not a fake one.
+const POLL_WAIT_MS = 16_000;
 
 const ROWS = [
   {

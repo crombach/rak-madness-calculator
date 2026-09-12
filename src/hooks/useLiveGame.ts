@@ -7,7 +7,7 @@ import { getGameResult } from "../utils/getLeagueResults";
 import latestOnly from "../utils/latestOnly";
 
 /** How often a game still being played is asked about again. */
-export const POLL_MS = 20_000;
+export const POLL_MS = 15_000;
 
 /**
  * One game, kept up to date for as long as it is being looked at.
