@@ -60,6 +60,8 @@ export function makeGame(
 ) {
   const detail =
     statusId === "3" ? "Final" : statusId === "2" ? "3rd Quarter" : "Scheduled";
+  // What the app reads to tell a game underway from one not started or over.
+  const state = statusId === "3" ? "post" : statusId === "2" ? "in" : "pre";
   return {
     id,
     name: `${awayAbbr} at ${homeAbbr}`,
@@ -79,7 +81,7 @@ export function makeGame(
     status: {
       period: statusId === "2" ? 3 : undefined,
       displayClock: statusId === "2" ? "8:42" : undefined,
-      type: { id: statusId, shortDetail: detail },
+      type: { id: statusId, state, shortDetail: detail },
     },
   };
 }
