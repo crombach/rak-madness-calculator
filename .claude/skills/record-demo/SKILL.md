@@ -59,6 +59,9 @@ instead of recording the whole run.
   land on one shape of answer. `$ANALYSIS_PHASE` picks the shape: `headline`,
   `paths`, `chain`, `routes`, `help`, `clinched`, `clinchedTie`, `knockedOut`.
   `$ANALYSIS_THEME` is `light` or `dark`.
+- `scenarios/live-dot.js` — the picks table with two of its games being played,
+  the dot in each heading's corner, in both themes. Writes its crops to
+  `$LIVE_DOT_SHOT_DIR`, so `--out` is a throwaway.
 - `scenarios/live-refresh.js` — opens the Game Status dialog on a live pick,
   waits out its real poll interval, and shows the table update on its own
   once the mocked game goes final.

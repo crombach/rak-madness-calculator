@@ -28,4 +28,21 @@
       color: var(--rak-text-on-pale);
     }
   }
+
+  // The dot marking a game being played, in the corner of its column heading.
+  // The heading is already sticky, so it is the containing block this sits in
+  // and no cell has to be positioned for it. Inset rather than flush, so it
+  // clears the heading's own border and reads as part of the cell.
+  .table__header th .table__live-dot {
+    --rak-live-dot-size: 5px;
+    --rak-live-dot-inset: 3px;
+
+    position: absolute;
+    top: var(--rak-live-dot-inset);
+    right: var(--rak-live-dot-inset);
+    width: var(--rak-live-dot-size);
+    height: var(--rak-live-dot-size);
+    border-radius: 50%;
+    background-color: var(--rak-live-dot);
+  }
 }
