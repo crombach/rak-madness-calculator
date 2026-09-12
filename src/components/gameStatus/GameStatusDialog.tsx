@@ -105,7 +105,7 @@ function GameMark({
  * table.
  *
  * The week's own copy of the game is on screen the moment the dialog opens. A game
- * that has not finished is fetched again as it appears and every twenty seconds after
+ * that has not finished is fetched again as it appears and every fifteen seconds after
  * that, and each answer replaces the score in place, so a live game catches up rather
  * than making the reader wait. One already final is never fetched, because the week
  * scored it at the only score it can have.
