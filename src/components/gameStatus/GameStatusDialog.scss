@@ -6,6 +6,37 @@
 // only when the checkmark itself is. It is the widest of the four shapes.
 $check-icon-ratio: math.div(451, 333);
 
+// How wide each shape's ink runs inside its own box, as a share of it. Read off
+// `getBBox` against each `viewBox` in `components/icon/Icon.tsx`. `$ink-share-*` in
+// `styles/ink.scss` says the same down the box, and sizes the glyph. These say how
+// much of the slot the glyph lands in it actually fills, which is what the pill is
+// padded against. The checkmark fills its own box across, so it needs no share here.
+$ink-across-event: 0.75;
+$ink-across-warning: math.div(880, 960);
+
+// The room the mono face leaves to the right of a capital, past that letter's ink.
+// Measured in a browser, since a stylesheet cannot read a side bearing off a font.
+$cap-right-bearing: 0.065em;
+
+/**
+ * How far to move the pill's padding so its ink stands off both edges by the same
+ * room, given a shape whose ink is `$ink` wide.
+ *
+ * The two sides start uneven. On the left the shape sits centered in a slot as wide
+ * as the widest of the four, so a narrow shape leaves half the difference behind it.
+ * On the right the word ends in the tracking every label carries past its last
+ * letter, and in the room the face leaves beside that letter's ink.
+ *
+ * The two paddings move by this much in opposite directions, so the pill keeps the
+ * width it had and every mark stays the width of every other.
+ */
+@function edge-shift($ink) {
+  @return calc(
+    (var(--rak-label-tracking) + #{$cap-right-bearing}) / 2 - var(--rak-caps-ink) *
+      #{math.div($check-icon-ratio, 4)} + (#{$ink}) / 4
+  );
+}
+
 // An entry reads as its column then its game. Both at the one size, in the monospace
 // face every entry is set in, so the column is held to a width the game names line up
 // past whatever letters either holds.
@@ -42,14 +73,15 @@ $check-icon-ratio: math.div(451, 333);
 // Monospace, and every word four letters, so all four come out the same size. Set in
 // the body face, `WARN` would run wider than `LIVE` and the list's right edge would
 // step in and out as a game kicked off.
-@mixin mark-pill($background, $foreground) {
+@mixin mark-pill($background, $foreground, $ink) {
   width: auto;
   // The line box the word would have stood in, held here because the trim below
   // takes that box away. Without it every mark would close to the height of its
   // own capitals and stand shorter than the row it sits in.
   height: calc(var(--rak-line-height) * 1em);
   gap: var(--rak-space-1);
-  padding-inline: var(--rak-space-1);
+  padding-inline: calc(var(--rak-space-1) + #{edge-shift($ink)})
+    calc(var(--rak-space-1) - #{edge-shift($ink)});
   border-radius: var(--rak-radius-sm);
   background-color: $background;
   color: $foreground;
@@ -71,8 +103,13 @@ $check-icon-ratio: math.div(451, 333);
   // shape, not text worth copying, and highlighted they read as picked out.
   user-select: none;
 
+  // The dot is drawn to its own edges, so its ink is the whole of its box.
   &.--live {
-    @include mark-pill(var(--rak-mark-live-bg), var(--rak-mark-live-text));
+    @include mark-pill(
+      var(--rak-mark-live-bg),
+      var(--rak-mark-live-text),
+      var(--rak-caps-ink)
+    );
   }
 
   // The yellow the picks table fills a pick it cannot score with, this mark and that
@@ -80,12 +117,18 @@ $check-icon-ratio: math.div(451, 333);
   &.--invalid {
     @include mark-pill(
       var(--rak-mark-invalid-bg),
-      var(--rak-mark-invalid-text)
+      var(--rak-mark-invalid-text),
+      calc(var(--rak-caps-ink) * #{math.div($ink-across-warning, $ink-share-warning)})
     );
   }
 
+  // The checkmark is the shape the slot is sized to, so its ink fills the slot.
   &.--final {
-    @include mark-pill(var(--rak-mark-final-bg), var(--rak-mark-final-text));
+    @include mark-pill(
+      var(--rak-mark-final-bg),
+      var(--rak-mark-final-text),
+      calc(var(--rak-caps-ink) * #{$check-icon-ratio})
+    );
   }
 
   // Quiet beside the other three, since a game yet to kick off is nothing the pool
@@ -93,7 +136,8 @@ $check-icon-ratio: math.div(451, 333);
   &.--upcoming {
     @include mark-pill(
       var(--rak-mark-upcoming-bg),
-      var(--rak-mark-upcoming-text)
+      var(--rak-mark-upcoming-text),
+      calc(var(--rak-caps-ink) * #{math.div($ink-across-event, $ink-share-event)})
     );
   }
 }
@@ -130,8 +174,18 @@ $check-icon-ratio: math.div(451, 333);
   background-color: var(--rak-live-dot);
 }
 
+// The one glyph of the four whose ink is not centered in its own box. Its `viewBox`
+// runs `0 -960 960 960` and its ink `-880` to `-120`, so the ink sits 20 units above
+// the middle. Pushed back down by that share of the box, the shape centers on the
+// word beside it the way the other three already do.
+$ink-rise-warning: math.div(20, 960);
+
 .game-status__mark.--invalid .game-status__mark-icon svg {
   @include ink-height(var(--rak-caps-ink), $ink-share-warning);
+
+  transform: translateY(
+    calc(var(--rak-caps-ink) * #{math.div($ink-rise-warning, $ink-share-warning)})
+  );
 }
 
 .game-status__mark.--upcoming .game-status__mark-icon svg {
