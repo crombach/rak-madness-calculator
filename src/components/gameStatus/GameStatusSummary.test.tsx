@@ -244,9 +244,9 @@ describe("GameStatusSummary, a game that is over", () => {
     ).toEqual(["Orchard Park, NY", "Gamecast"]);
   });
 
-  it("says FT/OT, and nothing about how the quarters went", () => {
+  it("says Final, and nothing about how the quarters went", () => {
     renderFinal();
-    expect(screen.getByText("FT")).toBeInTheDocument();
+    expect(screen.getByText("Final")).toBeInTheDocument();
     // The pool is scored on the result, so a quarter's points are nobody's business.
     expect(screen.queryByRole("table")).toBeNull();
   });
@@ -631,6 +631,6 @@ describe("GameStatusSummary, a game yet to kick off", () => {
       },
     });
     render(<GameStatusSummary game={game(overtime)} result={overtime} />);
-    expect(screen.getByText("FT/OT")).toBeInTheDocument();
+    expect(screen.getByText("Final/OT")).toBeInTheDocument();
   });
 });

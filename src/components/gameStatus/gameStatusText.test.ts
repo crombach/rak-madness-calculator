@@ -27,12 +27,12 @@ function played(result: LeagueResult, periods: number): LeagueResult {
 }
 
 describe("detailText", () => {
-  it("says a game that went the four quarters as full time", () => {
-    expect(detailText(played(FINAL, 4))).toBe("FT");
+  it("says a game that went the four quarters is final", () => {
+    expect(detailText(played(FINAL, 4))).toBe("Final");
   });
 
-  it("says a game that needed a fifth period as full time after overtime", () => {
-    expect(detailText(played(FINAL, 5))).toBe("FT/OT");
+  it("marks a game that needed a fifth period as final after overtime", () => {
+    expect(detailText(played(FINAL, 5))).toBe("Final/OT");
   });
 
   it("says a game yet to kick off in its own word, not ESPN's kickoff", () => {
