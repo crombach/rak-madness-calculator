@@ -163,20 +163,17 @@ describe("Standing", () => {
     expect(standingText()).toBe("Knocked out · 1 game remaining");
   });
 
-  it("colors a win and a knockout, and leaves an open standing plain", () => {
+  it("marks a knockout, and leaves every standing a live player reads to the base hue", () => {
     const { rerender } = render(
-      <Standing scores={finished(scores)} playerName="Rak" />,
-    );
-    expect(screen.getByText("Winner")).toHaveClass("--won");
-
-    rerender(
       <Standing scores={knockedOut(scores, "Alice")} playerName="Alice" />,
     );
     expect(screen.getByText("Knocked out")).toHaveClass("--knocked-out");
 
+    rerender(<Standing scores={finished(scores)} playerName="Rak" />);
+    expect(screen.getByText("Winner")).not.toHaveClass("--knocked-out");
+
     rerender(<Standing scores={scores} playerName="Rak" />);
     expect(screen.getByText("Tied for the lead")).not.toHaveClass(
-      "--won",
       "--knocked-out",
     );
   });

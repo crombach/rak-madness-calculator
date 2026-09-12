@@ -37,16 +37,22 @@
   }
 }
 
+// The body stands its blocks --rak-space-4 apart. This note is a tail on the block
+// above it rather than a block of its own, so it sits as close to that block as the
+// message's own two lines sit to each other.
+.analysis__body > .analysis__note {
+  margin-block-start: calc(var(--rak-space-2) - var(--rak-space-4));
+}
+
 .analysis__section {
   @include stacked(var(--rak-space-2));
 }
 
-// A win and a knockout, in the hues the tables and the search already mark those
-// players with.
+// Every standing but a knockout belongs to a player still alive in the week, so the
+// hue is the base and the knockout overrides it. The status icon beside the name is
+// written the same way round, so the two never disagree.
 .analysis__headline {
-  &.--won {
-    color: var(--rak-in-contention-on-light);
-  }
+  color: var(--rak-in-contention-on-light);
 
   &.--knocked-out {
     color: var(--rak-knocked-out-on-light);
