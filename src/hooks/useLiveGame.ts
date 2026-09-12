@@ -16,7 +16,7 @@ export const POLL_MS = 15_000;
  * bar for its whole run. A poll the cache answers comes back in single
  * milliseconds, and a bar drawn for that long is gone before a reader sees it.
  */
-export const LOADING_MS = 300;
+export const LOADING_MS = 500;
 
 /**
  * One game, kept up to date for as long as it is being looked at.

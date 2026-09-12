@@ -170,6 +170,16 @@ $bar-height: 2px;
     animation: dialog-sweep var(--rak-duration-loop) ease-in-out infinite;
   }
 
+  // A wait on a game being played, drawn in the two colors that game's own mark
+  // is, so the bar and the pill over it say the one thing.
+  &.--live {
+    background-color: var(--rak-mark-live-bg);
+
+    &::after {
+      background-color: var(--rak-live-dot);
+    }
+  }
+
   // Still says work is under way, without a thing crossing the screen to say it.
   @include reduced-motion {
     &::after {
