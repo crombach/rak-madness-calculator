@@ -55,15 +55,14 @@ function leagueHeaders({
         className="table__cell-button"
         onClick={() => onClick(header)}
       >
-        {header}
+        {/* Before the label, where the dialog's own live mark carries its dot. */}
         {liveLabels.has(header) && (
-          <>
-            <span className="table__live-dot" aria-hidden="true" />
-            {/* A column heading is read out again on every cell under it, so this
-                reaches a reader on any pick in the game, not just the heading. */}
-            <span className="table__sr-only">Live</span>
-          </>
+          <span className="table__live-dot" aria-hidden="true" />
         )}
+        {header}
+        {/* A column heading is read out again on every cell under it, so this
+            reaches a reader on any pick in the game, not just the heading. */}
+        {liveLabels.has(header) && <span className="table__sr-only">Live</span>}
       </button>
     </th>
   ));
