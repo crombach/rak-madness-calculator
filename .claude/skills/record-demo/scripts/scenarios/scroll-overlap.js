@@ -141,9 +141,8 @@ export default async function run({ page, context, baseUrl }) {
 
   await pan();
 
-  // The table a refresh changed every pick in. The overlay is held open and its
-  // own animation switched off, since what the pan reads is which cell paints
-  // over which and the animation only says how long the overlay lasts.
+  // Pin each overlay at its animation's end state, which clips it away. A real
+  // wipe holds that while the cell keeps a previous status. The bug is there.
   await scroller.evaluate((el) => {
     el.scrollLeft = 0;
   });
