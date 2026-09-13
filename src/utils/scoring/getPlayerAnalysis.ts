@@ -9,6 +9,7 @@ import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import { compareOnMerit, Merit } from "./comparePlayerScores";
 import isWinnerDecided from "./isWinnerDecided";
 import remainingGames, { RemainingGame } from "./remainingGames";
+import repeatedNames from "./repeatedNames";
 
 /**
  * The most games still to play the routes are worked out for. Only the contested
@@ -567,14 +568,27 @@ function settledAnalysis(
   return { playerIndex, player, rivals };
 }
 
-/** Everyone still able to take the week off this player. */
+/**
+ * Everyone still able to take the week off this player.
+ *
+ * A row under a name two rows share is left out for the same reason
+ * `applyKnockouts` leaves it out: the workbook is wrong about who that row is, so
+ * it takes the week off nobody. Without this the analysis would name a threat the
+ * tables say knocks nobody out.
+ */
 function liveRivals(
   players: RakMadnessScores["scores"],
   playerIndex: number,
 ): Array<{ player: RakMadnessScores["scores"][number]; index: number }> {
+  const repeated = repeatedNames(players);
   return players
     .map((it, index) => ({ player: it, index }))
-    .filter((it) => it.index !== playerIndex && !it.player.status.isKnockedOut);
+    .filter(
+      (it) =>
+        it.index !== playerIndex &&
+        !it.player.status.isKnockedOut &&
+        !repeated.has(it.player.name),
+    );
 }
 
 /**
