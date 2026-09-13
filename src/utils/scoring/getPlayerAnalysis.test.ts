@@ -278,7 +278,8 @@ describe("getPlayerAnalysis, the routes", () => {
     expect(result.pool).toBeUndefined();
     expect(result.routes).toBeUndefined();
     expect(result.mondayNight).toEqual({ kind: "notNeeded" });
-    expect(result.outrightAt).toBe(1);
+    // The one game wins it outright too, so the blocks above already are that way.
+    expect(result.outright?.mustWin).toEqual([{ label: "P1", pick: "KC -3" }]);
   });
 
   it("reads a pool of interchangeable games as any two of them", () => {
@@ -378,7 +379,8 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
       min: undefined,
       max: 45,
     });
-    expect(result.outrightAt).toBeUndefined();
+    // Winning every pick still only draws level, so nothing takes it alone.
+    expect(result.outright).toBeUndefined();
   });
 
   it("bounds them from below when the player guessed higher", () => {
@@ -455,7 +457,9 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
 
     const result = paths(getPlayerAnalysis(scores, "Alice"));
     expect(result.mustWin).toEqual([]);
-    expect(result.outrightAt).toBe(1);
+    // One way to take it alone, so it reduces to the game that way needs.
+    expect(result.outright?.mustWin).toEqual([{ label: "P1", pick: "KC -3" }]);
+    expect(result.outright?.routes).toBeUndefined();
     expect(result.mondayNight).toBeUndefined();
     expect(result.routes).toEqual([
       {

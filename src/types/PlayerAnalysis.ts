@@ -17,6 +17,21 @@ export type MondayNightOutlook =
   | { kind: "settled" }
   | { kind: "range"; min?: number; max?: number };
 
+/**
+ * A set of ways through, as the blocks that say what they ask for: the games every
+ * one of them needs, then the choice left over as a pool or as a list.
+ */
+export type WaysThrough = {
+  /** Games every route needs. */
+  mustWin: Array<RemainingPick>;
+  /** Set when the routes past `mustWin` are exactly any `choose` of one pool. */
+  pool?: { choose: number; games: Array<RemainingPick> };
+  /** Set instead of `pool`, when the routes are not one pool of one size. */
+  routes?: Array<VictoryRoute>;
+  /** Routes past the ones `routes` lists. */
+  hiddenRouteCount: number;
+};
+
 /** One way past the must-win games, and how it ends. */
 export type VictoryRoute = {
   games: Array<RemainingPick>;
@@ -54,19 +69,15 @@ export type PlayerAnalysis =
        */
       mustWin: Array<RemainingPick>;
     }
-  | {
+  | ({
       kind: "paths";
       player: string;
-      /** Games every route needs. */
-      mustWin: Array<RemainingPick>;
-      /** Set when the routes past `mustWin` are exactly any `choose` of one pool. */
-      pool?: { choose: number; games: Array<RemainingPick> };
-      /** Set instead of `pool`, when the routes are not one pool of one size. */
-      routes?: Array<VictoryRoute>;
-      /** Routes past the ones `routes` lists. */
-      hiddenRouteCount: number;
       /** Set when every route ends the same way, whether or not `routes` lists them. */
       mondayNight?: MondayNightOutlook;
-      /** The fewest wins that take the week whatever Monday night's total is. */
-      outrightAt?: number;
-    };
+      /**
+       * The ways to take the week whatever Monday night's total is, asked and
+       * answered the same way the ways above it are. Absent where no set of the
+       * player's picks takes it alone.
+       */
+      outright?: WaysThrough;
+    } & WaysThrough);

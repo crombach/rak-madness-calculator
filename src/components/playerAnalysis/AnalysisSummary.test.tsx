@@ -227,20 +227,33 @@ describe("AnalysisSummary", () => {
     expect(blockHeading("MNF Points ≤ 45")).toBeInTheDocument();
   });
 
-  it("says what it takes to win without the tiebreaker at all", () => {
+  it("names the games that take the week without the tiebreaker at all", () => {
     const result: PlayerAnalysis = {
       ...base,
       pool: { choose: 2, games: [{ label: "P1", pick: "KC -3" }] },
-      outrightAt: 3,
+      outright: {
+        mustWin: [],
+        pool: {
+          choose: 3,
+          games: [
+            { label: "P1", pick: "KC -3" },
+            { label: "P2", pick: "SF -6" },
+          ],
+        },
+        hiddenRouteCount: 0,
+      },
       mondayNight: RAK_BY_45,
     };
     render(<AnalysisSummary result={result} />);
 
     expect(
       screen.getByText(
-        "Alice needs at least 3 game wins to take the week outright. With fewer wins:",
+        "To win the week outright, whatever the MNF Points come to:",
       ),
     ).toBeInTheDocument();
+    // Its own pool, asking one more game than winning the week at all does.
+    expect(blockHeading("Any 3 of")).toBeInTheDocument();
+    expect(screen.getByText("SF -6")).toBeInTheDocument();
   });
 
   it("leads with taking the week outright, ahead of the games", () => {
@@ -259,20 +272,26 @@ describe("AnalysisSummary", () => {
     ).toBeTruthy();
   });
 
-  it("leaves the outright line off where it asks no more than the routes do", () => {
+  it("leaves the outright block off where it asks no more than the routes do", () => {
     const result: PlayerAnalysis = {
       ...base,
       mustWin: [{ label: "P1", pick: "KC -3" }],
-      outrightAt: 1,
+      outright: {
+        mustWin: [{ label: "P1", pick: "KC -3" }],
+        hiddenRouteCount: 0,
+      },
       mondayNight: { kind: "notNeeded" },
     };
     render(<AnalysisSummary result={result} />);
 
+    // The block above is already the way to take it outright, so repeating it under
+    // a second heading would ask the reader to tell two copies apart.
     expect(
-      screen.queryByText(
-        /needs at least \d+ game wins? to take the week outright/,
-      ),
+      screen.queryByText(/To win the week outright/),
     ).not.toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { name: "Must win" })).toHaveLength(
+      1,
+    );
   });
 
   it("names the player standing where nothing takes the week outright", () => {

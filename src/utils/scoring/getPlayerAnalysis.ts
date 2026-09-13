@@ -3,6 +3,7 @@ import {
   PlayerAnalysis,
   RemainingPick,
   VictoryRoute,
+  WaysThrough,
 } from "../../types/PlayerAnalysis";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import { compareOnMerit, Merit } from "./comparePlayerScores";
@@ -401,7 +402,26 @@ function headline(
 
 type Route = { hits: number; verdict: Verdict };
 
-type Search = { minimal: Array<Route>; outrightAt?: number };
+type Search = {
+  /** The fewest-game ways to win the week, level with everyone or better. */
+  minimal: Array<Route>;
+  /** The same, for the ways that win it alone. Empty where no set of picks does. */
+  outright: Array<Route>;
+};
+
+/**
+ * Whether a set one game smaller already won, which makes this one redundant.
+ *
+ * Any winning set has a one-game-smaller winning subset, already read, so dropping
+ * one bit at a time is the whole test. `won` is read per list, since a set that only
+ * draws level makes a bigger set redundant for the first list and not for the second.
+ */
+function hasWinningSubset(won: Uint8Array, hits: number): boolean {
+  for (let bits = hits; bits !== 0; bits &= bits - 1) {
+    if (won[hits ^ (bits & -bits)] === 1) return true;
+  }
+  return false;
+}
 
 /**
  * Every set one game larger than an open one, with every game inside it open too.
@@ -458,31 +478,28 @@ function search(
   seekOutright: boolean,
 ): Search {
   const minimal: Array<Route> = [];
-  let outrightAt: number | undefined;
+  const outright: Array<Route> = [];
   // Marked where a set is read and leaves the sets above it still to answer for.
   const open = new Uint8Array(mineMask + 1);
   const won = new Uint8Array(mineMask + 1);
+  // Its own record, because a set that only draws level rules a bigger set out of
+  // `minimal` and leaves it the smallest way to take the week alone.
+  const wonOutright = new Uint8Array(mineMask + 1);
   const reached = new Uint8Array(mineMask + 1);
   let candidates = [0];
 
-  for (let size = 0; candidates.length > 0; size += 1) {
+  while (candidates.length > 0) {
     for (const hits of candidates) {
       const verdict = verdictOf(hits);
       const { kind } = verdict;
       if (kind !== "loss") {
+        if (!hasWinningSubset(won, hits)) minimal.push({ hits, verdict });
         won[hits] = 1;
-        // A subset that already wins makes this set redundant, since any
-        // winning set has a one-game-smaller winning subset, already read.
-        let isRedundant = false;
-        for (let bits = hits; bits !== 0; bits &= bits - 1) {
-          if (won[hits ^ (bits & -bits)] === 1) {
-            isRedundant = true;
-            break;
-          }
-        }
-        if (!isRedundant) minimal.push({ hits, verdict });
         if (kind === "win") {
-          outrightAt ??= size;
+          if (!hasWinningSubset(wonOutright, hits)) {
+            outright.push({ hits, verdict });
+          }
+          wonOutright[hits] = 1;
           continue;
         }
         if (!seekOutright) continue;
@@ -491,7 +508,7 @@ function search(
     }
     candidates = grownFrom(candidates, open, reached, mineMask);
   }
-  return { minimal, outrightAt };
+  return { minimal, outright };
 }
 
 type RouteShape = Pick<
@@ -553,6 +570,19 @@ function reduceRoutes(
     routes: routes.slice(0, MAX_LISTED_ROUTES),
     hiddenRouteCount: Math.max(0, routes.length - MAX_LISTED_ROUTES),
     mondayNight: isOneOutlook ? rests[0].outlook : undefined,
+  };
+}
+
+/**
+ * The same blocks without the tiebreaker line. Every route that takes the week alone
+ * does so whatever Monday night's total is, so an outlook here would say nothing.
+ */
+function outrightOnly(shape: RouteShape): WaysThrough {
+  return {
+    mustWin: shape.mustWin,
+    pool: shape.pool,
+    routes: shape.routes,
+    hiddenRouteCount: shape.hiddenRouteCount,
   };
 }
 
@@ -696,7 +726,7 @@ export default function getPlayerAnalysis(
   const best = read(mineMask);
   if (best.kind === "loss") return knockedOut(player);
 
-  const { minimal, outrightAt } = search(mineMask, read, best.kind === "win");
+  const { minimal, outright } = search(mineMask, read, best.kind === "win");
 
   if (minimal.length === 0) {
     return knockedOut(player);
@@ -714,6 +744,18 @@ export default function getPlayerAnalysis(
     kind: "paths",
     player: player.name,
     ...reduceRoutes(minimal, contested, playerIndex, isMondayNightSettled),
-    outrightAt,
+    // Shaped like the ways above it, since it is the same question asked of a
+    // higher bar. `mondayNight` is dropped: every route here wins without it.
+    outright:
+      outright.length > 0
+        ? outrightOnly(
+            reduceRoutes(
+              outright,
+              contested,
+              playerIndex,
+              isMondayNightSettled,
+            ),
+          )
+        : undefined,
   };
 }

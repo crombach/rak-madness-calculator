@@ -1,5 +1,4 @@
-import { PlayerAnalysis } from "../../types/PlayerAnalysis";
-import plural from "../../utils/plural";
+import { PlayerAnalysis, WaysThrough } from "../../types/PlayerAnalysis";
 import { MAX_SEARCHED_GAMES } from "../../utils/scoring/getPlayerAnalysis";
 import { Message, Picks, Section } from "./analysisParts";
 import { MondayNight } from "./mondayNight";
@@ -9,58 +8,88 @@ import "./AnalysisSummary.scss";
 
 type PathsResult = Extract<PlayerAnalysis, { kind: "paths" }>;
 
-/** Whether anything below the outright line asks the player for a game. */
-function hasGames(result: PathsResult): boolean {
+/** Whether anything below the lead asks the player for a game. */
+function hasGames(ways: WaysThrough): boolean {
   return (
-    result.mustWin.length > 0 ||
-    result.pool != null ||
-    (result.routes?.length ?? 0) > 0
+    ways.mustWin.length > 0 ||
+    ways.pool != null ||
+    (ways.routes?.length ?? 0) > 0
   );
 }
 
-/** The fewest games a way through asks for, which the outright line is measured on. */
-function fewestWins(result: PathsResult): number {
+/** The fewest games a way through asks for, which the outright block is measured on. */
+function fewestWins(ways: WaysThrough): number {
   // The routes are held fewest games first, so the shortest is the one on top.
-  const fromGames =
-    result.pool?.choose ?? result.routes?.[0]?.games.length ?? 0;
-  return result.mustWin.length + fromGames;
+  const fromGames = ways.pool?.choose ?? ways.routes?.[0]?.games.length ?? 0;
+  return ways.mustWin.length + fromGames;
 }
 
-/** The words that hand the lead over to the sections under it. */
-const TAKES = " What it takes:";
+/**
+ * What a set of ways through asks for: the games every one of them needs, then the
+ * choice left over. Rendered for the ways to win the week and again for the ways to
+ * take it outright, which is the same question asked of a higher bar.
+ *
+ * Each block that has one above it opens with `AND`, since stacked they read as
+ * separate facts rather than as one condition. The first never does.
+ */
+function Ways({
+  ways,
+  // Off where every route ends the same way, which the section below then states
+  // once rather than on each of them.
+  showMondayNight,
+  conjoined,
+}: {
+  ways: WaysThrough;
+  showMondayNight: boolean;
+  conjoined?: boolean;
+}) {
+  const hasMustWin = ways.mustWin.length > 0;
+  return (
+    <>
+      {/* Every must-win game there is, or none. */}
+      {hasMustWin && (
+        <Section conjoined={conjoined} title="Must win">
+          <Picks className="analysis__must-win" games={ways.mustWin} />
+        </Section>
+      )}
+
+      {ways.pool && (
+        <Section
+          conjoined={hasMustWin || conjoined}
+          title={`Any ${ways.pool.choose} of`}
+        >
+          <Picks games={ways.pool.games} />
+        </Section>
+      )}
+
+      {ways.routes != null && ways.routes.length > 0 && (
+        <AnalysisRoutes
+          conjoined={hasMustWin || conjoined}
+          title="One of"
+          routes={ways.routes}
+          hiddenCount={ways.hiddenRouteCount}
+          showMondayNight={showMondayNight}
+        />
+      )}
+    </>
+  );
+}
 
 /**
  * Winning the week on points alone leads, since it settles the tiebreaker before
  * the reader has to think about it. Where there is no such line the player is
  * named as standing instead, so the sections below never open on their own.
- *
- * `outrightAt` is the fewest games any one way to take the week outright asks for,
- * not a count that any games of theirs meet, so the line reads as the floor it is.
- * That makes it a condition rather than an outcome, and the handover under it names
- * what the sections below hold instead of standing as the alternative to an event.
  */
 function Lead({ result }: { result: PathsResult }) {
-  const outright =
-    result.mondayNight?.kind === "notNeeded"
-      ? {
-          line: "Takes the week outright, whatever the MNF Points come to.",
-          // Every way through below takes it outright, so they are what it takes.
-          handover: TAKES,
-        }
-      : // Only worth saying where it asks more than the routes below already do.
-        result.outrightAt != null && result.outrightAt > fewestWins(result)
-        ? {
-            line: `${result.player} needs at least ${plural(result.outrightAt, "game win")} to take the week outright.`,
-            // Guarded on just above, so the sections below ask strictly fewer.
-            handover: " With fewer wins:",
-          }
-        : null;
+  const takesItOutright = result.mondayNight?.kind === "notNeeded";
   // Nothing below to lead into, and the closing sentence there is the answer.
-  if (outright == null && !hasGames(result)) return null;
+  if (!takesItOutright && !hasGames(result)) return null;
   return (
     <p className="analysis__line">
-      {outright?.line ?? `${result.player} can still win the week.`}
-      {hasGames(result) && (outright?.handover ?? TAKES)}
+      {takesItOutright
+        ? "Takes the week outright, whatever the MNF Points come to."
+        : `${result.player} can still win the week.`}
+      {hasGames(result) && " What it takes:"}
     </p>
   );
 }
@@ -126,48 +155,23 @@ export default function AnalysisBody({
     );
   }
 
-  const hasMustWin = result.mustWin.length > 0;
   const hasWaysThrough =
     result.pool != null || (result.routes?.length ?? 0) > 0;
   // A settled total says the games above decide the week, which is the opposite of
   // one more thing to do. Only a range is a condition of its own.
   const asksMondayNight = result.mondayNight?.kind === "range";
-
-  // A win needs every block below, and stacked they read as separate facts. So
-  // each block that has one above it opens with `AND`. The first never does.
-  const isConjoined = {
-    waysThrough: hasMustWin,
-    mondayNight: asksMondayNight && (hasMustWin || hasWaysThrough),
-  };
+  // Only worth a block of its own where it asks more than winning the week does.
+  // Asking the same, the blocks above already are the ways to take it outright.
+  const outright =
+    result.outright != null && fewestWins(result.outright) > fewestWins(result)
+      ? result.outright
+      : undefined;
 
   return (
     <>
       <Lead result={result} />
 
-      {hasMustWin && (
-        <Section title="Must win">
-          <Picks className="analysis__must-win" games={result.mustWin} />
-        </Section>
-      )}
-
-      {result.pool && (
-        <Section
-          conjoined={isConjoined.waysThrough}
-          title={`Any ${result.pool.choose} of`}
-        >
-          <Picks games={result.pool.games} />
-        </Section>
-      )}
-
-      {result.routes != null && result.routes.length > 0 && (
-        <AnalysisRoutes
-          conjoined={isConjoined.waysThrough}
-          title="One of"
-          routes={result.routes}
-          hiddenCount={result.hiddenRouteCount}
-          showMondayNight={result.mondayNight == null}
-        />
-      )}
+      <Ways ways={result} showMondayNight={result.mondayNight == null} />
 
       {/* A picked player always reads a sentence. This is the one left where the
           games ask nothing and the line above said nothing either. */}
@@ -178,9 +182,22 @@ export default function AnalysisBody({
       )}
 
       <MondayNight
-        conjoined={isConjoined.mondayNight}
+        conjoined={
+          asksMondayNight && (result.mustWin.length > 0 || hasWaysThrough)
+        }
         outlook={result.mondayNight}
       />
+
+      {/* Under the ways to win at all, since it is the harder of the two and the
+          reader is owed the reachable answer first. */}
+      {outright && (
+        <>
+          <p className="analysis__line">
+            To win the week outright, whatever the MNF Points come to:
+          </p>
+          <Ways ways={outright} showMondayNight={false} />
+        </>
+      )}
     </>
   );
 }
