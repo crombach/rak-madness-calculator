@@ -58,15 +58,15 @@ export type PickShares = {
     /** Routes asking for that total, out of `PickShares.routeCount`. */
     routes: number;
     /**
-     * Routes asking for a total of any kind, out of `PickShares.routeCount`.
+     * Whether the tiebreaker decides the week whatever the player does, which a
+     * reader cannot work out from `routes` alone.
      *
-     * At `routeCount` the tiebreaker decides every way through, which a reader
-     * cannot read off `routes` alone. Never under `routes`.
-     *
-     * `routes` itself is always under `routeCount`. Every route asking for the same
-     * total is the case the block below carries, which leaves this field unset.
+     * True where every route asks for a total and no set of games takes the week
+     * without one. A route here asks the fewest games it can, so a set winning
+     * outright stands above one of them rather than beside it and is not counted.
+     * It still answers this, since it is a way to win with the tiebreaker out of it.
      */
-    asking: number;
+    isAlways: boolean;
   };
 };
 

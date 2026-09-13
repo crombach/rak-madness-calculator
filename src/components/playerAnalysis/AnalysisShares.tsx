@@ -36,15 +36,12 @@ function percentOf(routes: number, total: number): string {
  */
 function SharesMondayNight({
   points,
-  routeCount,
 }: {
   points: NonNullable<PickShares["mondayNight"]>;
-  routeCount: number;
 }) {
   return (
     <p className="analysis__note --upright">
-      {points.asking === routeCount &&
-        "Every way needs the MNF Points tiebreaker. "}
+      {points.isAlways && "Every way needs the MNF Points tiebreaker. "}
       {`${plural(points.routes, "way")} ${points.routes === 1 ? "needs" : "need"} `}
       <MondayNightPoints outlook={points.points} />.
     </p>
@@ -101,9 +98,7 @@ export default function AnalysisShares({
       </table>
       {/* A total is a condition on a route and these rows are not routes, so the
           one the most routes ask for is said under them rather than in a column. */}
-      {points && (
-        <SharesMondayNight points={points} routeCount={shares.routeCount} />
-      )}
+      {points && <SharesMondayNight points={points} />}
       {folded > 0 && (
         <Button
           className="analysis__more"

@@ -488,7 +488,12 @@ function sharesIn(
  * so `asking` at the count of routes with `routes` under it is the case where the
  * tiebreaker decides every way through and the ways differ on how.
  */
-function mostAskedPoints(rests: Array<Rest>): PickShares["mondayNight"] {
+function mostAskedPoints(
+  rests: Array<Rest>,
+  // Off where a set of games takes the week without a total. `rests` holds the
+  // fewest games that win and such a set asks more, so no route here reports it.
+  canWinWithout: boolean,
+): PickShares["mondayNight"] {
   // Keyed by the range itself, so routes asking the same total land together.
   const byRange = new Map<
     string,
@@ -513,7 +518,11 @@ function mostAskedPoints(rests: Array<Rest>): PickShares["mondayNight"] {
     if (most == null || range.routes > most.routes) most = range;
   }
   if (most == null) return undefined;
-  return { points: most.points, routes: most.routes, asking };
+  return {
+    points: most.points,
+    routes: most.routes,
+    isAlways: asking === rests.length && !canWinWithout,
+  };
 }
 
 /** The games every route needs, and the ways past them: one pool, or a list. */
@@ -522,6 +531,9 @@ function reduceRoutes(
   contested: Array<RemainingGame>,
   playerIndex: number,
   isMondayNightSettled: boolean,
+  // Whether any set of games takes the week with the tiebreaker out of it. Read
+  // only by the shares, which say whether the tiebreaker decides the week.
+  canWinWithout = false,
 ): RouteShape {
   const mustWinMask = minimal.reduce(
     (shared, route) => shared & route.hits,
@@ -565,7 +577,9 @@ function reduceRoutes(
         routeCount: rests.length,
         games: sharesIn(rests, contested, playerIndex),
         // Held back where the routes agree, since the block below says it once.
-        mondayNight: isOneOutlook ? undefined : mostAskedPoints(rests),
+        mondayNight: isOneOutlook
+          ? undefined
+          : mostAskedPoints(rests, canWinWithout),
       },
       mondayNight: isOneOutlook ? rests[0].outlook : undefined,
     };
@@ -584,24 +598,6 @@ function reduceRoutes(
     routes,
     mondayNight: isOneOutlook ? rests[0].outlook : undefined,
   };
-}
-
-/**
- * One entry per set of games, since a set winning the week alone wins it at all and
- * can stand in both lists.
- *
- * First occurrence wins, so a set in both keeps the place the first list gave it.
- * The lists run fewest games first one after the other rather than as one run, so
- * the order here is not the sizes in order. `mostAskedPoints` breaks a tie on this
- * order and still sees the sizes in order, since every route asking for a total is
- * level on points and so comes from the first list.
- */
-function dedupe(routes: Array<Route>): Array<Route> {
-  const byHits = new Map<number, Route>();
-  for (const route of routes) {
-    if (!byHits.has(route.hits)) byHits.set(route.hits, route);
-  }
-  return [...byHits.values()];
 }
 
 /**
@@ -794,15 +790,17 @@ export default function getPlayerAnalysis(
     outright.length > 0 &&
     bitCount(outright[0].hits) > bitCount(minimal[0].hits);
 
-  // Every way to win in one set, which is what a share is a share of. A way that
-  // takes the week alone asks more games than one that only draws level, so the
-  // two lists hold different sets and neither covers the other.
-  const everyWay = takesMore ? dedupe([...minimal, ...outright]) : minimal;
+  // `minimal` alone, which is every way to win that asks nothing it does not need.
+  // A way taking the week alone asks more games than one drawing level does, so it
+  // holds a smaller way inside it. Counted beside that smaller way it would be a
+  // second row for the same win, and a share of the rows would move with how many
+  // such rows a game happens to sit in.
   const whole = reduceRoutes(
-    everyWay,
+    minimal,
     contested,
     playerIndex,
     isMondayNightSettled,
+    takesMore,
   );
 
   // A share names a game and not a way, so it cannot say which ways leaned on the

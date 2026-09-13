@@ -503,7 +503,7 @@ describe("AnalysisSummary", () => {
         mondayNight: {
           points: { kind: "range", max: 41 },
           routes: 8,
-          asking: 8,
+          isAlways: false,
         },
       },
     };
@@ -522,7 +522,7 @@ describe("AnalysisSummary", () => {
         mondayNight: {
           points: { kind: "range", max: 41 },
           routes: 1,
-          asking: 1,
+          isAlways: false,
         },
       },
     };
@@ -539,7 +539,7 @@ describe("AnalysisSummary", () => {
         mondayNight: {
           points: { kind: "range", max: 41 },
           routes: 8,
-          asking: 12,
+          isAlways: false,
         },
       },
     };
@@ -557,7 +557,7 @@ describe("AnalysisSummary", () => {
         mondayNight: {
           points: { kind: "range", min: 20 },
           routes: 8,
-          asking: 20,
+          isAlways: true,
         },
       },
     };
@@ -578,7 +578,7 @@ describe("AnalysisSummary", () => {
         mondayNight: {
           points: { kind: "range", max: 41 },
           routes: 8,
-          asking: 8,
+          isAlways: false,
         },
       },
       mondayNight: RAK_BY_45,

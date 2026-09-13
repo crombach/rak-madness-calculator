@@ -516,18 +516,18 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
       points: { kind: "range", min: undefined, max: 32 },
       // Four of the eight ask for a total, and all four ask for this one.
       routes: 4,
-      asking: 4,
+      isAlways: false,
     });
     // Left undefined, so the block below says nothing and the note above it is the
     // only place the total is named.
     expect(result.mondayNight).toBeUndefined();
   });
 
-  it("holds the ways that win alone in the same table as the rest", () => {
+  it("leaves out a way holding a smaller way inside it", () => {
     // Bob is a point back over the first three and Dave three back over the last
-    // five, so drawing level asks fewer games than taking it alone. Read one at a
-    // time those are two blocks. A table names games and not ways, so two of them
-    // would stand over the same games with nothing to tell them apart.
+    // five, so drawing level asks fewer games than taking it alone. Every way that
+    // takes it alone holds a way that draws level inside it, so counting both would
+    // stand twice over the same win and move every share on the table.
     const scores = week([
       player({
         name: "Alice",
@@ -551,12 +551,14 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
 
     const result = paths(getPlayerAnalysis(scores, "Alice"));
     expect(result.outright).toBeUndefined();
-    expect(result.shares?.routeCount).toBe(30);
-    // Fifteen of the thirty lean on the total, and the rest take it alone.
-    expect(result.shares?.mondayNight).toEqual({
-      points: { kind: "range", min: undefined, max: 46 },
-      routes: 15,
-      asking: 15,
+    // Fifteen ways draw level and fifteen more take it alone around them.
+    expect(result.shares?.routeCount).toBe(15);
+    // Every way counted asks the same total, which the block below states once.
+    expect(result.shares?.mondayNight).toBeUndefined();
+    expect(result.mondayNight).toEqual({
+      kind: "range",
+      min: undefined,
+      max: 46,
     });
   });
 
@@ -592,7 +594,7 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
       points: { kind: "range", min: undefined, max: 27 },
       routes: 4,
       // Every route that only draws level asks for a total of its own.
-      asking: 8,
+      isAlways: false,
     });
   });
 
@@ -625,12 +627,13 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
     ]);
 
     const result = paths(getPlayerAnalysis(scores, "Alice"));
-    // Eight that only draw level, and four more that win the week alone.
-    expect(result.shares?.routeCount).toBe(12);
+    // The eight that only draw level. The four that win the week alone each hold
+    // one of these inside them, so none of them is counted again.
+    expect(result.shares?.routeCount).toBe(8);
     expect(result.shares?.mondayNight).toEqual({
       points: { kind: "range", min: 13, max: undefined },
       routes: 4,
-      asking: 8,
+      isAlways: false,
     });
   });
 
