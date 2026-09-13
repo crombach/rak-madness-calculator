@@ -262,15 +262,28 @@
     white-space: nowrap;
   }
 
-  // Stick the player column to the left side of the screen. No `z-index`, which
-  // would make each of these cells a stacking context and take it out of the layer
-  // Firefox rasterizes the scrolled content into. What is left where it was taken
-  // from is filled with the scrolling box's own color, which is the flash. A
-  // positioned cell already draws over the static ones beside it, and the header
-  // sets a `z-index` of its own to stay over this on the way past.
+  // Stick the player column to the left side of the screen. No `z-index` while the
+  // table is at rest, which would make each of these cells a stacking context and
+  // take it out of the layer Firefox rasterizes the scrolled content into. What is
+  // left where it was taken from is filled with the scrolling box's own color,
+  // which is the flash. A positioned cell already draws over the static ones beside
+  // it, and the header sets a `z-index` of its own to stay over this on the way
+  // past.
   .table__player-col {
     position: sticky;
     left: 0;
+  }
+
+  // A cell carrying a wipe is positioned to hold it, which puts the cell and the
+  // text inside it in the step this column is painted in. Every pick cell comes
+  // after this column in the row, so at that step they draw over it on the way
+  // past, which is what the header's own corner is written around above.
+  //
+  // Only while a wipe is on the table, since a refresh that changed nothing leaves
+  // none and a reader scrolls for as long as they like. `tbody`, so the header
+  // corner keeps the higher step it sets for itself.
+  &:has(.table__cell-wipe) tbody .table__player-col {
+    z-index: 1;
   }
 
   tbody {

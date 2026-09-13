@@ -96,11 +96,19 @@ function events() {
 }
 
 /**
- * Pans the picks table right across its colored pick columns. The player
- * column stays pinned left and legible the whole way, proving
- * `src/components/table/Table.scss`'s `:has(.table__cell-wipe)` scoping keeps
- * an ordinary (non-wiping) pick cell's button unpositioned, so it cannot
- * paint over the sticky column.
+ * Pans the picks table right across its colored pick columns, twice. The player
+ * column stays pinned left and legible both ways.
+ *
+ * The first pan is the table at rest, which proves
+ * `src/components/table/Table.scss`'s `:has(.table__cell-wipe)` scoping keeps an
+ * ordinary pick cell's button unpositioned, so it cannot paint over the sticky
+ * column.
+ *
+ * The second pan puts a wipe in every pick cell, which is a cell a refresh
+ * changed. Those buttons are positioned to hold the wipe, so they paint in the
+ * step the sticky column paints in and come after it in the row. The `z-index`
+ * that sheet gives the column while a wipe is on the table is what keeps their
+ * text off it.
  */
 export default async function run({ page, context, baseUrl }) {
   await registerAppMocks(context, {
@@ -118,13 +126,41 @@ export default async function run({ page, context, baseUrl }) {
   const maxScroll = await scroller.evaluate(
     (el) => el.scrollWidth - el.clientWidth,
   );
-  const steps = 24;
-  for (let i = 1; i <= steps; i++) {
-    const left = Math.round((maxScroll * i) / steps);
-    await scroller.evaluate((el, left) => {
-      el.scrollLeft = left;
-    }, left);
-    await page.waitForTimeout(60);
+
+  async function pan() {
+    const steps = 24;
+    for (let i = 1; i <= steps; i++) {
+      const left = Math.round((maxScroll * i) / steps);
+      await scroller.evaluate((el, left) => {
+        el.scrollLeft = left;
+      }, left);
+      await page.waitForTimeout(60);
+    }
+    await page.waitForTimeout(600);
   }
-  await page.waitForTimeout(600);
+
+  await pan();
+
+  // Pin each overlay at its animation's end state, which clips it away. A real
+  // wipe holds that while the cell keeps a previous status. The bug is there.
+  await scroller.evaluate((el) => {
+    el.scrollLeft = 0;
+  });
+  // Off each button's own document rather than the global one, which this file
+  // is linted as Node and does not have.
+  await page
+    .locator("td.table__pick .table__cell-button")
+    .evaluateAll((buttons) => {
+      buttons.forEach((button) => {
+        const wipe = button.ownerDocument.createElement("span");
+        wipe.className = "table__cell-wipe";
+        wipe.setAttribute("aria-hidden", "true");
+        wipe.style.animation = "none";
+        wipe.style.clipPath = "inset(0 0 0 100%)";
+        button.appendChild(wipe);
+      });
+    });
+  await page.waitForTimeout(300);
+
+  await pan();
 }
