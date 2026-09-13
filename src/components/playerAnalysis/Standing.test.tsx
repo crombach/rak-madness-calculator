@@ -43,7 +43,7 @@ describe("Standing", () => {
   it("counts the player picked back to the leader", () => {
     render(<Standing scores={scores} playerName="Alice" />);
 
-    expect(standingText()).toBe("2 points behind Rak · 1 game remaining");
+    expect(standingText()).toBe("2 points behind the lead · 1 game remaining");
   });
 
   it("ties the player picked to the lead where they hold it", () => {
