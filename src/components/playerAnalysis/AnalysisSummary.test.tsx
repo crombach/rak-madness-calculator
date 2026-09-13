@@ -238,7 +238,7 @@ describe("AnalysisSummary", () => {
 
     expect(
       screen.getByText(
-        "Alice wins the week outright with 3 game wins. Otherwise:",
+        "Alice needs at least 3 game wins to take the week outright. With fewer wins:",
       ),
     ).toBeInTheDocument();
   });
@@ -269,7 +269,9 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(
-      screen.queryByText(/wins the week outright with \d+ game wins?/),
+      screen.queryByText(
+        /needs at least \d+ game wins? to take the week outright/,
+      ),
     ).not.toBeInTheDocument();
   });
 

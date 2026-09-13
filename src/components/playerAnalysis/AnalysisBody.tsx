@@ -26,27 +26,41 @@ function fewestWins(result: PathsResult): number {
   return result.mustWin.length + fromGames;
 }
 
+/** The words that hand the lead over to the sections under it. */
+const TAKES = " What it takes:";
+
 /**
  * Winning the week on points alone leads, since it settles the tiebreaker before
  * the reader has to think about it. Where there is no such line the player is
  * named as standing instead, so the sections below never open on their own.
+ *
+ * `outrightAt` is the fewest games any one way to take the week outright asks for,
+ * not a count that any games of theirs meet, so the line reads as the floor it is.
+ * That makes it a condition rather than an outcome, and the handover under it names
+ * what the sections below hold instead of standing as the alternative to an event.
  */
 function Lead({ result }: { result: PathsResult }) {
   const outright =
     result.mondayNight?.kind === "notNeeded"
-      ? "Takes the week outright, whatever the MNF Points come to."
+      ? {
+          line: "Takes the week outright, whatever the MNF Points come to.",
+          // Every way through below takes it outright, so they are what it takes.
+          handover: TAKES,
+        }
       : // Only worth saying where it asks more than the routes below already do.
         result.outrightAt != null && result.outrightAt > fewestWins(result)
-        ? `${result.player} wins the week outright with ${plural(result.outrightAt, "game win")}.`
+        ? {
+            line: `${result.player} needs at least ${plural(result.outrightAt, "game win")} to take the week outright.`,
+            // Guarded on just above, so the sections below ask strictly fewer.
+            handover: " With fewer wins:",
+          }
         : null;
   // Nothing below to lead into, and the closing sentence there is the answer.
   if (outright == null && !hasGames(result)) return null;
   return (
     <p className="analysis__line">
-      {outright ?? `${result.player} can still win the week.`}
-      {/* Hands over to the sections under it, which ask for less. */}
-      {hasGames(result) &&
-        (outright != null ? " Otherwise:" : " What it takes:")}
+      {outright?.line ?? `${result.player} can still win the week.`}
+      {hasGames(result) && (outright?.handover ?? TAKES)}
     </p>
   );
 }
