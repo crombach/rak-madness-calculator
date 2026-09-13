@@ -327,11 +327,6 @@
       // it stands over the standing this cell would otherwise carry.
       &.--name-conflict {
         --rak-cell-base: var(--rak-cell-unscoreable);
-        // The badge's own darker ink, which this fill is what it is drawn to read
-        // against. The search has no fill, so it draws the same mark in the hue
-        // this cell is filled with instead.
-        --rak-player-icon-fill: var(--rak-mark-invalid-text);
-
         color: var(--rak-text-on-pale);
       }
 
