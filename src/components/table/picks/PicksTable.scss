@@ -1,6 +1,6 @@
 // A pick's fill is the ramp its status already has elsewhere in the app: a right
 // pick is the success green, a wrong one the danger red, one that cannot be scored
-// the warning yellow. Naming the color is all a cell does. `Table.scss` paints it,
+// the warning gold. Naming the color is all a cell does. `Table.scss` paints it,
 // and derives the even-row stripe from it.
 .table {
   tbody {

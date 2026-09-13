@@ -9,6 +9,7 @@ import { RakMadnessScores } from "../types/RakMadnessScores";
 import buildSpreadsheetBuffer, {
   XLSX_CONTENT_TYPE,
 } from "../utils/buildSpreadsheetBuffer";
+import useShowPlayerStatus from "./useShowPlayerStatus";
 
 /** Downloads the current scores as a workbook. */
 export default function useExportScores(
@@ -18,6 +19,9 @@ export default function useExportScores(
 ) {
   const { showToast } = useToastActions();
   const [isExportLoading, setExportLoading] = useState(false);
+  // The workbook fills a name cell the way the tables do, so a reader who turned
+  // the standings off does not get them back in the file.
+  const showStatus = useShowPlayerStatus();
 
   const exportResults = useCallback(() => {
     if (!week || !scores || season == null) return;
@@ -27,6 +31,7 @@ export default function useExportScores(
         const spreadsheetBuffer = await buildSpreadsheetBuffer(scores, {
           season,
           weekNumber: week.value,
+          showStatus,
         });
 
         const blob = new Blob([spreadsheetBuffer], {
@@ -53,7 +58,7 @@ export default function useExportScores(
       }
     };
     exportResultsAsync();
-  }, [scores, week, season, showToast]);
+  }, [scores, week, season, showToast, showStatus]);
 
   return { exportResults, isExportLoading };
 }

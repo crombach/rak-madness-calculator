@@ -1,6 +1,15 @@
-import { Status, RakMadnessScores } from "../types/RakMadnessScores";
-import { PICK_STATUS_FILL } from "./pickStatusFill";
+import {
+  PlayerScore,
+  Status,
+  RakMadnessScores,
+} from "../types/RakMadnessScores";
+import {
+  PICK_STATUS_FILL,
+  PLAYER_STATUS_FILL,
+  PlayerStanding,
+} from "./pickStatusFill";
 import rangeWithPrefix from "./rangeWithPrefix";
+import repeatedNames from "./scoring/repeatedNames";
 
 /** Keep in sync with the header `functions/api/picks/[season]/[week].ts` responds with. */
 export const XLSX_CONTENT_TYPE =
@@ -76,6 +85,38 @@ function pickCell(pick: string, isCorrect: Status) {
   };
 }
 
+/**
+ * Where a player stands, in the order the tables settle it. A shared name comes
+ * first: neither row can be told from the other, so no standing read off that name
+ * belongs to either of them.
+ */
+function standingOf(
+  player: PlayerScore,
+  repeated: Set<string>,
+  showStatus: boolean,
+): PlayerStanding {
+  if (repeated.has(player.name)) return "nameConflict";
+  if (!showStatus) return "noStatus";
+  return player.status.isKnockedOut ? "knockedOut" : "inContention";
+}
+
+function playerNameCell(player: PlayerScore, standing: PlayerStanding) {
+  return {
+    t: CellType.Text,
+    v: player.name,
+    s: {
+      alignment: {
+        horizontal: "left",
+      },
+      fill: {
+        patternType: "solid",
+        fgColor: PLAYER_STATUS_FILL[standing],
+      },
+      border: allSides(Border.NORMAL),
+    },
+  };
+}
+
 function normalCell({
   value,
   alignment = "right",
@@ -124,10 +165,18 @@ export default async function buildSpreadsheetBuffer(
   scoresObject: RakMadnessScores,
   // Named rather than positional. Two numbers side by side, and a call with them
   // the wrong way round would come out as a workbook for week 2025.
-  { season, weekNumber }: { season: number; weekNumber: number },
+  {
+    season,
+    weekNumber,
+    // Whether the week's standings are settled enough to say, which the caller
+    // reads off `useShowPlayerStatus` so the workbook says what the screen does.
+    // A shared name is marked either way, since that is the sheet and not the week.
+    showStatus = false,
+  }: { season: number; weekNumber: number; showStatus?: boolean },
 ): Promise<ArrayBuffer> {
   const XLSX = await import("xlsx-js-style");
   const workbook = XLSX.utils.book_new();
+  const repeated = repeatedNames(scoresObject.scores);
 
   const resultsData = [
     [
@@ -143,7 +192,7 @@ export default async function buildSpreadsheetBuffer(
     ...scoresObject.scores.map((player, index) => {
       return [
         normalCell({ value: index + 1, alignment: "left", isBold: true }),
-        normalCell({ value: player.name, alignment: "left" }),
+        playerNameCell(player, standingOf(player, repeated, showStatus)),
         normalCell({ value: player.tiebreaker.pick ?? "N/A" }),
         normalCell({ value: player.tiebreaker.distance ?? "N/A" }),
         normalCell({ value: player.score.college }),
@@ -187,7 +236,7 @@ export default async function buildSpreadsheetBuffer(
     ...scoresObject.scores.map((player, index) => {
       return [
         normalCell({ value: index + 1, alignment: "left", isBold: true }),
-        normalCell({ value: player.name, alignment: "left" }),
+        playerNameCell(player, standingOf(player, repeated, showStatus)),
         ...player.college.map((result) => pickCell(result.pick, result.status)),
         normalCell({ value: player.score.college, alignment: "center" }),
         ...player.pro.map((result) => pickCell(result.pick, result.status)),

@@ -4,7 +4,7 @@
   `getGameResult` by event id, and `getRegularSeasonWeekCount`, a season's week
   count, cached
 - `buildSpreadsheetBuffer`: the xlsx export and its content type
-- `pickStatusFill`: pick colors for the export
+- `pickStatusFill`: the export's pick and standing colors, held to the stylesheet
 - `picksCache` / `espnCache`: an uploaded workbook, and ESPN's fixed answers,
   on `localStorageCache`, a capped store under one prefix
 - `settingsStore`: the reader's own preferences, kept whatever the caches drop
