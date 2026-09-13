@@ -167,7 +167,11 @@
   // The rows carry the block padding, so the box takes none of its own and its
   // ends stand as far off the text as a route's box does.
   padding-block: 0;
-  border-collapse: collapse;
+  // Separate rather than collapsed, which is the model that drops a table's own
+  // padding. Without the box's inline padding a row would start short of the pick
+  // chips in the must-win block above. Nothing is drawn between the cells, so the
+  // spacing goes to zero and the rules below are the only lines.
+  border-spacing: 0;
   font-family: var(--rak-font-mono);
   font-size: var(--rak-text-sm);
 

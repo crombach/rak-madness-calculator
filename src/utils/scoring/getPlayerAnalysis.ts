@@ -477,7 +477,9 @@ function sharesIn(
  * The loosest total any route asks for, which every route asking one clears.
  *
  * Undefined where no route asks for a total at all. An end absent is that side
- * unbounded, so one route leaving it open leaves the loosest bound open too.
+ * unbounded, so one route leaving it open leaves the loosest bound open too, and
+ * routes bounded against each other can open both. Both ends open holds a total to
+ * nothing, so that answers undefined as well.
  */
 function loosestPoints(rests: Array<Rest>): PickShares["mondayNight"] {
   const ranges: Array<MondayNightRange> = [];
@@ -492,6 +494,7 @@ function loosestPoints(rests: Array<Rest>): PickShares["mondayNight"] {
     max =
       max == null || range.max == null ? undefined : Math.max(max, range.max);
   }
+  if (min == null && max == null) return undefined;
   return {
     points: { kind: "range", min, max },
     scope: ranges.length === rests.length ? "every" : "some",

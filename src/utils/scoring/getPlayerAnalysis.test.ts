@@ -521,6 +521,39 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
     expect(result.mondayNight).toBeUndefined();
   });
 
+  it("drops the total where the routes bound it in opposite directions", () => {
+    // The same week as above, and Dan guessed under Alice where Bob guessed over
+    // her. A route that only draws level with Bob wants a low total and one that
+    // only draws level with Dan wants a high one, so widening the two leaves both
+    // ends open. A total held to nothing is no condition, so no note is made.
+    const mine = MINE.slice(0, 7);
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 3,
+        pro: picks(mine),
+        tiebreakerPick: 20,
+      }),
+      player({
+        name: "Bob",
+        total: 3,
+        pro: picks(["DEN +3", "", ...mine.slice(2)]),
+        tiebreakerPick: 45,
+      }),
+      player({ name: "Carl", total: -1, pro: picks(LAST_FIVE.slice(0, 7)) }),
+      player({
+        name: "Dan",
+        total: 3,
+        pro: picks(["", "NYJ +1", ...mine.slice(2)]),
+        tiebreakerPick: 5,
+      }),
+    ]);
+
+    const result = paths(getPlayerAnalysis(scores, "Alice"));
+    expect(result.shares?.routeCount).toBe(8);
+    expect(result.shares?.mondayNight).toBeUndefined();
+  });
+
   it("leaves the total off the shares where every route asks the same", () => {
     const result = paths(getPlayerAnalysis(manyRoutes(), "Alice"));
     expect(result.shares?.mondayNight).toBeUndefined();
