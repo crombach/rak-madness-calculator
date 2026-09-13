@@ -1,12 +1,12 @@
-import { MondayNightOutlook } from "../../types/PlayerAnalysis";
+import {
+  MondayNightOutlook,
+  MondayNightRange,
+} from "../../types/PlayerAnalysis";
 import { Section } from "./analysisParts";
 import "./AnalysisSummary.scss";
 
-/** The one outlook a route of its own carries, which is a total still to come. */
-type MondayNightRange = Extract<MondayNightOutlook, { kind: "range" }>;
-
 /** The totals that win, as a comparison on the scoreboard column's own name. */
-function mondayNightPoints({ min, max }: MondayNightRange): string {
+export function mondayNightPoints({ min, max }: MondayNightRange): string {
   if (min != null && max != null) {
     return min === max ? `MNF Points = ${min}` : `${min} ≤ MNF Points ≤ ${max}`;
   }

@@ -1,5 +1,8 @@
 import {
   MondayNightOutlook,
+  MondayNightRange,
+  PickShare,
+  PickShares,
   PlayerAnalysis,
   RemainingPick,
   VictoryRoute,
@@ -26,9 +29,12 @@ import repeatedNames from "./repeatedNames";
 export const MAX_SEARCHED_GAMES = 16;
 
 /**
- * How many routes are carried before the rest are only counted. Twice what
- * `AnalysisRoutes` holds open, so the button under them opens one more set of
- * the same size rather than a tail of any length.
+ * The most routes a list can show whole. Past this the block names each game once
+ * against the routes needing it, since a list that has to hide routes is a sample,
+ * and a sample of three says less about the week than a share taken over all of them.
+ *
+ * Twice what `AnalysisRoutes` holds open, so the button under them opens one more set
+ * of the same size rather than a tail of any length.
  */
 const MAX_LISTED_ROUTES = 6;
 
@@ -431,8 +437,66 @@ function search(
 
 type RouteShape = Pick<
   Extract<PlayerAnalysis, { kind: "paths" }>,
-  "mustWin" | "pool" | "routes" | "hiddenRouteCount" | "mondayNight"
+  "mustWin" | "pool" | "routes" | "shares" | "mondayNight"
 >;
+
+/** One route as the games it asks past the must-win ones, and how it ends. */
+type Rest = { mask: number; outlook: MondayNightOutlook };
+
+/**
+ * Each game the routes ask for, with the routes asking it, most needed first.
+ *
+ * Counted over every route rather than over the ones a list would keep, which is the
+ * whole of what a share says that a truncated list cannot.
+ *
+ * Every mask has the must-win bits cleared already, so no game here is in all the
+ * routes or in none.
+ */
+function sharesIn(
+  rests: Array<Rest>,
+  contested: Array<RemainingGame>,
+  playerIndex: number,
+): Array<PickShare> {
+  return (
+    contested
+      .map((game, bit) => ({
+        label: game.label,
+        pick: game.cells[playerIndex].text,
+        routes: rests.reduce(
+          (count, rest) => count + ((rest.mask >>> bit) & 1),
+          0,
+        ),
+      }))
+      .filter((share) => share.routes > 0)
+      // Stable, so games as many routes need keep the order the week runs in.
+      .sort((a, b) => b.routes - a.routes)
+  );
+}
+
+/**
+ * The loosest total any route asks for, which every route asking one clears.
+ *
+ * Undefined where no route asks for a total at all. An end absent is that side
+ * unbounded, so one route leaving it open leaves the loosest bound open too.
+ */
+function loosestPoints(rests: Array<Rest>): PickShares["mondayNight"] {
+  const ranges: Array<MondayNightRange> = [];
+  for (const rest of rests) {
+    if (rest.outlook.kind === "range") ranges.push(rest.outlook);
+  }
+  if (ranges.length === 0) return undefined;
+  let { min, max } = ranges[0];
+  for (const range of ranges.slice(1)) {
+    min =
+      min == null || range.min == null ? undefined : Math.min(min, range.min);
+    max =
+      max == null || range.max == null ? undefined : Math.max(max, range.max);
+  }
+  return {
+    points: { kind: "range", min, max },
+    scope: ranges.length === rests.length ? "every" : "some",
+  };
+}
 
 /** The games every route needs, and the ways past them: one pool, or a list. */
 function reduceRoutes(
@@ -446,7 +510,7 @@ function reduceRoutes(
     minimal[0].hits,
   );
   const mustWin = picksIn(mustWinMask, contested, playerIndex);
-  const rests = minimal.map((route) => ({
+  const rests: Array<Rest> = minimal.map((route) => ({
     mask: route.hits & ~mustWinMask,
     outlook: outlookOf(route.verdict, isMondayNightSettled),
   }));
@@ -470,13 +534,27 @@ function reduceRoutes(
         choose > 0
           ? { choose, games: picksIn(poolMask, contested, playerIndex) }
           : undefined,
-      hiddenRouteCount: 0,
       mondayNight: rests[0].outlook,
     };
   }
 
-  // Fewest games first, so the routes asking least of the player are the ones kept
-  // and the ones shown before the rest are unfolded.
+  // More routes than a list can show whole, so each game is named once against the
+  // routes needing it. A list of these would be a sample and a share is not.
+  if (rests.length > MAX_LISTED_ROUTES) {
+    return {
+      mustWin,
+      shares: {
+        routeCount: rests.length,
+        games: sharesIn(rests, contested, playerIndex),
+        // Held back where the routes agree, since the block below says it once.
+        mondayNight: isOneOutlook ? undefined : loosestPoints(rests),
+      },
+      mondayNight: isOneOutlook ? rests[0].outlook : undefined,
+    };
+  }
+
+  // Fewest games first, so the routes asking least of the player are the ones shown
+  // before the rest are unfolded.
   const routes: Array<VictoryRoute> = rests
     .map((rest) => ({
       games: picksIn(rest.mask, contested, playerIndex),
@@ -485,8 +563,7 @@ function reduceRoutes(
     .sort((a, b) => a.games.length - b.games.length);
   return {
     mustWin,
-    routes: routes.slice(0, MAX_LISTED_ROUTES),
-    hiddenRouteCount: Math.max(0, routes.length - MAX_LISTED_ROUTES),
+    routes,
     mondayNight: isOneOutlook ? rests[0].outlook : undefined,
   };
 }
@@ -500,7 +577,7 @@ function outrightOnly(shape: RouteShape): WaysThrough {
     mustWin: shape.mustWin,
     pool: shape.pool,
     routes: shape.routes,
-    hiddenRouteCount: shape.hiddenRouteCount,
+    shares: shape.shares,
   };
 }
 

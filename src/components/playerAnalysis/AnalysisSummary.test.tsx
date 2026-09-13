@@ -1,6 +1,10 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { PlayerAnalysis, VictoryRoute } from "../../types/PlayerAnalysis";
+import {
+  PickShares,
+  PlayerAnalysis,
+  VictoryRoute,
+} from "../../types/PlayerAnalysis";
 import { MAX_SEARCHED_GAMES } from "../../utils/scoring/getPlayerAnalysis";
 import AnalysisSummary from "./AnalysisSummary";
 
@@ -10,6 +14,25 @@ function routesOf(count: number): Array<VictoryRoute> {
     games: [{ label: `P${index + 1}`, pick: `T${index + 1} -3` }],
     mondayNight: { kind: "notNeeded" as const },
   }));
+}
+
+/** Shares of one game each, most needed first, so only their number matters. */
+function sharesOf(count: number): PickShares {
+  return {
+    routeCount: 20,
+    games: Array.from({ length: count }, (_, index) => ({
+      label: `P${index + 1}`,
+      pick: `T${index + 1} -3`,
+      routes: count - index,
+    })),
+  };
+}
+
+/** The share table's rows, as each one reads on screen. */
+function shareRows(): Array<string> {
+  return [...document.querySelectorAll(".analysis__shares tbody tr")].map(
+    (row) => row.textContent ?? "",
+  );
 }
 
 /** The heading a block opens with, whether or not `And` conjoins it. */
@@ -41,7 +64,6 @@ const base = {
   kind: "paths" as const,
   player: "Alice",
   mustWin: [],
-  hiddenRouteCount: 0,
 };
 
 describe("AnalysisSummary", () => {
@@ -239,7 +261,6 @@ describe("AnalysisSummary", () => {
             { label: "P2", pick: "SF -6" },
           ],
         },
-        hiddenRouteCount: 0,
       },
       mondayNight: RAK_BY_45,
     };
@@ -291,7 +312,6 @@ describe("AnalysisSummary", () => {
           { label: "P1", pick: "KC -3" },
           { label: "P2", pick: "SF -6" },
         ],
-        hiddenRouteCount: 0,
       },
       mondayNight: RAK_BY_45,
     };
@@ -365,38 +385,6 @@ describe("AnalysisSummary", () => {
     ]);
   });
 
-  it("counts the routes left off under the last one, once they are all open", async () => {
-    const result: PlayerAnalysis = {
-      ...base,
-      routes: routesOf(6),
-      hiddenRouteCount: 2,
-    };
-    render(<AnalysisSummary result={result} />);
-
-    const note = "2 other paths found but not shown.";
-    expect(screen.queryByText(note)).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button"));
-
-    const routes = [...document.querySelectorAll(".analysis__route")];
-    expect(screen.getByText(note).previousElementSibling).toBe(
-      routes[routes.length - 1]?.parentElement,
-    );
-  });
-
-  it("counts them straight away where no route was folded away", () => {
-    const result: PlayerAnalysis = {
-      ...base,
-      routes: routesOf(2),
-      hiddenRouteCount: 2,
-    };
-    render(<AnalysisSummary result={result} />);
-
-    expect(
-      screen.getByText("2 other paths found but not shown."),
-    ).toBeInTheDocument();
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
-  });
-
   it("states a total every route shares once, not on each of them", () => {
     const shared = { kind: "range" as const, max: 32 };
     const result: PlayerAnalysis = {
@@ -443,5 +431,95 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("names each game once against the routes needing it, under the total", () => {
+    const result: PlayerAnalysis = { ...base, shares: sharesOf(3) };
+    render(<AnalysisSummary result={result} />);
+
+    expect(blockHeading("20 ways")).toBeInTheDocument();
+    expect(shareRows()).toEqual(["P1T1 -315%", "P2T2 -310%", "P3T3 -35%"]);
+  });
+
+  it("holds five games open and folds the rest behind a button", async () => {
+    const result: PlayerAnalysis = { ...base, shares: sharesOf(8) };
+    render(<AnalysisSummary result={result} />);
+
+    expect(shareRows()).toHaveLength(5);
+    await userEvent.click(screen.getByRole("button", { name: "Show more" }));
+    expect(shareRows()).toHaveLength(8);
+
+    await userEvent.click(screen.getByRole("button", { name: "Show fewer" }));
+    expect(shareRows()).toHaveLength(5);
+  });
+
+  it("leaves the button off where every game is already open", () => {
+    const result: PlayerAnalysis = { ...base, shares: sharesOf(5) };
+    render(<AnalysisSummary result={result} />);
+
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("holds a share off both ends, which no game in the table is at", () => {
+    // A game the block above would have named must-win at 100, and one no route
+    // needs at 0. Rounding alone would print both.
+    const result: PlayerAnalysis = {
+      ...base,
+      shares: {
+        routeCount: 400,
+        games: [
+          { label: "P1", pick: "KC -3", routes: 399 },
+          { label: "P2", pick: "BUF -1", routes: 1 },
+        ],
+      },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(shareRows()).toEqual(["P1KC -399%", "P2BUF -11%"]);
+  });
+
+  it("says the loosest total under the table where the routes disagree", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      shares: {
+        ...sharesOf(2),
+        mondayNight: { points: { kind: "range", max: 41 }, scope: "some" },
+      },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(
+      screen.getByText("Some paths also need MNF Points ≤ 41."),
+    ).toBeInTheDocument();
+  });
+
+  it("says every path needs it where every route asks for one", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      shares: {
+        ...sharesOf(2),
+        mondayNight: { points: { kind: "range", min: 20 }, scope: "every" },
+      },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(
+      screen.getByText("Every path also needs MNF Points ≥ 20."),
+    ).toBeInTheDocument();
+  });
+
+  it("leaves the total off the table where the block below states it", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      shares: {
+        ...sharesOf(2),
+        mondayNight: { points: { kind: "range", max: 41 }, scope: "some" },
+      },
+      mondayNight: RAK_BY_45,
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(screen.queryByText(/also need/)).not.toBeInTheDocument();
+    expect(blockHeading("MNF Points ≤ 45")).toBeInTheDocument();
   });
 });

@@ -312,7 +312,6 @@ describe("getPlayerAnalysis, the routes", () => {
     expect(result.mustWin).toEqual([]);
     expect(result.pool?.choose).toBe(2);
     expect(labels(result.pool?.games ?? [])).toEqual(["P1", "P2", "P3", "P4"]);
-    expect(result.hiddenRouteCount).toBe(0);
   });
 
   it("separates a must-win game from the pool behind it", () => {
@@ -365,7 +364,167 @@ describe("getPlayerAnalysis, the routes", () => {
       ["P1"],
       ["P2", "P3"],
     ]);
-    expect(result.hiddenRouteCount).toBe(0);
+  });
+});
+
+/**
+ * Eight games, and the rivals below differ from Alice on the halves named in each
+ * case. Enough games that the routes over them outrun what a list can show.
+ */
+const MINE = [
+  "KC -3",
+  "BUF -1",
+  "SF -6",
+  "GB -2",
+  "DAL -4",
+  "MIA -5",
+  "BAL -7",
+  "PHI -8",
+];
+/** The other side of the first three games, and Alice's own side of the rest. */
+const FIRST_THREE = [
+  "DEN +3",
+  "NYJ +1",
+  "SEA +6",
+  "GB -2",
+  "DAL -4",
+  "MIA -5",
+  "BAL -7",
+  "PHI -8",
+];
+/** The other side of the last five. */
+const LAST_FIVE = [
+  "KC -3",
+  "BUF -1",
+  "SF -6",
+  "CHI +2",
+  "NYG +4",
+  "NE +5",
+  "CIN +7",
+  "WAS +8",
+];
+
+function picks(texts: Array<string>) {
+  return texts.map((text) => pick(text));
+}
+
+/**
+ * Fifteen routes: two of the first three games, then any one of the last five.
+ *
+ * Bob is a point back and took the other side of the first three, so two of those
+ * clear him. Carl is four back and took the other side of the last five, so one of
+ * those clears him. Neither game is in every route, so nothing here is must-win.
+ */
+function manyRoutes(extra: Array<PlayerScore> = []): RakMadnessScores {
+  return week([
+    player({ name: "Alice", total: 6, pro: picks(MINE) }),
+    player({ name: "Bob", total: 5, pro: picks(FIRST_THREE) }),
+    player({ name: "Carl", total: 2, pro: picks(LAST_FIVE) }),
+    ...extra,
+  ]);
+}
+
+describe("getPlayerAnalysis, the shares past what a list can show", () => {
+  it("answers shares rather than routes once a list cannot show them all", () => {
+    const result = paths(getPlayerAnalysis(manyRoutes(), "Alice"));
+    expect(result.shares?.routeCount).toBe(15);
+    expect(result.routes).toBeUndefined();
+    expect(result.pool).toBeUndefined();
+  });
+
+  it("counts a game over every route, not over the ones a list would keep", () => {
+    // Ten of the fifteen hold P1, which no six of them could account for.
+    const result = paths(getPlayerAnalysis(manyRoutes(), "Alice"));
+    expect(result.shares?.games[0]).toEqual({
+      label: "P1",
+      pick: "KC -3",
+      routes: 10,
+    });
+  });
+
+  it("names the games the most routes need first", () => {
+    const result = paths(getPlayerAnalysis(manyRoutes(), "Alice"));
+    expect(labels(result.shares?.games ?? [])).toEqual([
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5",
+      "P6",
+      "P7",
+      "P8",
+    ]);
+    expect(result.shares?.games.map((share) => share.routes)).toEqual([
+      10, 10, 10, 3, 3, 3, 3, 3,
+    ]);
+  });
+
+  it("keeps a must-win game out of the shares, which the block above names", () => {
+    // Dave picked what Alice did but for a ninth game, and leads by one, so she
+    // needs that game whichever of the routes above she takes.
+    const scores = week([
+      player({ name: "Alice", total: 6, pro: picks([...MINE, "NYJ -9"]) }),
+      player({ name: "Bob", total: 5, pro: picks([...FIRST_THREE, "NYJ -9"]) }),
+      player({ name: "Carl", total: 2, pro: picks([...LAST_FIVE, "NYJ -9"]) }),
+      player({ name: "Dave", total: 7, pro: picks([...MINE, "LAR +9"]) }),
+    ]);
+
+    const result = paths(getPlayerAnalysis(scores, "Alice"));
+    expect(result.mustWin).toEqual([{ label: "P9", pick: "NYJ -9" }]);
+    expect(labels(result.shares?.games ?? [])).not.toContain("P9");
+    expect(result.shares?.routeCount).toBe(15);
+  });
+
+  it("lists the routes at the most a list can show whole", () => {
+    // The same shape over five games: two of the first three, one of two more.
+    const scores = week([
+      player({ name: "Alice", total: 6, pro: picks(MINE.slice(0, 5)) }),
+      player({ name: "Bob", total: 5, pro: picks(FIRST_THREE.slice(0, 5)) }),
+      player({ name: "Carl", total: 6, pro: picks(LAST_FIVE.slice(0, 5)) }),
+    ]);
+
+    const result = paths(getPlayerAnalysis(scores, "Alice"));
+    expect(result.routes).toHaveLength(6);
+    expect(result.shares).toBeUndefined();
+  });
+
+  it("carries the loosest total where the routes disagree about it", () => {
+    // P1 pulls Alice clear of Bob and P2 only draws her level, where she is the
+    // closer guess on anything under the midpoint of 32.5. Carl took the other
+    // side of the last four, one of which Alice needs on top of either, so the
+    // eight routes are of two kinds and only one kind asks for a total.
+    const mine = MINE.slice(0, 7);
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 3,
+        pro: picks(mine),
+        tiebreakerPick: 20,
+      }),
+      player({
+        name: "Bob",
+        total: 3,
+        pro: picks(["DEN +3", "", ...mine.slice(2)]),
+        tiebreakerPick: 45,
+      }),
+      player({ name: "Carl", total: -1, pro: picks(LAST_FIVE.slice(0, 7)) }),
+    ]);
+
+    const result = paths(getPlayerAnalysis(scores, "Alice"));
+    expect(result.shares?.routeCount).toBe(8);
+    expect(result.shares?.mondayNight).toEqual({
+      points: { kind: "range", min: undefined, max: 32 },
+      scope: "some",
+    });
+    // Left undefined, so the block below says nothing and the note above it is the
+    // only place the total is named.
+    expect(result.mondayNight).toBeUndefined();
+  });
+
+  it("leaves the total off the shares where every route asks the same", () => {
+    const result = paths(getPlayerAnalysis(manyRoutes(), "Alice"));
+    expect(result.shares?.mondayNight).toBeUndefined();
+    expect(result.mondayNight).toEqual({ kind: "notNeeded" });
   });
 });
 

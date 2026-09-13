@@ -7,6 +7,7 @@ import { MAX_SEARCHED_GAMES } from "../../utils/scoring/getPlayerAnalysis";
 import { Message, Picks, Section } from "./analysisParts";
 import { MondayNight } from "./mondayNight";
 import AnalysisRoutes from "./AnalysisRoutes";
+import AnalysisShares from "./AnalysisShares";
 // These render elements of the `analysis` block, which `AnalysisSummary` owns and styles.
 import "./AnalysisSummary.scss";
 
@@ -17,6 +18,7 @@ function hasGames(ways: WaysThrough): boolean {
   return (
     ways.mustWin.length > 0 ||
     ways.pool != null ||
+    ways.shares != null ||
     (ways.routes?.length ?? 0) > 0
   );
 }
@@ -87,7 +89,14 @@ function Ways({
           conjoined={hasMustWin || conjoined}
           title="One of"
           routes={ways.routes}
-          hiddenCount={ways.hiddenRouteCount}
+          showMondayNight={showMondayNight}
+        />
+      )}
+
+      {ways.shares && (
+        <AnalysisShares
+          conjoined={hasMustWin || conjoined}
+          shares={ways.shares}
           showMondayNight={showMondayNight}
         />
       )}
@@ -172,7 +181,9 @@ export default function AnalysisBody({
   }
 
   const hasWaysThrough =
-    result.pool != null || (result.routes?.length ?? 0) > 0;
+    result.pool != null ||
+    result.shares != null ||
+    (result.routes?.length ?? 0) > 0;
   // A settled total says the games above decide the week, which is the opposite of
   // one more thing to do. Only a range is a condition of its own.
   const asksMondayNight = result.mondayNight?.kind === "range";

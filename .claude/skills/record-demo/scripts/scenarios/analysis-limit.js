@@ -75,7 +75,7 @@ function player(name, points, wins, open, picks = {}) {
 
 /** The settled games a player wins to land on a given score, college first. */
 const AT = Object.fromEntries(
-  [1, 2, 8, 9, 19].map((score) => [score, KEYS.slice(0, score)]),
+  [1, 2, 5, 6, 8, 9, 19].map((score) => [score, KEYS.slice(0, score)]),
 );
 
 /**
@@ -153,6 +153,28 @@ const PHASES = {
       }),
       player("Erin", 41, AT[8], "home", { P12: "away", P16: "away" }),
       player("Carol", 38, AT[2], "home"),
+    ],
+  },
+  // Eight games open and two rivals over separate halves of them, so the ways to
+  // win outrun what a list can show and each game is named once instead.
+  shares: {
+    settled: upTo("P8"),
+    subject: "Alice",
+    rows: [
+      player("Alice", 45, AT[6], "home"),
+      player("Bob", 48, AT[5], "home", {
+        P9: "away",
+        P10: "away",
+        P11: "away",
+      }),
+      player("Dave", 50, AT[2], "home", {
+        P12: "away",
+        P13: "away",
+        P14: "away",
+        P15: "away",
+        P16: "away",
+      }),
+      player("Carol", 41, [], "away"),
     ],
   },
   // Two rivals, each caught a different way. Dave is a point back and picks with

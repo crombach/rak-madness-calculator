@@ -13,7 +13,8 @@ their name in either table.
 - `analysisParts`: `Section`, `Picks`, `Message`, the pieces with no analysis
   logic of their own, shared by the files below.
 - `mondayNight`: the MNF Points tiebreaker, its own block and its route line.
-- `AnalysisRoutes`: the paths list, folded until asked to show more.
+- `AnalysisRoutes`: every path there is, folded until asked to show more.
+- `AnalysisShares`: each game with its share of the paths.
 - `AnalysisBody`: the switch on `PlayerAnalysis.kind` that picks what to render.
 - `Standing`: where the picked player stands, read off the scores, so it shows
   while their routes are worked out.

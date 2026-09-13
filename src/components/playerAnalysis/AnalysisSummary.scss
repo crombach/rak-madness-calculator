@@ -141,7 +141,8 @@
 }
 
 .analysis__route,
-.analysis__must-win {
+.analysis__must-win,
+.analysis__shares {
   padding: var(--rak-space-2) 10px;
   // Drawn on the left alone, so a stack of routes reads as a list of alternatives
   // rather than as a stack of boxes.
@@ -157,6 +158,67 @@
 // than one way among several of getting there.
 .analysis__must-win {
   border-inline-start-color: var(--rak-danger-500);
+}
+
+// One game a row against the routes needing it, standing where a list of those
+// routes would stand, so it takes that list's box.
+.analysis__shares {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--rak-font-mono);
+  font-size: var(--rak-text-sm);
+
+  // A cell starts at the head of the line unless the share column moves it, which
+  // a `th` does not do on its own.
+  th,
+  td {
+    padding: var(--rak-space-1) 0;
+    text-align: start;
+  }
+
+  // Naming the columns rather than saying anything themselves, so set the way the
+  // section title above them is set rather than the way the rows below are.
+  thead th {
+    @include micro-label;
+
+    padding-block-end: var(--rak-space-2);
+    color: var(--rak-text-tertiary);
+    font-family: var(--rak-font-body);
+    font-size: var(--rak-text-xs);
+  }
+
+  // Only as wide as the number, which pushes the games to the opposite edge and
+  // leaves the two reading as a column of picks and a column of shares at every
+  // width the dialog takes.
+  thead th:last-child,
+  .analysis__share {
+    width: 1%;
+    text-align: end;
+    white-space: nowrap;
+  }
+
+  // Between rows alone, so the head and the box's own padding keep the ends clear.
+  // One step off the fill behind it rather than `--rak-divider`, which is a light
+  // rule for a light surface and has no dark mode to draw on this one.
+  tbody tr + tr > * {
+    border-block-start: var(--rak-border-width-hairline) solid
+      var(--rak-fill-muted);
+  }
+}
+
+// The two halves of a pick, set the way a pick chip sets them, inside the cell
+// rather than on it so the table keeps sizing its own columns.
+.analysis__share-pick {
+  display: flex;
+  align-items: baseline;
+  gap: var(--rak-pick-gap);
+  font-weight: var(--rak-weight-semibold);
+  white-space: nowrap;
+}
+
+.analysis__share {
+  color: var(--rak-text);
+  font-weight: var(--rak-weight-semibold);
 }
 
 // A soft button takes the color around it, so the gold is set here rather than by

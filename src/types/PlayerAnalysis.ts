@@ -17,9 +17,43 @@ export type MondayNightOutlook =
   | { kind: "settled" }
   | { kind: "range"; min?: number; max?: number };
 
+/** The one outlook that is a total still to come, rather than a question closed. */
+export type MondayNightRange = Extract<MondayNightOutlook, { kind: "range" }>;
+
+/** One game past the must-win games, over the routes that need it. */
+export type PickShare = RemainingPick & {
+  /** Routes needing this game, out of `PickShares.routeCount`. */
+  routes: number;
+};
+
+/**
+ * Each game past `mustWin` named once, against a count of the routes.
+ *
+ * A list says which picks pair with which and a share cannot, so this stands in only
+ * once the list can no longer show every route. Past that the list is a sample, and
+ * a share taken over every route says more than three routes out of twenty-four do.
+ */
+export type PickShares = {
+  /** Every route there is, which is what each share is a share of. */
+  routeCount: number;
+  /** Most-needed first. */
+  games: Array<PickShare>;
+  /**
+   * The loosest total any route asks for, which every route that asks one clears.
+   *
+   * Set only where the routes disagree about the tiebreaker. Where they agree, the
+   * block below carries the outlook and this would say it a second time.
+   */
+  mondayNight?: {
+    points: MondayNightRange;
+    /** Whether every route asks for a total, or only some of them do. */
+    scope: "every" | "some";
+  };
+};
+
 /**
  * A set of ways through, as the blocks that say what they ask for: the games every
- * one of them needs, then the choice left over as a pool or as a list.
+ * one of them needs, then the choice left over as a pool, a list, or a set of shares.
  */
 export type WaysThrough = {
   /** Games every route needs. */
@@ -28,8 +62,8 @@ export type WaysThrough = {
   pool?: { choose: number; games: Array<RemainingPick> };
   /** Set instead of `pool`, when the routes are not one pool of one size. */
   routes?: Array<VictoryRoute>;
-  /** Routes past the ones `routes` lists. */
-  hiddenRouteCount: number;
+  /** Set instead of `routes`, when there are more routes than a list can show. */
+  shares?: PickShares;
 };
 
 /** One way past the must-win games, and how it ends. */
