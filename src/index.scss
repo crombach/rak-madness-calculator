@@ -303,6 +303,10 @@
   --rak-knocked-out-on-light: #8a4a12;
   --rak-in-contention-300: #9edbfa;
   --rak-in-contention-on-light: #126287;
+  // Not a standing, so it has no 300 of its own: a name two rows share takes the
+  // unscoreable pick's fill in the tables. Only the -on-light step is its own, for
+  // the search, where there is no fill to read the badge's darker ink against.
+  --rak-name-conflict-on-light: var(--rak-warning-500);
 
   // The reader's own row, ruled above and below every cell, and bloomed like the
   // lamp so the two marks the reader themselves control read as one light. The
@@ -687,6 +691,9 @@ html {
   --rak-gold-700: #e8b84b;
   --rak-knocked-out-on-light: #ffb069;
   --rak-in-contention-on-light: #74c6f5;
+  // The yellow light mode fills an unscoreable cell with. Dark mode darkens that
+  // fill to sit under white ink, which leaves it too dark to be ink itself.
+  --rak-name-conflict-on-light: var(--rak-warning-300);
   // The reader's row back to the lens, which is the same unification light mode
   // makes on the 400: a dark cell is something a light can be light against,
   // which no light cell is. The lamp follows it, below.
