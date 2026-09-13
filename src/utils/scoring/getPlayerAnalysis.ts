@@ -24,8 +24,12 @@ import remainingGames, { RemainingGame } from "./remainingGames";
  */
 export const MAX_SEARCHED_GAMES = 16;
 
-/** How many routes are carried before the rest are only counted. */
-const MAX_LISTED_ROUTES = 8;
+/**
+ * How many routes are carried before the rest are only counted. Twice what
+ * `AnalysisRoutes` holds open, so the button under them opens one more set of
+ * the same size rather than a tail of any length.
+ */
+const MAX_LISTED_ROUTES = 6;
 
 /**
  * One tier of one player's score, as the outcome moves it.

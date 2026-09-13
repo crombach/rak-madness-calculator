@@ -240,14 +240,22 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(
-      screen.getByText(
-        "To win the week outright, whatever the MNF Points come to:",
-      ),
-    ).toBeInTheDocument();
+    const line = screen.getByText(
+      "To win the week outright, whatever the MNF Points come to:",
+    );
     // Its own pool, asking one more game than winning the week at all does.
     expect(blockHeading("Any 3 of")).toBeInTheDocument();
     expect(screen.getByText("SF -6")).toBeInTheDocument();
+
+    // Over the ways that need a total, which `Otherwise:` hands the reader down to.
+    expect(
+      line.compareDocumentPosition(blockHeading("Any 2 of")) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      line.compareDocumentPosition(screen.getByText("Otherwise:")) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it("leads with taking the week outright, ahead of the games", () => {
@@ -332,7 +340,7 @@ describe("AnalysisSummary", () => {
   it("counts the routes left off under the last one, once they are all open", async () => {
     const result: PlayerAnalysis = {
       ...base,
-      routes: routesOf(8),
+      routes: routesOf(6),
       hiddenRouteCount: 2,
     };
     render(<AnalysisSummary result={result} />);
@@ -381,29 +389,29 @@ describe("AnalysisSummary", () => {
     expect(blockHeading("MNF Points ≤ 32")).toBeInTheDocument();
   });
 
-  it("holds four routes open and folds the rest behind a button", () => {
-    const result: PlayerAnalysis = { ...base, routes: routesOf(8) };
+  it("holds three routes open and folds the rest behind a button", () => {
+    const result: PlayerAnalysis = { ...base, routes: routesOf(6) };
     render(<AnalysisSummary result={result} />);
 
-    expect(document.querySelectorAll(".analysis__route")).toHaveLength(4);
+    expect(document.querySelectorAll(".analysis__route")).toHaveLength(3);
     expect(
-      screen.getByRole("button", { name: "Show 4 more paths" }),
+      screen.getByRole("button", { name: "Show 3 more paths" }),
     ).toBeInTheDocument();
   });
 
   it("shows the rest once the button is clicked", async () => {
-    const result: PlayerAnalysis = { ...base, routes: routesOf(8) };
+    const result: PlayerAnalysis = { ...base, routes: routesOf(6) };
     render(<AnalysisSummary result={result} />);
     await userEvent.click(screen.getByRole("button"));
 
-    expect(document.querySelectorAll(".analysis__route")).toHaveLength(8);
+    expect(document.querySelectorAll(".analysis__route")).toHaveLength(6);
     expect(
       screen.getByRole("button", { name: "Show fewer" }),
     ).toBeInTheDocument();
   });
 
   it("leaves the button off where every route is already open", () => {
-    const result: PlayerAnalysis = { ...base, routes: routesOf(4) };
+    const result: PlayerAnalysis = { ...base, routes: routesOf(3) };
     render(<AnalysisSummary result={result} />);
 
     expect(screen.queryByRole("button")).not.toBeInTheDocument();

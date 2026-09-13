@@ -80,7 +80,15 @@ function Ways({
  * the reader has to think about it. Where there is no such line the player is
  * named as standing instead, so the sections below never open on their own.
  */
-function Lead({ result }: { result: PathsResult }) {
+function Lead({
+  result,
+  // Off where the outright block follows, since each of the two blocks under it
+  // names what it takes on its own line.
+  saysWhatItTakes,
+}: {
+  result: PathsResult;
+  saysWhatItTakes: boolean;
+}) {
   const takesItOutright = result.mondayNight?.kind === "notNeeded";
   // Nothing below to lead into, and the closing sentence there is the answer.
   if (!takesItOutright && !hasGames(result)) return null;
@@ -89,7 +97,7 @@ function Lead({ result }: { result: PathsResult }) {
       {takesItOutright
         ? "Takes the week outright, whatever the MNF Points come to."
         : `${result.player} can win the week.`}
-      {hasGames(result) && " What it takes:"}
+      {saysWhatItTakes && hasGames(result) && " What it takes:"}
     </p>
   );
 }
@@ -165,7 +173,20 @@ export default function AnalysisBody({
 
   return (
     <>
-      <Lead result={result} />
+      <Lead result={result} saysWhatItTakes={outright == null} />
+
+      {/* Over the ways below it, which win the week only once Monday night's
+          total falls right. This one asks more games and no total, so it is the
+          answer a reader who can reach it stops at. */}
+      {outright && (
+        <>
+          <p className="analysis__line">
+            To win the week outright, whatever the MNF Points come to:
+          </p>
+          <Ways ways={outright} showMondayNight={false} />
+          <p className="analysis__line">Otherwise:</p>
+        </>
+      )}
 
       <Ways ways={result} showMondayNight={result.mondayNight == null} />
 
@@ -183,17 +204,6 @@ export default function AnalysisBody({
         }
         outlook={result.mondayNight}
       />
-
-      {/* Under the ways to win at all, since it is the harder of the two and the
-          reader is owed the reachable answer first. */}
-      {outright && (
-        <>
-          <p className="analysis__line">
-            To win the week outright, whatever the MNF Points come to:
-          </p>
-          <Ways ways={outright} showMondayNight={false} />
-        </>
-      )}
     </>
   );
 }
