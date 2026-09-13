@@ -28,7 +28,9 @@ function percentOf(routes: number, total: number): string {
  * range most of them never ask for.
  *
  * Where the ways asking disagree, the range is the widest of them. That is a bound
- * and not a target, and the range alone reads as a target, so a line says so.
+ * and not a target, and the range alone reads as a target, so a line says so. The
+ * same line says the tiebreaker is needed every time, since a reader told only that
+ * the range can tighten cannot tell whether it can also fall away.
  */
 function SharesMondayNight({
   points,
@@ -37,14 +39,14 @@ function SharesMondayNight({
   points: NonNullable<PickShares["mondayNight"]>;
   routeCount: number;
 }) {
-  const totals = <MondayNightPoints outlook={points.points} />;
   if (points.routes === routeCount) {
     return (
       <>
         <MondayNightLine outlook={points.points} />
         {!points.isShared && (
           <p className="analysis__note --upright">
-            Some ways need a tighter range than this.
+            Every way needs the MNF Points tiebreaker. Some ways need a tighter
+            range than this.
           </p>
         )}
       </>
@@ -53,7 +55,7 @@ function SharesMondayNight({
   return (
     <p className="analysis__note --upright">
       {`${plural(points.routes, "way")} also ${points.routes === 1 ? "needs" : "need"} `}
-      {totals}
+      <MondayNightPoints outlook={points.points} />
       {points.isShared ? "." : ". Some of them need a tighter range."}
     </p>
   );

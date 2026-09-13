@@ -569,7 +569,7 @@ describe("AnalysisSummary", () => {
     expect(notes()).toEqual([]);
   });
 
-  it("says the bound is not a target where every route asks a different one", () => {
+  it("says the total is always needed where every route asks a different one", () => {
     const result: PlayerAnalysis = {
       ...base,
       shares: {
@@ -584,7 +584,9 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(mnfLines()).toEqual(["ANDMNF Points ≥ 20"]);
-    expect(notes()).toEqual(["Some ways need a tighter range than this."]);
+    expect(notes()).toEqual([
+      "Every way needs the MNF Points tiebreaker. Some ways need a tighter range than this.",
+    ]);
   });
 
   it("leaves the total off the table where the block below states it", () => {
