@@ -6,6 +6,7 @@ import {
   Status,
 } from "../types/RakMadnessScores";
 import buildSpreadsheetBuffer from "./buildSpreadsheetBuffer";
+import { MISSING_PICK } from "./scoring/getPickResults";
 
 const WEEK = 5;
 const SEASON = 2025;
@@ -231,6 +232,29 @@ describe("buildSpreadsheetBuffer, picks sheet", () => {
     ];
     expect(shown.B2.s.fgColor.rgb).toBe(FILL_BY_STANDING.nameConflict);
     expect(shown.B3.s.fgColor.rgb).toBe(FILL_BY_STANDING.nameConflict);
+  });
+
+  it("leaves a blank cell the plain fill, not the unscoreable one", async () => {
+    // A blank scores unscoreable, and the warning fill is about the week rather
+    // than the row. The sheet says the same thing the table does.
+    const workbook = await readBack({
+      tiebreaker: 41,
+      scores: [
+        player({
+          college: [
+            {
+              pick: "",
+              status: "unscoreable",
+              explanation: { header: MISSING_PICK, message: "none" },
+            },
+            pick("PSU -7", "unscoreable"),
+          ],
+        }),
+      ],
+    });
+    const sheet = workbook.Sheets[PICKS_SHEET];
+    expect(sheet.C2.s.fgColor.rgb).toBe(FILL_BY_STATUS.incomplete);
+    expect(sheet.D2.s.fgColor.rgb).toBe(FILL_BY_STATUS.error);
   });
 
   it("writes N/A for a missing pick", async () => {

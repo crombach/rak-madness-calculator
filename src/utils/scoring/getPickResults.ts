@@ -1,7 +1,7 @@
 import { GameStatus, HomeAway } from "../../types/ESPN";
 import { GameScore } from "../../types/GameScore";
 import { LeagueResult } from "../../types/LeagueResult";
-import { Status } from "../../types/RakMadnessScores";
+import { PickResult, Status } from "../../types/RakMadnessScores";
 import debugLog from "../debugLog";
 import marginAgainstSpread from "./marginAgainstSpread";
 import parsePick from "./parsePick";
@@ -36,6 +36,20 @@ export function getStatus(score: GameScore): Status {
  * in it, and a week full of them is still a week that finished.
  */
 export const MISSING_PICK = "Missing Pick";
+
+/**
+ * The status a cell is drawn by, which is not always the status it scored.
+ *
+ * A blank cell scores `unscoreable`, since there is no point in it either way. Every
+ * other cell that scores it is a game the week cannot settle, and the warning fill
+ * says so. A blank is the player's own doing and tells the reader nothing about the
+ * game, so it takes the plain fill an unplayed game takes.
+ */
+export function fillStatus(result: PickResult): Status {
+  return result.explanation.header === MISSING_PICK
+    ? "incomplete"
+    : result.status;
+}
 
 /**
  * A pick with no point in it either way. Every reason a game cannot be scored ends

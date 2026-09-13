@@ -6,7 +6,8 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 - `parsePick`: a cell to team and spread
 - `validateSpreads`: rows disagreeing on spread
 - `marginAgainstSpread`: a side's margin, spread applied
-- `getPickResults`: picks scored, plus `getStatus`. One answer per cell
+- `getPickResults`: picks scored, plus `getStatus` and `fillStatus`, the status
+  a cell is drawn by. One answer per cell
   text, held against the week's index
 - `resultsIndex`: a week by team and by matchup, built once
 - `gameColumns`: `LEAGUES`, `LEAGUE_PREFIX`, `gameLabels`
