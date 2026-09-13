@@ -4,7 +4,7 @@ import {
   EmojiEventsOutlinedIcon,
   SentimentVerySatisfiedOutlinedIcon,
   SkullOutlinedIcon,
-  WarningIcon,
+  WarningOutlinedIcon,
 } from "../../icon/Icon";
 import "./PlayerStatusIcon.scss";
 
@@ -39,7 +39,7 @@ export default function PlayerStatusIcon({
       })}
     >
       {hasNameConflict ? (
-        <WarningIcon />
+        <WarningOutlinedIcon />
       ) : isKnockedOut ? (
         <SkullOutlinedIcon />
       ) : isWinnerDecided ? (
