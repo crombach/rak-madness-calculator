@@ -503,13 +503,13 @@ describe("AnalysisSummary", () => {
         mondayNight: {
           points: { kind: "range", max: 41 },
           routes: 8,
-          isShared: true,
+          asking: 8,
         },
       },
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(notes()).toEqual(["8 ways also need MNF Points ≤ 41."]);
+    expect(notes()).toEqual(["8 ways need MNF Points ≤ 41."]);
     // Not every way is held to it, so it is not a condition on the table.
     expect(mnfLines()).toEqual([]);
   });
@@ -522,16 +522,16 @@ describe("AnalysisSummary", () => {
         mondayNight: {
           points: { kind: "range", max: 41 },
           routes: 1,
-          isShared: true,
+          asking: 1,
         },
       },
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(notes()).toEqual(["1 way also needs MNF Points ≤ 41."]);
+    expect(notes()).toEqual(["1 way needs MNF Points ≤ 41."]);
   });
 
-  it("calls the total a bound where the routes asking disagree", () => {
+  it("names only the total the most ways ask for", () => {
     const result: PlayerAnalysis = {
       ...base,
       shares: {
@@ -539,34 +539,14 @@ describe("AnalysisSummary", () => {
         mondayNight: {
           points: { kind: "range", max: 41 },
           routes: 8,
-          isShared: false,
+          asking: 12,
         },
       },
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(notes()).toEqual([
-      "8 ways also need MNF Points ≤ 41. Some of them need a tighter range.",
-    ]);
-  });
-
-  it("holds the table to the total where every route asks for one", () => {
-    const result: PlayerAnalysis = {
-      ...base,
-      shares: {
-        ...sharesOf(2),
-        mondayNight: {
-          points: { kind: "range", min: 20 },
-          routes: 20,
-          isShared: true,
-        },
-      },
-    };
-    render(<AnalysisSummary result={result} />);
-
-    // The line a route of its own takes, since the whole table is held to it.
-    expect(mnfLines()).toEqual(["ANDMNF Points ≥ 20"]);
-    expect(notes()).toEqual([]);
+    // The four ways asking for something else are left to the count to imply.
+    expect(notes()).toEqual(["8 ways need MNF Points ≤ 41."]);
   });
 
   it("says the total is always needed where every route asks a different one", () => {
@@ -576,16 +556,17 @@ describe("AnalysisSummary", () => {
         ...sharesOf(2),
         mondayNight: {
           points: { kind: "range", min: 20 },
-          routes: 20,
-          isShared: false,
+          routes: 8,
+          asking: 20,
         },
       },
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(mnfLines()).toEqual(["ANDMNF Points ≥ 20"]);
+    // No way is held to this one, so the table takes no `AND` line.
+    expect(mnfLines()).toEqual([]);
     expect(notes()).toEqual([
-      "Every way needs the MNF Points tiebreaker. Some ways need a tighter range than this.",
+      "Every way needs the MNF Points tiebreaker. 8 ways need MNF Points ≥ 20.",
     ]);
   });
 
@@ -597,7 +578,7 @@ describe("AnalysisSummary", () => {
         mondayNight: {
           points: { kind: "range", max: 41 },
           routes: 8,
-          isShared: true,
+          asking: 8,
         },
       },
       mondayNight: RAK_BY_45,

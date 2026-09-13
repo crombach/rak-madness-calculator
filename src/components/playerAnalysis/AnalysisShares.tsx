@@ -3,7 +3,7 @@ import { PickShares } from "../../types/PlayerAnalysis";
 import plural from "../../utils/plural";
 import Button from "../button/Button";
 import { Section } from "./analysisParts";
-import { MondayNightPoints, MondayNightLine } from "./mondayNight";
+import { MondayNightPoints } from "./mondayNight";
 import "./AnalysisSummary.scss";
 
 /** How many games stand open, the rest being a click away. */
@@ -22,15 +22,17 @@ function percentOf(routes: number, total: number): string {
 /**
  * What the table's ways ask of the tiebreaker, under them.
  *
- * Totals every way needs are a condition on the whole table, so they take the `AND`
- * line a route of its own would take. Totals only some ways need are not, so they
- * stay a sentence counting those ways: an `AND` there would hold every way to a
- * range most of them never ask for.
+ * A sentence rather than the `AND` line a route of its own takes. Only some of the
+ * ways are held to what it names, and `AND` would read as holding all of them. The
+ * totals every way does agree on never reach here, since the block below says those.
  *
- * Where the ways asking disagree, the range is the widest of them. That is a bound
- * and not a target, and the range alone reads as a target, so a line says so. The
- * same line says the tiebreaker is needed every time, since a reader told only that
- * the range can tighten cannot tell whether it can also fall away.
+ * The sentence names one total, the one the most ways take. Its count against the
+ * table's own says the rest of the ways want something else, and a reader cannot act
+ * on a list of ranges anyway.
+ *
+ * A first sentence stands where every way needs a total of some kind. Counts alone
+ * leave a reader unable to tell a tiebreaker that always decides from one that only
+ * decides the ways it is named on.
  */
 function SharesMondayNight({
   points,
@@ -39,24 +41,12 @@ function SharesMondayNight({
   points: NonNullable<PickShares["mondayNight"]>;
   routeCount: number;
 }) {
-  if (points.routes === routeCount) {
-    return (
-      <>
-        <MondayNightLine outlook={points.points} />
-        {!points.isShared && (
-          <p className="analysis__note --upright">
-            Every way needs the MNF Points tiebreaker. Some ways need a tighter
-            range than this.
-          </p>
-        )}
-      </>
-    );
-  }
   return (
     <p className="analysis__note --upright">
-      {`${plural(points.routes, "way")} also ${points.routes === 1 ? "needs" : "need"} `}
-      <MondayNightPoints outlook={points.points} />
-      {points.isShared ? "." : ". Some of them need a tighter range."}
+      {points.asking === routeCount &&
+        "Every way needs the MNF Points tiebreaker. "}
+      {`${plural(points.routes, "way")} ${points.routes === 1 ? "needs" : "need"} `}
+      <MondayNightPoints outlook={points.points} />.
     </p>
   );
 }
@@ -110,7 +100,7 @@ export default function AnalysisShares({
         </tbody>
       </table>
       {/* A total is a condition on a route and these rows are not routes, so the
-          loosest one any route asks is said under them rather than in a column. */}
+          one the most routes ask for is said under them rather than in a column. */}
       {points && (
         <SharesMondayNight points={points} routeCount={shares.routeCount} />
       )}

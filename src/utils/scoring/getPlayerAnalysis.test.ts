@@ -488,7 +488,7 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
     expect(result.shares).toBeUndefined();
   });
 
-  it("carries the loosest total where the routes disagree about it", () => {
+  it("carries the total where only some routes ask for one", () => {
     // P1 pulls Alice clear of Bob and P2 only draws her level, where she is the
     // closer guess on anything under the midpoint of 32.5. Carl took the other
     // side of the last four, one of which Alice needs on top of either, so the
@@ -516,7 +516,7 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
       points: { kind: "range", min: undefined, max: 32 },
       // Four of the eight ask for a total, and all four ask for this one.
       routes: 4,
-      isShared: true,
+      asking: 4,
     });
     // Left undefined, so the block below says nothing and the note above it is the
     // only place the total is named.
@@ -556,14 +556,14 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
     expect(result.shares?.mondayNight).toEqual({
       points: { kind: "range", min: undefined, max: 46 },
       routes: 15,
-      isShared: true,
+      asking: 15,
     });
   });
 
-  it("marks the total a bound where the routes asking disagree on it", () => {
+  it("names the total the most routes ask for where they disagree on it", () => {
     // Bob guessed 45 and Dan guessed 35, so a route that only draws level with
     // Bob wins under 32 and one that only draws level with Dan wins under 27.
-    // The widest of those is 32, which the tighter route does not win on.
+    // Four routes take each, and the tie falls to the one the routes reach first.
     const mine = MINE.slice(0, 7);
     const scores = week([
       player({
@@ -589,17 +589,18 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
 
     const result = paths(getPlayerAnalysis(scores, "Alice"));
     expect(result.shares?.mondayNight).toEqual({
-      points: { kind: "range", min: undefined, max: 32 },
-      routes: 8,
-      isShared: false,
+      points: { kind: "range", min: undefined, max: 27 },
+      routes: 4,
+      // Every route that only draws level asks for a total of its own.
+      asking: 8,
     });
   });
 
-  it("drops the total where the routes bound it in opposite directions", () => {
+  it("names one total where the routes bound it in opposite directions", () => {
     // The same week as above, and Dan guessed under Alice where Bob guessed over
     // her. A route that only draws level with Bob wants a low total and one that
-    // only draws level with Dan wants a high one, so widening the two leaves both
-    // ends open. A total held to nothing is no condition, so no note is made.
+    // only draws level with Dan wants a high one. Neither bound stands for the
+    // other, so only the one the most routes take is named.
     const mine = MINE.slice(0, 7);
     const scores = week([
       player({
@@ -626,7 +627,11 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
     const result = paths(getPlayerAnalysis(scores, "Alice"));
     // Eight that only draw level, and four more that win the week alone.
     expect(result.shares?.routeCount).toBe(12);
-    expect(result.shares?.mondayNight).toBeUndefined();
+    expect(result.shares?.mondayNight).toEqual({
+      points: { kind: "range", min: 13, max: undefined },
+      routes: 4,
+      asking: 8,
+    });
   });
 
   it("leaves the total off the shares where every route asks the same", () => {

@@ -44,25 +44,29 @@ export type PickShares = {
   /** Most-needed first. */
   games: Array<PickShare>;
   /**
-   * The loosest total any route asks for, which every route that asks one clears.
+   * The total the most routes ask for, and how many ask what.
    *
    * Set only where the routes disagree about the tiebreaker. Where they agree, the
    * block below carries the outlook and this would say it a second time.
+   *
+   * One total is named and the rest are left out. Naming them all is a second table
+   * of ranges, and `routes` under `routeCount` already says there are others.
    */
   mondayNight?: {
+    /** What the most routes ask for, and what one route asks where each asks its own. */
     points: MondayNightRange;
-    /** Routes asking for a total, out of `PickShares.routeCount`. */
+    /** Routes asking for that total, out of `PickShares.routeCount`. */
     routes: number;
     /**
-     * Whether the routes asking for a total agree on which, so `points` is what
-     * each of them takes.
+     * Routes asking for a total of any kind, out of `PickShares.routeCount`.
      *
-     * False where they differ and `points` is the widest of them. No route wins
-     * outside it, and a route can ask for less, so it is a bound rather than a
-     * target. Every route asking and every route agreeing cannot both hold, since
-     * the block below carries that case.
+     * At `routeCount` the tiebreaker decides every way through, which a reader
+     * cannot read off `routes` alone. Never under `routes`.
+     *
+     * `routes` itself is always under `routeCount`. Every route asking for the same
+     * total is the case the block below carries, which leaves this field unset.
      */
-    isShared: boolean;
+    asking: number;
   };
 };
 

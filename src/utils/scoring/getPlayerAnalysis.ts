@@ -474,39 +474,46 @@ function sharesIn(
 }
 
 /**
- * The loosest total any route asks for, which every route asking one clears.
+ * The total the most routes ask for, with how many ask for it and how many ask at
+ * all.
  *
- * Undefined where no route asks for a total at all. An end absent is that side
- * unbounded, so one route leaving it open leaves the loosest bound open too, and
- * routes bounded against each other can open both. Both ends open holds a total to
- * nothing, so that answers undefined as well.
+ * Undefined where no route asks for a total. A route that asks always names a bound,
+ * since `evaluate` only calls the total level once it has tightened one.
  *
- * `isShared` says whether the widest is also what each asking route takes. Only
- * `sameOutlook` routes reach here having agreed, and those are answered above, so
- * every route asking means every route asking something different.
+ * Only the one total is reported. Every other total some route asks for is left out,
+ * since `routes` under the count of routes already says there are others, and a
+ * reader who cannot act on all of them can act on the one most of them take.
  *
- * `routes` is how many of them ask at all, which a reader needs to tell a total
- * every way through wants from one only half of them do.
+ * Only `sameOutlook` routes reach here having agreed, and those are answered above,
+ * so `asking` at the count of routes with `routes` under it is the case where the
+ * tiebreaker decides every way through and the ways differ on how.
  */
-function loosestPoints(rests: Array<Rest>): PickShares["mondayNight"] {
-  const ranges: Array<MondayNightRange> = [];
+function mostAskedPoints(rests: Array<Rest>): PickShares["mondayNight"] {
+  // Keyed by the range itself, so routes asking the same total land together.
+  const byRange = new Map<
+    string,
+    { points: MondayNightRange; routes: number }
+  >();
+  let asking = 0;
   for (const rest of rests) {
-    if (rest.outlook.kind === "range") ranges.push(rest.outlook);
+    const { outlook } = rest;
+    if (outlook.kind !== "range") continue;
+    asking += 1;
+    const key = `${outlook.min}:${outlook.max}`;
+    const held = byRange.get(key);
+    if (held == null) {
+      byRange.set(key, { points: outlook, routes: 1 });
+      continue;
+    }
+    held.routes += 1;
   }
-  if (ranges.length === 0) return undefined;
-  let { min, max } = ranges[0];
-  for (const range of ranges.slice(1)) {
-    min =
-      min == null || range.min == null ? undefined : Math.min(min, range.min);
-    max =
-      max == null || range.max == null ? undefined : Math.max(max, range.max);
+  let most: { points: MondayNightRange; routes: number } | undefined;
+  // Held in the order the routes run in, so the fewest games win a tie.
+  for (const range of byRange.values()) {
+    if (most == null || range.routes > most.routes) most = range;
   }
-  if (min == null && max == null) return undefined;
-  return {
-    points: { kind: "range", min, max },
-    routes: ranges.length,
-    isShared: ranges.every((range) => range.min === min && range.max === max),
-  };
+  if (most == null) return undefined;
+  return { points: most.points, routes: most.routes, asking };
 }
 
 /** The games every route needs, and the ways past them: one pool, or a list. */
@@ -558,7 +565,7 @@ function reduceRoutes(
         routeCount: rests.length,
         games: sharesIn(rests, contested, playerIndex),
         // Held back where the routes agree, since the block below says it once.
-        mondayNight: isOneOutlook ? undefined : loosestPoints(rests),
+        mondayNight: isOneOutlook ? undefined : mostAskedPoints(rests),
       },
       mondayNight: isOneOutlook ? rests[0].outlook : undefined,
     };
