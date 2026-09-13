@@ -76,28 +76,20 @@ function Ways({
 }
 
 /**
- * Winning the week on points alone leads, since it settles the tiebreaker before
- * the reader has to think about it. Where there is no such line the player is
- * named as standing instead, so the sections below never open on their own.
+ * Where the player stands, over the games that get them there.
+ *
+ * `outright` is the one thing this line carries that nothing below it does:
+ * `MondayNight` draws nothing where the total is not needed, so without the word
+ * here a reader cannot tell the tiebreaker is out of it. Every section under this
+ * announces itself, so the line does not introduce them.
  */
-function Lead({
-  result,
-  // Off where the outright block follows, since each of the two blocks under it
-  // names what it takes on its own line.
-  saysWhatItTakes,
-}: {
-  result: PathsResult;
-  saysWhatItTakes: boolean;
-}) {
+function Lead({ result }: { result: PathsResult }) {
   const takesItOutright = result.mondayNight?.kind === "notNeeded";
   // Nothing below to lead into, and the closing sentence there is the answer.
   if (!takesItOutright && !hasGames(result)) return null;
   return (
     <p className="analysis__line">
-      {takesItOutright
-        ? "Takes the week outright."
-        : `${result.player} can win the week.`}
-      {saysWhatItTakes && hasGames(result) && " What it takes:"}
+      {`${result.player} can win the week${takesItOutright ? " outright" : ""}.`}
     </p>
   );
 }
@@ -173,7 +165,7 @@ export default function AnalysisBody({
 
   return (
     <>
-      <Lead result={result} saysWhatItTakes={outright == null} />
+      <Lead result={result} />
 
       {/* Over the ways below it, which win the week only once Monday night's
           total falls right. This one asks more games and no total, so it is the

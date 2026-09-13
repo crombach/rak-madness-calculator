@@ -264,7 +264,7 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    const outright = screen.getByText(/Takes the week outright/);
+    const outright = screen.getByText("Alice can win the week outright.");
     const mustWin = screen.getByRole("heading", { name: "Must win" });
     expect(
       outright.compareDocumentPosition(mustWin) &
@@ -302,9 +302,7 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(
-      screen.getByText("Alice can win the week. What it takes:"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Alice can win the week.")).toBeInTheDocument();
   });
 
   it("lists routes of different shapes with the ones that need a total marked", () => {
