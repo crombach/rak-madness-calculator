@@ -1,6 +1,10 @@
 import { readFileSync } from "node:fs";
 import { Status } from "../types/RakMadnessScores";
-import { PICK_STATUS_FILL } from "./pickStatusFill";
+import {
+  PICK_STATUS_FILL,
+  PLAYER_STATUS_FILL,
+  PlayerStanding,
+} from "./pickStatusFill";
 
 /** The token each status is drawn from in the browser. */
 const TOKEN_FOR_STATUS: Record<Status, string> = {
@@ -8,6 +12,16 @@ const TOKEN_FOR_STATUS: Record<Status, string> = {
   no: "--rak-danger-300",
   unscoreable: "--rak-warning-300",
   incomplete: "--rak-surface",
+};
+
+/** The token each standing fills a name cell with in the browser. */
+const TOKEN_FOR_STANDING: Record<PlayerStanding, string> = {
+  inContention: "--rak-in-contention-300",
+  knockedOut: "--rak-knocked-out-300",
+  // `--rak-cell-unscoreable` reads this token in light mode, which is the fill
+  // `Table.scss` gives the cell.
+  nameConflict: "--rak-warning-300",
+  noStatus: "--rak-surface",
 };
 
 /**
@@ -76,6 +90,30 @@ describe("PICK_STATUS_FILL", () => {
   it("covers every status a pick can have", () => {
     expect(Object.keys(PICK_STATUS_FILL).sort()).toEqual(
       Object.keys(TOKEN_FOR_STATUS).sort(),
+    );
+  });
+});
+
+describe("PLAYER_STATUS_FILL", () => {
+  it("fills a standing with the same color the browser draws it in", () => {
+    const tokens = tokenValues();
+
+    Object.entries(TOKEN_FOR_STANDING).forEach(([standing, token]) => {
+      const declared = tokens.get(token);
+      expect(
+        declared,
+        `${token} is not declared in src/index.scss`,
+      ).toBeDefined();
+      expect(
+        PLAYER_STATUS_FILL[standing as PlayerStanding].rgb.toLowerCase(),
+        `${standing} should match ${token}`,
+      ).toBe(expand(declared as string));
+    });
+  });
+
+  it("covers every standing a name cell can have", () => {
+    expect(Object.keys(PLAYER_STATUS_FILL).sort()).toEqual(
+      Object.keys(TOKEN_FOR_STANDING).sort(),
     );
   });
 });

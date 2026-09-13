@@ -135,6 +135,9 @@ describe("the app, export", () => {
       expect(buildSpreadsheetBufferMock).toHaveBeenCalledWith(scores, {
         season: SEASON,
         weekNumber: CURRENT_WEEK,
+        // The workbook fills a name cell the way the tables do, and this fixture's
+        // week is decided, which is told however the reader has the setting.
+        showStatus: true,
       });
     });
     expect(click).toHaveBeenCalledTimes(1);

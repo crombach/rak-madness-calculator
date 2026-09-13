@@ -17,10 +17,18 @@ const SHEET_NAME_LIMIT = 31;
 
 // Fill colors that pickCell assigns per pick status.
 const FILL_BY_STATUS = {
-  yes: "A3FAA0",
-  no: "FAA0A0",
+  yes: "89FF85",
+  no: "FF8585",
   error: "FFD83D",
   incomplete: "FFFFFF",
+};
+
+// Fill colors playerNameCell assigns per standing.
+const FILL_BY_STANDING = {
+  inContention: "85D2FF",
+  knockedOut: "FFBE85",
+  nameConflict: "FFD83D",
+  noStatus: "FFFFFF",
 };
 
 function pick(pickText: string, status: Status): PickResult {
@@ -63,10 +71,12 @@ async function readBack(
   scoresObject: RakMadnessScores = scores,
   weekNumber = WEEK,
   season = SEASON,
+  showStatus = false,
 ): Promise<XLSX.WorkBook> {
   const buffer = await buildSpreadsheetBuffer(scoresObject, {
     season,
     weekNumber,
+    showStatus,
   });
   return XLSX.read(buffer, { type: "array", cellStyles: true });
 }
@@ -184,6 +194,43 @@ describe("buildSpreadsheetBuffer, picks sheet", () => {
     // Row 2 is Alice, whose college picks are one correct and one wrong.
     expect(fillOf("C2")).toBe(FILL_BY_STATUS.yes);
     expect(fillOf("D2")).toBe(FILL_BY_STATUS.no);
+  });
+
+  it("colors each name cell by where the player stands", async () => {
+    const workbook = await readBack(scores, WEEK, SEASON, true);
+    const fillOf = (sheetName: string) => (address: string) =>
+      workbook.Sheets[sheetName][address].s.fgColor.rgb;
+    // Column B is the name on both sheets, row 2 Alice and row 3 Bob.
+    [PICKS_SHEET, RESULTS_SHEET].forEach((sheetName) => {
+      expect(fillOf(sheetName)("B2")).toBe(FILL_BY_STANDING.inContention);
+      expect(fillOf(sheetName)("B3")).toBe(FILL_BY_STANDING.knockedOut);
+    });
+  });
+
+  it("leaves a name cell unfilled where the week does not say the standings", async () => {
+    // The tables hold the standings back on an undecided week unless the reader
+    // asks for them, and the workbook is a copy of what they were shown.
+    const sheet = (await readBack()).Sheets[PICKS_SHEET];
+    expect(sheet.B2.s.fgColor.rgb).toBe(FILL_BY_STANDING.noStatus);
+    expect(sheet.B3.s.fgColor.rgb).toBe(FILL_BY_STANDING.noStatus);
+  });
+
+  it("marks both rows of a shared name, standings or not", async () => {
+    // Two rows under one name is the sheet rather than the week, so it is said
+    // whether or not the standings are.
+    const shared: RakMadnessScores = {
+      ...scores,
+      scores: [player({ id: "row-1" }), player({ id: "row-2" })],
+    };
+    const hidden = (await readBack(shared)).Sheets[PICKS_SHEET];
+    expect(hidden.B2.s.fgColor.rgb).toBe(FILL_BY_STANDING.nameConflict);
+    expect(hidden.B3.s.fgColor.rgb).toBe(FILL_BY_STANDING.nameConflict);
+
+    const shown = (await readBack(shared, WEEK, SEASON, true)).Sheets[
+      PICKS_SHEET
+    ];
+    expect(shown.B2.s.fgColor.rgb).toBe(FILL_BY_STANDING.nameConflict);
+    expect(shown.B3.s.fgColor.rgb).toBe(FILL_BY_STANDING.nameConflict);
   });
 
   it("writes N/A for a missing pick", async () => {
