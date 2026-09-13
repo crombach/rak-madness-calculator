@@ -557,6 +557,13 @@ function reduceRoutes(
     sizes.size === 1 &&
     rests.length === combinations(bitCount(poolMask), choose);
 
+  // Whether the block below can take the total on its own. It draws an `AND`, which
+  // holds everything above it to what it names, so it is the answer only where every
+  // route asks the same total and no set of games takes the week without one. Where
+  // a reader can step around the total, a sentence under the table says which routes
+  // want it instead.
+  const isWholeStory = isOneOutlook && !canWinWithout;
+
   if (isPool) {
     return {
       mustWin,
@@ -576,12 +583,12 @@ function reduceRoutes(
       shares: {
         routeCount: rests.length,
         games: sharesIn(rests, contested, playerIndex),
-        // Held back where the routes agree, since the block below says it once.
-        mondayNight: isOneOutlook
+        // Held back where the block below says it once.
+        mondayNight: isWholeStory
           ? undefined
           : mostAskedPoints(rests, canWinWithout),
       },
-      mondayNight: isOneOutlook ? rests[0].outlook : undefined,
+      mondayNight: isWholeStory ? rests[0].outlook : undefined,
     };
   }
 

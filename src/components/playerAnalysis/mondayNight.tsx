@@ -51,7 +51,11 @@ export function MondayNightLine({
       className={`analysis__line analysis__route-mnf${inset ? "" : " --flush"}`}
     >
       {conjoined && (
-        <span className="analysis__pick-label analysis__and">AND</span>
+        <>
+          {/* A real space, since the gap between these is flex and a reader
+              hearing the line is given none by it. */}
+          <span className="analysis__pick-label analysis__and">AND</span>{" "}
+        </>
       )}
       <MondayNightPoints outlook={outlook} />
     </p>
@@ -79,6 +83,10 @@ export function MondayNight({
   // route of its own takes rather than a title over nothing. Every way above needs
   // them, which is what the `AND` on that line says.
   return (
-    <MondayNightLine outlook={outlook} conjoined={conjoined} inset={false} />
+    <MondayNightLine
+      outlook={outlook}
+      conjoined={conjoined ?? false}
+      inset={false}
+    />
   );
 }

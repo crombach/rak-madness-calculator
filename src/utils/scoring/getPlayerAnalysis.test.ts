@@ -553,13 +553,15 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
     expect(result.outright).toBeUndefined();
     // Fifteen ways draw level and fifteen more take it alone around them.
     expect(result.shares?.routeCount).toBe(15);
-    // Every way counted asks the same total, which the block below states once.
-    expect(result.shares?.mondayNight).toBeUndefined();
-    expect(result.mondayNight).toEqual({
-      kind: "range",
-      min: undefined,
-      max: 46,
+    // Every way counted asks the same total, and bigger sets of games take the
+    // week without one. So the total is a sentence counting the ways that want
+    // it rather than the block below, whose `AND` would hold a reader to it.
+    expect(result.shares?.mondayNight).toEqual({
+      points: { kind: "range", min: undefined, max: 46 },
+      routes: 15,
+      isAlways: false,
     });
+    expect(result.mondayNight).toBeUndefined();
   });
 
   it("names the total the most routes ask for where they disagree on it", () => {

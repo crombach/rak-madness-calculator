@@ -211,7 +211,7 @@ describe("AnalysisSummary", () => {
 
     expect(isConjoined("Must win")).toBe(false);
     expect(isConjoined("Any 2 of")).toBe(true);
-    expect(mnfLines()).toEqual(["ANDMNF Points ≤ 45"]);
+    expect(mnfLines()).toEqual(["AND MNF Points ≤ 45"]);
   });
 
   it("leaves a settled tiebreaker unconjoined, since it asks for nothing", () => {
@@ -248,7 +248,7 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     // The line a route of its own takes, rather than a title over nothing.
-    expect(mnfLines()).toEqual(["AND38 ≤ MNF Points ≤ 44"]);
+    expect(mnfLines()).toEqual(["AND 38 ≤ MNF Points ≤ 44"]);
     expect(
       screen.queryByRole("heading", { name: /MNF Points/ }),
     ).not.toBeInTheDocument();
@@ -262,7 +262,7 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(mnfLines()).toEqual(["ANDMNF Points ≤ 45"]);
+    expect(mnfLines()).toEqual(["AND MNF Points ≤ 45"]);
   });
 
   it("names the games that take the week without the tiebreaker at all", () => {
@@ -398,7 +398,7 @@ describe("AnalysisSummary", () => {
     const routes = [...document.querySelectorAll(".analysis__route")];
     expect(routes.map((route) => route.textContent)).toEqual([
       "P1KC -3",
-      "P2BUF -1P3SF -6ANDMNF Points ≤ 32",
+      "P2BUF -1P3SF -6AND MNF Points ≤ 32",
     ]);
   });
 
@@ -419,7 +419,7 @@ describe("AnalysisSummary", () => {
       "P1KC -3",
       "P2BUF -1",
     ]);
-    expect(mnfLines()).toEqual(["ANDMNF Points ≤ 32"]);
+    expect(mnfLines()).toEqual(["AND MNF Points ≤ 32"]);
   });
 
   it("holds three routes open and folds the rest behind a button", () => {
@@ -509,6 +509,7 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
+    // The ways asking for something else are left to the count to imply.
     expect(notes()).toEqual(["8 ways need MNF Points ≤ 41."]);
     // Not every way is held to it, so it is not a condition on the table.
     expect(mnfLines()).toEqual([]);
@@ -529,24 +530,6 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(notes()).toEqual(["1 way needs MNF Points ≤ 41."]);
-  });
-
-  it("names only the total the most ways ask for", () => {
-    const result: PlayerAnalysis = {
-      ...base,
-      shares: {
-        ...sharesOf(2),
-        mondayNight: {
-          points: { kind: "range", max: 41 },
-          routes: 8,
-          isAlways: false,
-        },
-      },
-    };
-    render(<AnalysisSummary result={result} />);
-
-    // The four ways asking for something else are left to the count to imply.
-    expect(notes()).toEqual(["8 ways need MNF Points ≤ 41."]);
   });
 
   it("says the total is always needed where every route asks a different one", () => {
@@ -586,6 +569,6 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(notes()).toEqual([]);
-    expect(mnfLines()).toEqual(["ANDMNF Points ≤ 45"]);
+    expect(mnfLines()).toEqual(["AND MNF Points ≤ 45"]);
   });
 });
