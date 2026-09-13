@@ -73,6 +73,9 @@
 .home__week-input {
   width: 100%;
   height: var(--rak-control-height);
+  // Held at that height against a column short of room for everything in it.
+  // The value reads as a readout, and a field squeezed to fit clips it.
+  flex-shrink: 0;
 }
 
 .home__season-input {
