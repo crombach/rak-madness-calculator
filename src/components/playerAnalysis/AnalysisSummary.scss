@@ -65,12 +65,15 @@
   }
 }
 
+// Every label this dialog names a block with, over a section or over a column.
+// `micro-label` leaves the ink to the caller, since a label reads against the
+// surface under it, and the surface under these is the dialog itself.
 .analysis__standing,
 .analysis__section-title {
   @include micro-label;
 
   margin: 0;
-  color: var(--rak-text-tertiary);
+  color: var(--rak-analysis-label);
   font-size: var(--rak-text-xs);
 }
 
@@ -197,7 +200,7 @@
     @include micro-label;
 
     padding-block-end: var(--rak-space-3);
-    color: var(--rak-text-tertiary);
+    color: var(--rak-analysis-label);
     font-family: var(--rak-font-body);
     font-size: var(--rak-text-xs);
   }
