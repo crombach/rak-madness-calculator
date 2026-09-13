@@ -1,5 +1,8 @@
 import {
   MondayNightOutlook,
+  MondayNightRange,
+  PickShare,
+  PickShares,
   PlayerAnalysis,
   RemainingPick,
   VictoryRoute,
@@ -26,9 +29,12 @@ import repeatedNames from "./repeatedNames";
 export const MAX_SEARCHED_GAMES = 16;
 
 /**
- * How many routes are carried before the rest are only counted. Twice what
- * `AnalysisRoutes` holds open, so the button under them opens one more set of
- * the same size rather than a tail of any length.
+ * The most routes a list can show whole. Past this the block names each game once
+ * against the routes needing it, since a list that has to hide routes is a sample,
+ * and a sample of three says less about the week than a share taken over all of them.
+ *
+ * Twice what `AnalysisRoutes` holds open, so the button under them opens one more set
+ * of the same size rather than a tail of any length.
  */
 const MAX_LISTED_ROUTES = 6;
 
@@ -431,8 +437,93 @@ function search(
 
 type RouteShape = Pick<
   Extract<PlayerAnalysis, { kind: "paths" }>,
-  "mustWin" | "pool" | "routes" | "hiddenRouteCount" | "mondayNight"
+  "mustWin" | "pool" | "routes" | "shares" | "mondayNight"
 >;
+
+/** One route as the games it asks past the must-win ones, and how it ends. */
+type Rest = { mask: number; outlook: MondayNightOutlook };
+
+/**
+ * Each game the routes ask for, with the routes asking it, most needed first.
+ *
+ * Counted over every route rather than over the ones a list would keep, which is the
+ * whole of what a share says that a truncated list cannot.
+ *
+ * Every mask has the must-win bits cleared already, so no game here is in all the
+ * routes or in none.
+ */
+function sharesIn(
+  rests: Array<Rest>,
+  contested: Array<RemainingGame>,
+  playerIndex: number,
+): Array<PickShare> {
+  return (
+    contested
+      .map((game, bit) => ({
+        label: game.label,
+        pick: game.cells[playerIndex].text,
+        routes: rests.reduce(
+          (count, rest) => count + ((rest.mask >>> bit) & 1),
+          0,
+        ),
+      }))
+      .filter((share) => share.routes > 0)
+      // Stable, so games as many routes need keep the order the week runs in.
+      .sort((a, b) => b.routes - a.routes)
+  );
+}
+
+/**
+ * The total the most routes ask for, with how many ask for it and how many ask at
+ * all.
+ *
+ * Undefined where no route asks for a total. A route that asks always names a bound,
+ * since `evaluate` only calls the total level once it has tightened one.
+ *
+ * Only the one total is reported. Every other total some route asks for is left out,
+ * since `routes` under the count of routes already says there are others, and a
+ * reader who cannot act on all of them can act on the one most of them take.
+ *
+ * Only `sameOutlook` routes reach here having agreed, and those are answered above,
+ * so `asking` at the count of routes with `routes` under it is the case where the
+ * tiebreaker decides every way through and the ways differ on how.
+ */
+function mostAskedPoints(
+  rests: Array<Rest>,
+  // Off where a set of games takes the week without a total. `rests` holds the
+  // fewest games that win and such a set asks more, so no route here reports it.
+  canWinWithout: boolean,
+): PickShares["mondayNight"] {
+  // Keyed by the range itself, so routes asking the same total land together.
+  const byRange = new Map<
+    string,
+    { points: MondayNightRange; routes: number }
+  >();
+  let asking = 0;
+  for (const rest of rests) {
+    const { outlook } = rest;
+    if (outlook.kind !== "range") continue;
+    asking += 1;
+    const key = `${outlook.min}:${outlook.max}`;
+    const held = byRange.get(key);
+    if (held == null) {
+      byRange.set(key, { points: outlook, routes: 1 });
+      continue;
+    }
+    held.routes += 1;
+  }
+  let most: { points: MondayNightRange; routes: number } | undefined;
+  // Held in the order the routes run in, so the fewest games win a tie.
+  for (const range of byRange.values()) {
+    if (most == null || range.routes > most.routes) most = range;
+  }
+  if (most == null) return undefined;
+  return {
+    points: most.points,
+    routes: most.routes,
+    isAlways: asking === rests.length && !canWinWithout,
+  };
+}
 
 /** The games every route needs, and the ways past them: one pool, or a list. */
 function reduceRoutes(
@@ -440,13 +531,16 @@ function reduceRoutes(
   contested: Array<RemainingGame>,
   playerIndex: number,
   isMondayNightSettled: boolean,
+  // Whether any set of games takes the week with the tiebreaker out of it. Read
+  // only by the shares, which say whether the tiebreaker decides the week.
+  canWinWithout = false,
 ): RouteShape {
   const mustWinMask = minimal.reduce(
     (shared, route) => shared & route.hits,
     minimal[0].hits,
   );
   const mustWin = picksIn(mustWinMask, contested, playerIndex);
-  const rests = minimal.map((route) => ({
+  const rests: Array<Rest> = minimal.map((route) => ({
     mask: route.hits & ~mustWinMask,
     outlook: outlookOf(route.verdict, isMondayNightSettled),
   }));
@@ -463,6 +557,13 @@ function reduceRoutes(
     sizes.size === 1 &&
     rests.length === combinations(bitCount(poolMask), choose);
 
+  // Whether the block below can take the total on its own. It draws an `AND`, which
+  // holds everything above it to what it names, so it is the answer only where every
+  // route asks the same total and no set of games takes the week without one. Where
+  // a reader can step around the total, a sentence under the table says which routes
+  // want it instead.
+  const isWholeStory = isOneOutlook && !canWinWithout;
+
   if (isPool) {
     return {
       mustWin,
@@ -470,13 +571,29 @@ function reduceRoutes(
         choose > 0
           ? { choose, games: picksIn(poolMask, contested, playerIndex) }
           : undefined,
-      hiddenRouteCount: 0,
       mondayNight: rests[0].outlook,
     };
   }
 
-  // Fewest games first, so the routes asking least of the player are the ones kept
-  // and the ones shown before the rest are unfolded.
+  // More routes than a list can show whole, so each game is named once against the
+  // routes needing it. A list of these would be a sample and a share is not.
+  if (rests.length > MAX_LISTED_ROUTES) {
+    return {
+      mustWin,
+      shares: {
+        routeCount: rests.length,
+        games: sharesIn(rests, contested, playerIndex),
+        // Held back where the block below says it once.
+        mondayNight: isWholeStory
+          ? undefined
+          : mostAskedPoints(rests, canWinWithout),
+      },
+      mondayNight: isWholeStory ? rests[0].outlook : undefined,
+    };
+  }
+
+  // Fewest games first, so the routes asking least of the player are the ones shown
+  // before the rest are unfolded.
   const routes: Array<VictoryRoute> = rests
     .map((rest) => ({
       games: picksIn(rest.mask, contested, playerIndex),
@@ -485,8 +602,7 @@ function reduceRoutes(
     .sort((a, b) => a.games.length - b.games.length);
   return {
     mustWin,
-    routes: routes.slice(0, MAX_LISTED_ROUTES),
-    hiddenRouteCount: Math.max(0, routes.length - MAX_LISTED_ROUTES),
+    routes,
     mondayNight: isOneOutlook ? rests[0].outlook : undefined,
   };
 }
@@ -500,7 +616,7 @@ function outrightOnly(shape: RouteShape): WaysThrough {
     mustWin: shape.mustWin,
     pool: shape.pool,
     routes: shape.routes,
-    hiddenRouteCount: shape.hiddenRouteCount,
+    shares: shape.shares,
   };
 }
 
@@ -681,6 +797,27 @@ export default function getPlayerAnalysis(
     outright.length > 0 &&
     bitCount(outright[0].hits) > bitCount(minimal[0].hits);
 
+  // `minimal` alone, which is every way to win that asks nothing it does not need.
+  // A way taking the week alone asks more games than one drawing level does, so it
+  // holds a smaller way inside it. Counted beside that smaller way it would be a
+  // second row for the same win, and a share of the rows would move with how many
+  // such rows a game happens to sit in.
+  const whole = reduceRoutes(
+    minimal,
+    contested,
+    playerIndex,
+    isMondayNightSettled,
+    takesMore,
+  );
+
+  // A share names a game and not a way, so it cannot say which ways leaned on the
+  // total. Split in two it would stand twice over the same games and leave a reader
+  // no way to tell the tables apart. The split is worth making only where the ways
+  // can be read one at a time, and a table is what stands in where they cannot.
+  if (whole.shares != null) {
+    return { kind: "paths", player: player.name, ...whole };
+  }
+
   return {
     kind: "paths",
     player: player.name,
@@ -688,14 +825,14 @@ export default function getPlayerAnalysis(
     // until one of them gives it up. The block above keeps it, and this drops it
     // rather than saying the same thing twice. Dropped before the shaping, since
     // the games every way left needs are read off the ways that are left.
-    ...reduceRoutes(
-      takesMore
-        ? minimal.filter((route) => route.verdict.kind !== "win")
-        : minimal,
-      contested,
-      playerIndex,
-      isMondayNightSettled,
-    ),
+    ...(takesMore
+      ? reduceRoutes(
+          minimal.filter((route) => route.verdict.kind !== "win"),
+          contested,
+          playerIndex,
+          isMondayNightSettled,
+        )
+      : whole),
     // Shaped like the ways above it, since it is the same question asked of a
     // higher bar. `mondayNight` is dropped: every route here wins without it.
     //

@@ -402,6 +402,12 @@
   --rak-text: #1a1a1a;
   --rak-text-secondary: #373737;
   --rak-text-tertiary: #5d5d5d;
+  // The label over a block in the player analysis, one step off the tertiary ink
+  // the rest of that dialog's quiet text takes. A label is scanned rather than
+  // read, so it carries further than the tertiary ink lets it at this size.
+  // 8.86:1 on the dialog's own ground and 7.99:1 on the fill a table header sits
+  // on, against 6.58:1 and 5.93:1 for the ink it replaces.
+  --rak-analysis-label: #4a4a4a;
   // Foreground on a solid fill. Not a background: `--rak-surface` is the page.
   // Dark here, since the fills it pairs with (the primary ramp above) are
   // light in this mode. Dark mode inverts this to white below, against that
@@ -726,6 +732,9 @@ html {
   --rak-text: #f6f6f6;
   --rak-text-secondary: #d1d1d1;
   --rak-text-tertiary: #a1a1a1;
+  // 8.22:1 on the dialog's own ground and 7.85:1 on a table header's fill, which
+  // is the lift the light value takes there.
+  --rak-analysis-label: #b5b5b5;
 
   --rak-disabled-bg: #262626;
   --rak-disabled-text: #939393;

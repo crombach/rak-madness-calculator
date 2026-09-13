@@ -1,12 +1,12 @@
-import { MondayNightOutlook } from "../../types/PlayerAnalysis";
+import {
+  MondayNightOutlook,
+  MondayNightRange,
+} from "../../types/PlayerAnalysis";
 import { Section } from "./analysisParts";
 import "./AnalysisSummary.scss";
 
-/** The one outlook a route of its own carries, which is a total still to come. */
-type MondayNightRange = Extract<MondayNightOutlook, { kind: "range" }>;
-
 /** The totals that win, as a comparison on the scoreboard column's own name. */
-function mondayNightPoints({ min, max }: MondayNightRange): string {
+export function mondayNightPoints({ min, max }: MondayNightRange): string {
   if (min != null && max != null) {
     return min === max ? `MNF Points = ${min}` : `${min} ≤ MNF Points ≤ ${max}`;
   }
@@ -14,14 +14,50 @@ function mondayNightPoints({ min, max }: MondayNightRange): string {
 }
 
 /**
- * The total a route of its own asks for, set out the way its picks are: what to do
- * in the ink they use, and the word holding it to them in their labels' ink.
+ * The totals that win, set the one way wherever they are named.
+ *
+ * They stand inside a route in one place and inside a sentence in another, and each
+ * of those sets its own text. So this sets every part of the face it wants rather
+ * than the parts the containers it has today leave alone.
  */
-export function RouteMondayNight({ outlook }: { outlook: MondayNightRange }) {
+export function MondayNightPoints({ outlook }: { outlook: MondayNightRange }) {
   return (
-    <p className="analysis__line analysis__route-mnf">
-      <span className="analysis__pick-label analysis__and">AND</span>
-      <span>{mondayNightPoints(outlook)}</span>
+    <span className="analysis__mnf-points">{mondayNightPoints(outlook)}</span>
+  );
+}
+
+/**
+ * The totals asked for on top of the games above, set out the way those picks are:
+ * what to do in the ink they use, and the word holding it to them in their labels'
+ * ink.
+ *
+ * `AND` says the games above are not enough on their own, so it is drawn wherever
+ * something stands above to hold the totals to. A block that is the whole answer
+ * has nothing above it and takes the line without the word.
+ */
+export function MondayNightLine({
+  outlook,
+  conjoined = true,
+  // On where the line stands under a route's picks, which it starts in under. Off
+  // where it is a block of its own, which starts where the titles beside it do.
+  inset = true,
+}: {
+  outlook: MondayNightRange;
+  conjoined?: boolean;
+  inset?: boolean;
+}) {
+  return (
+    <p
+      className={`analysis__line analysis__route-mnf${inset ? "" : " --flush"}`}
+    >
+      {conjoined && (
+        <>
+          {/* A real space, since the gap between these is flex and a reader
+              hearing the line is given none by it. */}
+          <span className="analysis__pick-label analysis__and">AND</span>{" "}
+        </>
+      )}
+      <MondayNightPoints outlook={outlook} />
     </p>
   );
 }
@@ -43,7 +79,14 @@ export function MondayNight({
       </Section>
     );
   }
-  // The totals are the whole of what this block asks for, so the title carries
-  // them and there is nothing left to set under it.
-  return <Section conjoined={conjoined} title={mondayNightPoints(outlook)} />;
+  // The totals are the whole of what this block asks for, so it is the one line a
+  // route of its own takes rather than a title over nothing. Every way above needs
+  // them, which is what the `AND` on that line says.
+  return (
+    <MondayNightLine
+      outlook={outlook}
+      conjoined={conjoined ?? false}
+      inset={false}
+    />
+  );
 }
