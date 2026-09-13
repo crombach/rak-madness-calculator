@@ -484,16 +484,16 @@
   font-weight: var(--rak-weight-semibold);
 }
 
-// Set with the records either side of it, which is the other thing the scoreline says
-// in passing. A down and distance runs to
-// `2nd & 7 at ATL 34`, and the middle column is only as wide as its widest line, so
+// Set with the clock in the same column, which is the other half of where the game is
+// up to. Smaller than the records either side of it, because a down and distance runs
+// to `2nd & 7 at ATL 34`, and the middle column is only as wide as its widest line, so
 // every character here is width taken off the names beside it. `useScorelineFit`
 // is what gives those names the abbreviation where this line leaves them too little.
 .game-status__down,
 .game-status__outcome {
   grid-row: 3;
   color: var(--rak-text-secondary);
-  font-size: var(--rak-text-sm);
+  font-size: var(--rak-text-xs);
 }
 
 .game-status__missing {
