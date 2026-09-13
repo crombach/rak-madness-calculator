@@ -478,33 +478,104 @@ describe("AnalysisSummary", () => {
     expect(shareRows()).toEqual(["P1KC -399%", "P2BUF -11%"]);
   });
 
-  it("says the loosest total under the table where the routes disagree", () => {
+  it("counts the ways asking for a total where only some of them do", () => {
     const result: PlayerAnalysis = {
       ...base,
       shares: {
         ...sharesOf(2),
-        mondayNight: { points: { kind: "range", max: 41 }, scope: "some" },
+        mondayNight: {
+          points: { kind: "range", max: 41 },
+          routes: 8,
+          isShared: true,
+        },
       },
     };
     render(<AnalysisSummary result={result} />);
 
     expect(
-      screen.getByText("Some paths also need MNF Points ≤ 41."),
+      screen.getByText("8 ways also need MNF Points ≤ 41."),
+    ).toBeInTheDocument();
+    // Not every way is held to it, so it is not a condition on the table.
+    expect(screen.queryByText("AND")).not.toBeInTheDocument();
+  });
+
+  it("counts one way asking for a total as one way", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      shares: {
+        ...sharesOf(2),
+        mondayNight: {
+          points: { kind: "range", max: 41 },
+          routes: 1,
+          isShared: true,
+        },
+      },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(
+      screen.getByText("1 way also needs MNF Points ≤ 41."),
     ).toBeInTheDocument();
   });
 
-  it("says every path needs it where every route asks for one", () => {
+  it("calls the total a bound where the routes asking disagree", () => {
     const result: PlayerAnalysis = {
       ...base,
       shares: {
         ...sharesOf(2),
-        mondayNight: { points: { kind: "range", min: 20 }, scope: "every" },
+        mondayNight: {
+          points: { kind: "range", max: 41 },
+          routes: 8,
+          isShared: false,
+        },
       },
     };
     render(<AnalysisSummary result={result} />);
 
     expect(
-      screen.getByText("Every path also needs MNF Points ≥ 20."),
+      screen.getByText(
+        "8 ways also need a total. None of them wins outside MNF Points ≤ 41.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("holds the table to the total where every route asks for one", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      shares: {
+        ...sharesOf(2),
+        mondayNight: {
+          points: { kind: "range", min: 20 },
+          routes: 20,
+          isShared: true,
+        },
+      },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    // The line a route of its own takes, since the whole table is held to it.
+    expect(screen.getByText("AND")).toBeInTheDocument();
+    expect(screen.getByText("MNF Points ≥ 20")).toBeInTheDocument();
+    expect(screen.queryByText(/Some ask for less/)).not.toBeInTheDocument();
+  });
+
+  it("says the bound is not a target where every route asks a different one", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      shares: {
+        ...sharesOf(2),
+        mondayNight: {
+          points: { kind: "range", min: 20 },
+          routes: 20,
+          isShared: false,
+        },
+      },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(screen.getByText("MNF Points ≥ 20")).toBeInTheDocument();
+    expect(
+      screen.getByText("No way wins outside this. Some ask for less."),
     ).toBeInTheDocument();
   });
 
@@ -513,7 +584,11 @@ describe("AnalysisSummary", () => {
       ...base,
       shares: {
         ...sharesOf(2),
-        mondayNight: { points: { kind: "range", max: 41 }, scope: "some" },
+        mondayNight: {
+          points: { kind: "range", max: 41 },
+          routes: 8,
+          isShared: true,
+        },
       },
       mondayNight: RAK_BY_45,
     };

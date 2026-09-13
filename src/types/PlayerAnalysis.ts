@@ -32,6 +32,11 @@ export type PickShare = RemainingPick & {
  * A list says which picks pair with which and a share cannot, so this stands in only
  * once the list can no longer show every route. Past that the list is a sample, and
  * a share taken over every route says more than three routes out of twenty-four do.
+ *
+ * Every route to a win is counted here, whether or not it leans on the tiebreaker.
+ * `outright` splits those apart for a reader who can take them one at a time. A
+ * share names a game and not a route, so split it would stand twice over the same
+ * games with no way to tell which table wanted which.
  */
 export type PickShares = {
   /** Every route there is, which is what each share is a share of. */
@@ -46,8 +51,18 @@ export type PickShares = {
    */
   mondayNight?: {
     points: MondayNightRange;
-    /** Whether every route asks for a total, or only some of them do. */
-    scope: "every" | "some";
+    /** Routes asking for a total, out of `PickShares.routeCount`. */
+    routes: number;
+    /**
+     * Whether the routes asking for a total agree on which, so `points` is what
+     * each of them takes.
+     *
+     * False where they differ and `points` is the widest of them. No route wins
+     * outside it, and a route can ask for less, so it is a bound rather than a
+     * target. Every route asking and every route agreeing cannot both hold, since
+     * the block below carries that case.
+     */
+    isShared: boolean;
   };
 };
 

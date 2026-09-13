@@ -44,6 +44,12 @@
   margin-block-start: calc(var(--rak-space-2) - var(--rak-space-4));
 }
 
+// Two lines running on are prose and not blocks, so they sit the distance the
+// standing sits from the line under it rather than the distance blocks sit apart.
+.analysis__body > .analysis__line + .analysis__line {
+  margin-block-start: calc(var(--rak-space-2) - var(--rak-space-4));
+}
+
 .analysis__section {
   @include stacked(var(--rak-space-2));
 }

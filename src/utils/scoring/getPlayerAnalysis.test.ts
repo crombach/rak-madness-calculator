@@ -514,11 +514,85 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
     expect(result.shares?.routeCount).toBe(8);
     expect(result.shares?.mondayNight).toEqual({
       points: { kind: "range", min: undefined, max: 32 },
-      scope: "some",
+      // Four of the eight ask for a total, and all four ask for this one.
+      routes: 4,
+      isShared: true,
     });
     // Left undefined, so the block below says nothing and the note above it is the
     // only place the total is named.
     expect(result.mondayNight).toBeUndefined();
+  });
+
+  it("holds the ways that win alone in the same table as the rest", () => {
+    // Bob is a point back over the first three and Dave three back over the last
+    // five, so drawing level asks fewer games than taking it alone. Read one at a
+    // time those are two blocks. A table names games and not ways, so two of them
+    // would stand over the same games with nothing to tell them apart.
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 6,
+        pro: picks(MINE),
+        tiebreakerPick: 45,
+      }),
+      player({
+        name: "Bob",
+        total: 5,
+        pro: picks(FIRST_THREE),
+        tiebreakerPick: 48,
+      }),
+      player({
+        name: "Dave",
+        total: 2,
+        pro: picks(LAST_FIVE),
+        tiebreakerPick: 50,
+      }),
+    ]);
+
+    const result = paths(getPlayerAnalysis(scores, "Alice"));
+    expect(result.outright).toBeUndefined();
+    expect(result.shares?.routeCount).toBe(30);
+    // Fifteen of the thirty lean on the total, and the rest take it alone.
+    expect(result.shares?.mondayNight).toEqual({
+      points: { kind: "range", min: undefined, max: 46 },
+      routes: 15,
+      isShared: true,
+    });
+  });
+
+  it("marks the total a bound where the routes asking disagree on it", () => {
+    // Bob guessed 45 and Dan guessed 35, so a route that only draws level with
+    // Bob wins under 32 and one that only draws level with Dan wins under 27.
+    // The widest of those is 32, which the tighter route does not win on.
+    const mine = MINE.slice(0, 7);
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 3,
+        pro: picks(mine),
+        tiebreakerPick: 20,
+      }),
+      player({
+        name: "Bob",
+        total: 3,
+        pro: picks(["DEN +3", "", ...mine.slice(2)]),
+        tiebreakerPick: 45,
+      }),
+      player({ name: "Carl", total: -1, pro: picks(LAST_FIVE.slice(0, 7)) }),
+      player({
+        name: "Dan",
+        total: 3,
+        pro: picks(["", "NYJ +1", ...mine.slice(2)]),
+        tiebreakerPick: 35,
+      }),
+    ]);
+
+    const result = paths(getPlayerAnalysis(scores, "Alice"));
+    expect(result.shares?.mondayNight).toEqual({
+      points: { kind: "range", min: undefined, max: 32 },
+      routes: 8,
+      isShared: false,
+    });
   });
 
   it("drops the total where the routes bound it in opposite directions", () => {
@@ -550,7 +624,8 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
     ]);
 
     const result = paths(getPlayerAnalysis(scores, "Alice"));
-    expect(result.shares?.routeCount).toBe(8);
+    // Eight that only draw level, and four more that win the week alone.
+    expect(result.shares?.routeCount).toBe(12);
     expect(result.shares?.mondayNight).toBeUndefined();
   });
 

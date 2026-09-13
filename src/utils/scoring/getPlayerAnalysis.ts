@@ -480,6 +480,13 @@ function sharesIn(
  * unbounded, so one route leaving it open leaves the loosest bound open too, and
  * routes bounded against each other can open both. Both ends open holds a total to
  * nothing, so that answers undefined as well.
+ *
+ * `isShared` says whether the widest is also what each asking route takes. Only
+ * `sameOutlook` routes reach here having agreed, and those are answered above, so
+ * every route asking means every route asking something different.
+ *
+ * `routes` is how many of them ask at all, which a reader needs to tell a total
+ * every way through wants from one only half of them do.
  */
 function loosestPoints(rests: Array<Rest>): PickShares["mondayNight"] {
   const ranges: Array<MondayNightRange> = [];
@@ -497,7 +504,8 @@ function loosestPoints(rests: Array<Rest>): PickShares["mondayNight"] {
   if (min == null && max == null) return undefined;
   return {
     points: { kind: "range", min, max },
-    scope: ranges.length === rests.length ? "every" : "some",
+    routes: ranges.length,
+    isShared: ranges.every((range) => range.min === min && range.max === max),
   };
 }
 
@@ -575,6 +583,18 @@ function reduceRoutes(
  * The same blocks without the tiebreaker line. Every route that takes the week alone
  * does so whatever Monday night's total is, so an outlook here would say nothing.
  */
+/**
+ * One entry per set of games, since a set winning the week alone wins it at all and
+ * can stand in both lists. Held in the order given, so the fewest games come first.
+ */
+function dedupe(routes: Array<Route>): Array<Route> {
+  const byHits = new Map<number, Route>();
+  for (const route of routes) {
+    if (!byHits.has(route.hits)) byHits.set(route.hits, route);
+  }
+  return [...byHits.values()];
+}
+
 function outrightOnly(shape: RouteShape): WaysThrough {
   return {
     mustWin: shape.mustWin,
@@ -761,6 +781,25 @@ export default function getPlayerAnalysis(
     outright.length > 0 &&
     bitCount(outright[0].hits) > bitCount(minimal[0].hits);
 
+  // Every way to win in one set, which is what a share is a share of. A way that
+  // takes the week alone asks more games than one that only draws level, so the
+  // two lists hold different sets and neither covers the other.
+  const everyWay = takesMore ? dedupe([...minimal, ...outright]) : minimal;
+  const whole = reduceRoutes(
+    everyWay,
+    contested,
+    playerIndex,
+    isMondayNightSettled,
+  );
+
+  // A share names a game and not a way, so it cannot say which ways leaned on the
+  // total. Split in two it would stand twice over the same games and leave a reader
+  // no way to tell the tables apart. The split is worth making only where the ways
+  // can be read one at a time, and a table is what stands in where they cannot.
+  if (whole.shares != null) {
+    return { kind: "paths", player: player.name, ...whole };
+  }
+
   return {
     kind: "paths",
     player: player.name,
@@ -768,14 +807,14 @@ export default function getPlayerAnalysis(
     // until one of them gives it up. The block above keeps it, and this drops it
     // rather than saying the same thing twice. Dropped before the shaping, since
     // the games every way left needs are read off the ways that are left.
-    ...reduceRoutes(
-      takesMore
-        ? minimal.filter((route) => route.verdict.kind !== "win")
-        : minimal,
-      contested,
-      playerIndex,
-      isMondayNightSettled,
-    ),
+    ...(takesMore
+      ? reduceRoutes(
+          minimal.filter((route) => route.verdict.kind !== "win"),
+          contested,
+          playerIndex,
+          isMondayNightSettled,
+        )
+      : whole),
     // Shaped like the ways above it, since it is the same question asked of a
     // higher bar. `mondayNight` is dropped: every route here wins without it.
     //
