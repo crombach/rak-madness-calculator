@@ -22,7 +22,8 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 - `remainingGames`: the open games
 - `unscoreableGames`: games nobody scores
 - `applyKnockouts`: who can still win, why not. A blank pick means a forgetful
-  player or a name added to cover a game, so it cannot win
+  player or a name added to cover a game, so it cannot win. A row under a
+  shared name knocks nobody out
 - `repeatedNames`: the names more than one row was entered under
 - `scoreChanges`: what a refresh changed
 - `getPlayerAnalysis`: what a player must do, plus `getSettledAnalysis`,
