@@ -58,7 +58,7 @@ export default function AnalysisRoutes({
           ariaExpanded={isExpanded}
           onClick={() => setIsExpanded(!isExpanded)}
         >
-          {isExpanded ? "Show fewer" : `Show ${plural(folded, "more path")}`}
+          {isExpanded ? "Show fewer" : "Show more"}
         </Button>
       )}
     </Section>

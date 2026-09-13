@@ -391,7 +391,7 @@ describe("AnalysisSummary", () => {
 
     expect(document.querySelectorAll(".analysis__route")).toHaveLength(3);
     expect(
-      screen.getByRole("button", { name: "Show 3 more paths" }),
+      screen.getByRole("button", { name: "Show more" }),
     ).toBeInTheDocument();
   });
 
