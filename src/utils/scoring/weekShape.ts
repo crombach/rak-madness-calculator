@@ -1,6 +1,6 @@
 import { PlayerScore } from "../../types/RakMadnessScores";
 import gameLabels, { LEAGUES } from "./gameColumns";
-import { MISSING_PICK } from "./getPickResults";
+import { fillStatus } from "./getPickResults";
 import parsePick from "./parsePick";
 import { RemainingGame } from "./remainingGames";
 
@@ -32,8 +32,8 @@ const shapes = new WeakMap<Array<PlayerScore>, WeekShape>();
  * A column is read across every row rather than off one. A row that left a game
  * blank scores it unscoreable rather than incomplete, so reading one row alone
  * would drop a game the leader happened to skip. A blank is the player's own
- * doing and says nothing about the game, which is why `MISSING_PICK` is the one
- * unscoreable header that leaves no hole in the week.
+ * doing and says nothing about the game, so `fillStatus` is what decides a hole
+ * here: it is the one unscoreable cell that leaves none.
  */
 export default function weekShape(players: Array<PlayerScore>): WeekShape {
   const held = shapes.get(players);
@@ -58,10 +58,7 @@ function readWeekShape(players: Array<PlayerScore>): WeekShape {
         const cell = player[league][index];
         if (cell.status === "incomplete") {
           isOpen = true;
-        } else if (
-          cell.status === "unscoreable" &&
-          cell.explanation.header !== MISSING_PICK
-        ) {
+        } else if (fillStatus(cell) === "unscoreable") {
           isHole = true;
         }
         if (isOpen && isHole) break;

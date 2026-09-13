@@ -1,6 +1,6 @@
 import {
+  PickResult,
   PlayerScore,
-  Status,
   RakMadnessScores,
 } from "../types/RakMadnessScores";
 import {
@@ -9,6 +9,7 @@ import {
   PlayerStanding,
 } from "./pickStatusFill";
 import rangeWithPrefix from "./rangeWithPrefix";
+import { fillStatus } from "./scoring/getPickResults";
 import repeatedNames from "./scoring/repeatedNames";
 
 /** Keep in sync with the header `functions/api/picks/[season]/[week].ts` responds with. */
@@ -66,12 +67,12 @@ function headerCell(value: string) {
   };
 }
 
-function pickCell(pick: string, isCorrect: Status) {
-  const cellColor = PICK_STATUS_FILL[isCorrect];
+function pickCell(result: PickResult) {
+  const cellColor = PICK_STATUS_FILL[fillStatus(result)];
 
   return {
     t: CellType.Text,
-    v: pick ?? "N/A",
+    v: result.pick ?? "N/A",
     s: {
       alignment: {
         horizontal: "center",
@@ -237,9 +238,9 @@ export default async function buildSpreadsheetBuffer(
       return [
         normalCell({ value: index + 1, alignment: "left", isBold: true }),
         playerNameCell(player, standingOf(player, repeated, showStatus)),
-        ...player.college.map((result) => pickCell(result.pick, result.status)),
+        ...player.college.map(pickCell),
         normalCell({ value: player.score.college, alignment: "center" }),
-        ...player.pro.map((result) => pickCell(result.pick, result.status)),
+        ...player.pro.map(pickCell),
         normalCell({ value: player.score.pro, alignment: "center" }),
         normalCell({
           value: player.score.total,

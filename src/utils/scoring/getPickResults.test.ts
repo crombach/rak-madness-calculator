@@ -1,7 +1,13 @@
 import { GameStatus, HomeAway } from "../../types/ESPN";
 import { LeagueResult } from "../../types/LeagueResult";
 import { finalGame } from "./leagueResultFixtures";
-import { getPickResults, getStatus } from "./getPickResults";
+import { Status } from "../../types/RakMadnessScores";
+import {
+  MISSING_PICK,
+  fillStatus,
+  getPickResults,
+  getStatus,
+} from "./getPickResults";
 import { indexResults } from "./resultsIndex";
 
 function byTeam(results: Array<LeagueResult>): Map<string, LeagueResult> {
@@ -249,5 +255,27 @@ describe("getPickResults, unscoreable games", () => {
 
   it("leaves the other games on the row alone", () => {
     expect(scoreFirstOfTwo("BUF +7")[1].pointValue).toBe(1);
+  });
+});
+
+describe("fillStatus", () => {
+  const result = (header: string, status: Status = "unscoreable") => ({
+    pick: "OSU -3",
+    status,
+    explanation: { header, message: "why" },
+  });
+
+  it("draws a blank cell as an unplayed one", () => {
+    expect(fillStatus(result(MISSING_PICK))).toBe("incomplete");
+  });
+
+  it("leaves every other unscoreable cell its warning", () => {
+    expect(fillStatus(result("Missing Game"))).toBe("unscoreable");
+  });
+
+  it("passes a scored cell through", () => {
+    expect(fillStatus(result("Final Score", "yes"))).toBe("yes");
+    expect(fillStatus(result("Final Score", "no"))).toBe("no");
+    expect(fillStatus(result("Kickoff", "incomplete"))).toBe("incomplete");
   });
 });

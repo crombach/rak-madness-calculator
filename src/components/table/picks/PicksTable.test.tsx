@@ -10,6 +10,7 @@ import {
 import { League } from "../../../types/League";
 import { LeagueResult } from "../../../types/LeagueResult";
 import { WeekGame } from "../../../types/WeekGame";
+import { MISSING_PICK } from "../../../utils/scoring/getPickResults";
 import { useScoreChanges } from "../../../context/AppDataContext";
 import { GameStatusContextProvider } from "../../../context/GameStatusContext";
 import { PlayerAnalysisContextProvider } from "../../../context/PlayerAnalysisContext";
@@ -191,6 +192,45 @@ describe("PicksTable, rows", () => {
     expect(screen.getByText("OSU").closest("td")).toHaveClass("--no");
     expect(screen.getByText("KC").closest("td")).toHaveClass("--incomplete");
     expect(screen.getByText("MIA").closest("td")).toHaveClass("--unscoreable");
+  });
+
+  it("leaves a blank cell the plain fill, not the unscoreable one", () => {
+    // A blank scores unscoreable, and the warning fill is about the week rather
+    // than the row. There is nothing here for the reader to act on.
+    const blank: RakMadnessScores = {
+      tiebreaker: 47,
+      scores: [
+        player({
+          name: "Alice",
+          college: [
+            pick("", "unscoreable", { header: MISSING_PICK, message: "none" }),
+          ],
+          pro: [pick("MIA", "unscoreable")],
+        }),
+      ],
+    };
+    render(<PicksTable scores={blank} />);
+    const cells = screen.getAllByText("N/A");
+    expect(cells[0].closest("td")).toHaveClass("--incomplete");
+    expect(screen.getByText("MIA").closest("td")).toHaveClass("--unscoreable");
+  });
+
+  it("says nothing to a screen reader about a blank cell", () => {
+    const blank: RakMadnessScores = {
+      tiebreaker: 47,
+      scores: [
+        player({
+          name: "Alice",
+          college: [
+            pick("", "unscoreable", { header: MISSING_PICK, message: "none" }),
+          ],
+        }),
+      ],
+    };
+    render(<PicksTable scores={blank} />);
+    expect(
+      screen.getAllByText("N/A")[0].closest("button"),
+    ).not.toHaveTextContent("Unscoreable");
   });
 
   it("announces a pick's status for a screen reader, fill colors aside", () => {

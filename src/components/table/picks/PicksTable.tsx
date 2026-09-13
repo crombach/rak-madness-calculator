@@ -14,6 +14,7 @@ import {
   LEAGUE_PREFIX,
   pickChangeKey,
 } from "../../../utils/scoring/gameColumns";
+import { fillStatus } from "../../../utils/scoring/getPickResults";
 import PlayerName from "../playerName/PlayerName";
 import TableShell, {
   PICK_COL_CLASS,
@@ -27,8 +28,9 @@ const FIXED_COLUMN_COUNT = 5;
 
 /**
  * A pick's status, in words, for the fill color a sighted reader gets instead.
- * `incomplete` carries no entry. It draws no color of its own either, so there is
- * nothing sighted that a screen reader needs to catch up on.
+ * Keyed by `fillStatus` rather than the scored status, so a cell says what it was
+ * drawn as. `incomplete` carries no entry. It draws no color of its own either, so
+ * there is nothing sighted that a screen reader needs to catch up on.
  */
 const PICK_STATUS_LABEL: Partial<Record<Status, string>> = {
   yes: "Right",
@@ -82,7 +84,7 @@ function PickCell({
   previousStatus?: Status;
   onClick: (gameLabel: string) => void;
 }) {
-  const statusLabel = PICK_STATUS_LABEL[result.status];
+  const statusLabel = PICK_STATUS_LABEL[fillStatus(result)];
   return (
     <button
       type="button"
@@ -124,7 +126,7 @@ function PickCells({
       {picks.map((result, index) => (
         <td
           key={pickChangeKey(playerId, labels[index])}
-          className={`table__pick --${result.status}`}
+          className={`table__pick --${fillStatus(result)}`}
         >
           <PickCell
             result={result}
