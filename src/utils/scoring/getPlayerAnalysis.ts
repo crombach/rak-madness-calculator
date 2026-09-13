@@ -587,12 +587,14 @@ function reduceRoutes(
 }
 
 /**
- * The same blocks without the tiebreaker line. Every route that takes the week alone
- * does so whatever Monday night's total is, so an outlook here would say nothing.
- */
-/**
  * One entry per set of games, since a set winning the week alone wins it at all and
- * can stand in both lists. Held in the order given, so the fewest games come first.
+ * can stand in both lists.
+ *
+ * First occurrence wins, so a set in both keeps the place the first list gave it.
+ * The lists run fewest games first one after the other rather than as one run, so
+ * the order here is not the sizes in order. `mostAskedPoints` breaks a tie on this
+ * order and still sees the sizes in order, since every route asking for a total is
+ * level on points and so comes from the first list.
  */
 function dedupe(routes: Array<Route>): Array<Route> {
   const byHits = new Map<number, Route>();
@@ -602,6 +604,10 @@ function dedupe(routes: Array<Route>): Array<Route> {
   return [...byHits.values()];
 }
 
+/**
+ * The same blocks without the tiebreaker line. Every route that takes the week alone
+ * does so whatever Monday night's total is, so an outlook here would say nothing.
+ */
 function outrightOnly(shape: RouteShape): WaysThrough {
   return {
     mustWin: shape.mustWin,

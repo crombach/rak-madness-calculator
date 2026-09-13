@@ -274,16 +274,13 @@
 }
 
 // The totals that win, wherever they are named: in a route, in a block of their
-// own, or inside a sentence under the shares. Every part of the face is set here
-// rather than the parts a container leaves alone, since one of those containers is
-// a `micro-label` title that would otherwise put them in caps.
+// own, or inside a sentence under the shares. The face is set here rather than by
+// each of those, so a total reads the same in all three.
 .analysis__mnf-points {
   color: var(--rak-text);
   font-family: var(--rak-font-mono);
   font-size: var(--rak-text-sm);
   font-weight: var(--rak-weight-semibold);
-  letter-spacing: normal;
-  text-transform: none;
 }
 
 .analysis__message {

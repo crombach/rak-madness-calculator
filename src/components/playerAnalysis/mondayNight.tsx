@@ -16,9 +16,9 @@ export function mondayNightPoints({ min, max }: MondayNightRange): string {
 /**
  * The totals that win, set the one way wherever they are named.
  *
- * They stand inside a section title in one place, inside a route in another and
- * inside a sentence in a third, and each of those sets its own text. So this sets
- * every part of the face it wants rather than the parts the others leave alone.
+ * They stand inside a route in one place and inside a sentence in another, and each
+ * of those sets its own text. So this sets every part of the face it wants rather
+ * than the parts the containers it has today leave alone.
  */
 export function MondayNightPoints({ outlook }: { outlook: MondayNightRange }) {
   return (
