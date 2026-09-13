@@ -57,7 +57,8 @@ instead of recording the whole run.
   against one build instead of rebuilding per candidate.
 - `scenarios/analysis-limit.js` — opens Player Analysis on a mocked week built to
   land on one shape of answer. `$ANALYSIS_PHASE` picks the shape: `headline`,
-  `paths`, `chain`, `routes`, `help`, `clinched`, `clinchedTie`, `knockedOut`.
+  `paths`, `chain`, `routes`, `hoisted`, `help`, `clinched`, `clinchedTie`,
+  `knockedOut`.
   `$ANALYSIS_THEME` is `light` or `dark`.
 - `scenarios/live-dot.js` — the picks table with two of its games being played,
   the dot beside each heading's label, in both themes. Needs
