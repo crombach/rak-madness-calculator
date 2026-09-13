@@ -297,7 +297,7 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(
-      screen.getByText("Alice can still win the week. What it takes:"),
+      screen.getByText("Alice can win the week. What it takes:"),
     ).toBeInTheDocument();
   });
 

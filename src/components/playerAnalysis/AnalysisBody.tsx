@@ -88,7 +88,7 @@ function Lead({ result }: { result: PathsResult }) {
     <p className="analysis__line">
       {takesItOutright
         ? "Takes the week outright, whatever the MNF Points come to."
-        : `${result.player} can still win the week.`}
+        : `${result.player} can win the week.`}
       {hasGames(result) && " What it takes:"}
     </p>
   );
