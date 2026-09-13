@@ -245,7 +245,7 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    const line = screen.getByText("To win the week outright:");
+    const line = screen.getByText("To win outright:");
     // Its own pool, asking one more game than winning the week at all does.
     expect(blockHeading("Any 3 of")).toBeInTheDocument();
     expect(screen.getByText("SF -6")).toBeInTheDocument();
@@ -302,9 +302,8 @@ describe("AnalysisSummary", () => {
     expect(musts).toHaveLength(3);
     expect(picksUnder(musts[0])).toEqual(["P1KC -3"]);
     expect(
-      musts[0].compareDocumentPosition(
-        screen.getByText("To win the week outright:"),
-      ) & Node.DOCUMENT_POSITION_FOLLOWING,
+      musts[0].compareDocumentPosition(screen.getByText("To win outright:")) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     // Each block keeps only what it asks for past that game.
     expect(picksUnder(musts[1])).toEqual(["P2SF -6"]);
