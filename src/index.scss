@@ -224,14 +224,14 @@
   // dark end of what does on white: 4.6:1 there, and 3.2:1 on the glass, which the
   // score clears as large text at every size it is set.
   --rak-success-100: #e3fbe3;
-  --rak-success-300: #a3faa0;
+  --rak-success-300: #89ff85;
   --rak-success-400: #1f871f;
   --rak-success-500: #1f7a1f;
   --rak-success-600: #136c13;
   --rak-success-700: #0a470a;
 
   --rak-danger-100: #fce4e4;
-  --rak-danger-300: #faa0a0;
+  --rak-danger-300: #ff8585;
   --rak-danger-400: #d13c3c;
   --rak-danger-500: #c41c1c;
   --rak-danger-600: #a51818;
@@ -737,14 +737,15 @@ html {
   // does not glare against this one. `--rak-text-on-pale` inverts to light ink
   // alongside them, below.
   //
-  // The three a player's own cell can wear carry more chroma than the two a pick
-  // wears. A name cell is read for which of three fills it is, where a pick cell is
-  // read for green or red, and at this end of the ramp a hue with little chroma
-  // left reads as brown whatever it started as. The gold is lifted off the other
-  // two in lightness as well, since twenty degrees of hue off the orange leaves the
-  // pair a step no reader can call.
-  --rak-success-300: #1b5719;
-  --rak-danger-300: #571919;
+  // All five hold one saturation, since a row is read across: a name cell and the
+  // picks beside it are one line of color, and a fill at another saturation reads
+  // as a different kind of thing rather than as a different answer. At this end of
+  // the ramp a hue with little chroma left reads as brown whatever it started as,
+  // so the five sit well above where a light-mode pastel darkens to. The gold is
+  // lifted off the rest in lightness, since twenty degrees of hue off the orange
+  // leaves the pair a step no reader can call.
+  --rak-success-300: #126b0f;
+  --rak-danger-300: #6b0f0f;
   --rak-knocked-out-300: #6b3a0f;
   --rak-in-contention-300: #0f496b;
   --rak-cell-unscoreable: #866f13;
