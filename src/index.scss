@@ -744,12 +744,14 @@ html {
   // the ramp a hue with little chroma left reads as brown whatever it started as,
   // so the five sit well above where a light-mode pastel darkens to. The gold is
   // lifted off the rest in lightness, since twenty degrees of hue off the orange
-  // leaves the pair a step no reader can call.
-  --rak-success-300: #126b0f;
-  --rak-danger-300: #6b0f0f;
-  --rak-knocked-out-300: #6b3a0f;
-  --rak-in-contention-300: #0f496b;
-  --rak-cell-unscoreable: #866f13;
+  // leaves the pair a step no reader can call. That lift makes the gold the
+  // lightest of the five and so the tightest pair with the ink, at 5.86:1. Raise
+  // the five and the gold is what runs out of room first.
+  --rak-success-300: #12570f;
+  --rak-danger-300: #570f0f;
+  --rak-knocked-out-300: #57310f;
+  --rak-in-contention-300: #0f3d57;
+  --rak-cell-unscoreable: #715e14;
   --rak-text-on-pale: var(--rak-text);
 
   // The game dialog's marks, off the same darkened hues as the cells above:
