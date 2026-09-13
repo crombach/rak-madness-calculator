@@ -1,6 +1,7 @@
 import { PlayerScore } from "../../types/RakMadnessScores";
 import plural from "../plural";
 import { pickDifference, RemainingGame } from "./remainingGames";
+import repeatedNames from "./repeatedNames";
 import weekShape from "./weekShape";
 
 function remainingSuffix(
@@ -73,6 +74,8 @@ export default function applyKnockouts(
   const { remaining: games, isEveryGameSettled: everyGameSettled } =
     weekShape(sortedScores);
   const isCollegeDone = games.every((game) => game.league !== "college");
+  // Read once for the whole field, since every row is measured against every rival.
+  const repeated = repeatedNames(sortedScores);
 
   return sortedScores.map((activeScore, activeIndex) => {
     if (activeScore.status.hasNoPicks) {
@@ -99,8 +102,14 @@ export default function applyKnockouts(
         const rivalScore = sortedScores[rivalIndex];
 
         // No use comparing a player to themself, or to one who cannot win the week
-        // and so can take it off nobody.
-        if (rivalIndex === activeIndex || rivalScore.status.hasBlankPick)
+        // and so can take it off nobody. A name two rows share is the third case:
+        // the workbook is wrong about who these rows are, and a row nobody can
+        // identify does not get to end another player's week over it.
+        if (
+          rivalIndex === activeIndex ||
+          rivalScore.status.hasBlankPick ||
+          repeated.has(rivalScore.name)
+        )
           continue;
 
         const {

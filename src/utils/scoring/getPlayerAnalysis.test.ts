@@ -133,6 +133,21 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
     });
   });
 
+  it("counts no threat under a name two rows share", () => {
+    // The workbook is wrong about who those two rows are, so neither takes the
+    // week off Alice. She is left with nobody to measure against.
+    const scores = week([
+      player({ name: "Alice", total: 5, pro: [pick("KC -3")] }),
+      player({ name: "Rip Wheeler", total: 4, pro: [pick("DEN +3")] }),
+      player({ name: "Rip Wheeler", total: 4, pro: [pick("DEN +3")] }),
+    ]);
+
+    expect(getPlayerAnalysis(scores, "Alice")).toEqual({
+      kind: "clinched",
+      player: "Alice",
+    });
+  });
+
   it("clinches once every rival left is knocked out", () => {
     const scores = week([
       player({ name: "Alice", total: 5, pro: [pick("KC -3")] }),

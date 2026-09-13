@@ -64,6 +64,32 @@ describe("applyKnockouts", () => {
     expect(result[0].status.explanation).toBe("Winner!");
   });
 
+  it("lets no row knock anyone out under a name two rows share", () => {
+    // The workbook is wrong about who these two rows are. Neither gets to end
+    // another player's week over a name nobody can resolve.
+    const result = applyKnockouts([
+      player({ name: "Rip Wheeler", total: 5 }),
+      player({ name: "Rip Wheeler", total: 5 }),
+      player({ name: "Bob", total: 0 }),
+    ]);
+
+    expect(result[2].status.isKnockedOut).toBe(false);
+  });
+
+  it("still knocks out a row under a shared name", () => {
+    // The rule is about what a row can do to others, not what the field can do
+    // to it. Alice is one player and can be identified, so she still counts.
+    const result = applyKnockouts([
+      player({ name: "Alice", total: 5 }),
+      player({ name: "Rip Wheeler", total: 0 }),
+      player({ name: "Rip Wheeler", total: 0 }),
+    ]);
+
+    expect(result[1].status.isKnockedOut).toBe(true);
+    expect(result[1].status.explanation).toContain("by Alice");
+    expect(result[2].status.isKnockedOut).toBe(true);
+  });
+
   it("counts a game the rival left blank as ground still to make up", () => {
     // The leader left C1 blank, which scores "unscoreable", not "incomplete". Read from
     // the leader alone, C1 would look played and Bob would be knocked out.
