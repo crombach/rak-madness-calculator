@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { PlayerScore, RakMadnessScores } from "../../../types/RakMadnessScores";
 import PlayerName from "../playerName/PlayerName";
+import repeatedNames from "../../../utils/scoring/repeatedNames";
 import TableShell, { PLAYER_COL_CLASS, RankCell } from "../TableShell";
 
 /** Rank, player, MNF pick, MNF distance, college, pro, pro ATS, and total. */
@@ -10,6 +11,10 @@ function ScoresTable({ scores }: { scores?: RakMadnessScores | null }) {
   if (scores == null) {
     return null;
   }
+
+  // Marked wherever a name shows, since a name two rows share reads as one player
+  // and the analysis behind it cannot answer for either.
+  const repeated = repeatedNames(scores.scores);
 
   return (
     <TableShell
@@ -31,9 +36,12 @@ function ScoresTable({ scores }: { scores?: RakMadnessScores | null }) {
       }
     >
       {scores.scores.map((player: PlayerScore, index: number) => (
-        <tr key={player.name}>
+        <tr key={player.id}>
           <RankCell rank={index + 1} />
-          <PlayerName player={player} />
+          <PlayerName
+            player={player}
+            hasNameConflict={repeated.has(player.name)}
+          />
           <td>{player.tiebreaker.pick ?? "N/A"}</td>
           <td>{player.tiebreaker.distance ?? "N/A"}</td>
           <td>{player.score.college}</td>

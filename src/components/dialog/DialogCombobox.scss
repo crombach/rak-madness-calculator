@@ -11,6 +11,10 @@
 
   // The box the trigger below is stretched over.
   position: relative;
+  // Held at its own height against a body taller than the popup. Only the body
+  // scrolls, so it is the one that gives way, and a field squeezed to fit clips
+  // the name in it.
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: var(--rak-space-2);

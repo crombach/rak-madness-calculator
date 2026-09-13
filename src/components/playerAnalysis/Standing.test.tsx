@@ -17,6 +17,7 @@ describe("Standing", () => {
       explanation: { header: "", message: "" },
     });
     return playerScore({
+      id: name,
       name,
       score: { total, college: 0, pro: total, proAgainstTheSpread: 0 },
       tiebreaker: {},

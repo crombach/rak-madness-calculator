@@ -95,7 +95,7 @@ function GameMark({
       aria-label={label}
     >
       <span className="game-status__mark-icon">{icon}</span>
-      {word}
+      <span className="game-status__mark-word">{word}</span>
     </span>
   );
 }
@@ -165,7 +165,7 @@ export default function GameStatusDialog({
       title="Game Status"
       // Every fetch, a poll of the game already on screen included, so a live game
       // being asked about again is said the way a first fetch is.
-      busy={isGameLoading && { label: "Fetching the game" }}
+      busy={isGameLoading && { label: "Fetching the game", tone: "live" }}
       search={
         <DialogCombobox<WeekGame>
           ariaLabel="Game"

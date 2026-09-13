@@ -9,6 +9,7 @@ import {
   Status,
 } from "../../../types/RakMadnessScores";
 import rangeWithPrefix from "../../../utils/rangeWithPrefix";
+import repeatedNames from "../../../utils/scoring/repeatedNames";
 import {
   LEAGUE_PREFIX,
   pickChangeKey,
@@ -105,13 +106,14 @@ function PickCell({
 
 /** One league's row of pick cells, keyed and labeled by the same column list the header used. */
 function PickCells({
-  playerName,
+  playerId,
   picks,
   labels,
   pickChanges,
   onClick,
 }: {
-  playerName: string;
+  /** The row these cells belong to, which two players can share a name in. */
+  playerId: string;
   picks: Array<PickResult>;
   labels: Array<string>;
   pickChanges: Map<string, Status>;
@@ -121,14 +123,14 @@ function PickCells({
     <>
       {picks.map((result, index) => (
         <td
-          key={pickChangeKey(playerName, labels[index])}
+          key={pickChangeKey(playerId, labels[index])}
           className={`table__pick --${result.status}`}
         >
           <PickCell
             result={result}
             gameLabel={labels[index]}
             previousStatus={pickChanges.get(
-              pickChangeKey(playerName, labels[index]),
+              pickChangeKey(playerId, labels[index]),
             )}
             onClick={onClick}
           />
@@ -146,6 +148,9 @@ function PicksTable({ scores }: { scores?: RakMadnessScores | null }) {
     return null;
   }
 
+  // Marked wherever a name shows, since a name two rows share reads as one player
+  // and the analysis behind it cannot answer for either.
+  const repeated = repeatedNames(scores.scores);
   const firstPlayer = scores.scores[0];
   const collegeCount = firstPlayer.college.length;
   const proCount = firstPlayer.pro.length;
@@ -192,11 +197,14 @@ function PicksTable({ scores }: { scores?: RakMadnessScores | null }) {
     >
       {scores.scores.map((player: PlayerScore, index: number) => {
         return (
-          <tr key={player.name}>
+          <tr key={player.id}>
             <RankCell rank={index + 1} />
-            <PlayerName player={player} />
+            <PlayerName
+              player={player}
+              hasNameConflict={repeated.has(player.name)}
+            />
             <PickCells
-              playerName={player.name}
+              playerId={player.id}
               picks={player.college}
               labels={collegeLabels}
               pickChanges={pickChanges}
@@ -204,7 +212,7 @@ function PicksTable({ scores }: { scores?: RakMadnessScores | null }) {
             />
             <td>{player.score.college}</td>
             <PickCells
-              playerName={player.name}
+              playerId={player.id}
               picks={player.pro}
               labels={proLabels}
               pickChanges={pickChanges}

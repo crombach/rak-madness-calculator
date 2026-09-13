@@ -23,6 +23,7 @@ function player(
   explanation?: string,
 ): PlayerScore {
   return playerScore({
+    id: name,
     name,
     score: { total, college: 0, pro: total, proAgainstTheSpread: 0 },
     tiebreaker: {},
@@ -51,6 +52,27 @@ const scores: RakMadnessScores = {
 describe("playerOptions", () => {
   it("has nobody to offer before a week is scored", () => {
     expect(playerOptions(undefined)).toEqual([]);
+  });
+
+  it("flags every entry under a name more than one row carries", () => {
+    const shared: RakMadnessScores = {
+      scores: [
+        player("Rip", 3, "KC -3"),
+        player("Beth", 3, "DEN +3"),
+        { ...player("Rip", 1, "DEN +3"), id: "2" },
+      ],
+    };
+
+    expect(
+      playerOptions(shared).map(({ name, hasNameConflict }) => [
+        name,
+        hasNameConflict,
+      ]),
+    ).toEqual([
+      ["Rip", true],
+      ["Beth", false],
+      ["Rip", true],
+    ]);
   });
 });
 

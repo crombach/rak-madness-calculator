@@ -2,6 +2,7 @@ import { PlayerAnalysis } from "../../types/PlayerAnalysis";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import weekShape, { WeekShape } from "../../utils/scoring/weekShape";
 import AnalysisBody from "./AnalysisBody";
+import { Message } from "./analysisParts";
 import Standing from "./Standing";
 import "./AnalysisSummary.scss";
 
@@ -18,6 +19,7 @@ export default function AnalysisSummary({
   result,
   shape,
   weekNumber,
+  hasNameConflict,
 }: {
   scores?: RakMadnessScores;
   /** The player picked, whose standing heads the answer. */
@@ -31,10 +33,27 @@ export default function AnalysisSummary({
   shape?: WeekShape;
   /** Which week this is, named by the one line that congratulates a winner. */
   weekNumber?: number;
+  /** Whether more than one row of the week was entered under the name picked. */
+  hasNameConflict?: boolean;
 }) {
   // Nothing under the search until a name is picked, which the placeholder in it
   // already asks for.
   if (playerName == null && result == null) return null;
+
+  // A standing and a route are both read out of the week by name, so neither can
+  // be given for a name two rows answer to. The reader is told which name, since
+  // fixing it means finding those rows in the workbook.
+  if (hasNameConflict) {
+    return (
+      <div className="analysis">
+        <Message
+          lines={[
+            `There is more than one entry for player name ${playerName}.`,
+          ]}
+        />
+      </div>
+    );
+  }
 
   const week = shape ?? weekShape(scores?.scores ?? []);
   return (

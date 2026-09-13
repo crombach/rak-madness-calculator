@@ -18,6 +18,15 @@ const HALFTIME_PERIOD = 2;
 const HALFTIME_DETAIL = "Halftime";
 
 /**
+ * What a game that has ended is, said in the whole word.
+ *
+ * `Pregame` and `Halftime` beside it are whole words too, so the three stages a reader
+ * sees most read alike.
+ */
+const FINAL_DETAIL = "Final";
+const FINAL_OVERTIME_DETAIL = "Final/OT";
+
+/**
  * What a game yet to kick off is doing, said in place of ESPN's own wording.
  *
  * ESPN says a scheduled game as its kickoff, in Eastern time. The strip under the
@@ -93,7 +102,9 @@ function periodsPlayed(result: LeagueResult): number {
  */
 export function detailText(result: LeagueResult): string {
   if (result.status === GameStatus.FINAL) {
-    return periodsPlayed(result) > REGULATION_PERIODS ? "FT/OT" : "FT";
+    return periodsPlayed(result) > REGULATION_PERIODS
+      ? FINAL_OVERTIME_DETAIL
+      : FINAL_DETAIL;
   }
   if (result.status === GameStatus.UPCOMING) {
     return PREGAME_DETAIL;

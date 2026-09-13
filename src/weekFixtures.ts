@@ -20,8 +20,16 @@ export function week(value: number): WeekInfo {
   };
 }
 
+/**
+ * A row of the workbook for every call, which is what `scorePlayers` mints an `id`
+ * from. Taken off the name instead, two rows sharing a name would share an id, and a
+ * test of that case would reproduce the bug the id exists to fix rather than catch it.
+ */
+let nextRow = 0;
+
 export function playerScore(over: Partial<PlayerScore> = {}): PlayerScore {
   return {
+    id: String(nextRow++),
     name: "Alice",
     score: { total: 3, college: 1, pro: 2, proAgainstTheSpread: 1 },
     tiebreaker: { pick: 41, distance: 0 },

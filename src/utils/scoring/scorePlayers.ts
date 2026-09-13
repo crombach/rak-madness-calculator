@@ -51,7 +51,7 @@ export default function scorePlayers(
     parsed.inconsistentSpreadGames,
   );
 
-  const scores: Array<PlayerScore> = parsed.rows.map((playerRow: any) => {
+  const scores: Array<PlayerScore> = parsed.rows.map((playerRow: any, row) => {
     const collegePicks = parsed.collegeKeys.map((key) => playerRow[key]);
     const proPicks = parsed.proKeys.map((key) => playerRow[key]);
     const hasNoPicks =
@@ -82,6 +82,8 @@ export default function scorePlayers(
 
     const tiebreakerPick = playerRow[TIEBREAKER_PICK_KEY];
     return {
+      // The row's own position, taken before the sort below moves it.
+      id: String(row),
       name: playerRow.Name,
       score: {
         total: scoreCollege + scorePro,

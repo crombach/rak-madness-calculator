@@ -41,6 +41,7 @@ function player({
   hasBlankPick = false,
 }: PlayerOptions): PlayerScore {
   return {
+    id: name,
     name,
     score: {
       total,
@@ -277,7 +278,8 @@ describe("getPlayerAnalysis, the routes", () => {
     expect(result.pool).toBeUndefined();
     expect(result.routes).toBeUndefined();
     expect(result.mondayNight).toEqual({ kind: "notNeeded" });
-    expect(result.outrightAt).toBe(1);
+    // The one game wins it outright too, so the blocks above already are that way.
+    expect(result.outright?.mustWin).toEqual([{ label: "P1", pick: "KC -3" }]);
   });
 
   it("reads a pool of interchangeable games as any two of them", () => {
@@ -377,7 +379,8 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
       min: undefined,
       max: 45,
     });
-    expect(result.outrightAt).toBeUndefined();
+    // Winning every pick still only draws level, so nothing takes it alone.
+    expect(result.outright).toBeUndefined();
   });
 
   it("bounds them from below when the player guessed higher", () => {
@@ -454,7 +457,9 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
 
     const result = paths(getPlayerAnalysis(scores, "Alice"));
     expect(result.mustWin).toEqual([]);
-    expect(result.outrightAt).toBe(1);
+    // One way to take it alone, so it reduces to the game that way needs.
+    expect(result.outright?.mustWin).toEqual([{ label: "P1", pick: "KC -3" }]);
+    expect(result.outright?.routes).toBeUndefined();
     expect(result.mondayNight).toBeUndefined();
     expect(result.routes).toEqual([
       {
@@ -554,10 +559,10 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
     );
   }
 
-  it("gives a floor rather than routes above the ceiling", () => {
+  it("names no games above the ceiling where it can prove none", () => {
     // Every open game picked the other way, and a deficit six under that count.
-    // Each game she takes is one Bob does not, so three short of all of them
-    // draws her exactly level and nothing takes it outright.
+    // Each game she takes is one Bob does not, so she has three games of slack and
+    // no single one of them is unaffordable.
     const count = ABOVE_LIMIT;
     const scores = week([
       player({
@@ -572,33 +577,11 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
       }),
     ]);
 
+    // How many wins it takes is worked out by nothing up here. A count names no
+    // games, so there is nothing in it the reader could act on.
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "headline",
       player: "Alice",
-      remainingPickCount: count,
-      minimumWins: count - 3,
-      needsMondayNight: true,
-      // Three games of slack, so no single one of them is unaffordable.
-      mustWin: [],
-    });
-  });
-
-  it("leaves Monday night out where winning enough clears every rival", () => {
-    // The same games with the deficit one point wider, which no count of them can
-    // land level on. So the count that draws her level is the count that takes the
-    // week, and the guesses never come into it.
-    const count = ABOVE_LIMIT;
-    const scores = week([
-      player({ name: "Alice", total: 0, pro: opposed(count, "A", "-3") }),
-      player({ name: "Bob", total: count - 5, pro: opposed(count, "B", "+3") }),
-    ]);
-
-    expect(getPlayerAnalysis(scores, "Alice")).toEqual({
-      kind: "headline",
-      player: "Alice",
-      remainingPickCount: count,
-      minimumWins: count - 2,
-      needsMondayNight: false,
       mustWin: [],
     });
   });

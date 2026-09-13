@@ -4,6 +4,7 @@ import { PlayerAnalysis } from "../../types/PlayerAnalysis";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import getClasses from "../../utils/getClasses";
 import matching from "../../utils/matching";
+import repeatedNames from "../../utils/scoring/repeatedNames";
 import weekShape from "../../utils/scoring/weekShape";
 import getPlayerAnalysis, {
   getSettledAnalysis,
@@ -14,15 +15,24 @@ import PlayerStatusIcon from "../table/playerName/PlayerStatusIcon";
 import AnalysisSummary from "./AnalysisSummary";
 import "./PlayerAnalysisDialog.scss";
 
-export type PlayerOption = { name: string; isKnockedOut: boolean };
+export type PlayerOption = {
+  /** The row this entry is, since two of them can carry one name. */
+  id: string;
+  name: string;
+  isKnockedOut: boolean;
+  /** Whether another row of the week was entered under this same name. */
+  hasNameConflict: boolean;
+};
 
 export function playerOptions(scores?: RakMadnessScores): Array<PlayerOption> {
-  return (
-    scores?.scores.map((player) => ({
-      name: player.name,
-      isKnockedOut: player.status.isKnockedOut,
-    })) ?? []
-  );
+  const players = scores?.scores ?? [];
+  const repeated = repeatedNames(players);
+  return players.map((player) => ({
+    id: player.id,
+    name: player.name,
+    isKnockedOut: player.status.isKnockedOut,
+    hasNameConflict: repeated.has(player.name),
+  }));
 }
 
 /**
@@ -58,6 +68,11 @@ export default function PlayerAnalysisDialog({
   // Once per scoring pass, not once per keystroke in the search. Reading it walks
   // every pick of every player.
   const shape = useMemo(() => weekShape(scores?.scores ?? []), [scores]);
+  // Everything below reads a player out of the week by name, so a name two rows
+  // share has no one answer. Said outright rather than answered for whichever row
+  // came first.
+  const repeated = useMemo(() => repeatedNames(scores?.scores ?? []), [scores]);
+  const hasNameConflict = player != null && repeated.has(player.name);
 
   // A name arriving from outside stands in for a choice made in the search.
   useArrival(named, (name) => {
@@ -70,15 +85,17 @@ export default function PlayerAnalysisDialog({
   // rather than waited for below. That keeps the dialog's height steady while the
   // search runs.
   const settled = useMemo(() => {
-    if (scores == null || player == null) return undefined;
+    if (scores == null || player == null || repeated.has(player.name))
+      return undefined;
     const paths = getSettledAnalysis(scores, player.name);
     return paths == null ? undefined : { scores, name: player.name, paths };
-  }, [scores, player]);
+  }, [scores, player, repeated]);
 
   // The search is thousands of scenarios and holds the thread while it runs, so
   // it waits for the bar that says so to paint first.
   useEffect(() => {
     if (scores == null || player == null || settled != null) return;
+    if (repeated.has(player.name)) return;
     let timer = 0;
     const frame = requestAnimationFrame(() => {
       timer = window.setTimeout(() =>
@@ -93,13 +110,14 @@ export default function PlayerAnalysisDialog({
       cancelAnimationFrame(frame);
       window.clearTimeout(timer);
     };
-  }, [scores, player, settled]);
+  }, [scores, player, settled, repeated]);
 
   // The answer on screen stays until the next lands, so switching players swaps one
   // for another rather than emptying and refilling. Only a rescore clears it.
   const searched = found?.scores === scores ? found : undefined;
   const shown = settled ?? searched;
-  const isAnalysisLoading = player != null && shown?.name !== player.name;
+  const isAnalysisLoading =
+    player != null && !hasNameConflict && shown?.name !== player.name;
 
   return (
     <DialogShell
@@ -119,10 +137,13 @@ export default function PlayerAnalysisDialog({
           query={query}
           onQueryChange={setQuery}
           itemToStringLabel={(option) => option.name}
-          itemKey={(option) => option.name}
+          itemKey={(option) => option.id}
           optionClassName={(option) =>
             getClasses("player-analysis__option", {
               "--knocked-out": option.isKnockedOut,
+              // After the standing, which it stands over: a name two rows share
+              // has no standing of its own to show.
+              "--name-conflict": option.hasNameConflict,
             })
           }
           // The player named in the input is marked the way the tables do, so the
@@ -132,9 +153,13 @@ export default function PlayerAnalysisDialog({
               <span
                 className={getClasses("player-analysis__input-status", {
                   "--knocked-out": player.isKnockedOut,
+                  "--name-conflict": player.hasNameConflict,
                 })}
               >
-                <PlayerStatusIcon isKnockedOut={player.isKnockedOut} />
+                <PlayerStatusIcon
+                  isKnockedOut={player.isKnockedOut}
+                  hasNameConflict={player.hasNameConflict}
+                />
               </span>
             )
           }
@@ -145,7 +170,10 @@ export default function PlayerAnalysisDialog({
               <span className="player-analysis__option-name">
                 {option.name}
               </span>
-              <PlayerStatusIcon isKnockedOut={option.isKnockedOut} />
+              <PlayerStatusIcon
+                isKnockedOut={option.isKnockedOut}
+                hasNameConflict={option.hasNameConflict}
+              />
             </>
           )}
         />
@@ -157,6 +185,7 @@ export default function PlayerAnalysisDialog({
         result={shown?.paths}
         shape={shape}
         weekNumber={weekNumber}
+        hasNameConflict={hasNameConflict}
       />
     </DialogShell>
   );

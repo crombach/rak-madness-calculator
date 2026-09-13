@@ -12,6 +12,12 @@
   &.--knocked-out {
     --rak-player-icon-fill: var(--rak-knocked-out-on-light);
   }
+
+  // After the standings, which it stands over. The warning a game nobody can score
+  // wears, so a name two rows share reads the one way here and in the tables.
+  &.--name-conflict {
+    --rak-player-icon-fill: var(--rak-name-conflict-on-light);
+  }
 }
 
 // The status of the player named in the input, in the hue the list marks them

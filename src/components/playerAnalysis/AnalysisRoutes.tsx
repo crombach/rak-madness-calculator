@@ -7,7 +7,7 @@ import { RouteMondayNight } from "./mondayNight";
 import "./AnalysisSummary.scss";
 
 /** How many routes stand open, the rest being a click away. */
-const ROUTES_SHOWN_AT_FIRST = 4;
+const ROUTES_SHOWN_AT_FIRST = 3;
 
 /** The alternatives, fewest games first, with the long tail folded away. */
 export default function AnalysisRoutes({

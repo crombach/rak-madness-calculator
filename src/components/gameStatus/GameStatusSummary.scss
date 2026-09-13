@@ -260,11 +260,15 @@
   line-height: var(--rak-line-height-tight);
 }
 
+// Set with the record under the name, which is the other thing this column says about
+// the side in passing. Off the mixin's own bold, so the two read as one frame around
+// the name rather than as a heavy label over a light one.
 .game-status__side-label {
   @include micro-label;
 
   color: var(--rak-text-secondary);
   font-size: var(--rak-text-xs);
+  font-weight: normal;
 }
 
 // A step up on the rest of the side text, since the score beside it is what the row is
@@ -470,16 +474,21 @@
   text-align: center;
 }
 
+// Set with the two side labels it sits between, which share its row. Where the game
+// is up to is read off the scores below it, and a clock set larger than the words
+// either side of it reads as the answer the dialog was opened for.
 .game-status__detail {
   grid-row: 1;
   color: var(--rak-text);
-  font-size: var(--rak-text-md);
+  font-size: var(--rak-text-xs);
   font-weight: var(--rak-weight-semibold);
 }
 
-// Smaller than the line above it. A down and distance runs to `2nd & 7 at ATL 34`,
-// and the middle column is only as wide as its widest line, so every character here
-// is width taken off the names either side.
+// Set with the clock in the same column, which is the other half of where the game is
+// up to. Smaller than the records either side of it, because a down and distance runs
+// to `2nd & 7 at ATL 34`, and the middle column is only as wide as its widest line, so
+// every character here is width taken off the names beside it. `useScorelineFit`
+// is what gives those names the abbreviation where this line leaves them too little.
 .game-status__down,
 .game-status__outcome {
   grid-row: 3;

@@ -26,6 +26,7 @@ function player(
   } = {},
 ): PlayerScore {
   return {
+    id: name,
     name,
     score: { total, college, pro: total - college, proAgainstTheSpread },
     tiebreaker: { distance },

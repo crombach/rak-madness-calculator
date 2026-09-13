@@ -37,8 +37,11 @@ export default function DialogShell({
    *
    * The name travels with the flag rather than beside it, so a dialog cannot draw
    * a bar with nothing to call it. A dialog that never waits passes nothing.
+   *
+   * `tone` paints the bar in the mark a game being played wears, for a wait on
+   * such a game. Left off, the bar is the neutral one every other wait draws.
    */
-  busy?: false | { label: string };
+  busy?: false | { label: string; tone?: "live" };
 }>) {
   // A search opens a keyboard over the screen's bottom, which the sheet sizes and
   // pads against. Only while the dialog is up, since no other page has an input.
@@ -66,7 +69,7 @@ export default function DialogShell({
           <div className="dialog__body">
             {busy && (
               <span
-                className="dialog__progress"
+                className={`dialog__progress${busy.tone ? ` --${busy.tone}` : ""}`}
                 role="progressbar"
                 aria-busy="true"
                 aria-label={busy.label}

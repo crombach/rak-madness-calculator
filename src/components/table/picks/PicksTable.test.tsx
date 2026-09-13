@@ -53,6 +53,7 @@ function player({
   isKnockedOut?: boolean;
 }): PlayerScore {
   return playerScore({
+    id: name,
     name,
     score: { total: 3, college: 1, pro: 2, proAgainstTheSpread: 2 },
     tiebreaker: { pick: 45, distance: 2 },
@@ -304,6 +305,47 @@ describe("PicksTable, a refresh's changes", () => {
 
     const cell = screen.getByText("Alice").closest("button");
     expect(cell?.querySelector(".table__cell-wipe")).toBeInTheDocument();
+  });
+});
+
+describe("PicksTable, two players under one name", () => {
+  const sharedName: RakMadnessScores = {
+    scores: [
+      playerScore({ id: "0", name: "Rip", college: [pick("MICH")], pro: [] }),
+      playerScore({ id: "1", name: "Rip", college: [pick("OSU")], pro: [] }),
+    ],
+  };
+
+  it("gives each row its own cells rather than folding them together", () => {
+    render(<PicksTable scores={sharedName} />);
+
+    expect(screen.getAllByText("Rip")).toHaveLength(2);
+    expect(screen.getByText("MICH")).toBeInTheDocument();
+    expect(screen.getByText("OSU")).toBeInTheDocument();
+  });
+
+  it("marks both name cells, since neither can be told from the other", () => {
+    render(<PicksTable scores={sharedName} />);
+
+    screen.getAllByText("Rip").forEach((name) => {
+      expect(name.closest("td")).toHaveClass("--name-conflict");
+    });
+  });
+
+  it("marks both with the warning a game nobody can score wears", () => {
+    render(<PicksTable scores={sharedName} />);
+
+    const icons = document.querySelectorAll(".player-status-icon");
+    expect(icons).toHaveLength(2);
+    icons.forEach((icon) => expect(icon).toHaveClass("--name-conflict"));
+  });
+
+  it("leaves a name only one row carries unmarked", () => {
+    render(<PicksTable scores={scores} />);
+
+    const cell = screen.getByText("Alice").closest("td") as HTMLElement;
+    expect(cell).not.toHaveClass("--name-conflict");
+    expect(cell.querySelector(".--name-conflict")).toBeNull();
   });
 });
 

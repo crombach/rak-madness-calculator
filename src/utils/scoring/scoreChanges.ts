@@ -10,9 +10,9 @@ import gameLabels, { LEAGUES, pickChangeKey } from "./gameColumns";
  * than every cell a new `RakMadnessScores` touches.
  */
 export type ScoreChanges = {
-  /** `player.name` to whether they were still in contention before. */
+  /** `player.id` to whether they were still in contention before. */
   players: Map<string, boolean>;
-  /** `pickChangeKey(player.name, gameLabel)` to the status the cell held before. */
+  /** `pickChangeKey(player.id, gameLabel)` to the status the cell held before. */
   picks: Map<string, Status>;
 };
 
@@ -33,16 +33,18 @@ export default function scoreChanges(
 
   const players = new Map<string, boolean>();
   const picks = new Map<string, Status>();
+  // By row rather than by name. Two players have entered this pool under one name,
+  // and diffing those two rows against each other marks cells that never moved.
   const before = new Map<string, PlayerScore>(
-    previous.scores.map((player) => [player.name, player]),
+    previous.scores.map((player) => [player.id, player]),
   );
 
   current.scores.forEach((player) => {
-    const was = before.get(player.name);
+    const was = before.get(player.id);
     if (was == null) return;
 
     if (!was.status.isKnockedOut && player.status.isKnockedOut) {
-      players.set(player.name, was.status.isKnockedOut);
+      players.set(player.id, was.status.isKnockedOut);
     }
 
     LEAGUES.forEach((league) => {
@@ -50,7 +52,7 @@ export default function scoreChanges(
       was[league].forEach((result, index) => {
         const after = player[league][index];
         if (after != null && after.status !== result.status) {
-          picks.set(pickChangeKey(player.name, labels[index]), result.status);
+          picks.set(pickChangeKey(player.id, labels[index]), result.status);
         }
       });
     });

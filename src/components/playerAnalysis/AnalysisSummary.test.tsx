@@ -46,6 +46,15 @@ describe("AnalysisSummary", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it("refuses to answer for a name two players entered under", () => {
+    render(<AnalysisSummary playerName="Rip" hasNameConflict />);
+
+    expect(
+      screen.getByText("There is more than one entry for player name Rip."),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+  });
+
   it("gives a knocked out player the reason they carry", () => {
     const result: PlayerAnalysis = {
       kind: "knockedOut",
@@ -99,21 +108,18 @@ describe("AnalysisSummary", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("gives a floor rather than paths on a week too big to search", () => {
+  it("says only when the paths arrive on a week too big to search", () => {
     const result: PlayerAnalysis = {
       kind: "headline",
       player: "Alice",
-      remainingPickCount: 13,
-      minimumWins: 6,
-      needsMondayNight: true,
       mustWin: [],
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(
-      screen.getByText("Alice needs at least 6 of their 13 remaining picks."),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/MNF Points tiebreaker/)).toBeInTheDocument();
+    // A count of wins names no games, so it would read as a way through without
+    // being one. Nothing is claimed where nothing can be worked out.
+    expect(screen.queryByText(/remaining picks/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/MNF Points/)).not.toBeInTheDocument();
     const why = screen.getByText(
       `Detailed analysis is performed once ${MAX_SEARCHED_GAMES} games remain.`,
     );
@@ -126,9 +132,6 @@ describe("AnalysisSummary", () => {
     const result: PlayerAnalysis = {
       kind: "headline",
       player: "Alice",
-      remainingPickCount: 18,
-      minimumWins: 18,
-      needsMondayNight: false,
       mustWin: [{ label: "P3", pick: "KC -7" }],
     };
     render(<AnalysisSummary result={result} />);
@@ -218,20 +221,39 @@ describe("AnalysisSummary", () => {
     expect(blockHeading("MNF Points ≤ 45")).toBeInTheDocument();
   });
 
-  it("says what it takes to win without the tiebreaker at all", () => {
+  it("names the games that take the week without the tiebreaker at all", () => {
     const result: PlayerAnalysis = {
       ...base,
       pool: { choose: 2, games: [{ label: "P1", pick: "KC -3" }] },
-      outrightAt: 3,
+      outright: {
+        mustWin: [],
+        pool: {
+          choose: 3,
+          games: [
+            { label: "P1", pick: "KC -3" },
+            { label: "P2", pick: "SF -6" },
+          ],
+        },
+        hiddenRouteCount: 0,
+      },
       mondayNight: RAK_BY_45,
     };
     render(<AnalysisSummary result={result} />);
 
+    const line = screen.getByText("To win the week outright:");
+    // Its own pool, asking one more game than winning the week at all does.
+    expect(blockHeading("Any 3 of")).toBeInTheDocument();
+    expect(screen.getByText("SF -6")).toBeInTheDocument();
+
+    // Over the ways that need a total, which `Otherwise:` hands the reader down to.
     expect(
-      screen.getByText(
-        "Alice wins the week outright with 3 game wins. Otherwise:",
-      ),
-    ).toBeInTheDocument();
+      line.compareDocumentPosition(blockHeading("Any 2 of")) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      line.compareDocumentPosition(screen.getByText("Otherwise:")) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it("leads with taking the week outright, ahead of the games", () => {
@@ -250,18 +272,26 @@ describe("AnalysisSummary", () => {
     ).toBeTruthy();
   });
 
-  it("leaves the outright line off where it asks no more than the routes do", () => {
+  it("leaves the outright block off where it asks no more than the routes do", () => {
     const result: PlayerAnalysis = {
       ...base,
       mustWin: [{ label: "P1", pick: "KC -3" }],
-      outrightAt: 1,
+      outright: {
+        mustWin: [{ label: "P1", pick: "KC -3" }],
+        hiddenRouteCount: 0,
+      },
       mondayNight: { kind: "notNeeded" },
     };
     render(<AnalysisSummary result={result} />);
 
+    // The block above is already the way to take it outright, so repeating it under
+    // a second heading would ask the reader to tell two copies apart.
     expect(
-      screen.queryByText(/wins the week outright with \d+ game wins?/),
+      screen.queryByText(/To win the week outright/),
     ).not.toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { name: "Must win" })).toHaveLength(
+      1,
+    );
   });
 
   it("names the player standing where nothing takes the week outright", () => {
@@ -273,7 +303,7 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(
-      screen.getByText("Alice can still win the week. What it takes:"),
+      screen.getByText("Alice can win the week. What it takes:"),
     ).toBeInTheDocument();
   });
 
@@ -308,7 +338,7 @@ describe("AnalysisSummary", () => {
   it("counts the routes left off under the last one, once they are all open", async () => {
     const result: PlayerAnalysis = {
       ...base,
-      routes: routesOf(8),
+      routes: routesOf(6),
       hiddenRouteCount: 2,
     };
     render(<AnalysisSummary result={result} />);
@@ -357,29 +387,29 @@ describe("AnalysisSummary", () => {
     expect(blockHeading("MNF Points ≤ 32")).toBeInTheDocument();
   });
 
-  it("holds four routes open and folds the rest behind a button", () => {
-    const result: PlayerAnalysis = { ...base, routes: routesOf(8) };
+  it("holds three routes open and folds the rest behind a button", () => {
+    const result: PlayerAnalysis = { ...base, routes: routesOf(6) };
     render(<AnalysisSummary result={result} />);
 
-    expect(document.querySelectorAll(".analysis__route")).toHaveLength(4);
+    expect(document.querySelectorAll(".analysis__route")).toHaveLength(3);
     expect(
-      screen.getByRole("button", { name: "Show 4 more paths" }),
+      screen.getByRole("button", { name: "Show 3 more paths" }),
     ).toBeInTheDocument();
   });
 
   it("shows the rest once the button is clicked", async () => {
-    const result: PlayerAnalysis = { ...base, routes: routesOf(8) };
+    const result: PlayerAnalysis = { ...base, routes: routesOf(6) };
     render(<AnalysisSummary result={result} />);
     await userEvent.click(screen.getByRole("button"));
 
-    expect(document.querySelectorAll(".analysis__route")).toHaveLength(8);
+    expect(document.querySelectorAll(".analysis__route")).toHaveLength(6);
     expect(
       screen.getByRole("button", { name: "Show fewer" }),
     ).toBeInTheDocument();
   });
 
   it("leaves the button off where every route is already open", () => {
-    const result: PlayerAnalysis = { ...base, routes: routesOf(4) };
+    const result: PlayerAnalysis = { ...base, routes: routesOf(3) };
     render(<AnalysisSummary result={result} />);
 
     expect(screen.queryByRole("button")).not.toBeInTheDocument();

@@ -7,6 +7,7 @@ function player(
   pro: Array<{ status: Status; header?: string }>,
 ): PlayerScore {
   return {
+    id: name,
     name,
     score: { total: 0, college: 0, pro: 0, proAgainstTheSpread: 0 },
     tiebreaker: {},
