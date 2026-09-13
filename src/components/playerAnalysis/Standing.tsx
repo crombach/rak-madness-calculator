@@ -48,8 +48,7 @@ function headline(
   if (player.status.isKnockedOut)
     return { text: "Knocked out", tone: "--knocked-out" };
   const behind = leader.score.total - player.score.total;
-  if (behind > 0)
-    return { text: `${plural(behind, "point")} behind ${leader.name}` };
+  if (behind > 0) return { text: `${plural(behind, "point")} behind the lead` };
   if (!isEveryGameSettled && !isClinched) return { text: "Tied for the lead" };
   const won = winners(players);
   // Level on points and still beaten, which only the tiebreakers can do.

@@ -272,28 +272,6 @@ describe("AnalysisSummary", () => {
     ).toBeTruthy();
   });
 
-  it("leaves the outright block off where it asks no more than the routes do", () => {
-    const result: PlayerAnalysis = {
-      ...base,
-      mustWin: [{ label: "P1", pick: "KC -3" }],
-      outright: {
-        mustWin: [{ label: "P1", pick: "KC -3" }],
-        hiddenRouteCount: 0,
-      },
-      mondayNight: { kind: "notNeeded" },
-    };
-    render(<AnalysisSummary result={result} />);
-
-    // The block above is already the way to take it outright, so repeating it under
-    // a second heading would ask the reader to tell two copies apart.
-    expect(
-      screen.queryByText(/To win the week outright/),
-    ).not.toBeInTheDocument();
-    expect(screen.getAllByRole("heading", { name: "Must win" })).toHaveLength(
-      1,
-    );
-  });
-
   it("names the player standing where nothing takes the week outright", () => {
     const result: PlayerAnalysis = {
       ...base,

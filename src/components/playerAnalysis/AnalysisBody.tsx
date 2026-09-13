@@ -17,13 +17,6 @@ function hasGames(ways: WaysThrough): boolean {
   );
 }
 
-/** The fewest games a way through asks for, which the outright block is measured on. */
-function fewestWins(ways: WaysThrough): number {
-  // The routes are held fewest games first, so the shortest is the one on top.
-  const fromGames = ways.pool?.choose ?? ways.routes?.[0]?.games.length ?? 0;
-  return ways.mustWin.length + fromGames;
-}
-
 /**
  * What a set of ways through asks for: the games every one of them needs, then the
  * choice left over. Rendered for the ways to win the week and again for the ways to
@@ -156,12 +149,6 @@ export default function AnalysisBody({
   // A settled total says the games above decide the week, which is the opposite of
   // one more thing to do. Only a range is a condition of its own.
   const asksMondayNight = result.mondayNight?.kind === "range";
-  // Only worth a block of its own where it asks more than winning the week does.
-  // Asking the same, the blocks above already are the ways to take it outright.
-  const outright =
-    result.outright != null && fewestWins(result.outright) > fewestWins(result)
-      ? result.outright
-      : undefined;
 
   return (
     <>
@@ -170,10 +157,10 @@ export default function AnalysisBody({
       {/* Over the ways below it, which win the week only once Monday night's
           total falls right. This one asks more games and no total, so it is the
           answer a reader who can reach it stops at. */}
-      {outright && (
+      {result.outright && (
         <>
           <p className="analysis__line">To win the week outright:</p>
-          <Ways ways={outright} showMondayNight={false} />
+          <Ways ways={result.outright} showMondayNight={false} />
           <p className="analysis__line">Otherwise:</p>
         </>
       )}

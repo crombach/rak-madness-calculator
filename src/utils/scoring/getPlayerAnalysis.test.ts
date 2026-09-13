@@ -293,8 +293,9 @@ describe("getPlayerAnalysis, the routes", () => {
     expect(result.pool).toBeUndefined();
     expect(result.routes).toBeUndefined();
     expect(result.mondayNight).toEqual({ kind: "notNeeded" });
-    // The one game wins it outright too, so the blocks above already are that way.
-    expect(result.outright?.mustWin).toEqual([{ label: "P1", pick: "KC -3" }]);
+    // The one game wins it outright too, so the block above already is that way
+    // and a block of its own would name the same win a second time.
+    expect(result.outright).toBeUndefined();
   });
 
   it("reads a pool of interchangeable games as any two of them", () => {
@@ -472,9 +473,9 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
 
     const result = paths(getPlayerAnalysis(scores, "Alice"));
     expect(result.mustWin).toEqual([]);
-    // One way to take it alone, so it reduces to the game that way needs.
-    expect(result.outright?.mustWin).toEqual([{ label: "P1", pick: "KC -3" }]);
-    expect(result.outright?.routes).toBeUndefined();
+    // The way that takes it alone is one game, which is what winning the week at
+    // all asks for, so the routes are already it and there is no block above.
+    expect(result.outright).toBeUndefined();
     expect(result.mondayNight).toBeUndefined();
     expect(result.routes).toEqual([
       {
@@ -486,6 +487,56 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
         mondayNight: { kind: "range", min: undefined, max: 32 },
       },
     ]);
+  });
+
+  it("leaves a way the outright block keeps out of the ways below it", () => {
+    // Alice trails Bob by one and leads Carol by two, and the three picked the
+    // same three games apart. Bob guessed the total Alice did, so drawing level
+    // with him is a win on the tiers below it, while Carol guessed her own and
+    // only the total separates them. Winning P3 alone draws level with Carol.
+    // Winning any two pulls Alice clear of both.
+    const scores = week([
+      player({
+        name: "Bob",
+        total: 1,
+        proAgainstTheSpread: 3,
+        pro: [pick("KC"), pick("KC"), pick("KC")],
+        tiebreakerPick: 30,
+      }),
+      player({
+        name: "Alice",
+        total: 2,
+        proAgainstTheSpread: 2,
+        pro: [pick("DEN"), pick("DEN"), pick("DEN +3")],
+        tiebreakerPick: 30,
+      }),
+      player({
+        name: "Carol",
+        total: 0,
+        proAgainstTheSpread: 0,
+        pro: [pick("KC"), pick("KC -3"), pick("DEN +3")],
+        tiebreakerPick: 31,
+      }),
+    ]);
+
+    const result = paths(getPlayerAnalysis(scores, "Alice"));
+    // Any two of the three, P1 and P2 among them.
+    expect(result.outright?.pool?.choose).toBe(2);
+    expect(labels(result.outright?.pool?.games ?? [])).toEqual([
+      "P1",
+      "P2",
+      "P3",
+    ]);
+    // P1 and P2 is one of those two, so the ways left are the ones that need the
+    // total. Named once, under the block above rather than under both.
+    expect(mustWin(result)).toEqual(["P3"]);
+    expect(result.routes).toBeUndefined();
+    expect(result.pool).toBeUndefined();
+    expect(result.mondayNight).toEqual({
+      kind: "range",
+      min: undefined,
+      max: 30,
+    });
   });
 
   it("falls to the college score where both guessed the same total", () => {

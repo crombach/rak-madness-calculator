@@ -71,8 +71,12 @@ export type PlayerAnalysis =
       mondayNight?: MondayNightOutlook;
       /**
        * The ways to take the week whatever Monday night's total is, asked and
-       * answered the same way the ways above it are. Absent where no set of the
-       * player's picks takes it alone.
+       * answered the same way the ways above it are.
+       *
+       * Absent where no set of the player's picks takes it alone, and absent too
+       * where those sets ask no more games than winning the week does, since then
+       * they are the ways above and saying them twice would name each one twice.
+       * Set, and the ways above hold none of these: each way is named once.
        */
       outright?: WaysThrough;
     } & WaysThrough);
