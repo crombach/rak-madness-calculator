@@ -155,6 +155,20 @@ const PHASES = {
       player("Carol", 38, AT[2], "home"),
     ],
   },
+  // Two rivals, each caught a different way. Dave is a point back and picks with
+  // Alice everywhere but P12, so only P12 reaches him and every way to win needs
+  // it. Bob is a point ahead across all five, so two more only draw level and the
+  // total decides, while three pull her clear. P12 is the game both answers need.
+  hoisted: {
+    settled: upTo("P11"),
+    subject: "Alice",
+    rows: [
+      player("Alice", 45, AT[8], "home"),
+      player("Bob", 48, AT[9], "away"),
+      player("Dave", 41, AT[8], "home", { P12: "away" }),
+      player("Carol", 38, AT[2], "home"),
+    ],
+  },
   // Alice left P15 blank, so nothing she does decides it and Bob has to miss it.
   help: {
     settled: upTo("P14"),

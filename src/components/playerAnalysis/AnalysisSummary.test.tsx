@@ -19,7 +19,12 @@ function blockHeading(title: string): HTMLElement {
 
 /** The picks under a heading, as the chips read on screen. */
 function under(title: string): Array<string> {
-  return within(blockHeading(title).parentElement as HTMLElement)
+  return picksUnder(blockHeading(title));
+}
+
+/** The same, for one heading of several a page holds under the same name. */
+function picksUnder(heading: HTMLElement): Array<string> {
+  return within(heading.parentElement as HTMLElement)
     .getAllByRole("listitem")
     .map((item) => item.textContent ?? "");
 }
@@ -240,19 +245,20 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    const line = screen.getByText("To win the week outright:");
+    const line = screen.getByText("To win outright:");
     // Its own pool, asking one more game than winning the week at all does.
     expect(blockHeading("Any 3 of")).toBeInTheDocument();
     expect(screen.getByText("SF -6")).toBeInTheDocument();
 
-    // Over the ways that need a total, which `Otherwise:` hands the reader down to.
+    // Over the ways that need a total, which the tiebreaker line hands down to.
     expect(
       line.compareDocumentPosition(blockHeading("Any 2 of")) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(
-      line.compareDocumentPosition(screen.getByText("Otherwise:")) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
+      line.compareDocumentPosition(
+        screen.getByText("To win with MNF Points tiebreaker:"),
+      ) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
 
@@ -270,6 +276,54 @@ describe("AnalysisSummary", () => {
       outright.compareDocumentPosition(mustWin) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+  });
+
+  it("lifts the games both blocks need over the pair of them", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      // P1 is needed either way. P5 is needed only by the ways that want a total.
+      mustWin: [
+        { label: "P1", pick: "KC -3" },
+        { label: "P5", pick: "GB -2" },
+      ],
+      outright: {
+        mustWin: [
+          { label: "P1", pick: "KC -3" },
+          { label: "P2", pick: "SF -6" },
+        ],
+        hiddenRouteCount: 0,
+      },
+      mondayNight: RAK_BY_45,
+    };
+    render(<AnalysisSummary result={result} />);
+
+    // One heading holds the game every way needs, above the line that splits them.
+    const musts = screen.getAllByRole("heading", { name: /^(And )?Must win$/ });
+    expect(musts).toHaveLength(3);
+    expect(picksUnder(musts[0])).toEqual(["P1KC -3"]);
+    expect(
+      musts[0].compareDocumentPosition(screen.getByText("To win outright:")) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    // Each block keeps only what it asks for past that game.
+    expect(picksUnder(musts[1])).toEqual(["P2SF -6"]);
+    expect(picksUnder(musts[2])).toEqual(["P5GB -2"]);
+    expect(screen.getAllByText("KC -3")).toHaveLength(1);
+  });
+
+  it("leaves a lone block's must-win games where they are", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      mustWin: [{ label: "P1", pick: "KC -3" }],
+      mondayNight: RAK_BY_45,
+    };
+    render(<AnalysisSummary result={result} />);
+
+    // Nothing to lift them over, so the one block names them itself.
+    expect(
+      screen.getAllByRole("heading", { name: /^(And )?Must win$/ }),
+    ).toHaveLength(1);
+    expect(under("Must win")).toEqual(["P1KC -3"]);
   });
 
   it("names the player standing where nothing takes the week outright", () => {

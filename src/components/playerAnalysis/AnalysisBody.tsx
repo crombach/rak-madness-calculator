@@ -1,4 +1,8 @@
-import { PlayerAnalysis, WaysThrough } from "../../types/PlayerAnalysis";
+import {
+  PlayerAnalysis,
+  RemainingPick,
+  WaysThrough,
+} from "../../types/PlayerAnalysis";
 import { MAX_SEARCHED_GAMES } from "../../utils/scoring/getPlayerAnalysis";
 import { Message, Picks, Section } from "./analysisParts";
 import { MondayNight } from "./mondayNight";
@@ -15,6 +19,29 @@ function hasGames(ways: WaysThrough): boolean {
     ways.pool != null ||
     (ways.routes?.length ?? 0) > 0
   );
+}
+
+/**
+ * The games both blocks call must-win, which is the games every way to win the week
+ * needs. Each block reads its own list against its own ways, so a game every way
+ * needs lands in both and would be named under two headings.
+ *
+ * Empty where there is one block, whose own list already says this.
+ */
+function sharedMustWin(result: PathsResult): Array<RemainingPick> {
+  if (result.outright == null) return [];
+  const outright = new Set(result.outright.mustWin.map((game) => game.label));
+  return result.mustWin.filter((game) => outright.has(game.label));
+}
+
+/** The same ways, less the games a heading above them already named. */
+function past(ways: WaysThrough, named: Array<RemainingPick>): WaysThrough {
+  if (named.length === 0) return ways;
+  const held = new Set(named.map((game) => game.label));
+  return {
+    ...ways,
+    mustWin: ways.mustWin.filter((game) => !held.has(game.label)),
+  };
 }
 
 /**
@@ -149,23 +176,38 @@ export default function AnalysisBody({
   // A settled total says the games above decide the week, which is the opposite of
   // one more thing to do. Only a range is a condition of its own.
   const asksMondayNight = result.mondayNight?.kind === "range";
+  // Lifted over both blocks, so each one below names only what it asks for on top
+  // of these. Empty where there is one block, which leaves it rendering as before.
+  const hoisted = sharedMustWin(result);
+  const ways = past(result, hoisted);
 
   return (
     <>
       <Lead result={result} />
 
+      {/* Every way to win needs these, whichever block a reader goes on to take,
+          so they are named over both rather than again inside each. */}
+      {hoisted.length > 0 && (
+        <Section title="Must win">
+          <Picks className="analysis__must-win" games={hoisted} />
+        </Section>
+      )}
+
       {/* Over the ways below it, which win the week only once Monday night's
           total falls right. This one asks more games and no total, so it is the
-          answer a reader who can reach it stops at. */}
+          answer a reader who can reach it stops at.
+
+          Every way under the second line needs the total: the scorer leaves this
+          block out unless it drops the ways that win without one. */}
       {result.outright && (
         <>
-          <p className="analysis__line">To win the week outright:</p>
-          <Ways ways={result.outright} showMondayNight={false} />
-          <p className="analysis__line">Otherwise:</p>
+          <p className="analysis__line">To win outright:</p>
+          <Ways ways={past(result.outright, hoisted)} showMondayNight={false} />
+          <p className="analysis__line">To win with MNF Points tiebreaker:</p>
         </>
       )}
 
-      <Ways ways={result} showMondayNight={result.mondayNight == null} />
+      <Ways ways={ways} showMondayNight={result.mondayNight == null} />
 
       {/* A picked player always reads a sentence. This is the one left where the
           games ask nothing and the line above said nothing either. */}
@@ -177,7 +219,7 @@ export default function AnalysisBody({
 
       <MondayNight
         conjoined={
-          asksMondayNight && (result.mustWin.length > 0 || hasWaysThrough)
+          asksMondayNight && (ways.mustWin.length > 0 || hasWaysThrough)
         }
         outlook={result.mondayNight}
       />
