@@ -164,15 +164,20 @@
 // routes would stand, so it takes that list's box.
 .analysis__shares {
   width: 100%;
+  // The rows carry the block padding, so the box takes none of its own and its
+  // ends stand as far off the text as a route's box does.
+  padding-block: 0;
   border-collapse: collapse;
   font-family: var(--rak-font-mono);
   font-size: var(--rak-text-sm);
 
-  // A cell starts at the head of the line unless the share column moves it, which
-  // a `th` does not do on its own.
+  // A row stands as far off its neighbours as a route stands off the route under
+  // it, and its text starts where the text inside a route's pick chip starts. A
+  // cell also starts at the head of the line unless the share column moves it,
+  // which a `th` does not do on its own.
   th,
   td {
-    padding: var(--rak-space-1) 0;
+    padding: var(--rak-space-2) var(--rak-pick-inset);
     text-align: start;
   }
 
@@ -181,7 +186,7 @@
   thead th {
     @include micro-label;
 
-    padding-block-end: var(--rak-space-2);
+    padding-block-end: var(--rak-space-3);
     color: var(--rak-text-tertiary);
     font-family: var(--rak-font-body);
     font-size: var(--rak-text-xs);
@@ -197,7 +202,8 @@
     white-space: nowrap;
   }
 
-  // Between rows alone, so the head and the box's own padding keep the ends clear.
+  // Between rows alone, so the head and the end rows' own padding keep the ends
+  // clear.
   // One step off the fill behind it rather than `--rak-divider`, which is a light
   // rule for a light surface and has no dark mode to draw on this one.
   tbody tr + tr > * {
