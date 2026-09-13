@@ -47,7 +47,9 @@ export default function AnalysisSummary({
     return (
       <div className="analysis">
         <Message
-          lines={[`There is more than one entry for player name ${playerName}.`]}
+          lines={[
+            `There is more than one entry for player name ${playerName}.`,
+          ]}
         />
       </div>
     );
