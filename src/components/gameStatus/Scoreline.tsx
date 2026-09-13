@@ -81,11 +81,14 @@ function Note({
       <p className="game-status__outcome">{outcomeText(result, spread)}</p>
     );
   }
-  const { downDistanceText } = result.possession;
-  if (downDistanceText == null && result.status !== GameStatus.LIVE) {
+  // A down belongs to whoever has the ball. At the half and at the end of a quarter
+  // ESPN clears the side but leaves the last down standing, and that down is over.
+  const { homeAway, downDistanceText } = result.possession;
+  const down = homeAway == null ? undefined : downDistanceText;
+  if (down == null && result.status !== GameStatus.LIVE) {
     return null;
   }
-  return <p className="game-status__down">{downDistanceText ?? NO_DOWN}</p>;
+  return <p className="game-status__down">{down ?? NO_DOWN}</p>;
 }
 
 /**
