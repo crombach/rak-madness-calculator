@@ -309,9 +309,10 @@
   // the search, where there is no fill behind the mark to say which mark it is.
   //
   // The same hue as that fill, at the 30% lightness and the saturation the two
-  // steps above pair up at. Its own fill is more saturated than either of theirs,
-  // and carried here that lands under 4.5:1 on white. Gold is the most luminous of
-  // the three hues, so it has the least room to spend.
+  // steps above pair up at, which is 5.12:1 on white. The fill is more saturated
+  // than either of theirs, and taken down to this lightness at its own saturation
+  // it reaches only 4.09:1. Gold is the most luminous of the three hues, so it has
+  // the least room to spend.
   --rak-name-conflict-on-light: #876a12;
 
   // The reader's own row, ruled above and below every cell, and bloomed like the
