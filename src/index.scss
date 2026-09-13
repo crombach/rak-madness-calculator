@@ -238,13 +238,14 @@
   --rak-danger-700: #7d1212;
 
   --rak-warning-100: #fdf0e1;
-  // Yellow rather than the orange the rest of its ramp runs on, because of what it
+  // Gold rather than the orange the rest of its ramp runs on, because of what it
   // is drawn beside. A picks row opens with the player's own cell, which is the
   // orange of `--rak-knocked-out-300` once they are out, and every pick after it is
   // one of these. Ten degrees of hue apart, the two read as one fill and the row
-  // stops saying which of the two things it means. This is forty off that orange
-  // and fifty off the green it also sits beside.
-  --rak-warning-300: #edfaa0;
+  // stops saying which of the two things it means. This is twenty off that orange,
+  // and darker than it by fourteen, since hue alone runs out that close to it. The
+  // two hold 43 CIELAB units apart, the green beside them 59.
+  --rak-warning-300: #ffd83d;
   // Orange, six degrees round the wheel from amber and more saturated with it,
   // so the key the home page exports from reads as a color rather than as a
   // brown slab. 5.02:1 on the white ink that key is set in. The toast's warning
@@ -299,18 +300,19 @@
   // A player, by whether they can still win. 300 fills their name cell. -on-light
   // is the same hue taken far enough down to read on a white surface, which the
   // fill cannot, and is what the player analysis search draws its status icon in.
-  --rak-knocked-out-300: #fac99e;
+  --rak-knocked-out-300: #ffbe85;
   --rak-knocked-out-on-light: #8a4a12;
-  --rak-in-contention-300: #9edbfa;
+  --rak-in-contention-300: #85d2ff;
   --rak-in-contention-on-light: #126287;
   // Not a standing, so it has no 300 of its own: a name two rows share takes the
   // unscoreable pick's fill in the tables. Only the -on-light step is its own, for
   // the search, where there is no fill behind the mark to say which mark it is.
   //
-  // The same hue and saturation as that fill, the way the two steps above pair up,
-  // but taken further down than their 30% lightness. Yellow-green is the most
-  // luminous hue on the wheel, so it reaches their contrast lower than they do.
-  --rak-name-conflict-on-light: #66750f;
+  // The same hue as that fill, at the 30% lightness and the saturation the two
+  // steps above pair up at. Its own fill is more saturated than either of theirs,
+  // and carried here that lands under 4.5:1 on white. Gold is the most luminous of
+  // the three hues, so it has the least room to spend.
+  --rak-name-conflict-on-light: #876a12;
 
   // The reader's own row, ruled above and below every cell, and bloomed like the
   // lamp so the two marks the reader themselves control read as one light. The
@@ -695,7 +697,7 @@ html {
   --rak-gold-700: #e8b84b;
   --rak-knocked-out-on-light: #ffb069;
   --rak-in-contention-on-light: #74c6f5;
-  // The yellow light mode fills an unscoreable cell with. Dark mode darkens that
+  // The gold light mode fills an unscoreable cell with. Dark mode darkens that
   // fill to sit under white ink, which leaves it too dark to be ink itself.
   --rak-name-conflict-on-light: var(--rak-warning-300);
   // The reader's row back to the lens, which is the same unification light mode
@@ -731,19 +733,26 @@ html {
   --rak-selected-fill: #383838;
 
   // The colorful table cells: a player's status and a pick's outcome. Same hue
-  // as the light-mode pastel, taken darker and more saturated, so a chip built
-  // to sit on a white page does not glare against this one. `--rak-text-on-pale`
-  // inverts to light ink alongside them, below.
+  // as the light-mode pastel, taken darker, so a chip built to sit on a white page
+  // does not glare against this one. `--rak-text-on-pale` inverts to light ink
+  // alongside them, below.
+  //
+  // The three a player's own cell can wear carry more chroma than the two a pick
+  // wears. A name cell is read for which of three fills it is, where a pick cell is
+  // read for green or red, and at this end of the ramp a hue with little chroma
+  // left reads as brown whatever it started as. The gold is lifted off the other
+  // two in lightness as well, since twenty degrees of hue off the orange leaves the
+  // pair a step no reader can call.
   --rak-success-300: #1b5719;
   --rak-danger-300: #571919;
-  --rak-knocked-out-300: #573619;
-  --rak-in-contention-300: #194257;
-  --rak-cell-unscoreable: #4e5719;
+  --rak-knocked-out-300: #6b3a0f;
+  --rak-in-contention-300: #0f496b;
+  --rak-cell-unscoreable: #866f13;
   --rak-text-on-pale: var(--rak-text);
 
   // The game dialog's marks, off the same darkened hues as the cells above:
   // `--live` off the danger cell's red, `--invalid` off the unscoreable cell's
-  // yellow-green, `--final` off the success cell's green. `--upcoming` has no cell
+  // gold, `--final` off the success cell's green. `--upcoming` has no cell
   // to match and no hue to be read by, so it carries its own gray, lifted until it
   // stands off the popup behind it by the step the other three get from their hues.
   --rak-mark-live-bg: var(--rak-danger-300);
@@ -760,8 +769,8 @@ html {
   // pastel. `primary` and `neutral` are both gray chrome, so they take the
   // selected-row and muted-panel fills already this dark. `success` and
   // `danger` reuse the table cell's own darkened green/red. `warning` gets
-  // its own: its hue is the orange the rest of its ramp runs on, not the
-  // yellow-green `--rak-cell-unscoreable` took.
+  // its own: its hue is the orange the rest of its ramp runs on, not the gold
+  // `--rak-cell-unscoreable` took.
   --rak-toast-primary-bg: var(--rak-selected-fill);
   --rak-toast-neutral-bg: var(--rak-fill-muted);
   --rak-toast-success-bg: var(--rak-success-300);

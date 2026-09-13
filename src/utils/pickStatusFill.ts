@@ -11,6 +11,6 @@ import { Status } from "../types/RakMadnessScores";
 export const PICK_STATUS_FILL: Record<Status, { rgb: string }> = {
   yes: { rgb: "A3FAA0" },
   no: { rgb: "FAA0A0" },
-  unscoreable: { rgb: "EDFAA0" },
+  unscoreable: { rgb: "FFD83D" },
   incomplete: { rgb: "FFFFFF" },
 };

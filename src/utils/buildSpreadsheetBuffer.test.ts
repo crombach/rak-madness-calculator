@@ -19,7 +19,7 @@ const SHEET_NAME_LIMIT = 31;
 const FILL_BY_STATUS = {
   yes: "A3FAA0",
   no: "FAA0A0",
-  error: "EDFAA0",
+  error: "FFD83D",
   incomplete: "FFFFFF",
 };
 

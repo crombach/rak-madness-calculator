@@ -113,7 +113,7 @@ $cap-right-bearing: 0.065em;
     );
   }
 
-  // The yellow the picks table fills a pick it cannot score with, this mark and that
+  // The gold the picks table fills a pick it cannot score with, this mark and that
   // cell saying the same thing about the same game.
   &.--invalid {
     @include mark-pill(
