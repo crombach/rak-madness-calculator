@@ -9,7 +9,9 @@ export function Section({
   conjoined,
   children,
 }: {
-  title: string;
+  // A node rather than a string, so a title that is a total takes the same face
+  // there as it does inside a route.
+  title: ReactNode;
   conjoined?: boolean;
   // Absent where the title says the whole of what the block asks for.
   children?: ReactNode;

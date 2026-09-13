@@ -3,7 +3,7 @@ import { PickShares } from "../../types/PlayerAnalysis";
 import plural from "../../utils/plural";
 import Button from "../button/Button";
 import { Section } from "./analysisParts";
-import { mondayNightPoints, RouteMondayNight } from "./mondayNight";
+import { MondayNightPoints, MondayNightLine } from "./mondayNight";
 import "./AnalysisSummary.scss";
 
 /** How many games stand open, the rest being a click away. */
@@ -20,16 +20,15 @@ function percentOf(routes: number, total: number): string {
 }
 
 /**
- * What the table's routes ask of the tiebreaker, under them.
+ * What the table's ways ask of the tiebreaker, under them.
  *
- * A total every route needs is a condition on the whole table, so it takes the
- * `AND` line a route of its own would take. A total only some routes need is not,
- * so it stays a sentence: an `AND` there would hold every route to a total that
- * most of them never ask for.
+ * Totals every way needs are a condition on the whole table, so they take the `AND`
+ * line a route of its own would take. Totals only some ways need are not, so they
+ * stay a sentence counting those ways: an `AND` there would hold every way to a
+ * range most of them never ask for.
  *
- * Where the routes asking disagree, the total is the widest of them. That is a
- * bound and not a target, and a line saying only the number reads as a target, so
- * a note says what it leaves out.
+ * Where the ways asking disagree, the range is the widest of them. That is a bound
+ * and not a target, and the range alone reads as a target, so a line says so.
  */
 function SharesMondayNight({
   points,
@@ -38,26 +37,24 @@ function SharesMondayNight({
   points: NonNullable<PickShares["mondayNight"]>;
   routeCount: number;
 }) {
-  const totals = mondayNightPoints(points.points);
+  const totals = <MondayNightPoints outlook={points.points} />;
   if (points.routes === routeCount) {
     return (
       <>
-        <RouteMondayNight outlook={points.points} />
+        <MondayNightLine outlook={points.points} />
         {!points.isShared && (
           <p className="analysis__note --upright">
-            No way wins outside this. Some ask for less.
+            Some ways need a tighter range than this.
           </p>
         )}
       </>
     );
   }
-  const ways = plural(points.routes, "way");
-  const need = points.routes === 1 ? "needs" : "need";
   return (
     <p className="analysis__note --upright">
-      {points.isShared
-        ? `${ways} also ${need} ${totals}.`
-        : `${ways} also ${need} a total. None of them wins outside ${totals}.`}
+      {`${plural(points.routes, "way")} also ${points.routes === 1 ? "needs" : "need"} `}
+      {totals}
+      {points.isShared ? "." : ". Some of them need a tighter range."}
     </p>
   );
 }

@@ -57,6 +57,20 @@ function isConjoined(title: string): boolean {
   return blockHeading(title).firstElementChild?.textContent === "And";
 }
 
+/** The tiebreaker lines, as each reads on screen, the `AND` on it included. */
+function mnfLines(): Array<string> {
+  return [...document.querySelectorAll(".analysis__route-mnf")].map(
+    (line) => line.textContent ?? "",
+  );
+}
+
+/** The notes under a block, as each reads on screen. */
+function notes(): Array<string> {
+  return [...document.querySelectorAll(".analysis__note")].map(
+    (note) => note.textContent ?? "",
+  );
+}
+
 /** The one tiebreaker range the cases below need: a week won at 45 or under. */
 const RAK_BY_45 = { kind: "range" as const, max: 45 };
 
@@ -197,7 +211,7 @@ describe("AnalysisSummary", () => {
 
     expect(isConjoined("Must win")).toBe(false);
     expect(isConjoined("Any 2 of")).toBe(true);
-    expect(isConjoined("MNF Points ≤ 45")).toBe(true);
+    expect(mnfLines()).toEqual(["ANDMNF Points ≤ 45"]);
   });
 
   it("leaves a settled tiebreaker unconjoined, since it asks for nothing", () => {
@@ -225,7 +239,7 @@ describe("AnalysisSummary", () => {
     ).toBeInTheDocument();
   });
 
-  it("sets a bounded Monday night range as the block's whole title", () => {
+  it("sets a bounded Monday night range as the block's whole line", () => {
     const result: PlayerAnalysis = {
       ...base,
       mustWin: [{ label: "P1", pick: "KC -3" }],
@@ -233,8 +247,11 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    const heading = blockHeading("38 ≤ MNF Points ≤ 44");
-    expect(heading.parentElement?.childElementCount).toBe(1);
+    // The line a route of its own takes, rather than a title over nothing.
+    expect(mnfLines()).toEqual(["AND38 ≤ MNF Points ≤ 44"]);
+    expect(
+      screen.queryByRole("heading", { name: /MNF Points/ }),
+    ).not.toBeInTheDocument();
   });
 
   it("writes an open-ended range from the end it is bounded on", () => {
@@ -245,7 +262,7 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(blockHeading("MNF Points ≤ 45")).toBeInTheDocument();
+    expect(mnfLines()).toEqual(["ANDMNF Points ≤ 45"]);
   });
 
   it("names the games that take the week without the tiebreaker at all", () => {
@@ -402,7 +419,7 @@ describe("AnalysisSummary", () => {
       "P1KC -3",
       "P2BUF -1",
     ]);
-    expect(blockHeading("MNF Points ≤ 32")).toBeInTheDocument();
+    expect(mnfLines()).toEqual(["ANDMNF Points ≤ 32"]);
   });
 
   it("holds three routes open and folds the rest behind a button", () => {
@@ -492,11 +509,9 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(
-      screen.getByText("8 ways also need MNF Points ≤ 41."),
-    ).toBeInTheDocument();
+    expect(notes()).toEqual(["8 ways also need MNF Points ≤ 41."]);
     // Not every way is held to it, so it is not a condition on the table.
-    expect(screen.queryByText("AND")).not.toBeInTheDocument();
+    expect(mnfLines()).toEqual([]);
   });
 
   it("counts one way asking for a total as one way", () => {
@@ -513,9 +528,7 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(
-      screen.getByText("1 way also needs MNF Points ≤ 41."),
-    ).toBeInTheDocument();
+    expect(notes()).toEqual(["1 way also needs MNF Points ≤ 41."]);
   });
 
   it("calls the total a bound where the routes asking disagree", () => {
@@ -532,11 +545,9 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(
-      screen.getByText(
-        "8 ways also need a total. None of them wins outside MNF Points ≤ 41.",
-      ),
-    ).toBeInTheDocument();
+    expect(notes()).toEqual([
+      "8 ways also need MNF Points ≤ 41. Some of them need a tighter range.",
+    ]);
   });
 
   it("holds the table to the total where every route asks for one", () => {
@@ -554,9 +565,8 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     // The line a route of its own takes, since the whole table is held to it.
-    expect(screen.getByText("AND")).toBeInTheDocument();
-    expect(screen.getByText("MNF Points ≥ 20")).toBeInTheDocument();
-    expect(screen.queryByText(/Some ask for less/)).not.toBeInTheDocument();
+    expect(mnfLines()).toEqual(["ANDMNF Points ≥ 20"]);
+    expect(notes()).toEqual([]);
   });
 
   it("says the bound is not a target where every route asks a different one", () => {
@@ -573,10 +583,8 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(screen.getByText("MNF Points ≥ 20")).toBeInTheDocument();
-    expect(
-      screen.getByText("No way wins outside this. Some ask for less."),
-    ).toBeInTheDocument();
+    expect(mnfLines()).toEqual(["ANDMNF Points ≥ 20"]);
+    expect(notes()).toEqual(["Some ways need a tighter range than this."]);
   });
 
   it("leaves the total off the table where the block below states it", () => {
@@ -594,7 +602,7 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(screen.queryByText(/also need/)).not.toBeInTheDocument();
-    expect(blockHeading("MNF Points ≤ 45")).toBeInTheDocument();
+    expect(notes()).toEqual([]);
+    expect(mnfLines()).toEqual(["ANDMNF Points ≤ 45"]);
   });
 });

@@ -252,17 +252,35 @@
 }
 
 // Set like the picks above it, in under their text. A screen too narrow for the
-// line breaks after the total rather than inside it, and what is carried down
-// starts where the label above it does.
+// line breaks after the totals rather than inside them, and what is carried down
+// starts where the label above it does. The word and the totals each set their own
+// ink and weight, so the line sets neither.
 .analysis__route-mnf {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0 var(--rak-pick-gap);
   padding-inline-start: var(--rak-pick-inset);
+  font-family: var(--rak-font-mono);
+
+  // A block of its own rather than the tail of a route, so the word opening it
+  // stands in the column the words opening the titles beside it stand in.
+  &.--flush {
+    padding-inline-start: 0;
+  }
+}
+
+// The totals that win, wherever they are named: in a route, in a block of their
+// own, or inside a sentence under the shares. Every part of the face is set here
+// rather than the parts a container leaves alone, since one of those containers is
+// a `micro-label` title that would otherwise put them in caps.
+.analysis__mnf-points {
   color: var(--rak-text);
   font-family: var(--rak-font-mono);
+  font-size: var(--rak-text-sm);
   font-weight: var(--rak-weight-semibold);
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .analysis__message {

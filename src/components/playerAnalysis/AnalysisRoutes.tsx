@@ -2,7 +2,7 @@ import { useState } from "react";
 import { VictoryRoute } from "../../types/PlayerAnalysis";
 import Button from "../button/Button";
 import { Picks, Section } from "./analysisParts";
-import { RouteMondayNight } from "./mondayNight";
+import { MondayNightLine } from "./mondayNight";
 import "./AnalysisSummary.scss";
 
 /** How many routes stand open, the rest being a click away. */
@@ -40,7 +40,7 @@ export default function AnalysisRoutes({
           >
             <Picks games={route.games} />
             {showMondayNight && route.mondayNight.kind === "range" && (
-              <RouteMondayNight outlook={route.mondayNight} />
+              <MondayNightLine outlook={route.mondayNight} />
             )}
           </li>
         ))}
