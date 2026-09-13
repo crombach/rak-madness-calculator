@@ -8,10 +8,7 @@ import {
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import { compareOnMerit, Merit } from "./comparePlayerScores";
 import isWinnerDecided from "./isWinnerDecided";
-import remainingGames, {
-  pickDifference,
-  RemainingGame,
-} from "./remainingGames";
+import remainingGames, { RemainingGame } from "./remainingGames";
 
 /**
  * The most games still to play the routes are worked out for. Only the contested
@@ -313,90 +310,6 @@ function knockedOut(player: PlayerScore): PlayerAnalysis {
     kind: "knockedOut",
     player: player.name,
     explanation: player.status.explanation,
-  };
-}
-
-/**
- * The fewest of their own remaining picks the player has to win to reach a rival.
- *
- * A game the two picked differently swings two points, since the point one takes is
- * one the other does not, so those are spent first. A game only the player picked
- * swings one. Undefined where nothing they do is enough, which is the same
- * arithmetic `applyKnockouts` knocks a player out on total score with.
- *
- * A game only the rival picked is assumed to miss, which is what makes this a floor.
- */
-type PickGap = {
-  /** Games the two picked different teams in, worth two points each. */
-  opposed: number;
-  /** Games the player picked and the rival left blank, worth one. */
-  playerOnly: number;
-};
-
-function countAgainst(
-  playerIndex: number,
-  rivalIndex: number,
-  games: Array<RemainingGame>,
-): PickGap {
-  let opposed = 0;
-  let playerOnly = 0;
-  games.forEach((game) => {
-    const difference = pickDifference(game, playerIndex, rivalIndex);
-    if (difference === "opposed") opposed += 1;
-    else if (difference === "playerOnly") playerOnly += 1;
-  });
-  return { opposed, playerOnly };
-}
-
-function fewestWinsToCatch(
-  { opposed, playerOnly }: PickGap,
-  gap: number,
-  clear: boolean,
-): number | undefined {
-  const target = gap + opposed + (clear ? 1 : 0);
-  if (target <= 0) return 0;
-  const onDifferent = Math.min(opposed, Math.ceil(target / 2));
-  const onOwn = Math.max(0, target - onDifferent * 2);
-  return onOwn > playerOnly ? undefined : onDifferent + onOwn;
-}
-
-function headline(
-  player: PlayerScore,
-  playerIndex: number,
-  rivals: Array<{ player: PlayerScore; index: number }>,
-  games: Array<RemainingGame>,
-  mustWin: Array<RemainingPick>,
-): PlayerAnalysis {
-  const counts = rivals.map((rival) => {
-    const gap = rival.player.score.total - player.score.total;
-    // Both targets read off one walk. They differ only by the point that clears a
-    // draw, never in what the two players have left to differ on.
-    const against = countAgainst(playerIndex, rival.index, games);
-    return {
-      toLevel: fewestWinsToCatch(against, gap, false),
-      toClear: fewestWinsToCatch(against, gap, true),
-    };
-  });
-
-  // `toLevel` is only absent where `applyKnockouts` has already knocked the player
-  // out on total score, which `getPlayerAnalysis` answers before reaching here.
-  const minimumWins = Math.max(
-    0,
-    ...counts.map((count) => count.toLevel).filter((count) => count != null),
-  );
-  return {
-    kind: "headline",
-    player: player.name,
-    remainingPickCount: games.filter(
-      (game) => game.cells[playerIndex].team != null,
-    ).length,
-    minimumWins,
-    // Winning that many still only draws level with somebody, so the tiebreaker
-    // would decide it.
-    needsMondayNight: counts.some(
-      (count) => count.toClear == null || count.toClear > minimumWins,
-    ),
-    mustWin,
   };
 }
 
@@ -714,11 +627,15 @@ export default function getPlayerAnalysis(
   const read = (outcome: number) =>
     evaluate(me, against, outcome, isMondayNightSettled);
 
-  // Above the ceiling the week is answered off the floor, plus the must-win games
-  // that cost a verdict each rather than a search.
+  // Above the ceiling only the must-win games are answered, which cost a verdict
+  // each rather than a search. What is left over is a count of wins, and a count
+  // names no games, so there is nothing in it a reader could act on.
   if (games.length > MAX_SEARCHED_GAMES) {
-    const mustWin = provenMustWin(mineMask, read, contested, playerIndex);
-    return headline(player, playerIndex, rivals, games, mustWin);
+    return {
+      kind: "headline",
+      player: player.name,
+      mustWin: provenMustWin(mineMask, read, contested, playerIndex),
+    };
   }
 
   // Winning every pick is the player's best case, so a loss there means no

@@ -108,21 +108,18 @@ describe("AnalysisSummary", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("gives a floor rather than paths on a week too big to search", () => {
+  it("says only when the paths arrive on a week too big to search", () => {
     const result: PlayerAnalysis = {
       kind: "headline",
       player: "Alice",
-      remainingPickCount: 13,
-      minimumWins: 6,
-      needsMondayNight: true,
       mustWin: [],
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(
-      screen.getByText("Alice needs at least 6 of their 13 remaining picks."),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/MNF Points tiebreaker/)).toBeInTheDocument();
+    // A count of wins names no games, so it would read as a way through without
+    // being one. Nothing is claimed where nothing can be worked out.
+    expect(screen.queryByText(/remaining picks/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/MNF Points/)).not.toBeInTheDocument();
     const why = screen.getByText(
       `Detailed analysis is performed once ${MAX_SEARCHED_GAMES} games remain.`,
     );
@@ -135,9 +132,6 @@ describe("AnalysisSummary", () => {
     const result: PlayerAnalysis = {
       kind: "headline",
       player: "Alice",
-      remainingPickCount: 18,
-      minimumWins: 18,
-      needsMondayNight: false,
       mustWin: [{ label: "P3", pick: "KC -7" }],
     };
     render(<AnalysisSummary result={result} />);

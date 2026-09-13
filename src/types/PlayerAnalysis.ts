@@ -51,17 +51,12 @@ export type PlayerAnalysis =
   /** No result left can take the week off them. */
   | { kind: "clinched"; player: string }
   /**
-   * Too many games left to work out the routes, so this is a floor rather than a
-   * route: the fewest picks that could still be enough against the hardest rival.
+   * Too many games left to work out the routes, so only the games that can be
+   * proven one at a time are named. Nothing here is a way through.
    */
   | {
       kind: "headline";
       player: string;
-      /** How many of the games still to be played the player has a pick in. */
-      remainingPickCount: number;
-      minimumWins: number;
-      /** Whether the player only draws level at that count, leaving Monday night to decide. */
-      needsMondayNight: boolean;
       /**
        * Games no win can do without, and all of them: this is what the search
        * would name, read a game at a time. Empty where nothing can be proven,

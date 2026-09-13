@@ -130,24 +130,20 @@ export default function AnalysisBody({
   if (result.kind === "headline") {
     return (
       <>
-        <Message
-          lines={[
-            `${result.player} needs at least ${result.minimumWins} of their ${result.remainingPickCount} remaining picks.`,
-            result.needsMondayNight
-              ? "That is only enough to tie, so the MNF Points tiebreaker would still decide it."
-              : undefined,
-          ]}
-        />
-
         {/* Every must-win game there is, or none. `provenMustWin` holds nothing
-            back, and answers empty where it can prove nothing. */}
+            back, and answers empty where it can prove nothing.
+
+            A count of wins is all the rest of the week reduces to up here, and a
+            count is not a scenario: it says nothing about which games make it, so
+            a reader cannot act on it. Only the games are said, and the note below
+            says when the rest arrives. */}
         {result.mustWin.length > 0 && (
           <Section title="Must win">
             <Picks className="analysis__must-win" games={result.mustWin} />
           </Section>
         )}
 
-        {/* Why there is nothing more below it, in the place the paths count theirs. */}
+        {/* Why there is nothing more above it, in the place the paths count theirs. */}
         <p className="analysis__note">
           {`Detailed analysis is performed once ${MAX_SEARCHED_GAMES} games remain.`}
         </p>
