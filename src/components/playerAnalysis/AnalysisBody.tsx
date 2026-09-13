@@ -95,7 +95,7 @@ function Lead({
   return (
     <p className="analysis__line">
       {takesItOutright
-        ? "Takes the week outright, whatever the MNF Points come to."
+        ? "Takes the week outright."
         : `${result.player} can win the week.`}
       {saysWhatItTakes && hasGames(result) && " What it takes:"}
     </p>
@@ -180,9 +180,7 @@ export default function AnalysisBody({
           answer a reader who can reach it stops at. */}
       {outright && (
         <>
-          <p className="analysis__line">
-            To win the week outright, whatever the MNF Points come to:
-          </p>
+          <p className="analysis__line">To win the week outright:</p>
           <Ways ways={outright} showMondayNight={false} />
           <p className="analysis__line">Otherwise:</p>
         </>

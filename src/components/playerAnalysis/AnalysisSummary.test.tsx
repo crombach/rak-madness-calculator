@@ -240,9 +240,7 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    const line = screen.getByText(
-      "To win the week outright, whatever the MNF Points come to:",
-    );
+    const line = screen.getByText("To win the week outright:");
     // Its own pool, asking one more game than winning the week at all does.
     expect(blockHeading("Any 3 of")).toBeInTheDocument();
     expect(screen.getByText("SF -6")).toBeInTheDocument();
