@@ -675,22 +675,36 @@ export default function getPlayerAnalysis(
     return { kind: "clinched", player: player.name };
   }
 
+  // Both lists are held fewest games first, so the way asking least of the player
+  // is the one on top of each.
+  const takesMore =
+    outright.length > 0 &&
+    bitCount(outright[0].hits) > bitCount(minimal[0].hits);
+
   return {
     kind: "paths",
     player: player.name,
-    ...reduceRoutes(minimal, contested, playerIndex, isMondayNightSettled),
+    // A way that takes the week alone takes it at all, so it stands in both lists
+    // until one of them gives it up. The block above keeps it, and this drops it
+    // rather than saying the same thing twice. Dropped before the shaping, since
+    // the games every way left needs are read off the ways that are left.
+    ...reduceRoutes(
+      takesMore
+        ? minimal.filter((route) => route.verdict.kind !== "win")
+        : minimal,
+      contested,
+      playerIndex,
+      isMondayNightSettled,
+    ),
     // Shaped like the ways above it, since it is the same question asked of a
     // higher bar. `mondayNight` is dropped: every route here wins without it.
-    outright:
-      outright.length > 0
-        ? outrightOnly(
-            reduceRoutes(
-              outright,
-              contested,
-              playerIndex,
-              isMondayNightSettled,
-            ),
-          )
-        : undefined,
+    //
+    // A block of its own only where it asks for more games than winning the week
+    // does. Asking for the same, it is the block below, which says it already.
+    outright: takesMore
+      ? outrightOnly(
+          reduceRoutes(outright, contested, playerIndex, isMondayNightSettled),
+        )
+      : undefined,
   };
 }
