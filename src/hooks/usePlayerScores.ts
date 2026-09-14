@@ -236,7 +236,7 @@ export default function usePlayerScores(
               // uploaded is replaced by it, which is the point: the upload
               // stands in until the week reaches the database.
               //
-              // A game going final asks for none of that. It rescores what is in
+              // A game polled final asks for none of that. It rescores what is in
               // hand, since the reader did not ask for anything and a sheet
               // arriving under them is not what a settled game means.
               loadPicks:
