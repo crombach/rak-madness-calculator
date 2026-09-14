@@ -155,7 +155,11 @@ function sideFor(
   return {
     player,
     total: tierOf(setTotal, clearTotal, player.score.total + deadTotal),
-    college: tierOf(setCollege, clearCollege, player.score.college + deadCollege),
+    college: tierOf(
+      setCollege,
+      clearCollege,
+      player.score.college + deadCollege,
+    ),
     spread: tierOf(
       setSpread,
       clearSpread,
