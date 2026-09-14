@@ -19,11 +19,34 @@ export const POLL_MS = 15_000;
 export const LOADING_MS = 500;
 
 /**
+ * The longest wait a poll is given, well inside the range `setTimeout` can hold. A
+ * delay it cannot hold fires at once, which would turn a far-off kickoff into a
+ * request loop.
+ */
+export const MAX_SLEEP_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * How long to wait before asking about a game again.
+ *
+ * A game that has not kicked off cannot move, so the wait runs to its kickoff
+ * rather than over it on `POLL_MS`. ESPN pushes a start time back, so a wake-up
+ * that still finds the game upcoming waits `POLL_MS` like any other.
+ */
+export function nextPollMs(
+  result: LeagueResult | null,
+  now = Date.now(),
+): number {
+  if (result?.status !== GameStatus.UPCOMING) return POLL_MS;
+  const untilKickoff = result.date.getTime() - now;
+  return Math.min(Math.max(untilKickoff, POLL_MS), MAX_SLEEP_MS);
+}
+
+/**
  * One game, kept up to date for as long as it is being looked at.
  *
  * The week's scores carry the game as it stood when they were worked out, which is
  * stale the moment a live game moves, so a game is fetched again as it is shown and
- * then on `POLL_MS` until it is final. A game already final when it is opened is
+ * then on `nextPollMs` until it is final. A game already final when it is opened is
  * never fetched at all, because nothing about it can differ.
  *
  * `shown` is the fresher answer alone. Nothing is returned until one lands, and the
@@ -109,7 +132,7 @@ export default function useLiveGame({
         // answer at all is asked about again, since the next week's list may hold
         // it.
         if (result == null || result.status !== GameStatus.FINAL) {
-          timer = window.setTimeout(poll, POLL_MS);
+          timer = window.setTimeout(poll, nextPollMs(result));
         } else {
           onFinal.current?.();
         }
