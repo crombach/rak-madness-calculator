@@ -96,7 +96,9 @@
 }
 
 // Columns rather than a wrapping row, so the same game sits at the same x down
-// every route. Each list is the same width, so each divides the same way.
+// every route. Each list divides the same width, so a column falls at the same x
+// in all of them. A pool's chips ask more of a column than a boxed list's do, so
+// that list alone can take one column fewer where the width is near a boundary.
 .analysis__picks {
   display: grid;
   // A column is only ever as wide as the widest chip it can hold: a label, a team
@@ -142,6 +144,13 @@
 // whole block is a single option, which is what `.analysis__must-win` says.
 .analysis__pool {
   --rak-pick-box: calc(var(--rak-block-inset) + var(--rak-border-width));
+  // The width a box takes out of the row: its rule and an inset at each end. A
+  // boxed list loses that off both sides and divides what is left. This one is
+  // flush at the head, so it all comes off the tail, and the columns land where
+  // a boxed list's columns land rather than a step wider each.
+  padding-inline-end: calc(
+    var(--rak-block-inset) * 2 + var(--rak-border-width)
+  );
 }
 
 .analysis__pool > .analysis__pick {

@@ -60,16 +60,21 @@ function Ways({
   // once rather than on each of them.
   showMondayNight,
   conjoined,
+  // Whether a block over both halves already names games these ways need. It is
+  // not conjoined to them, since the halves are read one at a time, but the word
+  // below would say the choice takes the week on its own.
+  hoisted,
 }: {
   ways: WaysThrough;
   showMondayNight: boolean;
   conjoined?: boolean;
+  hoisted?: boolean;
 }) {
   const hasMustWin = ways.mustWin.length > 0;
   // `Must win` names a demand on its own. `One of` and `Any 2 of` name a choice
   // and leave what it is for unsaid, so a block opening the answer says the word.
-  // One with a block above it is already held to it by `And`.
-  const opens = !hasMustWin && !conjoined;
+  // One with a demand above it, conjoined or hoisted, is already held to that.
+  const opens = !hasMustWin && !conjoined && !hoisted;
   const asked = (title: string) =>
     opens ? `Needs ${title.toLowerCase()}` : title;
   return (
@@ -217,14 +222,22 @@ export default function AnalysisBody({
       {result.outright && (
         <>
           <p className="analysis__divider">To win outright:</p>
-          <Ways ways={past(result.outright, hoisted)} showMondayNight={false} />
+          <Ways
+            ways={past(result.outright, hoisted)}
+            showMondayNight={false}
+            hoisted={hoisted.length > 0}
+          />
           <p className="analysis__divider">
             To win with MNF Points tiebreaker:
           </p>
         </>
       )}
 
-      <Ways ways={ways} showMondayNight={result.mondayNight == null} />
+      <Ways
+        ways={ways}
+        showMondayNight={result.mondayNight == null}
+        hoisted={hoisted.length > 0}
+      />
 
       {/* A picked player always reads a sentence. This is the one left where the
           games ask nothing and the line above said nothing either. */}

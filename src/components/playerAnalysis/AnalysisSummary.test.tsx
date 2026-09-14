@@ -370,6 +370,28 @@ describe("AnalysisSummary", () => {
     expect(screen.getAllByText("KC -3")).toHaveLength(1);
   });
 
+  it("leaves the word off a half a lifted must-win block already holds", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      // The one game both halves need, so it is lifted over the pair of them and
+      // neither half is left naming a must-win of its own.
+      mustWin: [{ label: "P1", pick: "KC -3" }],
+      pool: { choose: 2, games: [{ label: "P2", pick: "SF -6" }] },
+      outright: {
+        mustWin: [{ label: "P1", pick: "KC -3" }],
+        pool: { choose: 3, games: [{ label: "P2", pick: "SF -6" }] },
+      },
+      mondayNight: RAK_BY_45,
+    };
+    render(<AnalysisSummary result={result} />);
+
+    // `Needs any 3 of` would say the pool takes the week on its own, and the
+    // block above says P1 is wanted too.
+    expect(blockHeading("Any 3 of")).toBeInTheDocument();
+    expect(blockHeading("Any 2 of")).toBeInTheDocument();
+    expect(screen.queryByText(/Needs/)).not.toBeInTheDocument();
+  });
+
   it("leaves a lone block's must-win games where they are", () => {
     const result: PlayerAnalysis = {
       ...base,
