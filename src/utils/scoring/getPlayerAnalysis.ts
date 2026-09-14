@@ -103,7 +103,7 @@ function sideFor(
   player: PlayerScore,
   playerIndex: number,
   contested: Array<RemainingGame>,
-  coverers: Array<string>,
+  coverers: Array<string | undefined>,
 ): Side {
   let setTotal = 0;
   let clearTotal = 0;
@@ -741,9 +741,13 @@ export default function getPlayerAnalysis(
     (game) => new Set(live.map((index) => game.cells[index].team)).size > 1,
   );
 
-  // This player has no blank pick, handled above, so every contested game
-  // is theirs to win. A rival's blank still scores no gain in `sideFor`.
-  const coverers = contested.map((game) => game.cells[playerIndex].team!);
+  // The side each bit is read as, which is this player's own wherever they wrote
+  // one. A cell nothing can score names no side, and `sideFor` reads every player
+  // as missing that bit. Two rivals on opposite sides of such a game are then both
+  // read as missing it, which no result can deliver. This pre-dates the team being
+  // absent rather than wrong: a pick the week holds no game for never matched a
+  // rival's team either.
+  const coverers = contested.map((game) => game.cells[playerIndex].team);
   const mineMask = (1 << contested.length) - 1;
 
   const isMondayNightSettled = scores.tiebreaker != null;
@@ -817,8 +821,9 @@ export default function getPlayerAnalysis(
   if (whole.shares != null) {
     // What the table cannot say by standing in two halves. Both lists are held
     // fewest games first, so each one's cheapest way is the one on top of it.
-    // Zero where the cheapest way already takes the week alone, which leaves the
-    // tiebreaker out of it with nothing more asked.
+    // The subtraction answers zero where that cheapest way already takes the week
+    // alone, and the fallback answers zero where no way takes it alone at all.
+    // Neither has a higher bar to name, so the line below is left off for both.
     const outrightCost =
       outright.length > 0
         ? bitCount(outright[0].hits) - bitCount(minimal[0].hits)
