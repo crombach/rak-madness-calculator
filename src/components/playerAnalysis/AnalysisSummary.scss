@@ -332,9 +332,10 @@
   font-weight: var(--rak-weight-semibold);
 }
 
-// The two halves of the answer, each read against the blocks under it. Set over
-// the micro-labels naming those blocks, so the split lands before the blocks
-// inside it do.
+// The two halves of the answer, each read against the blocks under it. A heading
+// so a reader moving by heading finds the halves, and one level with the titles
+// under it rather than over them, since nesting those costs a level threaded
+// through every caller of `Section`.
 //
 // A rule on both, not on the second alone. The gap between these is the gap
 // between any two blocks, so without one the first reads as a label on the block
@@ -345,10 +346,11 @@
   padding-block-start: var(--rak-space-4);
   border-block-start: var(--rak-border-width-hairline) solid var(--rak-divider);
   color: var(--rak-text);
-  // Set at the body's own size. Full ink and the weight put it over the labels
-  // under it, so a step up in size on top of those would take the eye first.
+  // Set at the body's own size, since full ink and the rule already hold it over
+  // the labels under it. The weight a heading draws by default is set off here
+  // for the same reason: a third mark on top of those two only shouts.
   font-size: var(--rak-text-sm);
-  font-weight: var(--rak-weight-bold);
+  font-weight: var(--rak-weight-medium);
 }
 
 // Nothing to rule off where the divider heads the body: the standing is all that

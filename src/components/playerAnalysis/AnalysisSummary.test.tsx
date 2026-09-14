@@ -306,6 +306,9 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     const line = screen.getByText("To win outright:");
+    // A heading, so a reader moving by heading finds the halves rather than only
+    // the blocks inside them.
+    expect(line.tagName).toBe("H3");
     // Its own pool, asking one more game than winning the week at all does.
     expect(blockHeading("Needs any 3 of")).toBeInTheDocument();
     expect(screen.getByText("SF -6")).toBeInTheDocument();

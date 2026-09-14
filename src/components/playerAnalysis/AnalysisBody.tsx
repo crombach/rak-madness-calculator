@@ -221,15 +221,15 @@ export default function AnalysisBody({
           block out unless it drops the ways that win without one. */}
       {result.outright && (
         <>
-          <p className="analysis__divider">To win outright:</p>
+          <h3 className="analysis__divider">To win outright:</h3>
           <Ways
             ways={past(result.outright, hoisted)}
             showMondayNight={false}
             hoisted={hoisted.length > 0}
           />
-          <p className="analysis__divider">
+          <h3 className="analysis__divider">
             To win with MNF Points tiebreaker:
-          </p>
+          </h3>
         </>
       )}
 
