@@ -11,7 +11,8 @@ import { POLL_MS } from "../../hooks/useLiveGame";
 
 vi.mock("../../utils/getLeagueResults");
 
-import { dialog, getGameResultMock } from "./gameStatusDialogTestSupport";
+import { getGameResultMock } from "../../utils/getGameResultMock";
+import { dialog } from "./gameStatusDialogTestSupport";
 
 const proGame: WeekGame = {
   label: "P1",

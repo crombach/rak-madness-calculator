@@ -1,15 +1,12 @@
 import { act, renderHook } from "@testing-library/react";
-import { MockedFunction } from "vitest";
 import { GameStatus } from "../types/ESPN";
 import { League, WeekInfo } from "../types/League";
 import { WeekGame } from "../types/WeekGame";
-import { getGameResult } from "../utils/getLeagueResults";
+import { getGameResultMock } from "../utils/getGameResultMock";
 import { liveGame, upcomingGame } from "../utils/scoring/leagueResultFixtures";
 import useLiveGame, { MAX_SLEEP_MS, nextPollMs, POLL_MS } from "./useLiveGame";
 
 vi.mock("../utils/getLeagueResults");
-
-const getGameResultMock = getGameResult as MockedFunction<typeof getGameResult>;
 
 const NOW = new Date("2024-10-06T12:00:00Z");
 const HOUR_MS = 60 * 60 * 1000;
