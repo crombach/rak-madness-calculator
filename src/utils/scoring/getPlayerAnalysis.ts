@@ -275,6 +275,20 @@ function provenMustWin(
   });
 }
 
+/**
+ * Whichever of two verdicts leaves the player better off.
+ *
+ * A win beats a total to hit, which beats a loss. Between two totals the wider
+ * range is the better one, since every total in it is one the player takes the week
+ * on. The range is reported as one of them rather than as both together: the two
+ * need not meet, and a reader acts on a range by watching one game.
+ */
+function better(a: Verdict, b: Verdict): Verdict {
+  if (a.kind === "win" || b.kind === "loss") return a;
+  if (b.kind === "win" || a.kind === "loss") return b;
+  return a.hi - a.lo >= b.hi - b.lo ? a : b;
+}
+
 function outlookOf(verdict: Verdict, isSettled: boolean): MondayNightOutlook {
   if (verdict.kind !== "onTotal") {
     return isSettled ? { kind: "settled" } : { kind: "notNeeded" };
@@ -738,14 +752,27 @@ export default function getPlayerAnalysis(
     (game) => new Set(live.map((index) => game.cells[index].team)).size > 1,
   );
 
-  // The side each bit is read as, which is this player's own wherever they wrote
-  // one. A cell nothing can score names no side, and `sideFor` reads every player
-  // as missing that bit. Two rivals on opposite sides of such a game are then both
-  // read as missing it, which no result can deliver. This pre-dates the team being
-  // absent rather than wrong: a pick the week holds no game for never matched a
-  // rival's team either.
-  const coverers = contested.map((game) => game.cells[playerIndex].team);
-  const mineMask = (1 << contested.length) - 1;
+  // The side each bit is read as: this player's own wherever they wrote one, and
+  // otherwise whichever live player did. A cell nothing can score names no side,
+  // and a bit named off one reads every rival as missing the game, which leaves
+  // two rivals on opposite sides of it both losing at once. No result delivers
+  // that. A contested game always holds a team, since a game every live player
+  // left unreadable is not contested.
+  const coverers = contested.map(
+    (game) =>
+      game.cells[playerIndex].team ??
+      live.map((index) => game.cells[index].team).find((team) => team != null),
+  );
+
+  // The bits the player can act on. A game they wrote nothing for scores them the
+  // same whichever way it falls, so it is no part of any way through and belongs
+  // under no heading. It still moves their rivals, which `read` answers for.
+  const mineMask = contested.reduce(
+    (mask, game, bit) =>
+      game.cells[playerIndex].team == null ? mask : mask | (1 << bit),
+    0,
+  );
+  const skippedMask = ((1 << contested.length) - 1) & ~mineMask;
 
   const isMondayNightSettled = scores.tiebreaker != null;
 
@@ -759,8 +786,23 @@ export default function getPlayerAnalysis(
 
   // Every outcome read below is a set of the player's own picks, so no two reads
   // ask about the same one and there is nothing for a cache to hold.
-  const read = (outcome: number) =>
-    evaluate(me, against, outcome, isMondayNightSettled);
+  //
+  // A game the player skipped is still open between their rivals and still moves
+  // the week, so each outcome is read over every way those games can fall and
+  // answered on the best of them. That never tells a player the week is gone
+  // where one of those games would save it. The cost is that a way through reads
+  // as though they fall the player's way, which is the most the tables can say
+  // about a game the player holds no pick in.
+  const read = (outcome: number) => {
+    let best = evaluate(me, against, outcome, isMondayNightSettled);
+    for (let rest = skippedMask; rest !== 0; rest = (rest - 1) & skippedMask) {
+      best = better(
+        best,
+        evaluate(me, against, outcome | rest, isMondayNightSettled),
+      );
+    }
+    return best;
+  };
 
   // Above the ceiling only the must-win games are answered, which cost a verdict
   // each rather than a search. What is left over is a count of wins, and a count

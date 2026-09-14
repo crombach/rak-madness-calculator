@@ -932,6 +932,46 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
   });
 });
 
+describe("getPlayerAnalysis, blank picks", () => {
+  /** Two rivals on opposite sides of a game the player left blank. */
+  function splitOnP2(aliceTotal: number, rivalTotal: number) {
+    return week([
+      player({
+        name: "Alice",
+        total: aliceTotal,
+        pro: [pick("KC -3"), pick("")],
+      }),
+      player({
+        name: "Bob",
+        total: rivalTotal,
+        pro: [pick("DEN +3"), pick("SF -6")],
+      }),
+      player({
+        name: "Carol",
+        total: rivalTotal,
+        pro: [pick("DEN +3"), pick("SEA +6")],
+      }),
+    ]);
+  }
+
+  it("hands a game the player left blank to the rivals who picked it", () => {
+    // Exactly one of Bob and Carol takes P2, so one of them finishes on 7 however
+    // it falls. Alice tops out at 6 and the week is gone.
+    const result = getPlayerAnalysis(splitOnP2(5, 6), "Alice");
+
+    expect(result?.kind).toBe("knockedOut");
+  });
+
+  it("names no game the player left blank", () => {
+    // Without P1 a rival passes her on P2, so P1 is the whole answer. P2 is not
+    // hers to win, so no heading can ask her for it.
+    const result = paths(getPlayerAnalysis(splitOnP2(6, 6), "Alice"));
+
+    expect(labels(result.mustWin)).toEqual(["P1"]);
+    expect(JSON.stringify(result)).not.toContain("P2");
+  });
+});
+
 describe("getPlayerAnalysis, weeks too big to search", () => {
   /**
    * One game past the ceiling, so every week below answers off the floor rather
