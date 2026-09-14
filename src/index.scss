@@ -11,7 +11,8 @@
   // own chrome: it reads as an instrument panel rather than as a page, and its
   // capitals hold at the sizes the labels are set. Narrow enough for `MNF POINTS`
   // to stand on one line in a score column, which is the tightest thing the app
-  // asks of a body face. `src/index.tsx` loads the four weights it is set at.
+  // asks of a body face. `index.html` declares the four weights it is set at and
+  // preloads them, for the reason its own comment gives.
   --rak-font-body:
     "Chakra Petch", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",

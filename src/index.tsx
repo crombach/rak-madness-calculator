@@ -2,13 +2,10 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 import App from "./App";
-// Chakra Petch ships one file per weight rather than one variable file, so only the
-// four the app sets anything in are asked for: body copy at 400, a toast's message at
-// 500, a button and a team's name at 600, and every screen-printed label at 700.
-//
 // Chakra Petch is missing on purpose, for the reason DSEG14 Classic is below. It
 // is the body face, so it measures every label on the first screen, and a swap
 // into it moves them. index.html declares its four weights and preloads them.
+//
 // IBM Plex Mono ships one file per weight rather than one variable file, so only the
 // three the app sets anything in are asked for: the tables and the pick chips at 400,
 // the spread and a player's standing at 600, and a game's own mark at 700.
