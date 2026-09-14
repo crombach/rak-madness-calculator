@@ -68,6 +68,20 @@ export type PickShares = {
      */
     isAlways: boolean;
   };
+  /**
+   * How many more games the cheapest way to win outright asks for than the
+   * cheapest way to win at all.
+   *
+   * Absent where no way wins outright, and where the cheapest way already does.
+   * Only a table gives this, since a list of ways says it by standing in two
+   * halves instead.
+   *
+   * A count of the ways that win outright would not do. A way taking the week
+   * alone holds a smaller winning way inside it, so it stands in both lists, and
+   * counting it against `routeCount` would count one win twice. Two cheapest ways
+   * compare without that.
+   */
+  outrightCost?: number;
 };
 
 /**

@@ -815,7 +815,21 @@ export default function getPlayerAnalysis(
   // no way to tell the tables apart. The split is worth making only where the ways
   // can be read one at a time, and a table is what stands in where they cannot.
   if (whole.shares != null) {
-    return { kind: "paths", player: player.name, ...whole };
+    // What the table cannot say by standing in two halves. Both lists are held
+    // fewest games first, so each one's cheapest way is the one on top of it.
+    // Zero where the cheapest way already takes the week alone, which leaves the
+    // tiebreaker out of it with nothing more asked.
+    const outrightCost =
+      outright.length > 0
+        ? bitCount(outright[0].hits) - bitCount(minimal[0].hits)
+        : 0;
+    return {
+      kind: "paths",
+      player: player.name,
+      ...whole,
+      shares:
+        outrightCost > 0 ? { ...whole.shares, outrightCost } : whole.shares,
+    };
   }
 
   return {

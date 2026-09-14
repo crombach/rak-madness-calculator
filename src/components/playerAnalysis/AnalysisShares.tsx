@@ -49,6 +49,21 @@ function SharesMondayNight({
 }
 
 /**
+ * The way out of the tiebreaker, which the table itself cannot show.
+ *
+ * A list of ways says this by standing in two halves, one asking more games and no
+ * total. A share names a game and not a way, so the halves would stand twice over
+ * the same games, and the cost of the higher bar is said in a line instead.
+ */
+function SharesOutright({ cost }: { cost: number }) {
+  return (
+    <p className="analysis__note --upright">
+      {`With ${plural(cost, "more correct pick")} than the shortest way, the MNF Points tiebreaker will not matter.`}
+    </p>
+  );
+}
+
+/**
  * Each game once, against the routes needing it, where there are more routes than a
  * list can show. `SHARES_SHOWN_AT_FIRST` stand open and a button opens the rest.
  */
@@ -99,6 +114,12 @@ export default function AnalysisShares({
       {/* A total is a condition on a route and these rows are not routes, so the
           one the most routes ask for is said under them rather than in a column. */}
       {points && <SharesMondayNight points={points} />}
+
+      {/* Under the totals, which say the tiebreaker is in play. This says what it
+          takes to put it out of play, so it reads as the answer to them. */}
+      {shares.outrightCost != null && (
+        <SharesOutright cost={shares.outrightCost} />
+      )}
       {folded > 0 && (
         <Button
           className="analysis__more"
