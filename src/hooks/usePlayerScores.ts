@@ -20,6 +20,24 @@ import scoreChanges, {
 /** Long enough that holding the refresh button down sends one request. */
 const REFRESH_THROTTLE_MS = 500;
 
+/**
+ * The floor on how long `isRefreshing` stays set.
+ *
+ * Cleared at the later of this and the work finishing, so a slow refresh turns the
+ * button for its whole run. A rescore of the workbook in hand comes back in single
+ * milliseconds, and a button that spins for that long reads as a button that did
+ * nothing. `LOADING_MS` in `useLiveGame` holds the Game Status bar to the same floor
+ * for the same reason.
+ */
+const REFRESHING_FLOOR_MS = 500;
+
+/** Resolves once `ms` has passed, so a caller can hold something open for it. */
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 /** The season and week a scoring attempt has finished, however it turned out. */
 type LastAttempt = { season: number; weekNumber: number };
 
@@ -222,6 +240,9 @@ export default function usePlayerScores(
           const inHand = picksBuffer;
           if (!refetch && inHand == null) return;
           setRefreshing(true);
+          // Started before the work, not after it, so the two run together and
+          // the button turns for whichever lasts longer.
+          const floor = delay(REFRESHING_FLOOR_MS);
           clearToasts();
           const failure = scoringFailed(selectedWeek.value);
           // Nothing said on success. The scores are on screen and the numbers
@@ -251,6 +272,9 @@ export default function usePlayerScores(
               keepScoresOnFailure: true,
             });
           } finally {
+            // The scores go up as soon as they are worked out. Only the button
+            // waits, so a refresh that lands at once still says it happened.
+            await floor;
             setRefreshing(false);
           }
           // No trailing edge: a second click inside the window is dropped rather

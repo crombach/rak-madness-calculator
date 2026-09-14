@@ -199,6 +199,32 @@ describe("usePlayerScores, refresh", () => {
     expect(global.fetch).toHaveBeenCalledTimes(fetchCallsBefore);
   });
 
+  it("keeps the button turning after the scores it asked for land", async () => {
+    // A rescore of the workbook in hand answers in single milliseconds. Stopped
+    // with the answer, the button would flash and read as a button that did
+    // nothing, so it is held to `REFRESHING_FLOOR_MS` instead.
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+
+    let refreshing: Promise<void> | undefined;
+    act(() => {
+      refreshing = result.current.refresh();
+    });
+    // The scores go up as soon as they are worked out, and the button is still
+    // turning behind them.
+    await waitFor(() => expect(getPlayerScoresMock).toHaveBeenCalledTimes(2));
+    expect(result.current.isRefreshing).toBe(true);
+
+    await act(async () => {
+      await refreshing;
+    });
+
+    expect(result.current.isRefreshing).toBe(false);
+  });
+
   it("replaces a workbook the reader uploaded with the one in the database", async () => {
     // The uploaded sheet stands in until the week reaches the database. Once it
     // is there, it is the week's own, so a refresh takes it back.
