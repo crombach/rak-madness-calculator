@@ -214,7 +214,7 @@ describe("PicksTable, rows", () => {
     expect(screen.getByText("MIA").closest("td")).toHaveClass("--unscoreable");
   });
 
-  it("tells a screen reader a blank cell went the player's way for nothing", () => {
+  it("announces a blank cell to a screen reader as a wrong pick", () => {
     const blank: RakMadnessScores = {
       tiebreaker: 47,
       scores: [
