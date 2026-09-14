@@ -62,7 +62,7 @@ function SharesMondayNight({
 function SharesOutright({ cost }: { cost: number }) {
   return (
     <p className="analysis__note --upright">
-      {`The shortest way to win outright asks ${plural(cost, "more correct pick")}.`}
+      {`The shortest way to win outright needs ${plural(cost, "more correct pick")}.`}
     </p>
   );
 }

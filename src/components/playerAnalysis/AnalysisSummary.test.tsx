@@ -577,7 +577,7 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(notes()).toEqual([
-      "The shortest way to win outright asks 1 more correct pick.",
+      "The shortest way to win outright needs 1 more correct pick.",
     ]);
   });
 
@@ -618,7 +618,7 @@ describe("AnalysisSummary", () => {
     // The totals first, since the line under them is the answer to them.
     expect(notes()).toEqual([
       "Every way needs the MNF Points tiebreaker. 8 ways need MNF Points ≤ 41.",
-      "The shortest way to win outright asks 1 more correct pick.",
+      "The shortest way to win outright needs 1 more correct pick.",
     ]);
   });
 
