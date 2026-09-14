@@ -247,18 +247,16 @@ describe("AnalysisSummary", () => {
     expect(isConjoined("One of")).toBe(true);
   });
 
-  it("says something for a player the games can no longer separate", () => {
+  it("gives a player the games can no longer separate the totals alone", () => {
+    // Nothing stands above the totals, so they are the whole answer. A sentence
+    // saying so would name the tiebreaker the line already names.
     const result: PlayerAnalysis = {
       ...base,
       mondayNight: RAK_BY_45,
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(
-      screen.getByText(
-        "No clean path to victory. The MNF Points tiebreaker decides it.",
-      ),
-    ).toBeInTheDocument();
+    expect(mnfLines()).toEqual(["MNF Points \u2264 45"]);
   });
 
   it("sets a bounded Monday night range as the block's whole line", () => {
@@ -569,6 +567,59 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(shareRows()).toEqual(["P1KC -399%", "P2BUF -11%"]);
+  });
+
+  it("says what the shortest way to win outright costs", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      shares: { ...sharesOf(2), outrightCost: 1 },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(notes()).toEqual([
+      "The shortest way to win outright needs 1 more correct pick.",
+    ]);
+  });
+
+  it("counts more than one such pick as picks", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      shares: { ...sharesOf(2), outrightCost: 2 },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(notes()[0]).toContain("2 more correct picks");
+  });
+
+  it("says nothing about the higher bar where no way clears it", () => {
+    // A table with no `outrightCost` is one where no set of picks takes the week
+    // on its own, so there is no number of extra picks that buys anything.
+    const result: PlayerAnalysis = { ...base, shares: sharesOf(2) };
+    render(<AnalysisSummary result={result} />);
+
+    expect(notes()).toEqual([]);
+  });
+
+  it("answers the totals with the way out of them, in that order", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      shares: {
+        ...sharesOf(2),
+        mondayNight: {
+          points: { kind: "range", max: 41 },
+          routes: 8,
+          isAlways: true,
+        },
+        outrightCost: 1,
+      },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    // The totals first, since the line under them is the answer to them.
+    expect(notes()).toEqual([
+      "Every way needs the MNF Points tiebreaker. 8 ways need MNF Points ≤ 41.",
+      "The shortest way to win outright needs 1 more correct pick.",
+    ]);
   });
 
   it("counts the ways asking for a total where only some of them do", () => {

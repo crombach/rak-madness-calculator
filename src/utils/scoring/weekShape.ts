@@ -64,18 +64,25 @@ function readWeekShape(players: Array<PlayerScore>): WeekShape {
         if (isOpen && isHole) break;
       }
       if (isOpen) {
-        const picks = players.map((player) => {
-          const text = player[league][index].pick ?? "";
-          return { text, ...parsePick(text) };
-        });
         remaining.push({
           label: labels[index],
           league,
-          cells: picks.map(({ teamAbbreviation, spread, text }) => ({
-            team: teamAbbreviation,
-            hasSpread: spread !== 0,
-            text,
-          })),
+          cells: players.map((player) => {
+            const cell = player[league][index];
+            const text = cell.pick ?? "";
+            // A pick nothing can score is worth what a blank is worth, whatever
+            // team it names. Here that is a pick on a game the week's results do
+            // not hold. A spread the sheet disagrees with itself about marks the
+            // whole column unscoreable, which leaves nobody on it incomplete and
+            // so leaves the game closed. This pick scores its player nothing
+            // however the game falls, and read as a live pick it would put them
+            // on a side they can never take.
+            if (fillStatus(cell) === "unscoreable") {
+              return { hasSpread: false, text };
+            }
+            const { teamAbbreviation, spread } = parsePick(text);
+            return { team: teamAbbreviation, hasSpread: spread !== 0, text };
+          }),
         });
       }
       if (isHole) unscoreable.push(labels[index]);
