@@ -302,9 +302,13 @@
   font-weight: var(--rak-weight-bold);
 }
 
+// The answer itself wherever it is a sentence rather than a block: why a player is
+// knocked out, that a clinched week is won, that only the tiebreaker is left. Full
+// ink, the same as the titles naming the blocks, since a reader given a sentence
+// instead of blocks is given no less.
 .analysis__line {
   margin: 0;
-  color: var(--rak-text-secondary);
+  color: var(--rak-text);
   font-size: var(--rak-text-sm);
 }
 
