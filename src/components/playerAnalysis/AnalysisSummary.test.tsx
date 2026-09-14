@@ -363,7 +363,7 @@ describe("AnalysisSummary", () => {
     expect(under("Must win")).toEqual(["P1KC -3"]);
   });
 
-  it("names the player standing where nothing takes the week outright", () => {
+  it("says nothing about winning where the total still decides it", () => {
     const result: PlayerAnalysis = {
       ...base,
       mustWin: [{ label: "P1", pick: "KC -3" }],
@@ -371,38 +371,10 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(screen.getByText("Alice can win the week.")).toBeInTheDocument();
-  });
-
-  it("names the blocks under the standing as what the player has to do", () => {
-    const result: PlayerAnalysis = {
-      ...base,
-      mustWin: [{ label: "P1", pick: "KC -3" }],
-      mondayNight: RAK_BY_45,
-    };
-    render(<AnalysisSummary result={result} />);
-
-    const intro = screen.getByText("They need:");
-    expect(
-      intro.compareDocumentPosition(blockHeading("Must win")) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-  });
-
-  it("leaves the lead-in out where a half opens with a line of its own", () => {
-    const result: PlayerAnalysis = {
-      ...base,
-      pool: { choose: 2, games: [{ label: "P1", pick: "KC -3" }] },
-      outright: {
-        mustWin: [],
-        pool: { choose: 3, games: [{ label: "P1", pick: "KC -3" }] },
-      },
-      mondayNight: RAK_BY_45,
-    };
-    render(<AnalysisSummary result={result} />);
-
-    expect(screen.queryByText("They need:")).not.toBeInTheDocument();
-    expect(screen.getByText("To win outright:")).toBeInTheDocument();
+    // The standing above and the blocks below say it between them, so the line
+    // is drawn only for the one thing neither of them carries.
+    expect(screen.queryByText(/can win the week/)).not.toBeInTheDocument();
+    expect(blockHeading("Must win")).toBeInTheDocument();
   });
 
   it("marks each option of a pool the way a route is marked", () => {

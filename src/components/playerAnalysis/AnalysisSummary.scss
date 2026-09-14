@@ -15,8 +15,8 @@
   // What a block holds its contents off its own rule by. A pool has no box, so
   // its chips carry this themselves and every block's text starts at one x.
   --rak-block-inset: 10px;
-  // The width a column adds where a chip is its own box. Zero in a block whose
-  // box carries the inset for it.
+  // The width a column adds where a chip is its own box: the inset and the rule
+  // both. Zero in a block whose box carries the two for it.
   --rak-pick-box: 0px;
   // A game label is a league letter and at most two digits. Monospace, so that is a
   // width rather than a guess.
@@ -141,16 +141,14 @@
 // options are the chips, and one rule down the side of the grid would say the
 // whole block is a single option, which is what `.analysis__must-win` says.
 .analysis__pool {
-  --rak-pick-box: var(--rak-block-inset);
+  --rak-pick-box: calc(var(--rak-block-inset) + var(--rak-border-width));
 }
 
 .analysis__pool > .analysis__pick {
-  // The box's inset as well as the chip's, since here the chip is the box. Less
-  // the rule, which stands inside the box in every block beside this one, so a
-  // pick starts at the x a must-win pick and a route's pick start at.
-  padding-inline-start: calc(
-    var(--rak-block-inset) + var(--rak-pick-inset) - var(--rak-border-width)
-  );
+  // The box's inset as well as the chip's, since here the chip is the box. The
+  // rule sits outside both, as it does on the box in every block beside this
+  // one, so a pick starts at the x a must-win pick and a route's pick start at.
+  padding-inline-start: calc(var(--rak-block-inset) + var(--rak-pick-inset));
   border-inline-start: var(--rak-border-width) solid var(--rak-gold-500);
   // Square against the rule, the way a route's box is, so the two read as one
   // mark rather than as a chip that happens to have an edge.
@@ -328,22 +326,20 @@
 // The two halves of the answer, each read against the blocks under it. Set over
 // the micro-labels naming those blocks, so the split lands before the blocks
 // inside it do.
+//
+// A rule on both, not on the second alone. The gap between these is the gap
+// between any two blocks, so without one the first reads as a label on the block
+// above it rather than as the head of a half. Drawn the way the dialog draws its
+// own rule under the search, since both sit on the sheet's ground and not a fill.
 .analysis__divider {
   margin: 0;
+  padding-block-start: var(--rak-space-4);
+  border-block-start: var(--rak-border-width-hairline) solid var(--rak-divider);
   color: var(--rak-text);
   // Set at the body's own size. Full ink and the weight put it over the labels
   // under it, so a step up in size on top of those would take the eye first.
   font-size: var(--rak-text-sm);
   font-weight: var(--rak-weight-bold);
-}
-
-// A rule only where one half follows another. The gap between these is the gap
-// between any two blocks, which on its own does not say a half has ended.
-// Drawn the way the dialog draws its own rule under the search, since both sit
-// on the sheet's ground rather than on a fill.
-.analysis__divider ~ .analysis__divider {
-  padding-block-start: var(--rak-space-4);
-  border-block-start: var(--rak-border-width-hairline) solid var(--rak-divider);
 }
 
 .analysis__message {

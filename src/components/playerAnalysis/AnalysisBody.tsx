@@ -105,20 +105,18 @@ function Ways({
 }
 
 /**
- * Where the player stands, over the games that get them there.
+ * That the tiebreaker is out of it, which nothing below says. `MondayNight` draws
+ * nothing where the total is not needed, so a reader without this line cannot tell
+ * a week taken outright from one the total still decides.
  *
- * `outright` is the one thing this line carries that nothing below it does:
- * `MondayNight` draws nothing where the total is not needed, so without the word
- * here a reader cannot tell the tiebreaker is out of it. Every section under this
- * announces itself, so the line does not introduce them.
+ * Nothing where the total is in play. That the player can win at all is what the
+ * standing above and the blocks below say between them.
  */
 function Lead({ result }: { result: PathsResult }) {
-  const takesItOutright = result.mondayNight?.kind === "notNeeded";
-  // Nothing below to lead into, and the closing sentence there is the answer.
-  if (!takesItOutright && !hasGames(result)) return null;
+  if (result.mondayNight?.kind !== "notNeeded") return null;
   return (
     <p className="analysis__line">
-      {`${result.player} can win the week${takesItOutright ? " outright" : ""}.`}
+      {`${result.player} can win the week outright.`}
     </p>
   );
 }
@@ -191,19 +189,10 @@ export default function AnalysisBody({
   // of these. Empty where there is one block, which leaves it rendering as before.
   const hoisted = sharedMustWin(result);
   const ways = past(result, hoisted);
-  // Whether a block stands directly under the lead for it to name. The outright
-  // halves open with a line of their own, so where one of those comes next this
-  // would stack a second colon on top of it and name nothing.
-  const leadsIntoBlocks =
-    hoisted.length > 0 || (result.outright == null && hasGames(result));
 
   return (
     <>
       <Lead result={result} />
-
-      {/* The blocks under this say what to do and the line above says who can do
-          it, so without this they read as two answers rather than as one. */}
-      {leadsIntoBlocks && <p className="analysis__line">They need:</p>}
 
       {/* Every way to win needs these, whichever block a reader goes on to take,
           so they are named over both rather than again inside each. */}
