@@ -225,6 +225,28 @@ describe("AnalysisSummary", () => {
     expect(isConjoined("MNF Points")).toBe(false);
   });
 
+  it("says what a block asks for where it opens the answer", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      routes: routesOf(2),
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(blockHeading("Needs one of")).toBeInTheDocument();
+  });
+
+  it("leaves the word off a block a must-win block already holds", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      mustWin: [{ label: "P1", pick: "KC -3" }],
+      routes: routesOf(2),
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(blockHeading("One of")).toBeInTheDocument();
+    expect(isConjoined("One of")).toBe(true);
+  });
+
   it("says something for a player the games can no longer separate", () => {
     const result: PlayerAnalysis = {
       ...base,
@@ -284,13 +306,16 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     const line = screen.getByText("To win outright:");
+    // A heading, so a reader moving by heading finds the halves rather than only
+    // the blocks inside them.
+    expect(line.tagName).toBe("H3");
     // Its own pool, asking one more game than winning the week at all does.
-    expect(blockHeading("Any 3 of")).toBeInTheDocument();
+    expect(blockHeading("Needs any 3 of")).toBeInTheDocument();
     expect(screen.getByText("SF -6")).toBeInTheDocument();
 
     // Over the ways that need a total, which the tiebreaker line hands down to.
     expect(
-      line.compareDocumentPosition(blockHeading("Any 2 of")) &
+      line.compareDocumentPosition(blockHeading("Needs any 2 of")) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(
@@ -348,6 +373,28 @@ describe("AnalysisSummary", () => {
     expect(screen.getAllByText("KC -3")).toHaveLength(1);
   });
 
+  it("leaves the word off a half a lifted must-win block already holds", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      // The one game both halves need, so it is lifted over the pair of them and
+      // neither half is left naming a must-win of its own.
+      mustWin: [{ label: "P1", pick: "KC -3" }],
+      pool: { choose: 2, games: [{ label: "P2", pick: "SF -6" }] },
+      outright: {
+        mustWin: [{ label: "P1", pick: "KC -3" }],
+        pool: { choose: 3, games: [{ label: "P2", pick: "SF -6" }] },
+      },
+      mondayNight: RAK_BY_45,
+    };
+    render(<AnalysisSummary result={result} />);
+
+    // `Needs any 3 of` would say the pool takes the week on its own, and the
+    // block above says P1 is wanted too.
+    expect(blockHeading("Any 3 of")).toBeInTheDocument();
+    expect(blockHeading("Any 2 of")).toBeInTheDocument();
+    expect(screen.queryByText(/Needs/)).not.toBeInTheDocument();
+  });
+
   it("leaves a lone block's must-win games where they are", () => {
     const result: PlayerAnalysis = {
       ...base,
@@ -363,7 +410,7 @@ describe("AnalysisSummary", () => {
     expect(under("Must win")).toEqual(["P1KC -3"]);
   });
 
-  it("names the player standing where nothing takes the week outright", () => {
+  it("says nothing about winning where the total still decides it", () => {
     const result: PlayerAnalysis = {
       ...base,
       mustWin: [{ label: "P1", pick: "KC -3" }],
@@ -371,7 +418,36 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(screen.getByText("Alice can win the week.")).toBeInTheDocument();
+    // The standing above and the blocks below say it between them, so the line
+    // is drawn only for the one thing neither of them carries.
+    expect(screen.queryByText(/can win the week/)).not.toBeInTheDocument();
+    expect(blockHeading("Must win")).toBeInTheDocument();
+  });
+
+  it("marks each option of a pool the way a route is marked", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      mustWin: [{ label: "P1", pick: "KC -3" }],
+      pool: {
+        choose: 2,
+        games: [
+          { label: "P2", pick: "BUF -1" },
+          { label: "P3", pick: "SF -6" },
+        ],
+      },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    // The mark goes on the options themselves, so the chips carry it and the
+    // must-win grid, which is one box rather than a set of them, does not.
+    expect(
+      [...document.querySelectorAll(".analysis__pool > .analysis__pick")].map(
+        (pick) => pick.textContent,
+      ),
+    ).toEqual(["P2BUF -1", "P3SF -6"]);
+    expect(
+      document.querySelector(".analysis__must-win.analysis__pool"),
+    ).toBeNull();
   });
 
   it("lists routes of different shapes with the ones that need a total marked", () => {

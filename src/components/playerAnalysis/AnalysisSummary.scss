@@ -12,6 +12,12 @@
   // stand under that text rather than under the chip.
   --rak-pick-inset: 8px;
   --rak-pick-gap: 6px;
+  // What a block holds its contents off its own rule by. A pool has no box, so
+  // its chips carry this themselves and every block's text starts at one x.
+  --rak-block-inset: 10px;
+  // The width a column adds where a chip is its own box: the inset and the rule
+  // both. Zero in a block whose box carries the two for it.
+  --rak-pick-box: 0px;
   // A game label is a league letter and at most two digits. Monospace, so that is a
   // width rather than a guess.
   --rak-pick-label-width: 3ch;
@@ -37,10 +43,15 @@
   }
 }
 
-// The body stands its blocks --rak-space-4 apart. This note is a tail on the block
-// above it rather than a block of its own, so it sits as close to that block as the
-// message's own two lines sit to each other.
-.analysis__body > .analysis__note {
+// The body stands its blocks --rak-space-4 apart. Each of these is a tail on the
+// block above it rather than a block of its own: a note about that block, or the
+// totals the word `AND` holds to its games. So each sits as close to the block it
+// belongs to as that block's own title sits to its contents.
+//
+// Not a first child, which has no block above it to be the tail of. There the
+// standing is all that stands above, and the two are already a line apart.
+.analysis__body > .analysis__note:not(:first-child),
+.analysis__body > .analysis__route-mnf:not(:first-child) {
   margin-block-start: calc(var(--rak-space-2) - var(--rak-space-4));
 }
 
@@ -67,18 +78,32 @@
 
 // Every label this dialog names a block with, over a section or over a column.
 // `micro-label` leaves the ink to the caller, since a label reads against the
-// surface under it, and the surface under these is the dialog itself.
+// surface under it, and the surface under these is the dialog itself. The two
+// below take the ink their standing asks for.
 .analysis__standing,
 .analysis__section-title {
   @include micro-label;
 
   margin: 0;
-  color: var(--rak-analysis-label);
   font-size: var(--rak-text-xs);
 }
 
+// The structure of the answer, which a reader picks the block they want out of.
+// Full ink, so the blocks are found at a glance rather than read for.
+.analysis__section-title {
+  color: var(--rak-text);
+}
+
+// A line over the answer rather than a part of it, so it stays a step back from
+// the titles below it.
+.analysis__standing {
+  color: var(--rak-analysis-label);
+}
+
 // Columns rather than a wrapping row, so the same game sits at the same x down
-// every route. Each list is the same width, so each divides the same way.
+// every route. Each list divides the same width, so a column falls at the same x
+// in all of them. A pool's chips ask more of a column than a boxed list's do, so
+// that list alone can take one column fewer where the width is near a boundary.
 .analysis__picks {
   display: grid;
   // A column is only ever as wide as the widest chip it can hold: a label, a team
@@ -93,7 +118,7 @@
     minmax(
       calc(
         var(--rak-pick-label-width) + 9ch + var(--rak-pick-gap) +
-          var(--rak-pick-inset) * 2
+          var(--rak-pick-inset) * 2 + var(--rak-pick-box)
       ),
       1fr
     )
@@ -118,6 +143,33 @@
   white-space: nowrap;
 }
 
+// Choosing one of these is choosing one of the routes below, so an option here
+// carries the mark a route carries. On the chips rather than on the grid: the
+// options are the chips, and one rule down the side of the grid would say the
+// whole block is a single option, which is what `.analysis__must-win` says.
+.analysis__pool {
+  --rak-pick-box: calc(var(--rak-block-inset) + var(--rak-border-width));
+  // The width a box takes out of the row: its rule and an inset at each end. A
+  // boxed list loses that off both sides and divides what is left. This one is
+  // flush at the head, so it all comes off the tail, and the columns land where
+  // a boxed list's columns land rather than a step wider each.
+  padding-inline-end: calc(
+    var(--rak-block-inset) * 2 + var(--rak-border-width)
+  );
+}
+
+.analysis__pool > .analysis__pick {
+  // The box's inset as well as the chip's, since here the chip is the box. The
+  // rule sits outside both, as it does on the box in every block beside this
+  // one, so a pick starts at the x a must-win pick and a route's pick start at.
+  padding-inline-start: calc(var(--rak-block-inset) + var(--rak-pick-inset));
+  border-inline-start: var(--rak-border-width) solid var(--rak-gold-500);
+  // Square against the rule, the way a route's box is, so the two read as one
+  // mark rather than as a chip that happens to have an edge.
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
 // A word naming what follows it rather than saying anything itself.
 .analysis__pick-label,
 .analysis__term {
@@ -136,7 +188,7 @@
 
 // The one word saying a reader needs both sides of it, over a title and inside a
 // route alike. Set in the blue the app points with, so it carries what it says
-// against the tertiary ink of the labels it sits among. After those, since it
+// whether the label it opens is in full ink or in tertiary. After those, since it
 // overrules the color they set.
 .analysis__and {
   color: var(--rak-attention-ink);
@@ -152,7 +204,7 @@
 .analysis__route,
 .analysis__must-win,
 .analysis__shares {
-  padding: var(--rak-space-2) 10px;
+  padding: var(--rak-space-2) var(--rak-block-inset);
   // Drawn on the left alone, so a stack of routes reads as a list of alternatives
   // rather than as a stack of boxes.
   border-inline-start: var(--rak-border-width) solid var(--rak-gold-500);
@@ -194,8 +246,10 @@
     text-align: start;
   }
 
-  // Naming the columns rather than saying anything themselves, so set the way the
-  // section title above them is set rather than the way the rows below are.
+  // Naming the columns rather than saying anything themselves, so shaped the way
+  // the section title above them is shaped rather than the way the rows below
+  // are. A step quieter than that title in ink, since the title names the block
+  // and these only name what is in it.
   thead th {
     @include micro-label;
 
@@ -248,9 +302,13 @@
   font-weight: var(--rak-weight-bold);
 }
 
+// The answer itself wherever it is a sentence rather than a block: why a player is
+// knocked out, that a clinched week is won, that only the tiebreaker is left. Full
+// ink, the same as the titles naming the blocks, since a reader given a sentence
+// instead of blocks is given no less.
 .analysis__line {
   margin: 0;
-  color: var(--rak-text-secondary);
+  color: var(--rak-text);
   font-size: var(--rak-text-sm);
 }
 
@@ -281,6 +339,34 @@
   font-family: var(--rak-font-mono);
   font-size: var(--rak-text-sm);
   font-weight: var(--rak-weight-semibold);
+}
+
+// The two halves of the answer, each read against the blocks under it. A heading
+// so a reader moving by heading finds the halves, and one level with the titles
+// under it rather than over them, since nesting those costs a level threaded
+// through every caller of `Section`.
+//
+// A rule on both, not on the second alone. The gap between these is the gap
+// between any two blocks, so without one the first reads as a label on the block
+// above it rather than as the head of a half. Drawn the way the dialog draws its
+// own rule under the search, since both sit on the sheet's ground and not a fill.
+.analysis__divider {
+  margin: 0;
+  padding-block-start: var(--rak-space-4);
+  border-block-start: var(--rak-border-width-hairline) solid var(--rak-divider);
+  color: var(--rak-text);
+  // Set at the body's own size, since full ink and the rule already hold it over
+  // the labels under it. The weight a heading draws by default is set off here
+  // for the same reason: a third mark on top of those two only shouts.
+  font-size: var(--rak-text-sm);
+  font-weight: var(--rak-weight-medium);
+}
+
+// Nothing to rule off where the divider heads the body: the standing is all that
+// stands above it, and the two are already a line apart.
+.analysis__body > .analysis__divider:first-child {
+  padding-block-start: 0;
+  border-block-start: 0;
 }
 
 .analysis__message {

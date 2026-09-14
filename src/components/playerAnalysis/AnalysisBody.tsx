@@ -60,12 +60,23 @@ function Ways({
   // once rather than on each of them.
   showMondayNight,
   conjoined,
+  // Whether a block over both halves already names games these ways need. It is
+  // not conjoined to them, since the halves are read one at a time, but the word
+  // below would say the choice takes the week on its own.
+  hoisted,
 }: {
   ways: WaysThrough;
   showMondayNight: boolean;
   conjoined?: boolean;
+  hoisted?: boolean;
 }) {
   const hasMustWin = ways.mustWin.length > 0;
+  // `Must win` names a demand on its own. `One of` and `Any 2 of` name a choice
+  // and leave what it is for unsaid, so a block opening the answer says the word.
+  // One with a demand above it, conjoined or hoisted, is already held to that.
+  const opens = !hasMustWin && !conjoined && !hoisted;
+  const asked = (title: string) =>
+    opens ? `Needs ${title.toLowerCase()}` : title;
   return (
     <>
       {/* Every must-win game there is, or none. */}
@@ -78,16 +89,16 @@ function Ways({
       {ways.pool && (
         <Section
           conjoined={hasMustWin || conjoined}
-          title={`Any ${ways.pool.choose} of`}
+          title={asked(`Any ${ways.pool.choose} of`)}
         >
-          <Picks games={ways.pool.games} />
+          <Picks className="analysis__pool" games={ways.pool.games} />
         </Section>
       )}
 
       {ways.routes != null && ways.routes.length > 0 && (
         <AnalysisRoutes
           conjoined={hasMustWin || conjoined}
-          title="One of"
+          title={asked("One of")}
           routes={ways.routes}
           showMondayNight={showMondayNight}
         />
@@ -105,20 +116,18 @@ function Ways({
 }
 
 /**
- * Where the player stands, over the games that get them there.
+ * That the tiebreaker is out of it, which nothing below says. `MondayNight` draws
+ * nothing where the total is not needed, so a reader without this line cannot tell
+ * a week taken outright from one the total still decides.
  *
- * `outright` is the one thing this line carries that nothing below it does:
- * `MondayNight` draws nothing where the total is not needed, so without the word
- * here a reader cannot tell the tiebreaker is out of it. Every section under this
- * announces itself, so the line does not introduce them.
+ * Nothing where the total is in play. That the player can win at all is what the
+ * standing above and the blocks below say between them.
  */
 function Lead({ result }: { result: PathsResult }) {
-  const takesItOutright = result.mondayNight?.kind === "notNeeded";
-  // Nothing below to lead into, and the closing sentence there is the answer.
-  if (!takesItOutright && !hasGames(result)) return null;
+  if (result.mondayNight?.kind !== "notNeeded") return null;
   return (
     <p className="analysis__line">
-      {`${result.player} can win the week${takesItOutright ? " outright" : ""}.`}
+      {`${result.player} can win the week outright.`}
     </p>
   );
 }
@@ -212,13 +221,23 @@ export default function AnalysisBody({
           block out unless it drops the ways that win without one. */}
       {result.outright && (
         <>
-          <p className="analysis__line">To win outright:</p>
-          <Ways ways={past(result.outright, hoisted)} showMondayNight={false} />
-          <p className="analysis__line">To win with MNF Points tiebreaker:</p>
+          <h3 className="analysis__divider">To win outright:</h3>
+          <Ways
+            ways={past(result.outright, hoisted)}
+            showMondayNight={false}
+            hoisted={hoisted.length > 0}
+          />
+          <h3 className="analysis__divider">
+            To win with MNF Points tiebreaker:
+          </h3>
         </>
       )}
 
-      <Ways ways={ways} showMondayNight={result.mondayNight == null} />
+      <Ways
+        ways={ways}
+        showMondayNight={result.mondayNight == null}
+        hoisted={hoisted.length > 0}
+      />
 
       {/* A picked player always reads a sentence. This is the one left where the
           games ask nothing and the line above said nothing either. */}
