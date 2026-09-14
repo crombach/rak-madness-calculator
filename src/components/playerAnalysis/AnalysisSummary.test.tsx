@@ -374,6 +374,63 @@ describe("AnalysisSummary", () => {
     expect(screen.getByText("Alice can win the week.")).toBeInTheDocument();
   });
 
+  it("names the blocks under the standing as what the player has to do", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      mustWin: [{ label: "P1", pick: "KC -3" }],
+      mondayNight: RAK_BY_45,
+    };
+    render(<AnalysisSummary result={result} />);
+
+    const intro = screen.getByText("They need:");
+    expect(
+      intro.compareDocumentPosition(blockHeading("Must win")) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("leaves the lead-in out where a half opens with a line of its own", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      pool: { choose: 2, games: [{ label: "P1", pick: "KC -3" }] },
+      outright: {
+        mustWin: [],
+        pool: { choose: 3, games: [{ label: "P1", pick: "KC -3" }] },
+      },
+      mondayNight: RAK_BY_45,
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(screen.queryByText("They need:")).not.toBeInTheDocument();
+    expect(screen.getByText("To win outright:")).toBeInTheDocument();
+  });
+
+  it("marks each option of a pool the way a route is marked", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      mustWin: [{ label: "P1", pick: "KC -3" }],
+      pool: {
+        choose: 2,
+        games: [
+          { label: "P2", pick: "BUF -1" },
+          { label: "P3", pick: "SF -6" },
+        ],
+      },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    // The mark goes on the options themselves, so the chips carry it and the
+    // must-win grid, which is one box rather than a set of them, does not.
+    expect(
+      [...document.querySelectorAll(".analysis__pool > .analysis__pick")].map(
+        (pick) => pick.textContent,
+      ),
+    ).toEqual(["P2BUF -1", "P3SF -6"]);
+    expect(
+      document.querySelector(".analysis__must-win.analysis__pool"),
+    ).toBeNull();
+  });
+
   it("lists routes of different shapes with the ones that need a total marked", () => {
     const result: PlayerAnalysis = {
       ...base,

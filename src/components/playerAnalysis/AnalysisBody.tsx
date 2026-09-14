@@ -80,7 +80,7 @@ function Ways({
           conjoined={hasMustWin || conjoined}
           title={`Any ${ways.pool.choose} of`}
         >
-          <Picks games={ways.pool.games} />
+          <Picks className="analysis__pool" games={ways.pool.games} />
         </Section>
       )}
 
@@ -191,10 +191,19 @@ export default function AnalysisBody({
   // of these. Empty where there is one block, which leaves it rendering as before.
   const hoisted = sharedMustWin(result);
   const ways = past(result, hoisted);
+  // Whether a block stands directly under the lead for it to name. The outright
+  // halves open with a line of their own, so where one of those comes next this
+  // would stack a second colon on top of it and name nothing.
+  const leadsIntoBlocks =
+    hoisted.length > 0 || (result.outright == null && hasGames(result));
 
   return (
     <>
       <Lead result={result} />
+
+      {/* The blocks under this say what to do and the line above says who can do
+          it, so without this they read as two answers rather than as one. */}
+      {leadsIntoBlocks && <p className="analysis__line">They need:</p>}
 
       {/* Every way to win needs these, whichever block a reader goes on to take,
           so they are named over both rather than again inside each. */}
@@ -212,9 +221,11 @@ export default function AnalysisBody({
           block out unless it drops the ways that win without one. */}
       {result.outright && (
         <>
-          <p className="analysis__line">To win outright:</p>
+          <p className="analysis__divider">To win outright:</p>
           <Ways ways={past(result.outright, hoisted)} showMondayNight={false} />
-          <p className="analysis__line">To win with MNF Points tiebreaker:</p>
+          <p className="analysis__divider">
+            To win with MNF Points tiebreaker:
+          </p>
         </>
       )}
 
