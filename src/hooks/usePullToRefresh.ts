@@ -29,10 +29,10 @@ export const PULL_SETTLE_MS = 200;
 /**
  * The least time the puck stays open once the finger is off it.
  *
- * A call the throttle drops never starts at all, and without a floor that reads as
- * the gesture having failed. Under the 500ms throttle window, so a second pull
- * cannot arrive before the first has visibly finished. The pull reads the sheet
- * again, and `REFRESHING_FLOOR_MS` holds the puck past this floor while it does.
+ * A pull the guards turn away never starts at all, and without a floor that reads
+ * as the gesture having failed. The pull reads the sheet again, so a pull that does
+ * run holds the puck well past this floor. `REFRESHING_FLOOR_MS` is what keeps the
+ * two from telling a reader different things about the same gesture.
  */
 export const PULL_MIN_HOLD_MS = 400;
 
@@ -227,8 +227,8 @@ export default function usePullToRefresh({
   }, [isArmed, scrollRef, write, settle, clear]);
 
   // What holds the puck open, and what closes it. `isRefreshing` rather than the
-  // promise `onRefresh` returns, which resolves at once when the throttle drops
-  // the call and would close the puck on a refresh that never ran.
+  // promise `onRefresh` returns, which resolves at once when a guard turns the
+  // call away and would close the puck on a refresh that never ran.
   const isRefreshing = pull?.isRefreshing ?? false;
   useEffect(() => {
     if (!isArmed || !isHolding || isRefreshing) return;

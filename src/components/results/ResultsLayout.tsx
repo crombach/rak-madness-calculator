@@ -9,8 +9,8 @@ import resultsPath from "./resultsPath";
  * Chrome for a week's results, shared by both views.
  *
  * A layout route rather than a piece of each view, so switching between the
- * scoreboard and the picks does not remount the refresh button and restart
- * its throttle window.
+ * scoreboard and the picks does not remount the refresh button and drop the
+ * refresh it is running.
  */
 export default function ResultsLayout() {
   const { season: seasonParam, week: weekParam } = useParams();

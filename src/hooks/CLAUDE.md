@@ -6,8 +6,8 @@ The data layer, plus the two page measurements. The first four mount once in
 - `usePicksSeasons`: the seasons with picks, from `/api/picks`, newest first
 - `useCurrentSeason`: the season running now, once it starts
 - `useLeagueWeeks`: the season's ESPN weeks, and which is selected
-- `usePlayerScores`: a week's scores from the API, cache, or an upload. Owns
-  the throttle
+- `usePlayerScores`: a week's scores from the API, cache, or an upload.
+  `refresh` rereads the sheet, `rescore` the workbook in hand
 - `useLiveGame`: one game, refetched every fifteen seconds
 - `useArrival`: an outside value, taken as it arrives
 - `useWarmTeamLogos`: the week's logos, fetched before a game is opened

@@ -225,6 +225,31 @@ describe("usePlayerScores, refresh", () => {
     expect(result.current.isRefreshing).toBe(false);
   });
 
+  it("still refreshes for a reader who asks right after a game is polled final", async () => {
+    // The two entry points do not rate-limit each other. `isRefreshing` is what
+    // holds the button and the pull closed while either runs, so nothing below
+    // them needs a window of its own, and a caller that reaches past the controls
+    // is not turned away by one.
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+    const fetchCallsBefore = (global.fetch as MockedFunction<typeof fetch>).mock
+      .calls.length;
+
+    await act(async () => {
+      const polled = result.current.rescore();
+      await result.current.refresh();
+      await polled;
+    });
+
+    expect(global.fetch).toHaveBeenCalledTimes(fetchCallsBefore + 1);
+    expect(global.fetch).toHaveBeenLastCalledWith(
+      `/api/picks/${SEASON}/${WEEK_5.value}`,
+    );
+  });
+
   it("replaces a workbook the reader uploaded with the one in the database", async () => {
     // The uploaded sheet stands in until the week reaches the database. Once it
     // is there, it is the week's own, so a refresh takes it back.
