@@ -150,6 +150,15 @@
       @include key(var(--rak-key-pressed));
     }
 
+    // Work the reader started is the key still held down. A key that only sheens
+    // stands at rest, which says the press ended and the work did not, so it
+    // stays down until the work does end. The pointer leaves mid-work more often
+    // than not, and `:active` is gone the moment it does.
+    &.--busy {
+      transition-delay: 0s;
+      @include key(var(--rak-key-pressed));
+    }
+
     // Two fills, not three or four. A pointer on the key, a finger down on it, and
     // the route holding it selected all land on the same fill. A step apart, and
     // two eased moves land back to back. The browser drops `:active` the instant
