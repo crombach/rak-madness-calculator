@@ -13,16 +13,6 @@ import "./AnalysisSummary.scss";
 
 type PathsResult = Extract<PlayerAnalysis, { kind: "paths" }>;
 
-/** Whether anything below the lead asks the player for a game. */
-function hasGames(ways: WaysThrough): boolean {
-  return (
-    ways.mustWin.length > 0 ||
-    ways.pool != null ||
-    ways.shares != null ||
-    (ways.routes?.length ?? 0) > 0
-  );
-}
-
 /**
  * The games both blocks call must-win, which is the games every way to win the week
  * needs. Each block reads its own list against its own ways, so a game every way
@@ -238,21 +228,6 @@ export default function AnalysisBody({
         showMondayNight={result.mondayNight == null}
         hoisted={hoisted.length > 0}
       />
-
-      {/* A picked player always reads a sentence. This is the one left where the
-          games ask nothing and the line above said nothing either.
-
-          `hasGames` reads the ways this result holds itself, which the outright
-          half is not one of. A player already level and needing nothing has no
-          ways of their own and can still have a half above naming games, and
-          there the sentence would deny the block a reader is looking at. */}
-      {!hasGames(result) &&
-        result.outright == null &&
-        result.mondayNight?.kind !== "notNeeded" && (
-          <p className="analysis__line">
-            No clean path to victory. The MNF Points tiebreaker decides it.
-          </p>
-        )}
 
       <MondayNight
         conjoined={

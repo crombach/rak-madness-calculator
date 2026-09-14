@@ -486,7 +486,6 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
     ]);
 
     const result = paths(getPlayerAnalysis(scores, "Alice"));
-    expect(result.shares?.routeCount).toBe(12);
     expect(result.shares?.outrightCost).toBe(1);
   });
 

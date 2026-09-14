@@ -247,33 +247,16 @@ describe("AnalysisSummary", () => {
     expect(isConjoined("One of")).toBe(true);
   });
 
-  it("says something for a player the games can no longer separate", () => {
+  it("gives a player the games can no longer separate the totals alone", () => {
+    // Nothing stands above the totals, so they are the whole answer. A sentence
+    // saying so would name the tiebreaker the line already names.
     const result: PlayerAnalysis = {
       ...base,
       mondayNight: RAK_BY_45,
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(
-      screen.getByText(
-        "No clean path to victory. The MNF Points tiebreaker decides it.",
-      ),
-    ).toBeInTheDocument();
-  });
-
-  it("does not deny a path where the half above it names one", () => {
-    // A player already level and needing nothing has no ways of their own, and a
-    // set of their picks can still take the week outright. The sentence above
-    // would tell them there is no clean path while one stands over it.
-    const result: PlayerAnalysis = {
-      ...base,
-      mondayNight: RAK_BY_45,
-      outright: { mustWin: [{ label: "P1", pick: "KC -3" }] },
-    };
-    render(<AnalysisSummary result={result} />);
-
-    expect(blockHeading("Must win")).toBeInTheDocument();
-    expect(screen.queryByText(/No clean path/)).not.toBeInTheDocument();
+    expect(mnfLines()).toEqual(["MNF Points \u2264 45"]);
   });
 
   it("sets a bounded Monday night range as the block's whole line", () => {
