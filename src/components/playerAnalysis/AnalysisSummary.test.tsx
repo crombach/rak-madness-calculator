@@ -569,7 +569,7 @@ describe("AnalysisSummary", () => {
     expect(shareRows()).toEqual(["P1KC -399%", "P2BUF -11%"]);
   });
 
-  it("says what one more pick than the shortest way buys", () => {
+  it("says what the shortest way to win outright costs", () => {
     const result: PlayerAnalysis = {
       ...base,
       shares: { ...sharesOf(2), outrightCost: 1 },
@@ -577,7 +577,7 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(notes()).toEqual([
-      "With 1 more correct pick than the shortest way, the MNF Points tiebreaker will not matter.",
+      "The shortest way to win outright asks 1 more correct pick.",
     ]);
   });
 
@@ -618,7 +618,7 @@ describe("AnalysisSummary", () => {
     // The totals first, since the line under them is the answer to them.
     expect(notes()).toEqual([
       "Every way needs the MNF Points tiebreaker. 8 ways need MNF Points ≤ 41.",
-      "With 1 more correct pick than the shortest way, the MNF Points tiebreaker will not matter.",
+      "The shortest way to win outright asks 1 more correct pick.",
     ]);
   });
 

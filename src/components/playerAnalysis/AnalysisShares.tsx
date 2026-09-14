@@ -54,11 +54,15 @@ function SharesMondayNight({
  * A list of ways says this by standing in two halves, one asking more games and no
  * total. A share names a game and not a way, so the halves would stand twice over
  * the same games, and the cost of the higher bar is said in a line instead.
+ *
+ * The line names the bar, never a way to reach it. The cheapest way to win outright
+ * need not be the cheapest way through with games added, and the table shows no way
+ * for a reader to add them to.
  */
 function SharesOutright({ cost }: { cost: number }) {
   return (
     <p className="analysis__note --upright">
-      {`With ${plural(cost, "more correct pick")} than the shortest way, the MNF Points tiebreaker will not matter.`}
+      {`The shortest way to win outright asks ${plural(cost, "more correct pick")}.`}
     </p>
   );
 }
