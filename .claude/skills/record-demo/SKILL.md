@@ -65,6 +65,9 @@ instead of recording the whole run.
   the dot beside each heading's label, in both themes. Needs
   `--viewport 900x900` to reach the marked columns. Writes its crops to
   `$LIVE_DOT_SHOT_DIR`, so `--out` is a throwaway.
+- `scenarios/refresh-pressed.js` — the navbar refresh key at rest and while its
+  work runs, in both themes. Writes its crops to `$PRESSED_SHOT_DIR`, so `--out`
+  is a throwaway.
 - `scenarios/live-refresh.js` — opens the Game Status dialog on a live pick,
   waits out its real poll interval, and shows the table update on its own
   once the mocked game goes final.

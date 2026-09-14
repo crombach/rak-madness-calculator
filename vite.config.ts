@@ -1,4 +1,4 @@
-import { rm } from "node:fs/promises";
+import { readdir, rm } from "node:fs/promises";
 import path from "node:path";
 import react from "@vitejs/plugin-react";
 import type { Plugin } from "vite";
@@ -6,14 +6,21 @@ import { defineConfig } from "vitest/config";
 
 const DEV_PORT = Number(process.env.PORT ?? 3000);
 
-// Vite copies `public/` to the build root, and the CLAUDE.md that indexes it is
-// written for agents reading the repo, not for anyone fetching the site.
+// Vite copies `public/` to the build root, and every CLAUDE.md indexing it is
+// written for agents reading the repo, not for anyone fetching the site. Whole
+// tree rather than the root alone, since a subdirectory there carries its own.
 function dropPublicClaudeMd(): Plugin {
   return {
     name: "drop-public-claude-md",
     apply: "build",
     async writeBundle(options) {
-      await rm(path.join(options.dir ?? "build", "CLAUDE.md"), { force: true });
+      const dir = options.dir ?? "build";
+      const entries = await readdir(dir, { recursive: true });
+      await Promise.all(
+        entries
+          .filter((entry) => path.basename(entry) === "CLAUDE.md")
+          .map((entry) => rm(path.join(dir, entry), { force: true })),
+      );
     },
   };
 }
