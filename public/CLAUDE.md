@@ -8,8 +8,8 @@ names them by absolute path.
   shell point at
 - `robots.txt`: denies every crawler, because a private pool's results are not
   for one
-- `_headers`: Cache-Control for `/assets/` and `/fonts/`, read by Pages
-- `fonts/`: the logo's face and the body face at four weights, which paint before
-  anything else. Copied out of `@fontsource` so `index.html` can preload them by a
-  name it knows, and its comment says why. To change one, update the package, then
-  copy its `files/<family>-latin-<weight>-normal.woff2` here under the short name.
+- `_headers`: Cache-Control for `/assets/` and `/fonts/`, read by Pages, not served
+
+## Subdirectories
+
+- [`fonts/`](fonts/CLAUDE.md) — the faces `index.html` preloads itself
