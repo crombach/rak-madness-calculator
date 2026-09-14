@@ -1,8 +1,6 @@
-import { MockedFunction } from "vitest";
 import { WeekInfo } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import doNothing from "../../utils/doNothing";
-import { getGameResult } from "../../utils/getLeagueResults";
 import { SEASON } from "../../weekFixtures";
 import GameStatusDialog from "./GameStatusDialog";
 
@@ -11,16 +9,7 @@ import GameStatusDialog from "./GameStatusDialog";
  * which mock the same fetch and open the dialog the same way but cannot share a
  * file. Base UI leaves scroll-lock and focus guards behind a mounted dialog, which
  * puts a second dialog's own search out of reach.
- *
- * Each importer must still call `vi.mock("../../utils/getLeagueResults")` itself.
- * That hoists above the importer's own top-level imports, which is what keeps
- * `GameStatusDialog`'s real fetch from loading before the mock is in place. A
- * `vi.mock` call here would only hoist within this file.
  */
-export const getGameResultMock = getGameResult as MockedFunction<
-  typeof getGameResult
->;
-
 export const WEEK: WeekInfo = {
   value: 5,
   label: "Week 5",

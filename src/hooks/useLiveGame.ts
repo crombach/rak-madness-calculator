@@ -19,12 +19,27 @@ export const POLL_MS = 15_000;
 export const LOADING_MS = 500;
 
 /**
+ * When a game ESPN has not started yet kicks off, for the poll to hold on to and
+ * check the clock against.
+ *
+ * `null` for a game under way, which is asked about on every tick, and for a
+ * kickoff `Date` ESPN gave nothing to parse, which no comparison can answer.
+ */
+export function kickoffAt(result: LeagueResult | null): number | null {
+  if (result?.status !== GameStatus.UPCOMING) return null;
+  const kickoff = result.date.getTime();
+  return Number.isFinite(kickoff) ? kickoff : null;
+}
+
+/**
  * One game, kept up to date for as long as it is being looked at.
  *
  * The week's scores carry the game as it stood when they were worked out, which is
  * stale the moment a live game moves, so a game is fetched again as it is shown and
- * then on `POLL_MS` until it is final. A game already final when it is opened is
- * never fetched at all, because nothing about it can differ.
+ * then on `POLL_MS` until it is final. A tick before the game's own kickoff asks
+ * nothing, since a game that has not started cannot have moved. A game already
+ * final when it is opened is never fetched at all, because nothing about it can
+ * differ.
  *
  * `shown` is the fresher answer alone. Nothing is returned until one lands, and the
  * caller shows the week's own copy of the game meanwhile, so a reader never waits
@@ -83,8 +98,17 @@ export default function useLiveGame({
     if (settled != null) return;
     let timer = 0;
     let held = 0;
+    let kickoff: number | null = null;
     const stop = latestOnly(async (isCurrent) => {
       const poll = async () => {
+        // A game that has not kicked off cannot move, so the tick comes round and
+        // asks nothing until its kickoff passes. The clock is read here on every
+        // tick rather than once when the wait is set, so a suspended tab or a
+        // changed clock cannot carry the poll more than `POLL_MS` past kickoff.
+        if (kickoff != null && Date.now() < kickoff) {
+          timer = window.setTimeout(poll, POLL_MS);
+          return;
+        }
         let result: LeagueResult | null = null;
         const asked = Date.now();
         setFetching(true);
@@ -108,6 +132,7 @@ export default function useLiveGame({
         // slow answer cannot leave two requests running at once. A game with no
         // answer at all is asked about again, since the next week's list may hold
         // it.
+        kickoff = kickoffAt(result);
         if (result == null || result.status !== GameStatus.FINAL) {
           timer = window.setTimeout(poll, POLL_MS);
         } else {
