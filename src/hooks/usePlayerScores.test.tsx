@@ -157,7 +157,9 @@ describe("usePlayerScores", () => {
 });
 
 describe("usePlayerScores, refresh", () => {
-  it("does not re-fetch the picks spreadsheet", async () => {
+  it("re-fetches the picks spreadsheet a reader asks to refresh", async () => {
+    // The sheet is rewritten when it turns out to carry an error, so the reader
+    // who asks is the one who has to be able to pick that up.
     getPlayerScoresMock.mockResolvedValue(scoresFor(5));
     const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
       wrapper,
@@ -172,7 +174,82 @@ describe("usePlayerScores, refresh", () => {
     });
 
     expect(getPlayerScoresMock).toHaveBeenCalledTimes(2);
-    expect(global.fetch).toHaveBeenCalledTimes(fetchCallsBeforeRefresh);
+    expect(global.fetch).toHaveBeenCalledTimes(fetchCallsBeforeRefresh + 1);
+    expect(global.fetch).toHaveBeenLastCalledWith(
+      `/api/picks/${SEASON}/${WEEK_5.value}`,
+    );
+  });
+
+  it("leaves the sheet alone when a game is polled final", async () => {
+    // Nobody asked for anything. A settled game rescores the workbook in hand,
+    // and a sheet arriving under the reader is not what it means.
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+    const fetchCallsBefore = (global.fetch as MockedFunction<typeof fetch>).mock
+      .calls.length;
+
+    await act(async () => {
+      await result.current.rescore();
+    });
+
+    expect(getPlayerScoresMock).toHaveBeenCalledTimes(2);
+    expect(global.fetch).toHaveBeenCalledTimes(fetchCallsBefore);
+  });
+
+  it("replaces a workbook the reader uploaded with the one in the database", async () => {
+    // The uploaded sheet stands in until the week reaches the database. Once it
+    // is there, it is the week's own, so a refresh takes it back.
+    const uploaded = new ArrayBuffer(16);
+    const upstream = new ArrayBuffer(8);
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+
+    await act(async () => {
+      await result.current.scoreLocalFile(
+        new File([uploaded], "picks.xlsx") as File,
+      );
+    });
+    expect(getPlayerScoresMock).toHaveBeenLastCalledWith(
+      WEEK_5,
+      expect.objectContaining({ byteLength: uploaded.byteLength }),
+      SEASON,
+    );
+
+    await act(async () => {
+      await result.current.refresh();
+    });
+
+    expect(getPlayerScoresMock).toHaveBeenLastCalledWith(
+      WEEK_5,
+      expect.objectContaining({ byteLength: upstream.byteLength }),
+      SEASON,
+    );
+  });
+
+  it("keeps the scores on screen when a refresh cannot reach the sheet", async () => {
+    // The scores came from the same week and are still the best answer there is.
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+
+    localStorage.clear();
+    global.fetch = vi.fn(async () =>
+      Promise.reject(new Error("offline")),
+    ) as unknown as typeof fetch;
+
+    await act(async () => {
+      await result.current.refresh();
+    });
+
+    expect(result.current.scores).toEqual(scoresFor(5));
   });
 
   it("collapses two refreshes started together into one scoring pass", async () => {

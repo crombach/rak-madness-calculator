@@ -67,6 +67,7 @@ export default function ResultsFrame({
   isReady = false,
   onViewChange = doNothing,
   onRefresh = doNothing,
+  onGameFinal = doNothing,
   isRefreshing = false,
   scores,
   week,
@@ -78,6 +79,8 @@ export default function ResultsFrame({
   isReady?: boolean;
   onViewChange?: (view: ScoresView) => void;
   onRefresh?: () => void;
+  /** Run when a game the reader is watching is polled final. */
+  onGameFinal?: () => void;
   isRefreshing?: boolean;
   /** What the player analysis is worked out from. Absent while a week loads. */
   scores?: RakMadnessScores;
@@ -245,7 +248,7 @@ export default function ResultsFrame({
               scores={scores}
               week={week}
               season={season}
-              onGameFinal={onRefresh}
+              onGameFinal={onGameFinal}
             />
           </Suspense>
         </DialogLoadBoundary>

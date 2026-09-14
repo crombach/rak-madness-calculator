@@ -28,6 +28,11 @@ function scoringFailed(weekNumber: number): Toast {
   return errorToast(`Failed to calculate scores for week ${weekNumber}.`);
 }
 
+/** A refresh that could not reach the sheet. The scores on screen still stand. */
+function refreshFailed(weekNumber: number): Toast {
+  return errorToast(`Failed to refresh week ${weekNumber} picks.`);
+}
+
 type ScoringRequest = {
   loadPicks: () => Promise<ArrayBuffer>;
   /** Shown when the picks could not be obtained at all. */
@@ -36,10 +41,10 @@ type ScoringRequest = {
   onScoreFailure: Toast;
   onSuccess?: Toast;
   /**
-   * Set on a refresh, where the scores already on screen came from the same
-   * workbook and are still the best answer there is. Unset elsewhere, where
-   * scoring has never succeeded for this week and there is nothing to fall back
-   * to.
+   * Set on a refresh, where the scores already on screen are still the best
+   * answer there is. Holds over both failures, the picks that never arrived and
+   * the picks that would not score. Unset elsewhere, where scoring has never
+   * succeeded for this week and there is nothing to fall back to.
    */
   keepScoresOnFailure?: boolean;
 };
@@ -121,7 +126,9 @@ export default function usePlayerScores(
           `Failed to load week ${selectedWeek.value} picks spreadsheet. Has it been uploaded yet?`,
           error,
         );
-        clearScores();
+        if (!keepScoresOnFailure) {
+          clearScores();
+        }
         setAttemptedFor(attempted);
         setScoresLoading(false);
         isAttemptInFlight.current = false;
@@ -210,12 +217,12 @@ export default function usePlayerScores(
   const refreshThrottled = useMemo(
     () =>
       throttle(
-        async () => {
-          if (picksBuffer == null || selectedWeek == null) return;
+        async (refetch: boolean) => {
+          if (selectedWeek == null || season == null) return;
+          const inHand = picksBuffer;
+          if (!refetch && inHand == null) return;
           setRefreshing(true);
           clearToasts();
-          // Refreshing rescores the workbook already in memory, so there is no
-          // separate way for loading it to fail.
           const failure = scoringFailed(selectedWeek.value);
           // Nothing said on success. The scores are on screen and the numbers
           // that moved are marked, so a toast over them repeats what the table
@@ -223,8 +230,23 @@ export default function usePlayerScores(
           // since the table looks the same either way when one happens.
           try {
             await attemptScoring({
-              loadPicks: async () => picksBuffer,
-              onLoadFailure: failure,
+              // A reader who asked reads the sheet again. It is rewritten when
+              // it turns out to carry an error, so asking is how a correction
+              // reaches a live week without a page load. A workbook the reader
+              // uploaded is replaced by it, which is the point: the upload
+              // stands in until the week reaches the database.
+              //
+              // A game going final asks for none of that. It rescores what is in
+              // hand, since the reader did not ask for anything and a sheet
+              // arriving under them is not what a settled game means.
+              loadPicks:
+                !refetch && inHand != null
+                  ? async () => inHand
+                  : () => loadStoredPicks(season, selectedWeek),
+              // A refresh that cannot reach the sheet says so and leaves the
+              // scores alone. They came from the same week and are still the
+              // best answer there is.
+              onLoadFailure: refreshFailed(selectedWeek.value),
               onScoreFailure: failure,
               keepScoresOnFailure: true,
             });
@@ -238,19 +260,26 @@ export default function usePlayerScores(
         REFRESH_THROTTLE_MS,
         { trailing: false },
       ),
-    [picksBuffer, selectedWeek, attemptScoring, clearToasts],
+    [picksBuffer, season, selectedWeek, attemptScoring, clearToasts],
   );
 
   // Cancels a trailing call this throttle would otherwise still owe once the
   // component holding it is gone.
   useEffect(() => () => refreshThrottled.cancel(), [refreshThrottled]);
 
+  /** The refresh a reader asks for, by the button or by a pull. Reads the sheet again. */
   const refresh = useCallback(async () => {
     // A ref rather than the `isScoresLoading` state. Two clicks in the same tick
     // would both still read the state as false, since the update announcing the
     // first click's attempt has not landed yet.
     if (isAttemptInFlight.current) return;
-    await refreshThrottled();
+    await refreshThrottled(true);
+  }, [refreshThrottled]);
+
+  /** What a game polled final asks for: the same workbook, scored against it again. */
+  const rescore = useCallback(async () => {
+    if (isAttemptInFlight.current) return;
+    await refreshThrottled(false);
   }, [refreshThrottled]);
 
   return useMemo(
@@ -262,6 +291,7 @@ export default function usePlayerScores(
       isRefreshing,
       scoreLocalFile,
       refresh,
+      rescore,
     }),
     [
       scores,
@@ -271,6 +301,7 @@ export default function usePlayerScores(
       isRefreshing,
       scoreLocalFile,
       refresh,
+      rescore,
     ],
   );
 }
