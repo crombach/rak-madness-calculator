@@ -80,6 +80,11 @@ export type PickShares = {
    * alone holds a smaller winning way inside it, so it stands in both lists, and
    * counting it against `routeCount` would count one win twice. Two cheapest ways
    * compare without that.
+   *
+   * The two cheapest ways need not be one inside the other. Every outright way
+   * holds some winning way, which is what keeps this count at or above zero, but
+   * the one it holds need not be the cheapest of them. So this is the gap between
+   * two bars, not a list of games to add to any one way.
    */
   outrightCost?: number;
 };
