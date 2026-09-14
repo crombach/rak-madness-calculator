@@ -96,8 +96,14 @@ export default function usePlayerScores(
   // before the state update announcing the first has even landed.
   const isAttemptInFlight = useRef(false);
   // Set for the length of a refresh a reader asked for. Only another of those is
-  // turned away by it, which is what lets one supersede a rescore.
+  // turned away by it, which is what lets one supersede a rescore. It is also the
+  // only thing that turns away a second pull, since a pull arms on the phone and
+  // the week alone and fires on every release.
   const isRefreshInFlight = useRef(false);
+  // How many passes are running. A refresh and a rescore can overlap, and the
+  // rescore is far the quicker of the two, so the first one out must not stop the
+  // button on behalf of the one still working.
+  const passesRunning = useRef(0);
   // The scores an attempt can be diffed against, and the week and season they are
   // for. A week or season switch leaves this behind, so the new week's first
   // score is never read as a change from the old week's last one.
@@ -232,16 +238,18 @@ export default function usePlayerScores(
   /**
    * One scoring pass over this week, on the sheet or on the workbook in hand.
    *
-   * Nothing rate-limits this. `isRefreshing` holds the refresh button inert and
-   * the pull unarmed for as long as a pass runs, and `REFRESHING_FLOOR_MS` keeps
-   * it set long enough to be read, so the two controls that reach this cannot
-   * fire it twice over. The refs below turn away what those still let through.
+   * Nothing rate-limits this. `isRefreshing` holds the refresh button inert for as
+   * long as a pass runs, and `REFRESHING_FLOOR_MS` keeps it set long enough to be
+   * read, so the button cannot fire this twice over. A pull ignores `isRefreshing`
+   * and fires on every release, so `isRefreshInFlight` is what turns a second one
+   * away.
    */
   const scoreWeek = useCallback(
     async (refetch: boolean) => {
       if (selectedWeek == null || season == null) return;
       const inHand = picksBuffer;
       if (!refetch && inHand == null) return;
+      passesRunning.current += 1;
       setRefreshing(true);
       // Started before the work, not after it, so the two run together and
       // the button turns for whichever lasts longer.
@@ -278,7 +286,10 @@ export default function usePlayerScores(
         // The scores go up as soon as they are worked out. Only the button
         // waits, so a refresh that lands at once still says it happened.
         await floor;
-        setRefreshing(false);
+        passesRunning.current -= 1;
+        if (passesRunning.current === 0) {
+          setRefreshing(false);
+        }
       }
     },
     [picksBuffer, season, selectedWeek, attemptScoring, clearToasts],
@@ -292,9 +303,12 @@ export default function usePlayerScores(
     //
     // Only another refresh blocks this one. A rescore running underneath is
     // superseded instead: `attemptScoring` numbers its attempts, so the reader's
-    // wins and the poll's drops whatever order they finish in. A reader who asks
-    // for the sheet has to get it, and a game going final half a second earlier
-    // is not a reason to refuse.
+    // wins and the poll's drops whatever order they finish in.
+    //
+    // A pull is what reaches this while a rescore runs. The button is inert for
+    // the half second one holds `isRefreshing`, so a tap inside that window is
+    // dropped by `Button` and never arrives. A pull ignores the flag and fires on
+    // every release, and it is the gesture that has to end in the sheet.
     if (isRefreshInFlight.current) return;
     isRefreshInFlight.current = true;
     try {

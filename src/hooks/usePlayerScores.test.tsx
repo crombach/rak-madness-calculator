@@ -225,11 +225,11 @@ describe("usePlayerScores, refresh", () => {
     expect(result.current.isRefreshing).toBe(false);
   });
 
-  it("still refreshes for a reader who asks right after a game is polled final", async () => {
-    // The two entry points do not rate-limit each other. `isRefreshing` is what
-    // holds the button and the pull closed while either runs, so nothing below
-    // them needs a window of its own, and a caller that reaches past the controls
-    // is not turned away by one.
+  it("reads the sheet for a pull that lands while a rescore is running", async () => {
+    // A pull fires on every release, whatever `isRefreshing` says, so it reaches
+    // this while a game polled final is still rescoring. Nothing under the
+    // controls holds a window of its own, so the pull is not turned away by one.
+    // The button is inert for that half second and never gets here.
     getPlayerScoresMock.mockResolvedValue(scoresFor(5));
     const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
       wrapper,
@@ -248,6 +248,44 @@ describe("usePlayerScores, refresh", () => {
     expect(global.fetch).toHaveBeenLastCalledWith(
       `/api/picks/${SEASON}/${WEEK_5.value}`,
     );
+  });
+
+  it("keeps the button turning until the last pass over the week is done", async () => {
+    // A rescore and a refresh can run together, and the rescore is far the
+    // quicker of the two. Whichever finishes first must not stop the button on
+    // behalf of the one still working, or the table changes with nothing saying
+    // why.
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+
+    let releaseSheet: () => void = () => {};
+    global.fetch = vi.fn(
+      async () =>
+        new Promise((resolve) => {
+          releaseSheet = () => resolve(spreadsheetResponse());
+        }),
+    ) as unknown as typeof fetch;
+
+    let passes: Promise<unknown> | undefined;
+    await act(async () => {
+      const polled = result.current.rescore();
+      const asked = result.current.refresh();
+      passes = Promise.all([polled, asked]);
+      // Past the floor, so the rescue has settled and cleared whatever it owns.
+      await polled;
+    });
+
+    expect(result.current.isRefreshing).toBe(true);
+
+    await act(async () => {
+      releaseSheet();
+      await passes;
+    });
+
+    expect(result.current.isRefreshing).toBe(false);
   });
 
   it("replaces a workbook the reader uploaded with the one in the database", async () => {
