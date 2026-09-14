@@ -2,17 +2,21 @@ import type { Env } from "../env";
 import { cachedGet, serviceUnavailable } from "../env";
 
 /**
- * An hour of reuse, then the browser asks whether its copy still stands. A week's
- * picks are rewritten when the sheet turns out to carry an error. The URL for
- * them never changes, so a copy that can outlive a correction has to be able to
- * find out about one.
+ * The browser keeps its copy and asks before every use of it. A week's picks are
+ * rewritten when the sheet turns out to carry an error, and the URL for them never
+ * changes, so reuse without asking is how a reader holds a corrected week's old
+ * picks. `max-age=0` with `must-revalidate` is what makes a correction land on the
+ * next read rather than once a timer runs out.
+ *
+ * The asking is cheap. `ETag` answers it with a 304 and no body, which costs the
+ * round trip the reader was making anyway and none of the workbook. This route is
+ * read once per week a reader selects, not once per paint.
  *
  * `s-maxage` holds the colo's own copy to a minute, which the browser ignores and
- * a shared cache does not. `cache.match` never asks R2, so a colo copy that lived
- * as long as the browser's would answer that hourly question itself and keep a
- * correction hidden for a second hour.
+ * a shared cache does not. It is what keeps a burst of readers off R2, now that no
+ * browser holds a copy it will reuse unasked.
  */
-const CACHE_CONTROL = "public, max-age=3600, s-maxage=60, must-revalidate";
+const CACHE_CONTROL = "public, max-age=0, s-maxage=60, must-revalidate";
 
 /**
  * One week's picks workbook, from the season named by the `season` segment. A season
