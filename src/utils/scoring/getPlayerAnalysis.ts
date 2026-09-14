@@ -177,7 +177,6 @@ function threats(me: Side, rivals: Array<Side>): Array<Side> {
 function meritIn(side: Side, total: number, outcome: number): Merit {
   return {
     hasNoPicks: side.player.status.hasNoPicks,
-    hasBlankPick: side.player.status.hasBlankPick,
     total,
     distance: side.player.tiebreaker.distance,
     college: scoreIn(side.college, outcome),
@@ -315,12 +314,21 @@ function picksIn(
     .filter((pick) => pick != null);
 }
 
-/** Carries the reason `applyKnockouts` already wrote, rather than writing another. */
+/**
+ * Carries the reason `applyKnockouts` already wrote, rather than writing another.
+ *
+ * Only where it knocked the player out. This search reads the tiers more closely
+ * than the standings do, so it can answer a loss for a row left standing there,
+ * and that row's explanation says it is still in contention. Empty leaves the
+ * caller its own line.
+ */
 function knockedOut(player: PlayerScore): PlayerAnalysis {
   return {
     kind: "knockedOut",
     player: player.name,
-    explanation: player.status.explanation,
+    explanation: player.status.isKnockedOut
+      ? player.status.explanation
+      : undefined,
   };
 }
 
@@ -662,9 +670,7 @@ function settledAnalysis(
 
   const player = players[playerIndex];
   const clinched: PlayerAnalysis = { kind: "clinched", player: player.name };
-  // Checked beside the knockout, since the search assumes every contested
-  // game is a pick, and a caller's blank row may skip `applyKnockouts`.
-  if (player.status.isKnockedOut || player.status.hasBlankPick) {
+  if (player.status.isKnockedOut) {
     return { playerIndex, player, rivals: [], analysis: knockedOut(player) };
   }
 
@@ -741,14 +747,27 @@ export default function getPlayerAnalysis(
     (game) => new Set(live.map((index) => game.cells[index].team)).size > 1,
   );
 
-  // The side each bit is read as, which is this player's own wherever they wrote
-  // one. A cell nothing can score names no side, and `sideFor` reads every player
-  // as missing that bit. Two rivals on opposite sides of such a game are then both
-  // read as missing it, which no result can deliver. This pre-dates the team being
-  // absent rather than wrong: a pick the week holds no game for never matched a
-  // rival's team either.
-  const coverers = contested.map((game) => game.cells[playerIndex].team);
-  const mineMask = (1 << contested.length) - 1;
+  // The side each bit is read as: this player's own wherever they wrote one, and
+  // otherwise whichever live player did. A cell nothing can score names no side,
+  // and a bit named off one reads every rival as missing the game, which leaves
+  // two rivals on opposite sides of it both losing at once. No result delivers
+  // that. A contested game always holds a team, since a game every live player
+  // left unreadable is not contested.
+  const coverers = contested.map(
+    (game) =>
+      game.cells[playerIndex].team ??
+      live.map((index) => game.cells[index].team).find((team) => team != null),
+  );
+
+  // The bits the player can act on. A game they wrote nothing for scores them the
+  // same whichever way it falls, so it is no part of any way through and belongs
+  // under no heading. It still moves their rivals, which `read` answers for.
+  const mineMask = contested.reduce(
+    (mask, game, bit) =>
+      game.cells[playerIndex].team == null ? mask : mask | (1 << bit),
+    0,
+  );
+  const skippedMask = ((1 << contested.length) - 1) & ~mineMask;
 
   const isMondayNightSettled = scores.tiebreaker != null;
 
@@ -762,8 +781,14 @@ export default function getPlayerAnalysis(
 
   // Every outcome read below is a set of the player's own picks, so no two reads
   // ask about the same one and there is nothing for a cache to hold.
+  //
+  // A game the player wrote nothing for is read as a game they got wrong, which
+  // hands it to the player who did pick it. That is one way the week can fall
+  // rather than the best or the worst of them, so every reading below stands on a
+  // week that can happen. The player may still take a week this says is gone, on
+  // a game that was never theirs to win.
   const read = (outcome: number) =>
-    evaluate(me, against, outcome, isMondayNightSettled);
+    evaluate(me, against, outcome | skippedMask, isMondayNightSettled);
 
   // Above the ceiling only the must-win games are answered, which cost a verdict
   // each rather than a search. What is left over is a count of wins, and a count

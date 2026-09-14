@@ -48,7 +48,7 @@ function player(overrides: Partial<PlayerScore> = {}): PlayerScore {
     tiebreaker: { pick: 41, distance: 0 },
     college: [pick("OSU -3", "yes"), pick("MICH +7", "no")],
     pro: [pick("BUF -7", "yes"), pick("DAL -3", "yes")],
-    status: { hasNoPicks: false, hasBlankPick: false, isKnockedOut: false },
+    status: { hasNoPicks: false, isKnockedOut: false },
     ...overrides,
   };
 }
@@ -63,7 +63,7 @@ const scores: RakMadnessScores = {
       tiebreaker: { pick: 45, distance: 4 },
       college: [pick("MICH +3", "no"), pick("PSU -7", "unscoreable")],
       pro: [pick("KC +7", "no"), pick("PHI +3", "incomplete")],
-      status: { hasNoPicks: false, hasBlankPick: false, isKnockedOut: true },
+      status: { hasNoPicks: false, isKnockedOut: true },
     }),
   ],
 };
@@ -234,9 +234,9 @@ describe("buildSpreadsheetBuffer, picks sheet", () => {
     expect(shown.B3.s.fgColor.rgb).toBe(FILL_BY_STANDING.nameConflict);
   });
 
-  it("leaves a blank cell the plain fill, not the unscoreable one", async () => {
-    // A blank scores unscoreable, and the warning fill is about the week rather
-    // than the row. The sheet says the same thing the table does.
+  it("fills a blank cell as a wrong pick, not an unscoreable one", async () => {
+    // The warning fill is about the week rather than the row, and a blank costs
+    // its player the point. The sheet says the same thing the table does.
     const workbook = await readBack({
       tiebreaker: 41,
       scores: [
@@ -253,7 +253,7 @@ describe("buildSpreadsheetBuffer, picks sheet", () => {
       ],
     });
     const sheet = workbook.Sheets[PICKS_SHEET];
-    expect(sheet.C2.s.fgColor.rgb).toBe(FILL_BY_STATUS.incomplete);
+    expect(sheet.C2.s.fgColor.rgb).toBe(FILL_BY_STATUS.no);
     expect(sheet.D2.s.fgColor.rgb).toBe(FILL_BY_STATUS.error);
   });
 

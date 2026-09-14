@@ -20,9 +20,9 @@ import { toLeagueResult } from "../getLeagueResults";
  * and keep the field at the eighty the pool is sized for.
  *
  * The field picks every game, bar the one row that stands for a game everybody
- * else picked one side of. A row with a blank is a row `applyKnockouts` reads as
- * unable to win, so a fixture full of blanks is a fixture with nothing left to
- * work out, and the routes it measures are not the ones a real week asks for.
+ * else picked one side of. A blank scores its player nothing and leaves the game
+ * out of their own search, so a fixture full of blanks measures a smaller search
+ * than a real week asks for.
  */
 export const BENCH_PLAYERS = 80;
 export const BENCH_COLLEGE_GAMES = 6;
@@ -81,8 +81,8 @@ function homeSpread(league: League, index: number): number {
 
 /**
  * The one row that leaves games blank, which the pool only ever writes to cover a
- * game the whole field picked one side of. `applyKnockouts` reads a blank as a row
- * that cannot win the week, so everybody else picks every game.
+ * game the whole field picked one side of. Everybody else picks every game, so the
+ * search this measures is the full one.
  */
 const BENCH_FAKE_PLAYER = BENCH_PLAYERS - 1;
 

@@ -35,7 +35,7 @@ export function playerScore(over: Partial<PlayerScore> = {}): PlayerScore {
     tiebreaker: { pick: 41, distance: 0 },
     college: [],
     pro: [],
-    status: { hasNoPicks: false, hasBlankPick: false, isKnockedOut: false },
+    status: { hasNoPicks: false, isKnockedOut: false },
     ...over,
   };
 }

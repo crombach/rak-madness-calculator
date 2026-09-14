@@ -22,7 +22,7 @@ function player(name: string, statuses: Array<Status>): PlayerScore {
     tiebreaker: { pick: 40, distance: 1 },
     college: statuses.map(pickResult),
     pro: statuses.map(pickResult),
-    status: { hasNoPicks: false, hasBlankPick: false, isKnockedOut: false },
+    status: { hasNoPicks: false, isKnockedOut: false },
   };
 }
 

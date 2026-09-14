@@ -29,7 +29,7 @@ function player({
     tiebreaker: {},
     college: [],
     pro,
-    status: { hasNoPicks: false, hasBlankPick: false, isKnockedOut },
+    status: { hasNoPicks: false, isKnockedOut },
   };
 }
 

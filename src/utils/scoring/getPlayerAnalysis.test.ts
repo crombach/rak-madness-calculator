@@ -25,7 +25,6 @@ type PlayerOptions = {
   tiebreakerPick?: number;
   distance?: number;
   isKnockedOut?: boolean;
-  hasBlankPick?: boolean;
 };
 
 function player({
@@ -38,7 +37,6 @@ function player({
   tiebreakerPick,
   distance,
   isKnockedOut = false,
-  hasBlankPick = false,
 }: PlayerOptions): PlayerScore {
   return {
     id: name,
@@ -52,7 +50,7 @@ function player({
     tiebreaker: { pick: tiebreakerPick, distance },
     college,
     pro,
-    status: { hasNoPicks: false, hasBlankPick, isKnockedOut },
+    status: { hasNoPicks: false, isKnockedOut },
   };
 }
 
@@ -935,20 +933,69 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
 });
 
 describe("getPlayerAnalysis, blank picks", () => {
-  it("answers a blank row as knocked out, whatever the knockouts said", () => {
-    // The search reads every contested game as a pick of the player's, so a row
-    // that left one blank has to be answered before it.
+  /** Two rivals on opposite sides of a game the player left blank. */
+  function splitOnP2(aliceTotal: number, rivalTotal: number) {
+    return week([
+      player({
+        name: "Alice",
+        total: aliceTotal,
+        pro: [pick("KC -3"), pick("")],
+      }),
+      player({
+        name: "Bob",
+        total: rivalTotal,
+        pro: [pick("DEN +3"), pick("SF -6")],
+      }),
+      player({
+        name: "Carol",
+        total: rivalTotal,
+        pro: [pick("DEN +3"), pick("SEA +6")],
+      }),
+    ]);
+  }
+
+  it("hands a game the player left blank to the rivals who picked it", () => {
+    // Exactly one of Bob and Carol takes P2, so one of them finishes on 7 however
+    // it falls. Alice tops out at 6 and the week is gone.
+    const result = getPlayerAnalysis(splitOnP2(5, 6), "Alice");
+
+    expect(result?.kind).toBe("knockedOut");
+  });
+
+  it("never calls a week won on a game the player left blank", () => {
+    // Alice leads by one with a game she wrote nothing for. Bob picked it, and
+    // taking it draws him level and past her on the college tier. Her answer and
+    // his are read off the same week, so they cannot disagree about who it takes.
     const scores = week([
       player({
         name: "Alice",
-        total: 5,
-        pro: [pick("KC -3"), pick("")],
-        hasBlankPick: true,
+        total: 9,
+        collegeScore: 0,
+        tiebreakerPick: 40,
+        pro: [pick("")],
       }),
-      player({ name: "Bob", total: 5, pro: [pick("DEN +3"), pick("SF -6")] }),
+      player({
+        name: "Bob",
+        total: 8,
+        collegeScore: 8,
+        tiebreakerPick: 40,
+        pro: [pick("KC -3")],
+      }),
     ]);
 
-    expect(getPlayerAnalysis(scores, "Alice")?.kind).toBe("knockedOut");
+    expect(getPlayerAnalysis(scores, "Alice")?.kind).not.toBe("clinched");
+    expect(labels(paths(getPlayerAnalysis(scores, "Bob")).mustWin)).toEqual([
+      "P1",
+    ]);
+  });
+
+  it("names no game the player left blank", () => {
+    // Without P1 a rival passes her on P2, so P1 is the whole answer. P2 is not
+    // hers to win, so no heading can ask her for it.
+    const result = paths(getPlayerAnalysis(splitOnP2(6, 6), "Alice"));
+
+    expect(labels(result.mustWin)).toEqual(["P1"]);
+    expect(JSON.stringify(result)).not.toContain("P2");
   });
 });
 
