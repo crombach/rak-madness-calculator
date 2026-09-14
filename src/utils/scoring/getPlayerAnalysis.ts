@@ -275,20 +275,6 @@ function provenMustWin(
   });
 }
 
-/**
- * Whichever of two verdicts leaves the player better off.
- *
- * A win beats a total to hit, which beats a loss. Between two totals the wider
- * range is the better one, since every total in it is one the player takes the week
- * on. The range is reported as one of them rather than as both together: the two
- * need not meet, and a reader acts on a range by watching one game.
- */
-function better(a: Verdict, b: Verdict): Verdict {
-  if (a.kind === "win" || b.kind === "loss") return a;
-  if (b.kind === "win" || a.kind === "loss") return b;
-  return a.hi - a.lo >= b.hi - b.lo ? a : b;
-}
-
 function outlookOf(verdict: Verdict, isSettled: boolean): MondayNightOutlook {
   if (verdict.kind !== "onTotal") {
     return isSettled ? { kind: "settled" } : { kind: "notNeeded" };
@@ -328,12 +314,21 @@ function picksIn(
     .filter((pick) => pick != null);
 }
 
-/** Carries the reason `applyKnockouts` already wrote, rather than writing another. */
+/**
+ * Carries the reason `applyKnockouts` already wrote, rather than writing another.
+ *
+ * Only where it knocked the player out. This search reads the tiers more closely
+ * than the standings do, so it can answer a loss for a row left standing there,
+ * and that row's explanation says it is still in contention. Empty leaves the
+ * caller its own line.
+ */
 function knockedOut(player: PlayerScore): PlayerAnalysis {
   return {
     kind: "knockedOut",
     player: player.name,
-    explanation: player.status.explanation,
+    explanation: player.status.isKnockedOut
+      ? player.status.explanation
+      : undefined,
   };
 }
 
@@ -787,22 +782,13 @@ export default function getPlayerAnalysis(
   // Every outcome read below is a set of the player's own picks, so no two reads
   // ask about the same one and there is nothing for a cache to hold.
   //
-  // A game the player skipped is still open between their rivals and still moves
-  // the week, so each outcome is read over every way those games can fall and
-  // answered on the best of them. That never tells a player the week is gone
-  // where one of those games would save it. The cost is that a way through reads
-  // as though they fall the player's way, which is the most the tables can say
-  // about a game the player holds no pick in.
-  const read = (outcome: number) => {
-    let best = evaluate(me, against, outcome, isMondayNightSettled);
-    for (let rest = skippedMask; rest !== 0; rest = (rest - 1) & skippedMask) {
-      best = better(
-        best,
-        evaluate(me, against, outcome | rest, isMondayNightSettled),
-      );
-    }
-    return best;
-  };
+  // A game the player wrote nothing for is read as a game they got wrong, which
+  // hands it to the player who did pick it. That is one way the week can fall
+  // rather than the best or the worst of them, so every reading below stands on a
+  // week that can happen. The player may still take a week this says is gone, on
+  // a game that was never theirs to win.
+  const read = (outcome: number) =>
+    evaluate(me, against, outcome | skippedMask, isMondayNightSettled);
 
   // Above the ceiling only the must-win games are answered, which cost a verdict
   // each rather than a search. What is left over is a count of wins, and a count
