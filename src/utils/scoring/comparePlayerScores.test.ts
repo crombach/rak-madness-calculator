@@ -15,14 +15,12 @@ function player(
     proAgainstTheSpread = 0,
     distance,
     hasNoPicks = false,
-    hasBlankPick = hasNoPicks,
   }: {
     total?: number;
     college?: number;
     proAgainstTheSpread?: number;
     distance?: number;
     hasNoPicks?: boolean;
-    hasBlankPick?: boolean;
   } = {},
 ): PlayerScore {
   return {
@@ -32,7 +30,7 @@ function player(
     tiebreaker: { distance },
     college: [],
     pro: [],
-    status: { hasNoPicks, hasBlankPick, isKnockedOut: false },
+    status: { hasNoPicks, isKnockedOut: false },
   };
 }
 
@@ -58,16 +56,16 @@ describe("comparePlayerScores", () => {
     ).toEqual(["Alice", "Bob"]);
   });
 
-  it("ranks a blank pick under a full sheet and over an empty one", () => {
-    // Neither can win the week, which is why both sort under Alice. The pool still
-    // ranks a player who missed one game over one who entered nothing.
+  it("ranks a row that left one game blank on its total like any other", () => {
+    // A blank is a game its player scored nothing on, which the total already
+    // says. Only an empty row sorts under a score.
     expect(
       ranked(
         player("Carol", { total: 9, hasNoPicks: true }),
-        player("Bob", { total: 9, hasBlankPick: true }),
         player("Alice", { total: 1 }),
+        player("Bob", { total: 5 }),
       ),
-    ).toEqual(["Alice", "Bob", "Carol"]);
+    ).toEqual(["Bob", "Alice", "Carol"]);
   });
 
   it("breaks a tie on total by the closer Monday night guess", () => {

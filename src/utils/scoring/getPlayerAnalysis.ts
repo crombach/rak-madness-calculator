@@ -177,7 +177,6 @@ function threats(me: Side, rivals: Array<Side>): Array<Side> {
 function meritIn(side: Side, total: number, outcome: number): Merit {
   return {
     hasNoPicks: side.player.status.hasNoPicks,
-    hasBlankPick: side.player.status.hasBlankPick,
     total,
     distance: side.player.tiebreaker.distance,
     college: scoreIn(side.college, outcome),
@@ -662,9 +661,7 @@ function settledAnalysis(
 
   const player = players[playerIndex];
   const clinched: PlayerAnalysis = { kind: "clinched", player: player.name };
-  // Checked beside the knockout, since the search assumes every contested
-  // game is a pick, and a caller's blank row may skip `applyKnockouts`.
-  if (player.status.isKnockedOut || player.status.hasBlankPick) {
+  if (player.status.isKnockedOut) {
     return { playerIndex, player, rivals: [], analysis: knockedOut(player) };
   }
 

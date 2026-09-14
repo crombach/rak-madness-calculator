@@ -82,12 +82,6 @@ export default function applyKnockouts(
       return knockedOut(activeScore, "Knocked out due to having no picks.");
     }
 
-    // A blank pick means the row is a forgetful player or a name added by hand to
-    // cover a game everyone picked one side of, and neither wins the week.
-    if (activeScore.status.hasBlankPick) {
-      return knockedOut(activeScore, "Knocked out due to a blank pick.");
-    }
-
     // The leader sorts first and cannot be knocked out, so skip them.
     // Everyone else is measured against every player level with them or ahead,
     // including ones ranked below them, which is where an equal score with the
@@ -101,16 +95,10 @@ export default function applyKnockouts(
       ) {
         const rivalScore = sortedScores[rivalIndex];
 
-        // No use comparing a player to themself, or to one who cannot win the week
-        // and so can take it off nobody. A name two rows share is the third case:
-        // the workbook is wrong about who these rows are, and a row nobody can
-        // identify does not get to end another player's week over it.
-        if (
-          rivalIndex === activeIndex ||
-          rivalScore.status.hasBlankPick ||
-          repeated.has(rivalScore.name)
-        )
-          continue;
+        // No use comparing a player to themself. A name two rows share is the
+        // other case: the workbook is wrong about who these rows are, and a row
+        // nobody can identify does not get to end another player's week over it.
+        if (rivalIndex === activeIndex || repeated.has(rivalScore.name)) continue;
 
         const {
           differentCollegePicks,

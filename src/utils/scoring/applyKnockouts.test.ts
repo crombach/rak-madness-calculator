@@ -20,7 +20,6 @@ type PlayerOptions = {
   tiebreakerPick?: number;
   distance?: number;
   hasNoPicks?: boolean;
-  hasBlankPick?: boolean;
 };
 
 function player({
@@ -34,7 +33,6 @@ function player({
   tiebreakerPick,
   distance,
   hasNoPicks = false,
-  hasBlankPick = hasNoPicks,
 }: PlayerOptions): PlayerScore {
   return {
     id: name,
@@ -43,7 +41,7 @@ function player({
     tiebreaker: { pick: tiebreakerPick, distance },
     college,
     pro,
-    status: { hasNoPicks, hasBlankPick, isKnockedOut: hasNoPicks },
+    status: { hasNoPicks, isKnockedOut: hasNoPicks },
   };
 }
 
@@ -110,24 +108,23 @@ describe("applyKnockouts", () => {
     expect(result[1].status.explanation).toBe("Not knocked out!");
   });
 
-  it("knocks out a player who left one game blank, whatever their score", () => {
-    // The pool only writes a blank two ways: a player who forgot, or a name added
-    // by hand to cover a game everybody picked one side of. Neither can win.
+  it("leaves a player who left one game blank in contention", () => {
+    // A blank costs its player that game's point and nothing else. They lead on
+    // the points they did score, so nothing here can end their week.
     const result = applyKnockouts([
-      player({ name: "Alice", total: 9, hasBlankPick: true }),
-      player({ name: "Bob", total: 1 }),
+      player({ name: "Alice", total: 9, pro: [pickResult("", "unscoreable")] }),
+      player({ name: "Bob", total: 1, pro: [pickResult("BUF -3", "no")] }),
     ]);
 
-    expect(result[0].status.isKnockedOut).toBe(true);
-    expect(result[0].status.explanation).toBe(
-      "Knocked out due to a blank pick.",
-    );
-    expect(result[1].status.isKnockedOut).toBe(false);
+    expect(result[0].status.isKnockedOut).toBe(false);
+    expect(result[1].status.isKnockedOut).toBe(true);
   });
 
-  it("lets nobody be knocked out by a player who left a game blank", () => {
+  it("lets a player who left a game blank knock a rival out", () => {
+    // Alice is a rival like any other, and Bob cannot close nine points on the
+    // one game he has left.
     const result = applyKnockouts([
-      player({ name: "Alice", total: 9, hasBlankPick: true }),
+      player({ name: "Alice", total: 9, pro: [pickResult("", "unscoreable")] }),
       player({
         name: "Bob",
         total: 1,
@@ -135,7 +132,7 @@ describe("applyKnockouts", () => {
       }),
     ]);
 
-    expect(result[1].status.isKnockedOut).toBe(false);
+    expect(result[1].status.isKnockedOut).toBe(true);
   });
 
   it("knocks out a player who submitted no picks", () => {

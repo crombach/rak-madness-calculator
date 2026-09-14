@@ -341,7 +341,9 @@ describe("getPlayerScores, knockouts", () => {
 });
 
 describe("getPlayerScores, blank picks", () => {
-  it("reports a row that left one game blank, and knocks it out", async () => {
+  it("scores a row that left one game blank on the games it did pick", async () => {
+    // The blank P2 costs Alice that point and nothing more. C1 still scores, P1
+    // is still to be played, and she still leads a row the week can be won by.
     const result = await getPlayerScores(
       WEEK,
       picksBuffer([
@@ -351,15 +353,15 @@ describe("getPlayerScores, blank picks", () => {
     );
 
     const byName = new Map(result.scores.map((score) => [score.name, score]));
-    expect(byName.get("Alice")?.status.hasBlankPick).toBe(true);
+    expect(byName.get("Alice")?.score.total).toBe(1);
+    expect(byName.get("Bob")?.score.total).toBe(0);
     expect(byName.get("Alice")?.status.hasNoPicks).toBe(false);
-    expect(byName.get("Alice")?.status.isKnockedOut).toBe(true);
-    expect(byName.get("Bob")?.status.hasBlankPick).toBe(false);
+    expect(byName.get("Alice")?.status.isKnockedOut).toBe(false);
   });
 
-  it("reads a game the workbook contradicts as no blank of the player's", async () => {
-    // A column nobody can be scored on is the sheet's problem, not the row's, so
-    // it leaves every row still able to win.
+  it("scores a game the workbook contradicts as nothing for anybody", async () => {
+    // The two rows disagree about C1's spread, so nothing can tell which number
+    // was meant. The column is worth no points to either of them.
     const result = await getPlayerScores(
       WEEK,
       picksBuffer([
@@ -368,7 +370,7 @@ describe("getPlayerScores, blank picks", () => {
       ]),
     );
 
-    expect(result.scores.every((score) => !score.status.hasBlankPick)).toBe(
+    expect(result.scores.every((score) => score.score.college === 0)).toBe(
       true,
     );
   });

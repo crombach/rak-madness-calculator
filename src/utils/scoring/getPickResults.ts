@@ -42,13 +42,11 @@ export const MISSING_PICK = "Missing Pick";
  *
  * A blank cell scores `unscoreable`, since there is no point in it either way. Every
  * other cell that scores it is a game the week cannot settle, and the warning fill
- * says so. A blank is the player's own doing and tells the reader nothing about the
- * game, so it takes the plain fill an unplayed game takes.
+ * says so. A blank settles nothing about the game and costs its player the point,
+ * which is what a wrong pick costs, so it is drawn as one.
  */
 export function fillStatus(result: PickResult): Status {
-  return result.explanation.header === MISSING_PICK
-    ? "incomplete"
-    : result.status;
+  return result.explanation.header === MISSING_PICK ? "no" : result.status;
 }
 
 /**

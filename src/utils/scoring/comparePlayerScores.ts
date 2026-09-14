@@ -6,7 +6,6 @@ import { PlayerScore } from "../../types/RakMadnessScores";
  */
 export type Merit = {
   hasNoPicks: boolean;
-  hasBlankPick: boolean;
   total: number;
   /** Absent where the player left the Monday night points cell blank. */
   distance?: number;
@@ -41,10 +40,9 @@ function firstAlphabetically(a: string, b: string): number {
  * are a run of returns rather than a list walked with a call each.
  */
 export function compareOnMerit(a: Merit, b: Merit): number {
-  // A row the week can't be won by sorts under one that can, so leaders read
-  // off row one. No-picks sorts under blank-pick, wider rule checked first.
+  // An empty row cannot win the week, so it sorts under every row that can and
+  // leaders read off row one.
   if (a.hasNoPicks !== b.hasNoPicks) return a.hasNoPicks ? 1 : -1;
-  if (a.hasBlankPick !== b.hasBlankPick) return a.hasBlankPick ? 1 : -1;
   if (a.total !== b.total) return highestFirst(a.total, b.total);
   // A player who left the points cell blank has no distance, so this tier cannot
   // separate them and falls through to the next one.
@@ -58,7 +56,6 @@ export function compareOnMerit(a: Merit, b: Merit): number {
 export function meritOf(player: PlayerScore): Merit {
   return {
     hasNoPicks: player.status.hasNoPicks,
-    hasBlankPick: player.status.hasBlankPick,
     total: player.score.total,
     distance: player.tiebreaker.distance,
     college: player.score.college,

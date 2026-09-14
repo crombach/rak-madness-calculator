@@ -2,18 +2,13 @@ import { GameScore } from "../../types/GameScore";
 import { LeagueResult } from "../../types/LeagueResult";
 import { PlayerScore } from "../../types/RakMadnessScores";
 import comparePlayerScores from "./comparePlayerScores";
-import { getPickResults, getStatus, MISSING_PICK } from "./getPickResults";
+import { getPickResults, getStatus } from "./getPickResults";
 import { formatPickDisplay } from "./parsePick";
 import { ParsedPicks, TIEBREAKER_PICK_KEY } from "./parsePicksWorkbook";
 import { indexResults, ResultsIndex } from "./resultsIndex";
 
 function sumPointValues(scores: Array<GameScore>): number {
   return scores.reduce((sum, score) => sum + score.pointValue, 0);
-}
-
-/** A cell the player left empty, told from the games nobody can be scored on. */
-function isBlank(score: GameScore): boolean {
-  return score.explanation.header === MISSING_PICK;
 }
 
 /** Restates the flagged games as positions, which is how a row's picks arrive. */
@@ -111,8 +106,6 @@ export default function scorePlayers(
       status: {
         isKnockedOut: hasNoPicks,
         hasNoPicks,
-        hasBlankPick:
-          collegePickResults.some(isBlank) || proPickResults.some(isBlank),
       },
     };
   });

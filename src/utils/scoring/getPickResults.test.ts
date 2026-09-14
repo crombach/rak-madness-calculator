@@ -265,8 +265,8 @@ describe("fillStatus", () => {
     explanation: { header, message: "why" },
   });
 
-  it("draws a blank cell as an unplayed one", () => {
-    expect(fillStatus(result(MISSING_PICK))).toBe("incomplete");
+  it("draws a blank cell as a wrong pick", () => {
+    expect(fillStatus(result(MISSING_PICK))).toBe("no");
   });
 
   it("leaves every other unscoreable cell its warning", () => {

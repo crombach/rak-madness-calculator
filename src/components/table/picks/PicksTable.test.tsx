@@ -62,7 +62,6 @@ function player({
     pro,
     status: {
       hasNoPicks: false,
-      hasBlankPick: false,
       isKnockedOut,
       explanation: isKnockedOut ? `${name} is out` : undefined,
     },
@@ -194,9 +193,9 @@ describe("PicksTable, rows", () => {
     expect(screen.getByText("MIA").closest("td")).toHaveClass("--unscoreable");
   });
 
-  it("leaves a blank cell the plain fill, not the unscoreable one", () => {
-    // A blank scores unscoreable, and the warning fill is about the week rather
-    // than the row. There is nothing here for the reader to act on.
+  it("fills a blank cell as a wrong pick, not an unscoreable one", () => {
+    // The warning fill says the week cannot settle the game, which is not what a
+    // blank says. A blank costs its player the point, the way a wrong pick does.
     const blank: RakMadnessScores = {
       tiebreaker: 47,
       scores: [
@@ -211,11 +210,11 @@ describe("PicksTable, rows", () => {
     };
     render(<PicksTable scores={blank} />);
     const cells = screen.getAllByText("N/A");
-    expect(cells[0].closest("td")).toHaveClass("--incomplete");
+    expect(cells[0].closest("td")).toHaveClass("--no");
     expect(screen.getByText("MIA").closest("td")).toHaveClass("--unscoreable");
   });
 
-  it("says nothing to a screen reader about a blank cell", () => {
+  it("tells a screen reader a blank cell went the player's way for nothing", () => {
     const blank: RakMadnessScores = {
       tiebreaker: 47,
       scores: [
@@ -228,9 +227,9 @@ describe("PicksTable, rows", () => {
       ],
     };
     render(<PicksTable scores={blank} />);
-    expect(
-      screen.getAllByText("N/A")[0].closest("button"),
-    ).not.toHaveTextContent("Unscoreable");
+    expect(screen.getAllByText("N/A")[0].closest("button")).toHaveTextContent(
+      "Wrong",
+    );
   });
 
   it("announces a pick's status for a screen reader, fill colors aside", () => {
