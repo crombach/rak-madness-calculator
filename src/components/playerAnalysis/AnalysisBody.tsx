@@ -240,12 +240,19 @@ export default function AnalysisBody({
       />
 
       {/* A picked player always reads a sentence. This is the one left where the
-          games ask nothing and the line above said nothing either. */}
-      {!hasGames(result) && result.mondayNight?.kind !== "notNeeded" && (
-        <p className="analysis__line">
-          No clean path to victory. The MNF Points tiebreaker decides it.
-        </p>
-      )}
+          games ask nothing and the line above said nothing either.
+
+          `hasGames` reads the ways this result holds itself, which the outright
+          half is not one of. A player already level and needing nothing has no
+          ways of their own and can still have a half above naming games, and
+          there the sentence would deny the block a reader is looking at. */}
+      {!hasGames(result) &&
+        result.outright == null &&
+        result.mondayNight?.kind !== "notNeeded" && (
+          <p className="analysis__line">
+            No clean path to victory. The MNF Points tiebreaker decides it.
+          </p>
+        )}
 
       <MondayNight
         conjoined={
