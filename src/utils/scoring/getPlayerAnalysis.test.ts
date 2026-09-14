@@ -962,6 +962,33 @@ describe("getPlayerAnalysis, blank picks", () => {
     expect(result?.kind).toBe("knockedOut");
   });
 
+  it("never calls a week won on a game the player left blank", () => {
+    // Alice leads by one with a game she wrote nothing for. Bob picked it, and
+    // taking it draws him level and past her on the college tier. Her answer and
+    // his are read off the same week, so they cannot disagree about who it takes.
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 9,
+        collegeScore: 0,
+        tiebreakerPick: 40,
+        pro: [pick("")],
+      }),
+      player({
+        name: "Bob",
+        total: 8,
+        collegeScore: 8,
+        tiebreakerPick: 40,
+        pro: [pick("KC -3")],
+      }),
+    ]);
+
+    expect(getPlayerAnalysis(scores, "Alice")?.kind).not.toBe("clinched");
+    expect(labels(paths(getPlayerAnalysis(scores, "Bob")).mustWin)).toEqual([
+      "P1",
+    ]);
+  });
+
   it("names no game the player left blank", () => {
     // Without P1 a rival passes her on P2, so P1 is the whole answer. P2 is not
     // hers to win, so no heading can ask her for it.
