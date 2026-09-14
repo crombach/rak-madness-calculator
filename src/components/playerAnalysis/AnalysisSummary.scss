@@ -43,10 +43,15 @@
   }
 }
 
-// The body stands its blocks --rak-space-4 apart. This note is a tail on the block
-// above it rather than a block of its own, so it sits as close to that block as the
-// message's own two lines sit to each other.
-.analysis__body > .analysis__note {
+// The body stands its blocks --rak-space-4 apart. Each of these is a tail on the
+// block above it rather than a block of its own: a note about that block, or the
+// totals the word `AND` holds to its games. So each sits as close to the block it
+// belongs to as that block's own title sits to its contents.
+//
+// Not a first child, which has no block above it to be the tail of. There the
+// standing is all that stands above, and the two are already a line apart.
+.analysis__body > .analysis__note:not(:first-child),
+.analysis__body > .analysis__route-mnf:not(:first-child) {
   margin-block-start: calc(var(--rak-space-2) - var(--rak-space-4));
 }
 
