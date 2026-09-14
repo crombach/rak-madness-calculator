@@ -12,6 +12,12 @@
   // stand under that text rather than under the chip.
   --rak-pick-inset: 8px;
   --rak-pick-gap: 6px;
+  // What a block holds its contents off its own rule by. A pool has no box, so
+  // its chips carry this themselves and every block's text starts at one x.
+  --rak-block-inset: 10px;
+  // The width a column adds where a chip is its own box. Zero in a block whose
+  // box carries the inset for it.
+  --rak-pick-box: 0px;
   // A game label is a league letter and at most two digits. Monospace, so that is a
   // width rather than a guess.
   --rak-pick-label-width: 3ch;
@@ -105,7 +111,7 @@
     minmax(
       calc(
         var(--rak-pick-label-width) + 9ch + var(--rak-pick-gap) +
-          var(--rak-pick-inset) * 2
+          var(--rak-pick-inset) * 2 + var(--rak-pick-box)
       ),
       1fr
     )
@@ -133,11 +139,18 @@
 // Choosing one of these is choosing one of the routes below, so an option here
 // carries the mark a route carries. On the chips rather than on the grid: the
 // options are the chips, and one rule down the side of the grid would say the
-// whole block is a single option, which is what `--must-win` says.
+// whole block is a single option, which is what `.analysis__must-win` says.
+.analysis__pool {
+  --rak-pick-box: var(--rak-block-inset);
+}
+
 .analysis__pool > .analysis__pick {
-  // Held off the inset, so the two halves of a chip start where they start in
-  // every other block whatever the rule adds to the box.
-  padding-inline-start: calc(var(--rak-pick-inset) - var(--rak-border-width));
+  // The box's inset as well as the chip's, since here the chip is the box. Less
+  // the rule, which stands inside the box in every block beside this one, so a
+  // pick starts at the x a must-win pick and a route's pick start at.
+  padding-inline-start: calc(
+    var(--rak-block-inset) + var(--rak-pick-inset) - var(--rak-border-width)
+  );
   border-inline-start: var(--rak-border-width) solid var(--rak-gold-500);
   // Square against the rule, the way a route's box is, so the two read as one
   // mark rather than as a chip that happens to have an edge.
@@ -179,7 +192,7 @@
 .analysis__route,
 .analysis__must-win,
 .analysis__shares {
-  padding: var(--rak-space-2) 10px;
+  padding: var(--rak-space-2) var(--rak-block-inset);
   // Drawn on the left alone, so a stack of routes reads as a list of alternatives
   // rather than as a stack of boxes.
   border-inline-start: var(--rak-border-width) solid var(--rak-gold-500);
@@ -318,18 +331,19 @@
 .analysis__divider {
   margin: 0;
   color: var(--rak-text);
-  font-size: var(--rak-text-md);
+  // Set at the body's own size. Full ink and the weight put it over the labels
+  // under it, so a step up in size on top of those would take the eye first.
+  font-size: var(--rak-text-sm);
   font-weight: var(--rak-weight-bold);
 }
 
 // A rule only where one half follows another. The gap between these is the gap
 // between any two blocks, which on its own does not say a half has ended.
-// `--rak-fill-muted` rather than `--rak-divider`, which is a light rule for a
-// light surface and has no dark mode to draw on this one.
+// Drawn the way the dialog draws its own rule under the search, since both sit
+// on the sheet's ground rather than on a fill.
 .analysis__divider ~ .analysis__divider {
   padding-block-start: var(--rak-space-4);
-  border-block-start: var(--rak-border-width-hairline) solid
-    var(--rak-fill-muted);
+  border-block-start: var(--rak-border-width-hairline) solid var(--rak-divider);
 }
 
 .analysis__message {
