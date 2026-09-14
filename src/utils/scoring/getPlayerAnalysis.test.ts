@@ -432,6 +432,72 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
     expect(result.pool).toBeUndefined();
   });
 
+  it("gives no route through a pick the week can never score", () => {
+    // Alice wrote a team this week's results do not hold, so the cell scores her
+    // nothing whichever way the game falls. Read as a live pick it would put her
+    // on the other side from Bob and hand her a way through that does not exist.
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 0,
+        pro: [pick("BUFF -3", "unscoreable"), pick("SF -6")],
+      }),
+      player({ name: "Bob", total: 1, pro: [pick("DEN +3"), pick("SF -6")] }),
+    ]);
+
+    expect(getPlayerAnalysis(scores, "Alice")?.kind).toBe("knockedOut");
+  });
+
+  it("still gives a route through the same game to a rival who can win it", () => {
+    // The dead cell is one player's own doing. Bob wrote a real team in the same
+    // column, so the game is still his to win.
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 1,
+        pro: [pick("BUFF -3", "unscoreable"), pick("SF -6")],
+      }),
+      player({ name: "Bob", total: 0, pro: [pick("DEN +3"), pick("SF -6")] }),
+    ]);
+
+    const result = paths(getPlayerAnalysis(scores, "Bob"));
+    expect(mustWin(result)).toEqual(["P1"]);
+  });
+
+  it("says what the cheapest way to win outright costs over the cheapest way", () => {
+    // Bob and Carl are each a point up, over separate halves of the week. One
+    // game off either half draws Alice level with that rival, which the totals
+    // then decide, so the cheapest way through leans on them. Clearing both
+    // outright asks one game more than that.
+    const scores = week([
+      player({ name: "Alice", total: 0, pro: picks(MINE), tiebreakerPick: 30 }),
+      player({
+        name: "Bob",
+        total: 1,
+        tiebreakerPick: 50,
+        pro: picks([...FIRST_THREE.slice(0, 4), ...MINE.slice(4)]),
+      }),
+      player({
+        name: "Carl",
+        total: 1,
+        tiebreakerPick: 55,
+        pro: picks([...MINE.slice(0, 4), ...LAST_FIVE.slice(4)]),
+      }),
+    ]);
+
+    const result = paths(getPlayerAnalysis(scores, "Alice"));
+    expect(result.shares?.routeCount).toBe(12);
+    expect(result.shares?.outrightCost).toBe(1);
+  });
+
+  it("leaves the cost off where the cheapest way already wins outright", () => {
+    // Every way through `manyRoutes` clears both rivals on points, so no way
+    // leans on the total and there is nothing a further game would buy.
+    const result = paths(getPlayerAnalysis(manyRoutes(), "Alice"));
+    expect(result.shares?.routeCount).toBe(15);
+    expect(result.shares?.outrightCost).toBeUndefined();
+  });
+
   it("counts a game over every route, not over the ones a list would keep", () => {
     // Ten of the fifteen hold P1, which no six of them could account for.
     const result = paths(getPlayerAnalysis(manyRoutes(), "Alice"));

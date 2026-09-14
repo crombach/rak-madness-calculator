@@ -3,7 +3,10 @@ import { LeagueKey } from "./gameColumns";
 import weekShape from "./weekShape";
 
 type Cell = {
-  /** Absent where the player left the game blank, which scores them nothing. */
+  /**
+   * Absent where nothing the player wrote can score: a blank cell, or a pick on
+   * a game the week's results do not hold.
+   */
   team?: string;
   hasSpread: boolean;
   text: string;
