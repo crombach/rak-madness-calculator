@@ -29,6 +29,11 @@
   &:active {
     background-color: #{$active};
   }
+  // A key working takes the fill a key held down takes, because that is where it
+  // stands. The sheen sweeps over this rather than in place of it.
+  &.--busy {
+    background-color: #{$active};
+  }
 }
 
 // Fixed white ink rather than `--rak-on-solid`. That token now inverts with the
@@ -183,6 +188,11 @@
       &.--selected {
         background-color: var(--rak-key-active, var(--rak-primary-600));
       }
+
+      // After `--selected` for the same reason: held by the work, not the pointer.
+      &.--busy {
+        background-color: var(--rak-key-active, var(--rak-primary-600));
+      }
     }
 
     // This fill stays the same dark green in both modes.
@@ -296,7 +306,9 @@
 
   // The button's own work is running. The label stays, because the user pressed
   // this and nothing else on screen has changed yet, so a wireframe here would
-  // take away the only thing that says what they pressed.
+  // take away the only thing that says what they pressed. A solid key also holds
+  // the pressed position and fill for as long as the work runs, which the blocks
+  // above set beside the states it shares them with.
   &.--busy {
     @include skeleton-sheen;
     cursor: default;
