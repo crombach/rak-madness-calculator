@@ -6,14 +6,9 @@ import App from "./App";
 // four the app sets anything in are asked for: body copy at 400, a toast's message at
 // 500, a button and a team's name at 600, and every screen-printed label at 700.
 //
-// The latin cut of each rather than the whole family, which also carries Thai and
-// Vietnamese. Those two are small enough that Vite inlines them into the stylesheet,
-// so asking for them costs every reader 17kB of base64 for scripts the app has no
-// copy in.
-import "@fontsource/chakra-petch/latin-400.css";
-import "@fontsource/chakra-petch/latin-500.css";
-import "@fontsource/chakra-petch/latin-600.css";
-import "@fontsource/chakra-petch/latin-700.css";
+// Chakra Petch is missing on purpose, for the reason DSEG14 Classic is below. It
+// is the body face, so it measures every label on the first screen, and a swap
+// into it moves them. index.html declares its four weights and preloads them.
 // IBM Plex Mono ships one file per weight rather than one variable file, so only the
 // three the app sets anything in are asked for: the tables and the pick chips at 400,
 // the spread and a player's standing at 600, and a game's own mark at 700.

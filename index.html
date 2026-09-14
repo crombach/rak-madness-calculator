@@ -33,21 +33,22 @@
     -->
     <link rel="manifest" href="/manifest.json" />
     <title>Rakulator</title>
-    <!-- The logo's own face, before the first paint, for the same reason the theme
-         script below runs here. Every other font in this app is reached through
-         src/index.tsx, which imports the @fontsource stylesheet that declares it.
-         Nothing asks for the file until that bundle has loaded and run, so the
-         navbar paints the name in the fallback mono and swaps it once the real
-         face lands. On a wordmark drawn as a segment display, that swap is the
-         whole logo changing shape.
+    <!-- The two faces that paint before anything else, declared here so the fetch
+         starts while the HTML is still parsing. Every other font in this app is
+         reached through src/index.tsx, which imports the @fontsource stylesheet
+         that declares it. Nothing asks for those files until that bundle has
+         loaded and run, so their text paints in a fallback and swaps once the real
+         face lands.
 
-         Declared here rather than in src/index.scss, which the same bundle
-         carries. The preload starts the fetch while the HTML is still parsing,
-         and the rule under it is what the fetch is for.
+         The logo is a wordmark drawn as a segment display, and that swap is the
+         whole logo changing shape. The body face is narrower than the system stack
+         behind it, so its swap moves every label that was measured in the fallback.
+         The navbar's right group is sized to its content and sits against the right
+         edge, which makes it the clearest place to see it.
 
-         A copy at a fixed path under public/, not the hashed one Vite emits from
-         node_modules, since this file cannot know that name. public/CLAUDE.md
-         says where it came from. -->
+         Copies at fixed paths under public/, not the hashed ones Vite emits from
+         node_modules, since this file cannot know those names. public/CLAUDE.md
+         says where they came from. -->
     <link
       rel="preload"
       href="/fonts/dseg14-classic-700.woff2"
@@ -55,16 +56,76 @@
       type="font/woff2"
       crossorigin
     />
+    <link
+      rel="preload"
+      href="/fonts/chakra-petch-400.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/chakra-petch-500.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/chakra-petch-600.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/chakra-petch-700.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <style>
-      /* `block` rather than `swap`: with the preload above, the face is here
-         before anything paints, so the block period costs nothing and no
-         fallback is ever shown. `swap` is what draws the name twice. */
+      /* `block` rather than `swap`: with the preloads above, each face is here
+         before anything paints, so the block period costs nothing and no fallback
+         is ever shown. `swap` is what draws the text twice. */
       @font-face {
         font-family: "DSEG14 Classic";
         font-style: normal;
         font-weight: 700;
         font-display: block;
         src: url("/fonts/dseg14-classic-700.woff2") format("woff2");
+      }
+      /* The four weights src/index.scss sets body text at. Ahead of the
+         @fontsource rules the bundle carries, which declare the same family with
+         `swap`. A later rule for one family and weight wins, so those would put
+         the swap back. src/index.tsx imports none of them for this reason. */
+      @font-face {
+        font-family: "Chakra Petch";
+        font-style: normal;
+        font-weight: 400;
+        font-display: block;
+        src: url("/fonts/chakra-petch-400.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Chakra Petch";
+        font-style: normal;
+        font-weight: 500;
+        font-display: block;
+        src: url("/fonts/chakra-petch-500.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Chakra Petch";
+        font-style: normal;
+        font-weight: 600;
+        font-display: block;
+        src: url("/fonts/chakra-petch-600.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Chakra Petch";
+        font-style: normal;
+        font-weight: 700;
+        font-display: block;
+        src: url("/fonts/chakra-petch-700.woff2") format("woff2");
       }
     </style>
     <!-- The saved theme, before the first paint. src/context/SettingsContext.tsx
