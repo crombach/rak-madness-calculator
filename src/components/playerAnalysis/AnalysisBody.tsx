@@ -66,6 +66,12 @@ function Ways({
   conjoined?: boolean;
 }) {
   const hasMustWin = ways.mustWin.length > 0;
+  // `Must win` names a demand on its own. `One of` and `Any 2 of` name a choice
+  // and leave what it is for unsaid, so a block opening the answer says the word.
+  // One with a block above it is already held to it by `And`.
+  const opens = !hasMustWin && !conjoined;
+  const asked = (title: string) =>
+    opens ? `Needs ${title.toLowerCase()}` : title;
   return (
     <>
       {/* Every must-win game there is, or none. */}
@@ -78,7 +84,7 @@ function Ways({
       {ways.pool && (
         <Section
           conjoined={hasMustWin || conjoined}
-          title={`Any ${ways.pool.choose} of`}
+          title={asked(`Any ${ways.pool.choose} of`)}
         >
           <Picks className="analysis__pool" games={ways.pool.games} />
         </Section>
@@ -87,7 +93,7 @@ function Ways({
       {ways.routes != null && ways.routes.length > 0 && (
         <AnalysisRoutes
           conjoined={hasMustWin || conjoined}
-          title="One of"
+          title={asked("One of")}
           routes={ways.routes}
           showMondayNight={showMondayNight}
         />

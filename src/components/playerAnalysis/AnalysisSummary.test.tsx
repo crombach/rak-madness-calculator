@@ -225,6 +225,28 @@ describe("AnalysisSummary", () => {
     expect(isConjoined("MNF Points")).toBe(false);
   });
 
+  it("says what a block asks for where it opens the answer", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      routes: routesOf(2),
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(blockHeading("Needs one of")).toBeInTheDocument();
+  });
+
+  it("leaves the word off a block a must-win block already holds", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      mustWin: [{ label: "P1", pick: "KC -3" }],
+      routes: routesOf(2),
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(blockHeading("One of")).toBeInTheDocument();
+    expect(isConjoined("One of")).toBe(true);
+  });
+
   it("says something for a player the games can no longer separate", () => {
     const result: PlayerAnalysis = {
       ...base,
@@ -285,12 +307,12 @@ describe("AnalysisSummary", () => {
 
     const line = screen.getByText("To win outright:");
     // Its own pool, asking one more game than winning the week at all does.
-    expect(blockHeading("Any 3 of")).toBeInTheDocument();
+    expect(blockHeading("Needs any 3 of")).toBeInTheDocument();
     expect(screen.getByText("SF -6")).toBeInTheDocument();
 
     // Over the ways that need a total, which the tiebreaker line hands down to.
     expect(
-      line.compareDocumentPosition(blockHeading("Any 2 of")) &
+      line.compareDocumentPosition(blockHeading("Needs any 2 of")) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(
