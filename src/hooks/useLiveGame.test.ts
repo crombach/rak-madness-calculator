@@ -4,7 +4,7 @@ import { League, WeekInfo } from "../types/League";
 import { WeekGame } from "../types/WeekGame";
 import { getGameResultMock } from "../utils/getGameResultMock";
 import { liveGame, upcomingGame } from "../utils/scoring/leagueResultFixtures";
-import useLiveGame, { MAX_SLEEP_MS, nextPollMs, POLL_MS } from "./useLiveGame";
+import useLiveGame, { kickoffAt, POLL_MS } from "./useLiveGame";
 
 vi.mock("../utils/getLeagueResults");
 
@@ -26,45 +26,35 @@ function kickoffIn(ms: number) {
   };
 }
 
-describe("nextPollMs", () => {
-  it("waits out the whole gap to a kickoff still hours away", () => {
-    expect(nextPollMs(kickoffIn(2 * HOUR_MS), NOW.getTime())).toBe(2 * HOUR_MS);
+describe("kickoffAt", () => {
+  it("holds the kickoff of a game that has not started", () => {
+    expect(kickoffAt(kickoffIn(2 * HOUR_MS))).toBe(NOW.getTime() + 2 * HOUR_MS);
   });
 
-  it("does not undercut the poll wait for a kickoff seconds away", () => {
-    expect(nextPollMs(kickoffIn(3_000), NOW.getTime())).toBe(POLL_MS);
+  it("holds a kickoff already past, which ESPN still calls upcoming", () => {
+    expect(kickoffAt(kickoffIn(-HOUR_MS))).toBe(NOW.getTime() - HOUR_MS);
   });
 
-  it("polls a game past its kickoff that ESPN still calls upcoming", () => {
-    expect(nextPollMs(kickoffIn(-HOUR_MS), NOW.getTime())).toBe(POLL_MS);
-  });
-
-  it("caps a kickoff too far off for a timer to hold", () => {
-    expect(nextPollMs(kickoffIn(30 * 24 * HOUR_MS), NOW.getTime())).toBe(
-      MAX_SLEEP_MS,
-    );
-  });
-
-  it("polls a game ESPN gave no kickoff date to parse", () => {
+  it("holds nothing for a kickoff date ESPN gave nothing to parse", () => {
     const result = {
       ...upcomingGame({ home: "BUF", away: "KC" }),
       date: new Date("not a date"),
     };
-    expect(nextPollMs(result, NOW.getTime())).toBe(POLL_MS);
+    expect(kickoffAt(result)).toBeNull();
   });
 
-  it("polls a game being played, whatever its kickoff says", () => {
+  it("holds nothing for a game being played, whatever its kickoff says", () => {
     const result = liveGame({
       home: "BUF",
       away: "KC",
       homeScore: 7,
       awayScore: 0,
     });
-    expect(nextPollMs(result, NOW.getTime())).toBe(POLL_MS);
+    expect(kickoffAt(result)).toBeNull();
   });
 
-  it("polls again when nothing answered, since the next list may hold it", () => {
-    expect(nextPollMs(null, NOW.getTime())).toBe(POLL_MS);
+  it("holds nothing when nothing answered, since the next list may hold it", () => {
+    expect(kickoffAt(null)).toBeNull();
   });
 });
 
