@@ -29,10 +29,10 @@ export const PULL_SETTLE_MS = 200;
 /**
  * The least time the puck stays open once the finger is off it.
  *
- * A rescore off a warm cache finishes inside a frame, and a call the throttle
- * drops never starts at all. Without a floor both read as the gesture having
- * failed. Under the 500ms throttle window, so a second pull cannot arrive before
- * the first has visibly finished.
+ * A call the throttle drops never starts at all, and without a floor that reads as
+ * the gesture having failed. Under the 500ms throttle window, so a second pull
+ * cannot arrive before the first has visibly finished. The pull reads the sheet
+ * again, and `REFRESHING_FLOOR_MS` holds the puck past this floor while it does.
  */
 export const PULL_MIN_HOLD_MS = 400;
 

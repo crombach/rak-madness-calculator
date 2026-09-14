@@ -13,8 +13,9 @@ import { cachedGet, serviceUnavailable } from "../env";
  * read once per week a reader selects, not once per paint.
  *
  * `s-maxage` holds the colo's own copy to a minute, which the browser ignores and
- * a shared cache does not. It is what keeps a burst of readers off R2, now that no
- * browser holds a copy it will reuse unasked.
+ * a shared cache does not. It catches a burst of first-time readers. A reader
+ * already holding an `ETag` misses that copy and revalidates against R2 instead,
+ * which `cachedGet` accounts for and leaves as it is.
  */
 const CACHE_CONTROL = "public, max-age=0, s-maxage=60, must-revalidate";
 

@@ -24,9 +24,9 @@ const scores: RakMadnessScores = { scores: [], games: [proGame] };
 
 /**
  * `onGameFinal` is what wires the dialog's own live poll back into the week's
- * scores (`ResultsFrame` passes it the same `refresh` the navbar button calls),
- * so a game going final while the dialog is open rescoreds and plays the
- * table's wipe animation instead of waiting for a manual refresh.
+ * scores. `ResultsFrame` passes it `rescore`, which scores the workbook already in
+ * hand rather than reading the sheet again, so a game going final while the dialog
+ * is open plays the table's wipe animation without waiting for a manual refresh.
  */
 describe("GameStatusDialog onGameFinal", () => {
   it("calls onGameFinal once the polled game goes final, and not again after", async () => {
