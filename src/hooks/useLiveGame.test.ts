@@ -69,7 +69,7 @@ describe("useLiveGame", () => {
     vi.useRealTimers();
   });
 
-  it("asks once about a game that has not kicked off, then sleeps to kickoff", async () => {
+  it("asks once about a game that has not kicked off, then nothing until kickoff", async () => {
     const result = kickoffIn(2 * HOUR_MS);
     getGameResultMock.mockResolvedValue(result);
     const game: WeekGame = {
