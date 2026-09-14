@@ -464,6 +464,60 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
     expect(mustWin(result)).toEqual(["P1"]);
   });
 
+  it("hands a game the player cannot take to the rivals who picked it", () => {
+    // Alice takes nothing off P1 whichever way it falls, and cannot stop Bob
+    // taking it. Read as a game she wins, it let her deny him one he is as
+    // likely as not to get, and the answer named a pick that scores her nothing
+    // as one she must win.
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 1,
+        tiebreakerPick: 40,
+        pro: [pick("BUFF -3", "unscoreable"), pick("SF -6")],
+      }),
+      player({
+        name: "Bob",
+        total: 1,
+        tiebreakerPick: 45,
+        pro: [pick("DEN +3"), pick("LAR +6")],
+      }),
+    ]);
+
+    const result = paths(getPlayerAnalysis(scores, "Alice"));
+    expect(mustWin(result)).toEqual(["P2"]);
+    expect(result.outright).toBeUndefined();
+  });
+
+  it("leaves no way to win outright where two rivals split such a game", () => {
+    // One of Bob and Carl takes P1, since they picked its two sides. Alice
+    // cannot clear them both, and an answer that read the game as hers gave her
+    // an outright win neither of them can be held to.
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 1,
+        tiebreakerPick: 40,
+        pro: [pick("BUFF -3", "unscoreable"), pick("SF -6")],
+      }),
+      player({
+        name: "Bob",
+        total: 1,
+        tiebreakerPick: 45,
+        pro: [pick("DEN +3"), pick("LAR +6")],
+      }),
+      player({
+        name: "Carl",
+        total: 1,
+        tiebreakerPick: 50,
+        pro: [pick("KC -3"), pick("LAR +6")],
+      }),
+    ]);
+
+    const result = paths(getPlayerAnalysis(scores, "Alice"));
+    expect(result.outright).toBeUndefined();
+  });
+
   it("says what the cheapest way to win outright costs over the cheapest way", () => {
     // Bob and Carl are each a point up, over separate halves of the week. One
     // game off either half draws Alice level with that rival, which the totals

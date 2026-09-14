@@ -98,12 +98,25 @@ function bitCount(value: number): number {
   return Math.imul(bits, 0x01010101) >>> 24;
 }
 
-/** What each way the games can fall is worth to one player. */
+/**
+ * What each way the games can fall is worth to one player.
+ *
+ * `deadMask` holds the games the analyzed player cannot take, which the outcome
+ * does not speak for. Every other player who picked one is credited it outright,
+ * since the analyzed player cannot stop them and an answer that assumes they can
+ * is an answer they cannot act on.
+ *
+ * Crediting each rival their own dead games at once is the worst case whatever the
+ * games really do. A rival only ever matters where they draw level, which takes
+ * their highest total, and that total is this one. So a rival this misses is a
+ * rival who could not have drawn level under any of the ways left.
+ */
 function sideFor(
   player: PlayerScore,
   playerIndex: number,
   contested: Array<RemainingGame>,
   coverers: Array<string | undefined>,
+  deadMask: number,
 ): Side {
   let setTotal = 0;
   let clearTotal = 0;
@@ -111,12 +124,21 @@ function sideFor(
   let clearCollege = 0;
   let setSpread = 0;
   let clearSpread = 0;
+  let deadTotal = 0;
+  let deadCollege = 0;
+  let deadSpread = 0;
   contested.forEach((game, bit) => {
     const cell = game.cells[playerIndex];
     // A cell nobody filled in scores its player nothing whichever way the game
     // falls, so it belongs to neither side of the tier.
     if (cell.team == null) return;
     const mask = 1 << bit;
+    if ((deadMask & mask) !== 0) {
+      deadTotal += 1;
+      if (game.league === "college") deadCollege += 1;
+      else if (cell.hasSpread) deadSpread += 1;
+      return;
+    }
     const covers = cell.team === coverers[bit];
     if (game.league === "college") {
       if (covers) setCollege |= mask;
@@ -132,9 +154,13 @@ function sideFor(
   });
   return {
     player,
-    total: tierOf(setTotal, clearTotal, player.score.total),
-    college: tierOf(setCollege, clearCollege, player.score.college),
-    spread: tierOf(setSpread, clearSpread, player.score.proAgainstTheSpread),
+    total: tierOf(setTotal, clearTotal, player.score.total + deadTotal),
+    college: tierOf(setCollege, clearCollege, player.score.college + deadCollege),
+    spread: tierOf(
+      setSpread,
+      clearSpread,
+      player.score.proAgainstTheSpread + deadSpread,
+    ),
   };
 }
 
@@ -741,22 +767,28 @@ export default function getPlayerAnalysis(
     (game) => new Set(live.map((index) => game.cells[index].team)).size > 1,
   );
 
-  // The side each bit is read as, which is this player's own wherever they wrote
-  // one. A cell nothing can score names no side, and `sideFor` reads every player
-  // as missing that bit. Two rivals on opposite sides of such a game are then both
-  // read as missing it, which no result can deliver. This pre-dates the team being
-  // absent rather than wrong: a pick the week holds no game for never matched a
-  // rival's team either.
+  // The side each bit is read as, which is this player's own. A set of bits is then
+  // a set of their picks coming in, which is what the search reports.
   const coverers = contested.map((game) => game.cells[playerIndex].team);
-  const mineMask = (1 << contested.length) - 1;
+  // A game this player wrote nothing scoreable for. They take it whichever way it
+  // falls, so no bit of theirs can speak for it, and `sideFor` hands it to every
+  // rival who picked it instead.
+  const deadMask = contested.reduce(
+    (mask, game, bit) =>
+      game.cells[playerIndex].team == null ? mask | (1 << bit) : mask,
+    0,
+  );
+  // Only the games left for this player to win. The search grows its sets out of
+  // this, so a game they cannot take is never named as one they must.
+  const mineMask = ((1 << contested.length) - 1) & ~deadMask;
 
   const isMondayNightSettled = scores.tiebreaker != null;
 
-  const me = sideFor(player, playerIndex, contested, coverers);
+  const me = sideFor(player, playerIndex, contested, coverers, deadMask);
   const against = threats(
     me,
     rivals.map((rival) =>
-      sideFor(rival.player, rival.index, contested, coverers),
+      sideFor(rival.player, rival.index, contested, coverers, deadMask),
     ),
   );
 
