@@ -30,7 +30,11 @@ export const MAX_SLEEP_MS = 24 * 60 * 60 * 1000;
  *
  * A game that has not kicked off cannot move, so the wait runs to its kickoff
  * rather than over it on `POLL_MS`. ESPN pushes a start time back, so a wake-up
- * that still finds the game upcoming waits `POLL_MS` like any other.
+ * that still finds the game upcoming waits out whatever gap is left.
+ *
+ * A kickoff `Date` ESPN gave no date to parse is not a gap at all, and every
+ * comparison against it answers `false`, so it takes the `POLL_MS` wait rather
+ * than a delay `setTimeout` reads as zero.
  */
 export function nextPollMs(
   result: LeagueResult | null,
@@ -38,6 +42,7 @@ export function nextPollMs(
 ): number {
   if (result?.status !== GameStatus.UPCOMING) return POLL_MS;
   const untilKickoff = result.date.getTime() - now;
+  if (!Number.isFinite(untilKickoff)) return POLL_MS;
   return Math.min(Math.max(untilKickoff, POLL_MS), MAX_SLEEP_MS);
 }
 

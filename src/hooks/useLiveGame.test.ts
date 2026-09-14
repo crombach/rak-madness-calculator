@@ -45,6 +45,14 @@ describe("nextPollMs", () => {
     );
   });
 
+  it("polls a game ESPN gave no kickoff date to parse", () => {
+    const result = {
+      ...upcomingGame({ home: "BUF", away: "KC" }),
+      date: new Date("not a date"),
+    };
+    expect(nextPollMs(result, NOW.getTime())).toBe(POLL_MS);
+  });
+
   it("polls a game being played, whatever its kickoff says", () => {
     const result = liveGame({
       home: "BUF",
