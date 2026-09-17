@@ -1,20 +1,25 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { contentTypeOf, isContentType } from "../utils/contentType";
 import latestOnly from "../utils/latestOnly";
 
+type SeasonPicks = {
+  season: number;
+  weeks: Array<number>;
+};
+
 type SeasonsResponse = {
-  seasons: Array<number>;
+  seasons: Array<SeasonPicks>;
 };
 
 /**
- * The seasons that have picks in the database, newest first.
+ * The picks in the database, season by season, both newest first.
  *
  * Why the type is checked at all: see `contentType.ts`. A dev server's HTML reads
  * the same as an empty list here, and the caller falls back to the season running
  * now, which is the only one that can be scored from a local upload anyway.
  */
 export default function usePicksSeasons() {
-  const [seasons, setSeasons] = useState<Array<number>>();
+  const [picks, setPicks] = useState<Array<SeasonPicks>>();
   const [isSeasonsLoading, setLoading] = useState(true);
 
   useEffect(
@@ -27,7 +32,7 @@ export default function usePicksSeasons() {
           }
           const body: SeasonsResponse = await response.json();
           if (isCurrent()) {
-            setSeasons(body.seasons);
+            setPicks(body.seasons);
           }
         } catch (error) {
           console.warn("Could not list the seasons that have picks", error);
@@ -40,8 +45,17 @@ export default function usePicksSeasons() {
     [],
   );
 
+  const seasons = useMemo(() => picks?.map(({ season }) => season), [picks]);
+
+  /** The newest week that season has picks for, undefined if it has none. */
+  const latestPicksWeek = useCallback(
+    (season?: number) =>
+      picks?.find((entry) => entry.season === season)?.weeks[0],
+    [picks],
+  );
+
   return useMemo(
-    () => ({ seasons, isSeasonsLoading }),
-    [seasons, isSeasonsLoading],
+    () => ({ seasons, latestPicksWeek, isSeasonsLoading }),
+    [seasons, latestPicksWeek, isSeasonsLoading],
   );
 }

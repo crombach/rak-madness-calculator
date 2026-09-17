@@ -18,8 +18,21 @@ export function htmlResponse(): Response {
   });
 }
 
-export function seasonsResponse(seasons: Array<number>): Response {
-  return new Response(JSON.stringify({ seasons }), {
+/**
+ * The picks index. `weeksBySeason` left out means no season has a week yet, which
+ * is the case that falls through to ESPN's active week.
+ */
+export function seasonsResponse(
+  seasons: Array<number>,
+  weeksBySeason: Record<number, Array<number>> = {},
+): Response {
+  const body = {
+    seasons: seasons.map((season) => ({
+      season,
+      weeks: weeksBySeason[season] ?? [],
+    })),
+  };
+  return new Response(JSON.stringify(body), {
     status: 200,
     headers: { "content-type": "application/json" },
   });

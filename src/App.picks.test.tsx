@@ -61,6 +61,28 @@ describe("the app, first load", () => {
     );
   });
 
+  it("opens on the newest week with picks, not the week ESPN has reached", async () => {
+    global.fetch = routedFetch(notFoundResponse, [SEASON, SEASON - 1], {
+      [SEASON]: [1],
+    });
+    await mountLoadedApp();
+    expect(screen.getByRole("combobox", { name: "Week" })).toHaveTextContent(
+      "Week 1",
+    );
+  });
+
+  it("still offers the weeks past the newest one with picks", async () => {
+    global.fetch = routedFetch(notFoundResponse, [SEASON, SEASON - 1], {
+      [SEASON]: [1],
+    });
+    const user = await mountLoadedApp();
+    await user.click(screen.getByRole("combobox", { name: "Week" }));
+    const options = (await screen.findAllByRole("option")).map(
+      (option) => option.textContent,
+    );
+    expect(options).toEqual(["Week 3", "Week 2", "Week 1"]);
+  });
+
   it("offers only weeks up to the current one, newest first", async () => {
     const user = await mountLoadedApp();
     await user.click(screen.getByRole("combobox", { name: "Week" }));

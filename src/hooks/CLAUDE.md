@@ -3,7 +3,7 @@
 The data layer, plus the page measurements. The first four mount once in
 `AppDataContext`, above the routes.
 
-- `usePicksSeasons`: the seasons with picks, from `/api/picks`, newest first
+- `usePicksSeasons`: the weeks with picks, by season, from `/api/picks`
 - `useCurrentSeason`: the season running now, once it starts
 - `useLeagueWeeks`: the season's ESPN weeks, and which is selected
 - `usePlayerScores`: a week's scores from the API, cache, or an upload.

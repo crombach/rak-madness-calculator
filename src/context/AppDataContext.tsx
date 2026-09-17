@@ -106,11 +106,12 @@ export function AppDataContextProvider({
   // the season ESPN calls current between the Super Bowl and the opener. Nothing
   // of it has been played, so `useCurrentSeason` withholds it too.
   const requestedSeason = selectedSeason ?? picksSeasons.seasons?.[0];
-  const leagueWeeks = useLeagueWeeks(
-    route.weekNumber,
-    requestedSeason,
-    !picksSeasons.isSeasonsLoading,
-  );
+  const leagueWeeks = useLeagueWeeks({
+    initialWeekNumber: route.weekNumber,
+    season: requestedSeason,
+    enabled: !picksSeasons.isSeasonsLoading,
+    latestPicksWeek: picksSeasons.latestPicksWeek(requestedSeason),
+  });
   const playerScores = usePlayerScores(
     leagueWeeks.selectedWeek,
     leagueWeeks.loadedSeason,
