@@ -68,6 +68,8 @@ instead of recording the whole run.
 - `scenarios/refresh-pressed.js` — the navbar refresh key at rest and while its
   work runs, in both themes. Writes its crops to `$PRESSED_SHOT_DIR`, so `--out`
   is a throwaway.
+- `scenarios/knockout-wipe.js` — a refresh that knocks a player out, the wipe
+  over their name cell, then the homepage and back with nothing left to flash.
 - `scenarios/live-refresh.js` — opens the Game Status dialog on a live pick,
   waits out its real poll interval, and shows the table update on its own
   once the mocked game goes final.
