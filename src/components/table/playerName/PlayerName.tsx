@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { ReactNode, memo } from "react";
 import { useScoreChanges } from "../../../context/AppDataContext";
 import { PlayerScore } from "../../../types/RakMadnessScores";
 import getClasses from "../../../utils/getClasses";
@@ -21,22 +21,33 @@ function PlayerName({
   const { players: playerChanges } = useScoreChanges();
   const showStatus = useShowPlayerStatus();
   // A knockout is the one change this cell flashes, so the flash is a way of
-  // saying where the player stands and goes wherever the rest of it does.
-  const justKnockedOut = showStatus && playerChanges.has(player.id);
+  // saying where the player stands and goes wherever the rest of it does. The
+  // value is where the player stood before it, which is what the wipe draws.
+  const previousKnockedOut = showStatus
+    ? playerChanges.get(player.id)
+    : undefined;
   const isMine = useIsMyPlayer(player.name);
+
+  // The name, with `icon` beside it. The wipe draws a second one of these under
+  // the icon the player held before, so both are built here.
+  const nameRow = (icon: ReactNode) => (
+    <span className="player-name">
+      <span className="player-name__name">{player.name}</span>
+      {icon}
+    </span>
+  );
 
   // Whose row this is stands apart from where they stand, so it is said either way.
   const name = (
     <>
-      <span className="player-name">
-        <span className="player-name__name">{player.name}</span>
-        {showStatus && (
+      {nameRow(
+        showStatus && (
           <PlayerStatusIcon
             isKnockedOut={player.status.isKnockedOut}
             hasNameConflict={hasNameConflict}
           />
-        )}
-      </span>
+        ),
+      )}
       {isMine && <span className="table__sr-only">Your row</span>}
       {hasNameConflict && (
         <span className="table__sr-only">Name used by another player</span>
@@ -67,8 +78,20 @@ function PlayerName({
           <span className="table__sr-only">
             {player.status.isKnockedOut ? "Knocked out" : "Still in contention"}
           </span>
-          {justKnockedOut && (
-            <span className="table__cell-wipe" aria-hidden="true" />
+          {previousKnockedOut != null && (
+            // Holds the row as it stood, so the wipe uncovers the new icon from
+            // under the old one rather than from under a bare fill. A knockout
+            // leaves somebody else still standing, whatever it settles, so the
+            // icon under the wipe is the one a running week draws.
+            <span className="table__cell-wipe" aria-hidden="true">
+              {nameRow(
+                <PlayerStatusIcon
+                  isKnockedOut={previousKnockedOut}
+                  hasNameConflict={hasNameConflict}
+                  isWinnerDecided={false}
+                />,
+              )}
+            </span>
           )}
         </button>
       ) : (

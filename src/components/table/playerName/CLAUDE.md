@@ -6,7 +6,7 @@ ellipsis rather than wrapped, so every row is one line tall.
 Where `useShowPlayerStatus` says yes, it is a `.table__cell-button` holding the
 name and `PlayerStatusIcon`, opening the player analysis through
 `PlayerAnalysisContext`, with a `.table__sr-only` span for the fill color and a
-`.table__cell-wipe` over the fill a knocked-out player held. Where it says no,
+`.table__cell-wipe` over the fill and icon a knocked-out player held. Where it says no,
 the bare name under `--no-status`, which `Table.scss` takes the fill and hit
 area off.
 

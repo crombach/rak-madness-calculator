@@ -25,12 +25,20 @@ import "./PlayerStatusIcon.scss";
 export default function PlayerStatusIcon({
   isKnockedOut,
   hasNameConflict,
+  isWinnerDecided,
 }: {
   isKnockedOut: boolean;
   /** Whether another row of the week was entered under this same name. */
   hasNameConflict?: boolean;
+  /**
+   * Whether the week is over, for a caller drawing a moment other than now. The
+   * wipe over a player just knocked out draws where they stood before, and the
+   * week was still running then.
+   */
+  isWinnerDecided?: boolean;
 }) {
-  const isWinnerDecided = useIsWinnerDecided();
+  const isWinnerDecidedNow = useIsWinnerDecided();
+  const showTrophy = isWinnerDecided ?? isWinnerDecidedNow;
 
   return (
     <span
@@ -42,7 +50,7 @@ export default function PlayerStatusIcon({
         <WarningOutlinedIcon />
       ) : isKnockedOut ? (
         <SkullOutlinedIcon />
-      ) : isWinnerDecided ? (
+      ) : showTrophy ? (
         <EmojiEventsOutlinedIcon />
       ) : (
         <SentimentVerySatisfiedOutlinedIcon />

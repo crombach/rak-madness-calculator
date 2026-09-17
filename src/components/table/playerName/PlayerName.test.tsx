@@ -22,9 +22,17 @@ const mockIsWinnerDecided = useIsWinnerDecided as Mock;
 const mockScoreChanges = useScoreChanges as Mock;
 
 const knockedOut = playerScore({
+  // Named, because a change is keyed by the row rather than by the name.
+  id: "7",
   name: "Bob",
   status: { hasNoPicks: false, isKnockedOut: true },
 });
+
+/** What a refresh that just knocked Bob out leaves behind. */
+const knockoutChange = {
+  players: new Map([[knockedOut.id, false]]),
+  picks: new Map(),
+};
 
 function mountCell(player = knockedOut) {
   return render(
@@ -86,12 +94,38 @@ describe("PlayerName", () => {
 
   it("holds back the flash a knockout would otherwise draw", () => {
     localStorage.setItem(LIVE_ANALYSIS_KEY, "off");
-    mockScoreChanges.mockReturnValue({
-      players: new Map([["Bob", false]]),
-      picks: new Map(),
-    });
+    mockScoreChanges.mockReturnValue(knockoutChange);
     mountCell();
 
     expect(cell().querySelector(".table__cell-wipe")).toBeNull();
+  });
+
+  it("wipes the icon a player held away from the one they hold now", () => {
+    mockScoreChanges.mockReturnValue(knockoutChange);
+    mountCell();
+
+    const wipe = cell().querySelector(".table__cell-wipe");
+    expect(wipe).not.toBeNull();
+    // The face they wore in contention, uncovering the skull they wear now.
+    expect(
+      wipe?.querySelector("[data-testid='SentimentVerySatisfiedOutlinedIcon']"),
+    ).not.toBeNull();
+    expect(screen.getByTestId("SkullOutlinedIcon")).toBeInTheDocument();
+  });
+
+  it("draws no trophy under a wipe the deciding knockout left", () => {
+    // The week reads as over the moment this knockout lands, and the player it
+    // knocked out is not the one left standing.
+    mockIsWinnerDecided.mockReturnValue(true);
+    mockScoreChanges.mockReturnValue(knockoutChange);
+    mountCell();
+
+    const wipe = cell().querySelector(".table__cell-wipe");
+    expect(
+      wipe?.querySelector("[data-testid='EmojiEventsOutlinedIcon']"),
+    ).toBeNull();
+    expect(
+      wipe?.querySelector("[data-testid='SentimentVerySatisfiedOutlinedIcon']"),
+    ).not.toBeNull();
   });
 });

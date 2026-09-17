@@ -342,8 +342,10 @@ describe("PicksTable, a refresh's changes", () => {
     });
     render(<PicksTable scores={scores} />);
 
-    const cell = screen.getByText("Alice").closest("button");
-    expect(cell?.querySelector(".table__cell-wipe")).toBeInTheDocument();
+    // The wipe holds a copy of the name row, so the name is on screen twice
+    // while it runs. The cell is the one the row itself is in.
+    const cell = screen.getByRole("button", { name: /Alice/ });
+    expect(cell.querySelector(".table__cell-wipe")).toBeInTheDocument();
   });
 });
 
