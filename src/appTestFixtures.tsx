@@ -163,10 +163,13 @@ export function resultsCaption(): HTMLElement | null {
 export function routedFetch(
   picks: () => Response,
   seasons = [SEASON, SEASON - 1],
+  weeksBySeason: Record<number, Array<number>> = {},
 ) {
   return vi.fn((input: RequestInfo | URL) =>
     Promise.resolve(
-      String(input) === "/api/picks" ? seasonsResponse(seasons) : picks(),
+      String(input) === "/api/picks"
+        ? seasonsResponse(seasons, weeksBySeason)
+        : picks(),
     ),
   ) as unknown as MockedFunction<typeof fetch>;
 }

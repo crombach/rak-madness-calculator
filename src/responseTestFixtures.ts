@@ -18,8 +18,23 @@ export function htmlResponse(): Response {
   });
 }
 
-export function seasonsResponse(seasons: Array<number>): Response {
-  return new Response(JSON.stringify({ seasons }), {
+/**
+ * The picks index. `weeksBySeason` left out means no season has a week yet, which
+ * is the case that falls through to ESPN's active week.
+ */
+export function seasonsResponse(
+  seasons: Array<number>,
+  weeksBySeason: Record<number, Array<number>> = {},
+): Response {
+  const body = {
+    seasons: seasons.map((season) => ({
+      season,
+      // Sorted the way the route sends them, so a fixture listing them in any
+      // order still exercises the newest week as the newest.
+      weeks: [...(weeksBySeason[season] ?? [])].sort((a, b) => b - a),
+    })),
+  };
+  return new Response(JSON.stringify(body), {
     status: 200,
     headers: { "content-type": "application/json" },
   });

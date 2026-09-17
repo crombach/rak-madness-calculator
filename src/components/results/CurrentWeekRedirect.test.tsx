@@ -11,6 +11,7 @@ vi.mock("../../context/AppDataContext", () => ({
 }));
 
 const CURRENT_WEEK = 5;
+const DEFAULT_WEEK = 3;
 
 /**
  * Names the URL the redirect chose, from the router's own history rather than
@@ -27,6 +28,7 @@ function mount(
   (useAppData as Mock).mockReturnValue({
     loadedSeason: SEASON,
     currentWeekNumber: CURRENT_WEEK,
+    defaultWeekNumber: CURRENT_WEEK,
     weeks: [{ value: CURRENT_WEEK }],
     isWeeksLoading: false,
     ...appData,
@@ -58,6 +60,11 @@ describe("CurrentWeekRedirect", () => {
     expect(landedOn()).toBe(`/${SEASON}/${CURRENT_WEEK}/picks`);
   });
 
+  it("lands on the newest week with picks, not the week ESPN has reached", () => {
+    mount("Scoreboard", { defaultWeekNumber: DEFAULT_WEEK });
+    expect(landedOn()).toBe(`/${SEASON}/${DEFAULT_WEEK}/scoreboard`);
+  });
+
   it("goes home when the schedule could not be loaded", () => {
     mount("Scoreboard", { weeks: undefined });
     expect(landedOn()).toBe("/");
@@ -65,7 +72,7 @@ describe("CurrentWeekRedirect", () => {
 
   it("goes home when the season has no week behind it yet", () => {
     // Between the Super Bowl and the opener, which is the case this exists for.
-    mount("Scoreboard", { currentWeekNumber: undefined });
+    mount("Scoreboard", { defaultWeekNumber: undefined });
     expect(landedOn()).toBe("/");
   });
 
