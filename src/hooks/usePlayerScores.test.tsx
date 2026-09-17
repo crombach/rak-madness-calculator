@@ -43,7 +43,11 @@ function scoresWithPick(status: Status): RakMadnessScores {
         tiebreaker: {},
         college: [],
         pro: [
-          { pick: "BUF -7", status, explanation: { header: "P1", message: "" } },
+          {
+            pick: "BUF -7",
+            status,
+            explanation: { header: "P1", message: "" },
+          },
         ],
         status: { hasNoPicks: false, isKnockedOut: false },
       },
