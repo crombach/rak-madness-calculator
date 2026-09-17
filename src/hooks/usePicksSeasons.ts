@@ -11,6 +11,10 @@ type SeasonsResponse = {
   seasons: Array<SeasonPicks>;
 };
 
+// Shared, so a season with no picks answers with the same array every call and
+// a caller holding the answer in a dependency list sees it hold still.
+const NO_WEEKS: Array<number> = [];
+
 /**
  * The picks in the database, season by season, both newest first.
  *
@@ -32,7 +36,17 @@ export default function usePicksSeasons() {
           }
           const body: SeasonsResponse = await response.json();
           if (isCurrent()) {
-            setPicks(body.seasons);
+            // A deploy is served the shape before this one out of a cache that
+            // has not expired yet, where an entry is the season number itself.
+            // Such an entry is dropped rather than read as a season of
+            // undefined, which the season picker would offer as an option.
+            setPicks(
+              body.seasons?.filter(
+                (entry) =>
+                  Number.isInteger(entry?.season) &&
+                  Array.isArray(entry?.weeks),
+              ) ?? [],
+            );
           }
         } catch (error) {
           console.warn("Could not list the seasons that have picks", error);
@@ -47,15 +61,15 @@ export default function usePicksSeasons() {
 
   const seasons = useMemo(() => picks?.map(({ season }) => season), [picks]);
 
-  /** The newest week that season has picks for, undefined if it has none. */
-  const latestPicksWeek = useCallback(
+  /** The weeks that season has picks for, newest first. Empty if it has none. */
+  const picksWeeks = useCallback(
     (season?: number) =>
-      picks?.find((entry) => entry.season === season)?.weeks[0],
+      picks?.find((entry) => entry.season === season)?.weeks ?? NO_WEEKS,
     [picks],
   );
 
   return useMemo(
-    () => ({ seasons, latestPicksWeek, isSeasonsLoading }),
-    [seasons, latestPicksWeek, isSeasonsLoading],
+    () => ({ seasons, picksWeeks, isSeasonsLoading }),
+    [seasons, picksWeeks, isSeasonsLoading],
   );
 }

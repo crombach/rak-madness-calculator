@@ -29,7 +29,9 @@ export function seasonsResponse(
   const body = {
     seasons: seasons.map((season) => ({
       season,
-      weeks: weeksBySeason[season] ?? [],
+      // Sorted the way the route sends them, so a fixture listing them in any
+      // order still exercises the newest week as the newest.
+      weeks: [...(weeksBySeason[season] ?? [])].sort((a, b) => b - a),
     })),
   };
   return new Response(JSON.stringify(body), {

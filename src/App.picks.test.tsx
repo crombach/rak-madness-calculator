@@ -83,6 +83,37 @@ describe("the app, first load", () => {
     expect(options).toEqual(["Week 3", "Week 2", "Week 1"]);
   });
 
+  it("skips a week with picks the pro calendar has no entry for", async () => {
+    // A playoff week, filed under the season it belongs to and absent from the
+    // regular-season calendar the picker is built from.
+    global.fetch = routedFetch(notFoundResponse, [SEASON, SEASON - 1], {
+      [SEASON]: [19, 1],
+    });
+    await mountLoadedApp();
+    expect(screen.getByRole("combobox", { name: "Week" })).toHaveTextContent(
+      "Week 1",
+    );
+  });
+
+  it("ignores a cached season list in the shape this app no longer sends", async () => {
+    // A deploy is served the previous body out of a cache that has not expired.
+    global.fetch = vi.fn(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ seasons: [SEASON, SEASON - 1] }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      ),
+    ) as unknown as typeof fetch;
+    const user = await mountLoadedApp();
+
+    await user.click(screen.getByRole("combobox", { name: "Season" }));
+    const options = (await screen.findAllByRole("option")).map(
+      (option) => option.textContent,
+    );
+    expect(options).toEqual([`${SEASON} Season`]);
+  });
+
   it("offers only weeks up to the current one, newest first", async () => {
     const user = await mountLoadedApp();
     await user.click(screen.getByRole("combobox", { name: "Week" }));

@@ -110,7 +110,7 @@ export function AppDataContextProvider({
     initialWeekNumber: route.weekNumber,
     season: requestedSeason,
     enabled: !picksSeasons.isSeasonsLoading,
-    latestPicksWeek: picksSeasons.latestPicksWeek(requestedSeason),
+    picksWeeks: picksSeasons.picksWeeks(requestedSeason),
   });
   const playerScores = usePlayerScores(
     leagueWeeks.selectedWeek,
