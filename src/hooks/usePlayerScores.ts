@@ -27,6 +27,16 @@ import scoreChanges, {
  */
 const REFRESHING_FLOOR_MS = 500;
 
+/**
+ * How long the score changes stay on offer.
+ *
+ * The `--rak-duration-slow` run of `.table__cell-wipe` in `Table.scss`, plus a
+ * frame of slack. Taken back once it is over, so a table mounted later does not
+ * replay a wipe the reader already watched. Leaving a table for the homepage and
+ * coming back does that, and so does switching between the two tables.
+ */
+export const WIPE_LIFETIME_MS = 350;
+
 /** Resolves once `ms` has passed, so a caller can hold something open for it. */
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => {
@@ -110,6 +120,25 @@ export default function usePlayerScores(
   const previousScores = useRef<
     { key: string; scores: RakMadnessScores } | undefined
   >(undefined);
+  // Runs for the length of a wipe, and drops the changes behind it.
+  const wipeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+
+  // Hands the changes to the tables for as long as their wipe takes, then takes
+  // them back. Nothing to take back where an attempt changed nothing, and no
+  // timer is started for it.
+  const showScoreChanges = useCallback((changes: ScoreChanges) => {
+    clearTimeout(wipeTimer.current);
+    setScoreChangesState(changes);
+    if (changes.picks.size === 0 && changes.players.size === 0) return;
+    wipeTimer.current = setTimeout(
+      () => setScoreChangesState(NO_SCORE_CHANGES),
+      WIPE_LIFETIME_MS,
+    );
+  }, []);
+
+  useEffect(() => () => clearTimeout(wipeTimer.current), []);
 
   // Every path into the scores runs through here, so the loading flags and the
   // failure toasts cannot drift between them.
@@ -118,8 +147,8 @@ export default function usePlayerScores(
   const clearScores = useCallback(() => {
     setScores(undefined);
     previousScores.current = undefined;
-    setScoreChangesState(NO_SCORE_CHANGES);
-  }, []);
+    showScoreChanges(NO_SCORE_CHANGES);
+  }, [showScoreChanges]);
 
   const attemptScoring = useCallback(
     async ({
@@ -166,7 +195,7 @@ export default function usePlayerScores(
           previousScores.current?.key === key
             ? previousScores.current.scores
             : undefined;
-        setScoreChangesState(scoreChanges(before, nextScores));
+        showScoreChanges(scoreChanges(before, nextScores));
         previousScores.current = { key, scores: nextScores };
         setScores(nextScores);
         if (onSuccess) {
@@ -187,7 +216,7 @@ export default function usePlayerScores(
         }
       }
     },
-    [selectedWeek, season, showToast, clearScores],
+    [selectedWeek, season, showToast, clearScores, showScoreChanges],
   );
 
   useEffect(() => {

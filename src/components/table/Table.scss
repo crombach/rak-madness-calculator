@@ -346,8 +346,12 @@
       // The one change a name cell can show is a player just being knocked out,
       // so the wipe always draws the fill they held before that, not the one
       // inherited from the `<td>`'s own, already-updated class above.
+      //
+      // It holds a copy of the name row, and the button's padding is said again
+      // here so the copy lands on top of the row it covers.
       .table__cell-wipe {
         --rak-cell-base: var(--rak-in-contention-300);
+        padding: var(--rak-table-cell-padding-y) var(--rak-table-cell-padding-x);
       }
     }
 
