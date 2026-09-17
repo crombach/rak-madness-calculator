@@ -4,7 +4,7 @@ import { MockedFunction } from "vitest";
 import { ToastContextProvider } from "../context/ToastContext";
 import { notFoundResponse, spreadsheetResponse } from "../responseTestFixtures";
 import { WeekInfo } from "../types/League";
-import { RakMadnessScores } from "../types/RakMadnessScores";
+import { RakMadnessScores, Status } from "../types/RakMadnessScores";
 import { writeCachedPicks } from "../utils/picksCache";
 import { getPlayerScores } from "../utils/scoring/getPlayerScores";
 import { SEASON, week } from "../weekFixtures";
@@ -29,6 +29,25 @@ function scoresFor(weekNumber: number): RakMadnessScores {
   return {
     tiebreaker: weekNumber,
     scores: [],
+  };
+}
+
+/** One player whose one pick holds `status`, so a refresh can move it. */
+function scoresWithPick(status: Status): RakMadnessScores {
+  return {
+    scores: [
+      {
+        id: "0",
+        name: "Rip",
+        score: { total: 0, college: 0, pro: 0, proAgainstTheSpread: 0 },
+        tiebreaker: {},
+        college: [],
+        pro: [
+          { pick: "BUF -7", status, explanation: { header: "P1", message: "" } },
+        ],
+        status: { hasNoPicks: false, isKnockedOut: false },
+      },
+    ],
   };
 }
 
@@ -373,5 +392,29 @@ describe("usePlayerScores, refresh", () => {
     });
 
     expect(result.current.scores).toEqual(scoresFor(5));
+  });
+
+  it("drops the score changes once the wipe that shows them has run", async () => {
+    // A table mounted later reads these, and a wipe the reader already watched
+    // would play again when they come back from the homepage.
+    getPlayerScoresMock.mockResolvedValue(scoresWithPick("incomplete"));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() =>
+      expect(result.current.scores).toEqual(scoresWithPick("incomplete")),
+    );
+
+    getPlayerScoresMock.mockResolvedValue(scoresWithPick("yes"));
+    let refreshing: Promise<void> | undefined;
+    act(() => {
+      refreshing = result.current.refresh();
+    });
+    await waitFor(() => expect(result.current.scoreChanges.picks.size).toBe(1));
+
+    await waitFor(() => expect(result.current.scoreChanges.picks.size).toBe(0));
+    await act(async () => {
+      await refreshing;
+    });
   });
 });
