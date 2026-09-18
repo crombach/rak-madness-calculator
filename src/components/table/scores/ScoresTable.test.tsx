@@ -13,11 +13,7 @@ const showPlayerAnalysis = vi.fn();
 
 function player(overrides: Partial<PlayerScore> = {}): PlayerScore {
   return playerScore({
-    status: {
-      hasNoPicks: false,
-      isKnockedOut: false,
-      explanation: "Winner!",
-    },
+    status: { hasNoPicks: false, isKnockedOut: false },
     ...overrides,
   });
 }

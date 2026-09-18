@@ -336,7 +336,8 @@ describe("getPlayerScores, knockouts", () => {
       ]),
     );
     expect(result.scores[0].status.isKnockedOut).toBe(false);
-    expect(result.scores[0].status.explanation).toBe("Winner!");
+    expect(result.scores[1].status.isKnockedOut).toBe(true);
+    expect(result.scores[1].status.explanation).toContain("by Alice");
   });
 });
 
