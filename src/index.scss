@@ -549,7 +549,6 @@
   // here. Dark mode below strengthens it back to the old, stronger cut, for the
   // dark fill it sinks into there.
   --rak-well: inset 0 1px 2px rgb(0 0 0 / 12%);
-  --rak-well-light: inset 0 1px 2px rgb(0 0 0 / 12%);
   // The readout glass's own cut, off the same fixed dark fill as
   // `--rak-glass-fill` above, so it stays the stronger cut in both modes rather
   // than following the field's own light-mode well.
@@ -820,7 +819,6 @@ html {
   // lighten here instead.
   --rak-progress-fill: var(--rak-border);
 
-  --rak-well-light: inset 0 1px 2px rgb(0 0 0 / 42%);
   // The key's own molding, back to the cut it always dished by against this
   // mode's dark fills.
   --rak-key-top: inset 0 1px 0 rgb(255 255 255 / 18%);

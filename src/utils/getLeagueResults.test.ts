@@ -38,7 +38,6 @@ function competitor(
     winner: false,
     team: {
       displayName: `${abbreviation} Team`,
-      shortDisplayName: abbreviation,
       abbreviation,
     },
     score: String(score),
@@ -372,7 +371,6 @@ describe("getLeagueResults, mapping", () => {
         homeExtras: {
           team: {
             displayName: "BUF Team",
-            shortDisplayName: "BUF",
             abbreviation: "BUF",
             logo: "https://espn.com/buf.png",
           },

@@ -208,29 +208,6 @@ function gameVenue(venue?: EspnVenue): string | undefined {
 }
 
 /**
- * Whether a game is the one a picks column describes.
- *
- * A column names two teams once anyone has picked either side of it, and one where
- * every player picked the same team.
- */
-export function matchesMatchup(
-  result: LeagueResult,
-  teams: Set<string>,
-): boolean {
-  // Folded on both sides. A result carries the abbreviations already
-  // uppercased, while a workbook could name them any way at all.
-  const named = new Set([...teams].map((team) => team?.toUpperCase()));
-  const home = result.home.team.abbreviation;
-  const away = result.away.team.abbreviation;
-  if (named.size === 2) {
-    return named.has(home) && named.has(away);
-  } else if (named.size === 1) {
-    return named.has(home) || named.has(away);
-  }
-  return false;
-}
-
-/**
  * ESPN's status for a game, as the three the app models.
  *
  * `state` is what says a game is underway, not `id`: halftime and the end of a

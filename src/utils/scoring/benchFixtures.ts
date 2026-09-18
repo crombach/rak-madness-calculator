@@ -196,7 +196,6 @@ function competitor(
       location: abbreviation,
       name: abbreviation,
       displayName: abbreviation,
-      shortDisplayName: abbreviation,
       abbreviation,
     },
     score: String(score),

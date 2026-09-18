@@ -91,7 +91,6 @@ export type EspnTeam = {
   /** What they are called there: `Bills`, `Buckeyes`. */
   name?: string;
   displayName: string;
-  shortDisplayName: string;
   abbreviation: string;
   /** The team's mark, which ESPN leaves off the smaller college programs. */
   logo?: string;
