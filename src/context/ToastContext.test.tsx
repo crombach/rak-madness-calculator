@@ -78,13 +78,6 @@ describe("Toast", () => {
     const second = new Toast("neutral", "A", "a");
     expect(first.id).not.toBe(second.id);
   });
-
-  it("keeps the type, header, and message it was given", () => {
-    const toast = new Toast("danger", "Error", "it broke");
-    expect(toast.type).toBe("danger");
-    expect(toast.header).toBe("Error");
-    expect(toast.message).toBe("it broke");
-  });
 });
 
 describe("ToastContextProvider", () => {

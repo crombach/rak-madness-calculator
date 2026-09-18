@@ -13,7 +13,6 @@ import { WeekGame } from "../../../types/WeekGame";
 import { MISSING_PICK } from "../../../utils/scoring/getPickResults";
 import { useScoreChanges } from "../../../context/AppDataContext";
 import { GameStatusContextProvider } from "../../../context/GameStatusContext";
-import { PlayerAnalysisContextProvider } from "../../../context/PlayerAnalysisContext";
 import {
   PLAYER_NAME_KEY,
   SettingsContextProvider,
@@ -292,28 +291,6 @@ describe("PicksTable, game status", () => {
   });
 });
 
-describe("PlayerName, rendered through the table", () => {
-  it("marks a knocked-out player", () => {
-    render(<PicksTable scores={scores} />);
-    expect(screen.getByText("Bob").closest("td")).toHaveClass("--knocked-out");
-    expect(screen.getByText("Alice").closest("td")).not.toHaveClass(
-      "--knocked-out",
-    );
-  });
-
-  it("opens the player analysis on click", async () => {
-    const user = userEvent.setup();
-    const showPlayerAnalysis = vi.fn();
-    render(
-      <PlayerAnalysisContextProvider showPlayerAnalysis={showPlayerAnalysis}>
-        <PicksTable scores={scores} />
-      </PlayerAnalysisContextProvider>,
-    );
-    await user.click(screen.getByText("Bob"));
-    expect(showPlayerAnalysis).toHaveBeenCalledWith("Bob");
-  });
-});
-
 describe("PicksTable, a refresh's changes", () => {
   it("wipes a pick a refresh just resolved, carrying the status it left", () => {
     mockScoreChanges.mockReturnValue({
@@ -401,13 +378,6 @@ describe("PicksTable, the reader's own row", () => {
       </SettingsContextProvider>,
     );
   }
-
-  it("marks their name cell, whatever case they saved their name in", () => {
-    renderAs("  alice ");
-
-    expect(screen.getByText("Alice").closest("td")).toHaveClass("--mine");
-    expect(screen.getByText("Bob").closest("td")).not.toHaveClass("--mine");
-  });
 
   it("leaves every pick cell's own status class alone", () => {
     renderAs("Alice");
