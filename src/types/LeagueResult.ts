@@ -14,6 +14,16 @@ export type Possession = {
   downDistanceText?: string;
 };
 
+/**
+ * One end of a finished game, read from the winner's side or the loser's. `by` is
+ * the margin, which is zero on both sides of a tie, and the team is absent there.
+ */
+export type GameOutcome = {
+  team: Team | null;
+  homeAway: HomeAway | null;
+  by: number;
+};
+
 export type GameSide = {
   team: Team;
   score: number;
@@ -47,15 +57,7 @@ export type LeagueResult = {
    */
   venue?: string;
   possession: Possession;
-  winner: {
-    team: Team | null;
-    homeAway: HomeAway | null;
-    by: number;
-  };
-  loser: {
-    team: Team | null;
-    homeAway: HomeAway | null;
-    by: number;
-  };
+  winner: GameOutcome;
+  loser: GameOutcome;
   totalScore: number;
 };

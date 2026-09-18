@@ -16,13 +16,15 @@ export const LEAGUE_PREFIX: Record<LeagueKey, string> = {
   pro: "P",
 };
 
-/**
- * `C1`, `C2`, `P1`: the column label the picks table gives every game in one
- * league, indexed the way a player's picks for it are.
- */
+/** `C1`, `C2`, `P1`: the column label the picks table gives a league's games. */
+export function leagueLabels(count: number, league: LeagueKey): Array<string> {
+  return rangeWithPrefix(count, LEAGUE_PREFIX[league]);
+}
+
+/** The same labels, indexed the way one player's picks for the league are. */
 export default function gameLabels(
   player: PlayerScore,
   league: LeagueKey,
 ): Array<string> {
-  return rangeWithPrefix(player[league].length, LEAGUE_PREFIX[league]);
+  return leagueLabels(player[league].length, league);
 }

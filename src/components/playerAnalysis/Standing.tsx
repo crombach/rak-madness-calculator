@@ -6,6 +6,8 @@ import weekShape, { WeekShape } from "../../utils/scoring/weekShape";
 // The standing is an element of the `analysis` block, which `AnalysisSummary`
 // owns and styles.
 import "./AnalysisSummary.scss";
+import getClasses from "../../utils/getClasses";
+import { hasOutcome } from "../../utils/scoring/isWinnerDecided";
 
 /**
  * Everyone the tiers leave tied at the top, which is everyone who won the week.
@@ -22,9 +24,7 @@ function winners(players: Array<PlayerScore>): Array<PlayerScore> {
 /** Whether any pick has an outcome yet, which is when a standing means anything. */
 function hasKickedOff(players: Array<PlayerScore>): boolean {
   return players.some((player) =>
-    [...player.college, ...player.pro].some(
-      (pick) => pick.status === "yes" || pick.status === "no",
-    ),
+    [...player.college, ...player.pro].some((pick) => hasOutcome(pick.status)),
   );
 }
 
@@ -105,7 +105,7 @@ export default function Standing({
     <p className="analysis__standing">
       {/* Held apart from the tail, which says how much of the week remains rather
           than what the standing is, so only the standing gets the color. */}
-      <span className={`analysis__headline ${tone ?? ""}`}>{text}</span>
+      <span className={getClasses("analysis__headline", tone)}>{text}</span>
       {" · "}
       {remaining > 0
         ? `${plural(remaining, "game")} remaining`

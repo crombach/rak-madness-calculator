@@ -1,6 +1,7 @@
 import { ReactNode, useRef } from "react";
 import useFillerRows, { FILLER_ROW_CLASS } from "../../hooks/useFillerRows";
 import "./Table.scss";
+import getClasses from "../../utils/getClasses";
 
 /** The sticky player column's class, which `Table.scss` also sizes and pins. */
 export const PLAYER_COL_CLASS = "table__player-col";
@@ -60,7 +61,7 @@ export default function TableShell({
   return (
     <table
       ref={tableRef}
-      className={`table ${className}`}
+      className={getClasses("table", className)}
       cellSpacing="0"
       aria-busy={busy || undefined}
       aria-hidden={ariaHidden || undefined}

@@ -1,5 +1,6 @@
 @use "../../styles/breakpoints" as *;
 @use "../../styles/lcd" as *;
+@use "../../styles/text" as *;
 
 // Not a key. Every other button on the bar is one, but this is the plate the
 // device is named on, and a name that sinks under a finger reads as a control.
@@ -94,15 +95,11 @@
   // a flex container and `text-overflow` reaches the text of a block.
   &__name-text {
     // One line at every width. The navbar is sized for it, and a wrapped app name
-    // pushed the bar taller than the buttons standing next to it.
-    white-space: nowrap;
-    // Where the buttons leave too little room, the name gives up its end to an
-    // ellipsis. Clipped instead it stopped mid-letter, which reads as the bar
-    // being broken rather than as a name too long for the screen. The face has no
-    // ellipsis of its own, so the one drawn here comes from the fallback stack.
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    // pushed the bar taller than the buttons standing next to it. Where the
+    // buttons leave too little room, the name gives up its end to an ellipsis.
+    // Clipped instead it stopped mid-letter, which reads as the bar being broken
+    // rather than as a name too long for the screen.
+    @include truncate-line;
   }
 
   // The segments the display leaves dark. Every glyph in the face advances the

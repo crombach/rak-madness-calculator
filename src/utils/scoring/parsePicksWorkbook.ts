@@ -1,11 +1,22 @@
 import debugLog from "../debugLog";
+import { LEAGUE_PREFIX } from "./gameColumns";
 import parsePick from "./parsePick";
 import findInconsistentSpreadGames from "./validateSpreads";
 
 export const TIEBREAKER_PICK_KEY = "Pts";
 
+/**
+ * One row of the workbook, as `sheet_to_json` builds it: the header's own text to
+ * whatever the cell under it held. A blank cell is left out rather than set, so
+ * every read is of a value that may not be there.
+ *
+ * Typed loosely on purpose. A hand-typed sheet puts text in a number's column and
+ * a number in a pick's, and every reader here already handles both.
+ */
+export type PicksRow = Record<string, any>;
+
 export type ParsedPicks = {
-  rows: Array<any>;
+  rows: Array<PicksRow>;
   collegeKeys: Array<string>;
   proKeys: Array<string>;
   /** Undefined when the sheet has no `Pts` column, so no game decides ties. */
@@ -49,7 +60,7 @@ async function parseWorkbook(picksBuffer: ArrayBuffer): Promise<ParsedPicks> {
   const XLSX = await import("xlsx-js-style");
   const workbook = XLSX.read(picksBuffer, { type: "array" });
   const picksSheet = workbook.Sheets[Object.keys(workbook.Sheets)[0]];
-  const rows: Array<any> = XLSX.utils.sheet_to_json(picksSheet);
+  const rows: Array<PicksRow> = XLSX.utils.sheet_to_json(picksSheet);
 
   // From the header row, not from a player's row. `sheet_to_json` leaves a blank
   // cell out of the object it builds, so a game the first player skipped would go
@@ -74,9 +85,11 @@ async function parseWorkbook(picksBuffer: ArrayBuffer): Promise<ParsedPicks> {
     const key = seen === 0 ? label : `${label}_${seen}`;
     return rows.some((row) => key in row) ? [key] : [];
   });
-  const collegeKeys = allKeys.filter((key) => key.startsWith("C"));
+  const collegeKeys = allKeys.filter((key) =>
+    key.startsWith(LEAGUE_PREFIX.college),
+  );
   const proKeys = allKeys.filter(
-    (key) => key.startsWith("P") && key !== TIEBREAKER_PICK_KEY,
+    (key) => key.startsWith(LEAGUE_PREFIX.pro) && key !== TIEBREAKER_PICK_KEY,
   );
   // The tiebreaker game is the last one before the tiebreaker score column.
   const tiebreakerPickIndex = allKeys.indexOf(TIEBREAKER_PICK_KEY);
@@ -84,7 +97,7 @@ async function parseWorkbook(picksBuffer: ArrayBuffer): Promise<ParsedPicks> {
     tiebreakerPickIndex > 0 ? allKeys[tiebreakerPickIndex - 1] : undefined;
 
   const matchups: { [gameKey: string]: Set<string> } = {};
-  rows.forEach((playerRow: any) => {
+  rows.forEach((playerRow) => {
     const addToMatchups = (key: string) => {
       const { teamAbbreviation } = parsePick(playerRow[key]);
       if (teamAbbreviation == null) return;

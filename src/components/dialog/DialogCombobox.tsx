@@ -3,6 +3,7 @@ import { ReactNode, useRef } from "react";
 import { UnfoldMoreIcon } from "../icon/Icon";
 import { DIALOG_POPUP_CLASS } from "./DialogShell";
 import "./DialogCombobox.scss";
+import getClasses from "../../utils/getClasses";
 
 /**
  * The search a dialog is pointed at one of its subjects with.
@@ -163,7 +164,10 @@ export default function DialogCombobox<T>({
                 <Combobox.Item
                   key={itemKey(item)}
                   value={item}
-                  className={`dialog__option ${optionClassName?.(item) ?? ""}`}
+                  className={getClasses(
+                    "dialog__option",
+                    optionClassName?.(item),
+                  )}
                 >
                   {renderOption(item)}
                 </Combobox.Item>

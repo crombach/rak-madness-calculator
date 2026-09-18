@@ -31,12 +31,7 @@ export type LeagueCalendar = {
   seasonType: SeasonType;
   startDate: Date;
   endDate: Date;
-  weeks: Array<{
-    value: number;
-    label: string;
-    startDate: Date;
-    endDate: Date;
-  }>;
+  weeks: Array<WeekInfo>;
 };
 
 export type LeagueInfo = {

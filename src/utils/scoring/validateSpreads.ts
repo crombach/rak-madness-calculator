@@ -1,4 +1,5 @@
 import parsePick from "./parsePick";
+import { PicksRow } from "./parsePicksWorkbook";
 
 /**
  * The games whose rows disagree about the spread, mapped to the disagreement.
@@ -10,7 +11,7 @@ import parsePick from "./parsePick";
  * anybody.
  */
 export default function findInconsistentSpreadGames(
-  rows: Array<any>,
+  rows: Array<PicksRow>,
   gameKeys: Array<string>,
 ): Map<string, string> {
   const inconsistent = new Map<string, string>();

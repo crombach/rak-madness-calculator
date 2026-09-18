@@ -1,3 +1,4 @@
+import { PickExplanation } from "./GameScore";
 import { WeekGame } from "./WeekGame";
 
 export type RakMadnessScores = {
@@ -52,11 +53,7 @@ export type PlayerScore = {
 export type PickResult = {
   pick: string;
   status: Status;
-  explanation: {
-    header: string;
-    message: string;
-    downDistanceText?: string;
-  };
+  explanation: PickExplanation;
 };
 
 export type Status = "yes" | "no" | "incomplete" | "unscoreable";

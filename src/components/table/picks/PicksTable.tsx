@@ -8,10 +8,9 @@ import {
   RakMadnessScores,
   Status,
 } from "../../../types/RakMadnessScores";
-import rangeWithPrefix from "../../../utils/rangeWithPrefix";
 import repeatedNames from "../../../utils/scoring/repeatedNames";
 import {
-  LEAGUE_PREFIX,
+  leagueLabels,
   pickChangeKey,
 } from "../../../utils/scoring/gameColumns";
 import { fillStatus } from "../../../utils/scoring/getPickResults";
@@ -159,8 +158,8 @@ function PicksTable({ scores }: { scores?: RakMadnessScores | null }) {
   const columnCount = FIXED_COLUMN_COUNT + collegeCount + proCount;
   // Built once for the headers and every row's cells, so a cell and the column it
   // sits under cannot disagree about which game they mean.
-  const collegeLabels = rangeWithPrefix(collegeCount, LEAGUE_PREFIX.college);
-  const proLabels = rangeWithPrefix(proCount, LEAGUE_PREFIX.pro);
+  const collegeLabels = leagueLabels(collegeCount, "college");
+  const proLabels = leagueLabels(proCount, "pro");
   // The label is the one thing a game and the column it was picked in share, and
   // it is what the dialog matches on too. Tested against `LIVE` rather than away
   // from `FINAL`, because the statuses ESPN has that this app does not model,

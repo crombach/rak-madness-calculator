@@ -46,7 +46,7 @@ export default function scorePlayers(
     parsed.inconsistentSpreadGames,
   );
 
-  const scores: Array<PlayerScore> = parsed.rows.map((playerRow: any, row) => {
+  const scores: Array<PlayerScore> = parsed.rows.map((playerRow, row) => {
     const collegePicks = parsed.collegeKeys.map((key) => playerRow[key]);
     const proPicks = parsed.proKeys.map((key) => playerRow[key]);
     const hasNoPicks =

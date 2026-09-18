@@ -6,7 +6,7 @@ import {
 import { LEAGUES } from "./gameColumns";
 
 /** Whether the pick can be scored either way, which is what ends a game for it. */
-function hasOutcome(status: Status): boolean {
+export function hasOutcome(status: Status): boolean {
   return status === "yes" || status === "no";
 }
 

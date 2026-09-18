@@ -1,3 +1,5 @@
+@use "../../../styles/text" as *;
+
 .player-name {
   display: flex;
   flex-direction: row;
@@ -18,11 +20,9 @@
   // would make its row taller than every other row in the table. The whole name
   // is in the player analysis the cell opens.
   .player-name__name {
-    min-width: 0;
+    @include truncate-line;
+
     max-width: var(--rak-table-player-name-width);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 }
 

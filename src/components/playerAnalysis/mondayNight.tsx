@@ -4,6 +4,7 @@ import {
 } from "../../types/PlayerAnalysis";
 import { Section } from "./analysisParts";
 import "./AnalysisSummary.scss";
+import getClasses from "../../utils/getClasses";
 
 /** The totals that win, as a comparison on the scoreboard column's own name. */
 export function mondayNightPoints({ min, max }: MondayNightRange): string {
@@ -48,7 +49,11 @@ export function MondayNightLine({
 }) {
   return (
     <p
-      className={`analysis__line analysis__route-mnf${inset ? "" : " --flush"}`}
+      className={getClasses(
+        "analysis__line",
+        "analysis__route-mnf",
+        !inset && "--flush",
+      )}
     >
       {conjoined && (
         <>

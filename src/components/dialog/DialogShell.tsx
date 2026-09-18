@@ -4,6 +4,7 @@ import useViewportInsets from "../../hooks/useViewportInsets";
 import Button from "../button/Button";
 import { CloseIcon } from "../icon/Icon";
 import "./DialogShell.scss";
+import getClasses from "../../utils/getClasses";
 
 /** The class the dialog's popup carries, so other modules can select it. */
 export const DIALOG_POPUP_CLASS = "dialog__popup";
@@ -69,7 +70,10 @@ export default function DialogShell({
           <div className="dialog__body">
             {busy && (
               <span
-                className={`dialog__progress${busy.tone ? ` --${busy.tone}` : ""}`}
+                className={getClasses(
+                  "dialog__progress",
+                  busy.tone && `--${busy.tone}`,
+                )}
                 role="progressbar"
                 aria-busy="true"
                 aria-label={busy.label}
