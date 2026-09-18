@@ -117,7 +117,7 @@ function Lead({ result }: { result: PathsResult }) {
   if (result.mondayNight?.kind !== "notNeeded") return null;
   return (
     <p className="analysis__line">
-      {`${result.player} can win the week outright.`}
+      {`${result.playerName} can win the week outright.`}
     </p>
   );
 }
@@ -137,7 +137,9 @@ export default function AnalysisBody({
     // cannot win on its own. Only a player without one needs telling.
     return (
       <Message
-        lines={[result.explanation ?? `${result.player} cannot win this week.`]}
+        lines={[
+          result.explanation ?? `${result.playerName} cannot win this week.`,
+        ]}
       />
     );
   }
@@ -148,7 +150,7 @@ export default function AnalysisBody({
     return (
       <Message
         lines={[
-          `${result.player} has won ${weekNumber != null ? `week ${weekNumber}` : "the week"}.`,
+          `${result.playerName} has won ${weekNumber != null ? `week ${weekNumber}` : "the week"}.`,
           isEveryGameSettled ? undefined : "No other player can surpass them.",
         ]}
       />

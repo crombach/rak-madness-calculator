@@ -2,7 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { GameStatus } from "../types/ESPN";
 import { League, WeekInfo } from "../types/League";
 import { WeekGame } from "../types/WeekGame";
-import { getGameResultMock } from "../utils/getGameResultMock";
+import { getLeagueResultMock } from "../utils/getLeagueResultMock";
 import { liveGame, upcomingGame } from "../utils/scoring/leagueResultFixtures";
 import useLiveGame, { kickoffAt, POLL_MS } from "./useLiveGame";
 
@@ -62,7 +62,7 @@ describe("useLiveGame", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(NOW);
-    getGameResultMock.mockReset();
+    getLeagueResultMock.mockReset();
   });
 
   afterEach(() => {
@@ -71,7 +71,7 @@ describe("useLiveGame", () => {
 
   it("asks once about a game that has not kicked off, then nothing until kickoff", async () => {
     const result = kickoffIn(2 * HOUR_MS);
-    getGameResultMock.mockResolvedValue(result);
+    getLeagueResultMock.mockResolvedValue(result);
     const game: WeekGame = {
       label: "P1",
       league: League.PRO,
@@ -82,26 +82,26 @@ describe("useLiveGame", () => {
     const games = [game];
     renderHook(() => useLiveGame({ open: true, game, games, week: WEEK }));
     await act(() => vi.advanceTimersByTimeAsync(0));
-    expect(getGameResultMock).toHaveBeenCalledTimes(1);
+    expect(getLeagueResultMock).toHaveBeenCalledTimes(1);
 
     // The 15 second poll would have asked four more times over this minute.
     await act(() => vi.advanceTimersByTimeAsync(POLL_MS * 4));
-    expect(getGameResultMock).toHaveBeenCalledTimes(1);
+    expect(getLeagueResultMock).toHaveBeenCalledTimes(1);
 
-    getGameResultMock.mockResolvedValue(
+    getLeagueResultMock.mockResolvedValue(
       liveGame({ home: "BUF", away: "KC", homeScore: 0, awayScore: 0 }),
     );
     await act(() => vi.advanceTimersByTimeAsync(2 * HOUR_MS - POLL_MS * 4));
-    expect(getGameResultMock).toHaveBeenCalledTimes(2);
+    expect(getLeagueResultMock).toHaveBeenCalledTimes(2);
 
     // Kicked off, so it is back on the poll.
     await act(() => vi.advanceTimersByTimeAsync(POLL_MS));
-    expect(getGameResultMock).toHaveBeenCalledTimes(3);
+    expect(getLeagueResultMock).toHaveBeenCalledTimes(3);
   });
 
   it("hands back the game it fetched", async () => {
     const result = kickoffIn(2 * HOUR_MS);
-    getGameResultMock.mockResolvedValue(result);
+    getLeagueResultMock.mockResolvedValue(result);
     const game: WeekGame = {
       label: "P1",
       league: League.PRO,

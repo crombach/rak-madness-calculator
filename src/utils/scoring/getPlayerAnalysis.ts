@@ -325,7 +325,7 @@ function picksIn(
 function knockedOut(player: PlayerScore): PlayerAnalysis {
   return {
     kind: "knockedOut",
-    player: player.name,
+    playerName: player.name,
     explanation: player.status.isKnockedOut
       ? player.status.explanation
       : undefined,
@@ -669,7 +669,10 @@ function settledAnalysis(
   if (playerIndex < 0) return undefined;
 
   const player = players[playerIndex];
-  const clinched: PlayerAnalysis = { kind: "clinched", player: player.name };
+  const clinched: PlayerAnalysis = {
+    kind: "clinched",
+    playerName: player.name,
+  };
   if (player.status.isKnockedOut) {
     return { playerIndex, player, rivals: [], analysis: knockedOut(player) };
   }
@@ -796,7 +799,7 @@ export default function getPlayerAnalysis(
   if (games.length > MAX_SEARCHED_GAMES) {
     return {
       kind: "headline",
-      player: player.name,
+      playerName: player.name,
       mustWin: provenMustWin(mineMask, read, contested, playerIndex),
     };
   }
@@ -817,7 +820,7 @@ export default function getPlayerAnalysis(
     minimal[0].hits === 0 &&
     minimal[0].verdict.kind === "win"
   ) {
-    return { kind: "clinched", player: player.name };
+    return { kind: "clinched", playerName: player.name };
   }
 
   // Both lists are held fewest games first, so the way asking least of the player
@@ -855,7 +858,7 @@ export default function getPlayerAnalysis(
         : 0;
     return {
       kind: "paths",
-      player: player.name,
+      playerName: player.name,
       ...whole,
       shares:
         outrightCost > 0 ? { ...whole.shares, outrightCost } : whole.shares,
@@ -864,7 +867,7 @@ export default function getPlayerAnalysis(
 
   return {
     kind: "paths",
-    player: player.name,
+    playerName: player.name,
     // A way that takes the week alone takes it at all, so it stands in both lists
     // until one of them gives it up. The block above keeps it, and this drops it
     // rather than saying the same thing twice. Dropped before the shaping, since

@@ -119,16 +119,16 @@ export type VictoryRoute = {
  */
 export type PlayerAnalysis =
   /** `explanation` is the reason `applyKnockouts` already wrote. */
-  | { kind: "knockedOut"; player: string; explanation?: string }
+  | { kind: "knockedOut"; playerName: string; explanation?: string }
   /** No result left can take the week off them. */
-  | { kind: "clinched"; player: string }
+  | { kind: "clinched"; playerName: string }
   /**
    * Too many games left to work out the routes, so only the games that can be
    * proven one at a time are named. Nothing here is a way through.
    */
   | {
       kind: "headline";
-      player: string;
+      playerName: string;
       /**
        * Games no win can do without, and all of them: this is what the search
        * would name, read a game at a time. Empty where nothing can be proven,
@@ -138,7 +138,7 @@ export type PlayerAnalysis =
     }
   | ({
       kind: "paths";
-      player: string;
+      playerName: string;
       /** Set when every route ends the same way, whether or not `routes` lists them. */
       mondayNight?: MondayNightOutlook;
       /**

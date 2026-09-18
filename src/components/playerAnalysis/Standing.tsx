@@ -94,7 +94,7 @@ export default function Standing({
   const remaining = week.remaining.length;
   const unscoreable = week.unscoreable.length;
   const isClinched =
-    result?.kind === "clinched" && result.player === playerName;
+    result?.kind === "clinched" && result.playerName === playerName;
   const { text, tone } = headline(
     players,
     week.isEveryGameSettled,

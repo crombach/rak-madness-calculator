@@ -100,7 +100,7 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
 
     expect(getPlayerAnalysis(scores, "Bob")).toEqual({
       kind: "knockedOut",
-      player: "Bob",
+      playerName: "Bob",
       explanation: "Knocked out on Total Score by Alice.",
     });
   });
@@ -127,7 +127,7 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
 
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
-      player: "Alice",
+      playerName: "Alice",
     });
   });
 
@@ -142,7 +142,7 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
 
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
-      player: "Alice",
+      playerName: "Alice",
     });
   });
 
@@ -159,7 +159,7 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
 
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
-      player: "Alice",
+      playerName: "Alice",
     });
   });
 
@@ -175,11 +175,11 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
 
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
-      player: "Alice",
+      playerName: "Alice",
     });
     expect(getPlayerAnalysis(scores, "Bob")).toEqual({
       kind: "clinched",
-      player: "Bob",
+      playerName: "Bob",
     });
   });
 
@@ -201,7 +201,7 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
 
     expect(getPlayerAnalysis(scores, "Bob")).toEqual({
       kind: "knockedOut",
-      player: "Bob",
+      playerName: "Bob",
       explanation: "Knocked out on Total Score by Alice.",
     });
   });
@@ -220,7 +220,7 @@ describe("getSettledAnalysis, the answers that need no search", () => {
 
     expect(getSettledAnalysis(scores, "Bob")).toEqual({
       kind: "knockedOut",
-      player: "Bob",
+      playerName: "Bob",
       explanation: "Knocked out on Total Score by Alice.",
     });
   });
@@ -238,7 +238,7 @@ describe("getSettledAnalysis, the answers that need no search", () => {
 
     expect(getSettledAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
-      player: "Alice",
+      playerName: "Alice",
     });
   });
 
@@ -255,7 +255,7 @@ describe("getSettledAnalysis, the answers that need no search", () => {
 
     expect(getSettledAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
-      player: "Alice",
+      playerName: "Alice",
     });
   });
 
@@ -899,7 +899,7 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
 
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
-      player: "Alice",
+      playerName: "Alice",
     });
   });
 
@@ -1036,7 +1036,7 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
     // games, so there is nothing in it the reader could act on.
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "headline",
-      player: "Alice",
+      playerName: "Alice",
       mustWin: [],
     });
   });

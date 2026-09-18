@@ -1,7 +1,7 @@
 # src/utils
 
 - `getLeagueInfo` / `getLeagueResults`: ESPN fetch, calendar, week mapping,
-  `getGameResult` by event id, and `getRegularSeasonWeekCount`, a season's week
+  `getLeagueResult` by event id, and `getRegularSeasonWeekCount`, a season's week
   count, cached
 - `buildSpreadsheetBuffer`: the xlsx export and its content type
 - `pickStatusFill`: the export's pick and standing colors, held to the stylesheet
@@ -12,7 +12,7 @@
 - `contentType`: what a response says it is, and why an `/api` path checks
 - `debugLog`: scoring traces, silent outside a dev server
 - `latestOnly`: drops an async result its effect outlived
-- `getGameResultMock`: `getGameResult`, typed as the mock a test asserts against
+- `getLeagueResultMock`: `getLeagueResult`, typed as the mock a test asserts against
 - `observeResize`: one ResizeObserver over several boxes, and its disposer
 - `getClasses`: className join, fixed and conditional names
 - `doNothing`: the no-op a default prop or context stands in with

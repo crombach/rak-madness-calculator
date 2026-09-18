@@ -76,7 +76,7 @@ const RAK_BY_45 = { kind: "range" as const, max: 45 };
 
 const base = {
   kind: "paths" as const,
-  player: "Alice",
+  playerName: "Alice",
   mustWin: [],
 };
 
@@ -99,7 +99,7 @@ describe("AnalysisSummary", () => {
   it("gives a knocked out player the reason they carry", () => {
     const result: PlayerAnalysis = {
       kind: "knockedOut",
-      player: "Bob",
+      playerName: "Bob",
       explanation: "Knocked out on Total Score by Alice.",
     };
     render(<AnalysisSummary result={result} />);
@@ -112,7 +112,7 @@ describe("AnalysisSummary", () => {
   });
 
   it("tells a knocked out player carrying no reason that they cannot win", () => {
-    const result: PlayerAnalysis = { kind: "knockedOut", player: "Bob" };
+    const result: PlayerAnalysis = { kind: "knockedOut", playerName: "Bob" };
     render(<AnalysisSummary result={result} />);
 
     expect(screen.getByText("Bob cannot win this week.")).toBeInTheDocument();
@@ -121,7 +121,7 @@ describe("AnalysisSummary", () => {
   it("says nothing left can undo a clinch with games still to play", () => {
     render(
       <AnalysisSummary
-        result={{ kind: "clinched", player: "Alice" }}
+        result={{ kind: "clinched", playerName: "Alice" }}
         weekNumber={12}
       />,
     );
@@ -136,7 +136,7 @@ describe("AnalysisSummary", () => {
   it("leaves a clinch that also ends the week to its one line", () => {
     render(
       <AnalysisSummary
-        result={{ kind: "clinched", player: "Alice" }}
+        result={{ kind: "clinched", playerName: "Alice" }}
         weekNumber={12}
         shape={{ remaining: [], unscoreable: [], isEveryGameSettled: true }}
       />,
@@ -152,7 +152,7 @@ describe("AnalysisSummary", () => {
   it("says only when the paths arrive on a week too big to search", () => {
     const result: PlayerAnalysis = {
       kind: "headline",
-      player: "Alice",
+      playerName: "Alice",
       mustWin: [],
     };
     render(<AnalysisSummary result={result} />);
@@ -172,7 +172,7 @@ describe("AnalysisSummary", () => {
   it("names the must-win games a week too big to search can prove", () => {
     const result: PlayerAnalysis = {
       kind: "headline",
-      player: "Alice",
+      playerName: "Alice",
       mustWin: [{ label: "P3", pick: "KC -7" }],
     };
     render(<AnalysisSummary result={result} />);

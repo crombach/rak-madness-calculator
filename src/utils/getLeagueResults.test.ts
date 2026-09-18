@@ -7,7 +7,7 @@ import {
   HomeAway,
 } from "../types/ESPN";
 import { League, WeekInfo } from "../types/League";
-import { getGameResult, getLeagueResults } from "./getLeagueResults";
+import { getLeagueResult, getLeagueResults } from "./getLeagueResults";
 
 vi.mock("./getLeagueInfo");
 
@@ -395,19 +395,19 @@ describe("getLeagueResults, mapping", () => {
   });
 });
 
-describe("getGameResult", () => {
+describe("getLeagueResult", () => {
   it("finds the game with that id, whoever picked it", async () => {
     mockFetch([
       espnEvent({ home: "BUF", away: "KC", id: "1" }),
       espnEvent({ home: "DAL", away: "PHI", id: "2" }),
     ]);
-    const result = await getGameResult(League.PRO, WEEK, "2");
+    const result = await getLeagueResult(League.PRO, WEEK, "2");
     expect(result?.shortName).toBe("PHI @ DAL");
   });
 
   it("comes back with nothing where the week no longer holds the game", async () => {
     mockFetch([espnEvent({ home: "BUF", away: "KC", id: "1" })]);
-    expect(await getGameResult(League.PRO, WEEK, "9")).toBeNull();
+    expect(await getLeagueResult(League.PRO, WEEK, "9")).toBeNull();
   });
 
   it("finds a college game played before the week began", async () => {
@@ -421,7 +421,7 @@ describe("getGameResult", () => {
         date: "2024-09-01T17:00Z",
       }),
     ]);
-    const result = await getGameResult(League.COLLEGE, WEEK, "7");
+    const result = await getLeagueResult(League.COLLEGE, WEEK, "7");
     expect(result?.shortName).toBe("MICH @ OSU");
   });
 });

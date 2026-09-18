@@ -418,7 +418,7 @@ export async function getLeagueResults(
  * way of reading one. Null where the week no longer holds that game. A season
  * or week switch can do that while a dialog is open on it.
  */
-export async function getGameResult(
+export async function getLeagueResult(
   league: League,
   week: WeekInfo,
   eventId: string,

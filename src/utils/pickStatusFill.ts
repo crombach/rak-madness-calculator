@@ -15,8 +15,11 @@ export const PICK_STATUS_FILL: Record<Status, { rgb: string }> = {
   incomplete: { rgb: "FFFFFF" },
 };
 
-/** Where a player stands, as the name cell in front of their picks is filled. */
-export type PlayerStanding =
+/**
+ * What a row says about its player, as the name cell in front of their picks is
+ * filled. Held apart from `Status`, which is what one pick scored.
+ */
+export type PlayerRowStatus =
   "inContention" | "knockedOut" | "nameConflict" | "noStatus";
 
 /**
@@ -24,10 +27,10 @@ export type PlayerStanding =
  *
  * Read off the light-mode tokens the same way `PICK_STATUS_FILL` is, since a
  * workbook has no reader and no theme to follow. `nameConflict` takes the
- * unscoreable pick's own fill, the way the tables do: neither is a standing, and
+ * unscoreable pick's own fill, the way the tables do. Neither is a standing, and
  * both say the sheet needs fixing rather than anything the week did.
  */
-export const PLAYER_STATUS_FILL: Record<PlayerStanding, { rgb: string }> = {
+export const PLAYER_STATUS_FILL: Record<PlayerRowStatus, { rgb: string }> = {
   inContention: { rgb: "99DAFF" },
   knockedOut: { rgb: "FFC999" },
   nameConflict: { rgb: "FFDC52" },
