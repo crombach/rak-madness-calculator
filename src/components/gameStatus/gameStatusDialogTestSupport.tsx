@@ -21,7 +21,7 @@ export function dialog(
   gameLabel: string | undefined,
   open: boolean,
   scores: RakMadnessScores,
-  onGameFinal?: () => void,
+  onStatusChange?: () => void,
 ) {
   return (
     <GameStatusDialog
@@ -31,7 +31,7 @@ export function dialog(
       scores={scores}
       week={WEEK}
       season={SEASON}
-      onGameFinal={onGameFinal}
+      onStatusChange={onStatusChange}
     />
   );
 }

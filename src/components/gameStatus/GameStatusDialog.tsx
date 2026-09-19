@@ -125,7 +125,7 @@ export default function GameStatusDialog({
   scores,
   week,
   season,
-  onGameFinal,
+  onStatusChange,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -136,12 +136,13 @@ export default function GameStatusDialog({
   week?: WeekInfo;
   season?: number;
   /**
-   * Called once the game shown here is polled final, so the week's scores can
-   * be rescored and the table's `.table__cell-wipe` animations can play for
-   * whatever that outcome changed, instead of waiting for the next manual
-   * refresh.
+   * Called when the game shown here is polled somewhere the week's scores do not
+   * have it, so the week can be rescored. The picks table's column marks then say
+   * that the game is being played, has stopped or is over, and its
+   * `.table__cell-wipe` animations play for whatever the move changed, instead of
+   * waiting for the next manual refresh.
    */
-  onGameFinal?: () => void;
+  onStatusChange?: () => void;
 }) {
   const [chosen, setChosen] = useState<string>();
   const [query, setQuery] = useState("");
@@ -171,7 +172,7 @@ export default function GameStatusDialog({
     games: scores?.games,
     week,
     season,
-    onGameFinal,
+    onStatusChange,
   });
 
   return (

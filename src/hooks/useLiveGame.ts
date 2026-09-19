@@ -47,6 +47,10 @@ export function kickoffAt(result: LeagueResult | null): number | null {
  *
  * `games` is the scoring pass the answer belongs to. A rescore replaces every game,
  * so it takes the fetched one with it.
+ *
+ * A poll that finds the game somewhere the week does not have it says so through
+ * `onStatusChange`, which is how the picks table's column marks catch up without a
+ * refresh.
  */
 export default function useLiveGame({
   open,
@@ -54,7 +58,7 @@ export default function useLiveGame({
   games,
   week,
   season,
-  onGameFinal,
+  onStatusChange,
 }: {
   open: boolean;
   game?: WeekGame;
@@ -62,18 +66,23 @@ export default function useLiveGame({
   week?: WeekInfo;
   season?: number;
   /**
-   * Called once a poll finds this game final, so the week's own scores and
-   * `.table__cell-wipe` animations can catch up to an outcome the dialog saw
-   * before the next scheduled refresh would have.
+   * Called when a poll finds this game somewhere the week's own scores do not
+   * have it, so those scores, the picks table's column marks and the
+   * `.table__cell-wipe` animations can catch up to what the dialog saw before
+   * the next scheduled refresh would have.
+   *
+   * Every move counts, not the final alone. A column heading wears a mark for a
+   * game being played and for one that has stopped, and a reader watching the
+   * table would otherwise be told about neither until they refreshed.
    */
-  onGameFinal?: () => void;
+  onStatusChange?: () => void;
 }): { shown?: LeagueResult; isGameLoading: boolean } {
   // Held in a ref, not read from the deps below, since a rescore mints a new
   // callback that would tear down the poll and restart its wait each rescore.
-  const onFinal = useRef(onGameFinal);
+  const onMoved = useRef(onStatusChange);
   useEffect(() => {
-    onFinal.current = onGameFinal;
-  }, [onGameFinal]);
+    onMoved.current = onStatusChange;
+  }, [onStatusChange]);
 
   const [found, setFound] = useState<{
     games: Array<WeekGame>;
@@ -81,19 +90,24 @@ export default function useLiveGame({
     result: LeagueResult;
   }>();
   const [fetching, setFetching] = useState(false);
-  // Every game whose final has already been announced. The rescore `onGameFinal` sets
-  // off replaces every game, which restarts the poll below, and the same game would
-  // otherwise be announced final again on the first answer and rescore without end.
+  // Where each game was last announced to have got to. The rescore `onStatusChange`
+  // sets off replaces every game, which restarts the poll below, and a rescore whose
+  // own read of ESPN lags would otherwise be told the same move again without end.
   //
-  // A set rather than the last id, since a reader can go back to a game they have
-  // already watched finish, and one slot would have forgotten it by then.
-  const announced = useRef(new Set<string>());
+  // Keyed by game rather than held as one slot, since a reader can go back to a game
+  // they have already watched move, and one slot would have forgotten it by then. It
+  // holds the latest status rather than every status, so a game that goes live, stops
+  // and starts again is announced all three times.
+  const announced = useRef(new Map<string, GameStatus>());
 
   // The pieces the fetch needs, rather than the game itself, so a rebuilt object
   // cannot restart the poll on every render.
   const label = game?.label;
   const league = game?.league;
   const eventId = game?.result?.id;
+  // Where the week's own scores have this game, which is what a fresher answer is
+  // measured against. A poll that agrees with it has nothing to announce.
+  const scored = game?.result?.status;
   // A game the week was scored on after it finished cannot come back any other way,
   // so it is shown as the scoring pass left it rather than asked about again.
   const settled =
@@ -140,11 +154,16 @@ export default function useLiveGame({
         // answer at all is asked about again, since the next week's list may hold
         // it.
         kickoff = kickoffAt(result);
+        if (
+          result != null &&
+          result.status !== scored &&
+          announced.current.get(eventId) !== result.status
+        ) {
+          announced.current.set(eventId, result.status);
+          onMoved.current?.();
+        }
         if (result == null || result.status !== GameStatus.FINAL) {
           timer = window.setTimeout(poll, POLL_MS);
-        } else if (!announced.current.has(eventId)) {
-          announced.current.add(eventId);
-          onFinal.current?.();
         }
       };
       await poll();
@@ -157,7 +176,7 @@ export default function useLiveGame({
       // outstanding whatever it comes back with.
       setFetching(false);
     };
-  }, [open, games, label, league, eventId, settled, week, season]);
+  }, [open, games, label, league, eventId, scored, settled, week, season]);
 
   // Stamped with the game it was fetched for as well as the scoring pass, so an
   // answer that landed for the game before this one is never handed back for it.
