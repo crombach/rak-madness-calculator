@@ -23,6 +23,9 @@ const proGame: WeekGame = {
 
 const scores: RakMadnessScores = { scores: [], games: [proGame] };
 
+/** The other game's ESPN event, which every fixture but that one shares. */
+const SECOND_EVENT_ID = "2";
+
 /**
  * `onGameFinal` is what wires the dialog's own live poll back into the week's
  * scores. `ResultsFrame` passes it `rescore`, which scores the workbook already in
@@ -102,7 +105,7 @@ describe("GameStatusDialog onGameFinal", () => {
       label: "P2",
       league: League.PRO,
       name: "DAL @ PHI",
-      result: { ...live(), id: "2" },
+      result: { ...live(), id: SECOND_EVENT_ID },
     };
     const both: RakMadnessScores = { scores: [], games: [proGame, second] };
     getLeagueResultMock.mockResolvedValue(live());
@@ -111,8 +114,11 @@ describe("GameStatusDialog onGameFinal", () => {
     rerender(dialog("P1", true, both, onGameFinal));
     await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
 
-    getLeagueResultMock.mockResolvedValue(
-      finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 14 }),
+    // Answered by the event asked about, so each game's final names its own teams.
+    getLeagueResultMock.mockImplementation(async (_league, _week, eventId) =>
+      eventId === SECOND_EVENT_ID
+        ? finalGame({ home: "PHI", away: "DAL", homeScore: 20, awayScore: 17 })
+        : finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 14 }),
     );
     await vi.advanceTimersByTimeAsync(POLL_MS);
     expect(onGameFinal).toHaveBeenCalledTimes(1);
