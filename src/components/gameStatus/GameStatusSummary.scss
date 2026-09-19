@@ -182,7 +182,8 @@
   grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr) auto;
   grid-template-rows: auto auto auto;
   // Every line sits in the middle of its row, so a line beside a taller one is level
-  // with it rather than sitting on its first line.
+  // with it rather than sitting on its first line. Row 1 is the exception, where the
+  // two labels and the clock between them share a baseline instead.
   align-items: center;
   column-gap: var(--rak-space-2);
   row-gap: var(--rak-space-1);
@@ -266,6 +267,10 @@
 .game-status__side-label {
   @include micro-label;
 
+  // Level with the clock across the row, which is set two steps larger. Centered, the
+  // smaller text reads a pixel high, because each line box is centered on its own
+  // height and a 12px box puts its baseline higher inside the row than a 14px one.
+  align-self: baseline;
   color: var(--rak-text-secondary);
   font-size: var(--rak-text-xs);
   font-weight: normal;
@@ -478,6 +483,8 @@
 // about the game rather than about either side.
 .game-status__detail {
   grid-row: 1;
+  // Both sides of the row take their baseline from the same place, or neither does.
+  align-self: baseline;
   color: var(--rak-text);
   font-size: var(--rak-text-sm);
   font-weight: var(--rak-weight-semibold);
