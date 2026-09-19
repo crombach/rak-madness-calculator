@@ -27,6 +27,15 @@ const FINAL_DETAIL = "Final";
 const FINAL_OVERTIME_DETAIL = "Final/OT";
 
 /**
+ * A game that has stopped, said over the quarter it stopped in where one was played.
+ *
+ * ESPN's own word for it, which is the whole word `Pregame`, `Halftime` and `Final`
+ * beside it are. The quarter is what says a game held in the fourth apart from one
+ * held before kickoff, which ESPN sends no period for at all.
+ */
+const DELAYED_DETAIL = "Delayed";
+
+/**
  * What a game yet to kick off is doing, said in place of ESPN's own wording.
  *
  * ESPN says a scheduled game as its kickoff, in Eastern time. The strip under the
@@ -89,6 +98,20 @@ function overtimeLabel(period: number): string {
   return overtime === 1 ? "OT" : `${overtime}OT`;
 }
 
+/**
+ * Which period the game is in, as `Q1` through `Q4` and then the overtimes.
+ *
+ * Nothing for a period of zero, which ESPN sends for a game no quarter has been
+ * played in. Read off the number alone that would come out `Q0`, a quarter football
+ * does not have.
+ */
+function periodLabel(period?: number): string | undefined {
+  if (period == null || period < 1) {
+    return undefined;
+  }
+  return period <= REGULATION_PERIODS ? `Q${period}` : overtimeLabel(period);
+}
+
 /** How many periods the game has scores for, overtime included. */
 function periodsPlayed(result: LeagueResult): number {
   return Math.max(result.away.linescores.length, result.home.linescores.length);
@@ -109,15 +132,17 @@ export function detailText(result: LeagueResult): string {
   if (result.status === GameStatus.UPCOMING) {
     return PREGAME_DETAIL;
   }
-  // Postponed, delayed, and canceled are a stage the app has no short form for, so
-  // ESPN's own word for it stands. Its wording of those carries no kickoff to repeat.
-  if (result.status !== GameStatus.LIVE || result.period == null) {
+  const period = periodLabel(result.period);
+  if (result.status === GameStatus.DELAYED) {
+    // The clock is left out. It is where the quarter stopped, not time anybody is
+    // waiting, and beside the word it reads as the wait having a length.
+    return period != null ? `${DELAYED_DETAIL} ${period}` : DELAYED_DETAIL;
+  }
+  // Postponed and canceled are a stage the app has no short form for, so ESPN's own
+  // word for it stands. Its wording of those carries no kickoff to repeat.
+  if (result.status !== GameStatus.LIVE || period == null) {
     return result.detailMessage;
   }
-  const period =
-    result.period <= REGULATION_PERIODS
-      ? `Q${result.period}`
-      : overtimeLabel(result.period);
   // A clock reading zero is a period that has ended rather than one being played, and
   // saying so adds nothing to the period itself.
   const running = result.clock != null && !result.clock.startsWith("0:00");

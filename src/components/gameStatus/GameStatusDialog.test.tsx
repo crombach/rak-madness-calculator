@@ -10,6 +10,7 @@ import { LeagueResult } from "../../types/LeagueResult";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
 import {
+  delayedGame,
   finalGame,
   liveGame,
   upcomingGame as upcomingGameFixture,
@@ -60,6 +61,16 @@ const upcomingGame = withEspnDetails(
   upcomingGameFixture({ home: "PHI", away: "DAL" }),
   "403",
 );
+const delayed = withEspnDetails(
+  delayedGame({
+    home: "CLEM",
+    away: "UNC",
+    homeScore: 10,
+    awayScore: 3,
+    period: 4,
+  }),
+  "404",
+);
 
 const games: Array<WeekGame> = [
   {
@@ -87,6 +98,12 @@ const games: Array<WeekGame> = [
     name: upcomingGame.shortName,
     result: upcomingGame,
   },
+  {
+    label: "P3",
+    league: League.PRO,
+    name: delayed.shortName,
+    result: delayed,
+  },
 ];
 
 const scores: RakMadnessScores = { scores: [], games };
@@ -107,6 +124,7 @@ describe("the games a query offers", () => {
       "C2",
       "P1",
       "P2",
+      "P3",
     ]);
   });
 
@@ -208,8 +226,8 @@ describe("GameStatusDialog", () => {
     await user.click(screen.getByRole("combobox", { name: "Game" }));
 
     // Every entry says where its game stands: the live game LIVE, the one that is
-    // over a tick, the one yet to start a calendar, and the column ESPN has no game
-    // for a warning.
+    // over a tick, the one yet to start a calendar, the one ESPN has stopped a
+    // pause, and the column ESPN has no game for a warning.
     await screen.findByRole("option", { name: /KC @ BUF/ });
 
     // Under the search, whatever room is left below it, so the list never covers the
@@ -230,6 +248,7 @@ describe("GameStatusDialog", () => {
       ["Not listed by ESPN"],
       ["Live"],
       ["Yet to kick off"],
+      ["Delayed"],
     ]);
     expect(
       within(screen.getByRole("option", { name: /DAL @ PHI/ })).getByTestId(
@@ -242,6 +261,7 @@ describe("GameStatusDialog", () => {
       "WARN",
       "LIVE",
       "SOON",
+      "DLAY",
     ]);
 
     await user.click(screen.getByRole("option", { name: /DAL @ PHI/ }));

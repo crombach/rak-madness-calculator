@@ -65,6 +65,10 @@ instead of recording the whole run.
   the dot beside each heading's label, in both themes. Needs
   `--viewport 900x900` to reach the marked columns. Writes its crops to
   `$LIVE_DOT_SHOT_DIR`, so `--out` is a throwaway.
+- `scenarios/delayed-game.js` — a game ESPN has stopped: the pause beside its
+  column heading in both themes, `Delayed Q4` and `Delayed` over the scores, and
+  the `DLAY` mark in the search list. Needs `--viewport 900x900`. Writes its
+  crops to `$DELAYED_SHOT_DIR`, so `--out` is a throwaway.
 - `scenarios/refresh-pressed.js` — the navbar refresh key at rest and while its
   work runs, in both themes. Writes its crops to `$PRESSED_SHOT_DIR`, so `--out`
   is a throwaway.

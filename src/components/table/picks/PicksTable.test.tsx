@@ -18,6 +18,7 @@ import {
   SettingsContextProvider,
 } from "../../../context/SettingsContext";
 import {
+  delayedGame,
   finalGame,
   liveGame,
   upcomingGame,
@@ -399,8 +400,9 @@ describe("PicksTable, live games", () => {
     };
   }
 
-  // C1 is being played. The other three cover every state that is not: yet to
-  // kick off, over, and a column ESPN listed no game for.
+  // C1 is being played and P3 has stopped. The other three cover every state a
+  // heading says nothing about: yet to kick off, over, and a column ESPN listed no
+  // game for.
   const withGames: RakMadnessScores = {
     ...scores,
     games: [
@@ -414,6 +416,16 @@ describe("PicksTable, live games", () => {
         finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 20 }),
       ),
       game("P2"),
+      game(
+        "P3",
+        delayedGame({
+          home: "CLEM",
+          away: "UNC",
+          homeScore: 10,
+          awayScore: 3,
+          period: 4,
+        }),
+      ),
     ],
   };
 
@@ -429,13 +441,24 @@ describe("PicksTable, live games", () => {
     expect(live).toHaveTextContent("Live");
   });
 
-  it("leaves every column alone whose game is not being played", () => {
+  it("marks the column of a game ESPN has stopped, in a pause rather than the dot", () => {
     render(<PicksTable scores={withGames} />);
 
-    ["C2", "P1", "P2", "P3"].forEach((label) => {
+    const delayed = header("P3");
+    expect(delayed.querySelector(".table__delay-icon")).toBeInTheDocument();
+    expect(delayed.querySelector(".table__live-dot")).toBeNull();
+    expect(delayed).toHaveTextContent("Delayed");
+  });
+
+  it("leaves every column alone whose game is neither being played nor stopped", () => {
+    render(<PicksTable scores={withGames} />);
+
+    ["C2", "P1", "P2"].forEach((label) => {
       const quiet = header(label);
       expect(quiet.querySelector(".table__live-dot")).toBeNull();
+      expect(quiet.querySelector(".table__delay-icon")).toBeNull();
       expect(quiet).not.toHaveTextContent("Live");
+      expect(quiet).not.toHaveTextContent("Delayed");
     });
   });
 
@@ -457,5 +480,6 @@ describe("PicksTable, live games", () => {
     render(<PicksTable scores={scores} />);
 
     expect(document.querySelector(".table__live-dot")).toBeNull();
+    expect(document.querySelector(".table__delay-icon")).toBeNull();
   });
 });

@@ -1,3 +1,5 @@
+@use "../../../styles/ink" as *;
+
 // A pick's fill is the ramp its status already has elsewhere in the app: a right
 // pick is the success green, a wrong one the danger red, one that cannot be scored
 // the warning gold. Naming the color is all a cell does. `Table.scss` paints it,
@@ -29,11 +31,13 @@
     }
   }
 
-  // The label and the dot on one line, each centered on the other. Flex rather
+  // The label and the mark on one line, each centered on the other. Flex rather
   // than a baseline shift, since the heading is set in capitals and their middle
   // sits above the baseline every `vertical-align` is measured from. Only the
-  // heading holding a dot, so the rest keep the ellipsis a block gives them.
-  .table__header th:has(.table__live-dot) .table__cell-button {
+  // heading holding a mark, so the rest keep the ellipsis a block gives them.
+  .table__header
+    th:has(.table__live-dot, .table__delay-icon)
+    .table__cell-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -53,5 +57,23 @@
     // The red the dot inside the dialog's live pill is drawn in, the one token
     // holding the two of them together.
     background-color: var(--rak-live-dot);
+  }
+
+  // The pause marking a game that has stopped, in the dot's own red. A game
+  // stopped in the fourth quarter is the same thing to a reader as one being
+  // played: a column still to settle.
+  .table__header th .table__delay-icon {
+    // Taller than the dot beside it, because two narrow bars carry less ink than
+    // a circle and read as the lighter mark at the same height.
+    --rak-delay-icon-size: 0.7em;
+
+    flex: 0 0 auto;
+    display: flex;
+
+    svg {
+      @include ink-height(var(--rak-delay-icon-size), $ink-share-pause);
+
+      fill: var(--rak-live-dot);
+    }
   }
 }

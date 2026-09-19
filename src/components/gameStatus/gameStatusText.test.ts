@@ -1,6 +1,7 @@
 import { LeagueResult } from "../../types/LeagueResult";
 import { GameStatus } from "../../types/ESPN";
 import {
+  delayedGame,
   finalGame,
   liveGame,
   upcomingGame,
@@ -15,6 +16,13 @@ const FINAL = finalGame({
 });
 const LIVE = liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 });
 const UPCOMING = upcomingGame({ home: "BUF", away: "KC" });
+const DELAYED_IN_Q4 = delayedGame({
+  home: "BUF",
+  away: "KC",
+  homeScore: 7,
+  awayScore: 0,
+  period: 4,
+});
 
 /** A game whose quarters, and whose overtimes, are known. */
 function played(result: LeagueResult, periods: number): LeagueResult {
@@ -49,6 +57,23 @@ describe("detailText", () => {
 
   it("says the break in the middle by name, not as the quarter it ends", () => {
     expect(detailText({ ...LIVE, period: 2, clock: "0:00" })).toBe("Halftime");
+  });
+
+  it("says a game stopped part way through over the quarter it stopped in", () => {
+    expect(detailText({ ...DELAYED_IN_Q4, clock: "8:11" })).toBe("Delayed Q4");
+  });
+
+  it("says a game stopped before kickoff in the word alone, not as a quarter", () => {
+    // ESPN sends a period of zero for a game no quarter has been played in, which
+    // read as a quarter would come out `Q0`.
+    const delayed = delayedGame({
+      home: "BUF",
+      away: "KC",
+      homeScore: 0,
+      awayScore: 0,
+      period: 0,
+    });
+    expect(detailText({ ...delayed, clock: "0:00" })).toBe("Delayed");
   });
 
   it("keeps ESPN's own word for a stage the app has no short form for", () => {

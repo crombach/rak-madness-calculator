@@ -89,6 +89,32 @@ export function liveGame({
   };
 }
 
+/**
+ * A game that stopped, whether before kickoff or part way through. `period` is the
+ * quarter it stopped in, and `0` says no quarter was played, which is the number
+ * ESPN sends before kickoff.
+ */
+export function delayedGame({
+  home,
+  away,
+  homeScore,
+  awayScore,
+  period,
+}: {
+  home: string;
+  away: string;
+  homeScore: number;
+  awayScore: number;
+  period: number;
+}): LeagueResult {
+  return {
+    ...liveGame({ home, away, homeScore, awayScore }),
+    status: GameStatus.DELAYED,
+    detailMessage: "Delayed",
+    period,
+  };
+}
+
 /** A game that has not kicked off. Scoring treats it as incomplete. */
 export function upcomingGame({
   home,

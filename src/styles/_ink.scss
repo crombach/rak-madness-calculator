@@ -7,6 +7,8 @@
 // `components/icon/Icon.tsx` and confirmed in a browser.
 $ink-share-event: 0.833;
 $ink-share-warning: 0.792;
+// The two bars of the pause, which run `-760` to `-200` of their box.
+$ink-share-pause: 0.583;
 // The three a player's status is drawn with. The trophy fills 0.75 and the skull and
 // the face 0.833, and which of them shows is decided in the component rather than in a
 // class, so one share covers all three and splits them.

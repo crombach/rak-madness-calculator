@@ -277,6 +277,19 @@ describe("getLeagueResults, mapping", () => {
     expect(result.winner.team).toBeNull();
   });
 
+  it("keeps a delayed game out of live, though ESPN calls its state `in`", async () => {
+    const delayed = espnEvent({ home: "BUF", away: "KC" });
+    delayed.status.period = 4;
+    delayed.status.type = {
+      id: GameStatus.DELAYED,
+      state: "in",
+      shortDetail: "Delayed",
+    };
+    mockFetch([delayed]);
+    const [result] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+    expect(result.status).toBe(GameStatus.DELAYED);
+  });
+
   it("leaves a postponed game outside all three, since ESPN calls it over", async () => {
     const postponed = espnEvent({ home: "BUF", away: "KC" });
     postponed.status.type = {

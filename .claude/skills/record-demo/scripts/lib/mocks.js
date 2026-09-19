@@ -48,7 +48,11 @@ function competitor(abbr, homeAway, score) {
  * @param {string} awayAbbr
  * @param {number} homeScore
  * @param {number} awayScore
- * @param {"1"|"2"|"3"} statusId upcoming, live, or final (`GameStatus`)
+ * @param {"1"|"2"|"3"|"7"} statusId upcoming, live, final, or delayed (`GameStatus`)
+ * @param {number} [period] which quarter a delayed game stopped in, `0` before
+ *   kickoff. ESPN sends one either way. Pass it on every `"7"`, since the app
+ *   says the quarter beside the word only where a quarter was played, and an
+ *   event built without one reads `Delayed` whatever the game had reached.
  */
 export function makeGame(
   id,
@@ -57,11 +61,21 @@ export function makeGame(
   homeScore,
   awayScore,
   statusId,
+  period,
 ) {
-  const detail =
-    statusId === "3" ? "Final" : statusId === "2" ? "3rd Quarter" : "Scheduled";
-  // What the app reads to tell a game underway from one not started or over.
-  const state = statusId === "3" ? "post" : statusId === "2" ? "in" : "pre";
+  // An id neither table names reads as scheduled, the way every id but `2` and `3`
+  // did before there were tables.
+  const DETAIL = {
+    1: "Scheduled",
+    2: "3rd Quarter",
+    3: "Final",
+    7: "Delayed",
+  };
+  const detail = DETAIL[statusId] ?? DETAIL[1];
+  // What the app reads to tell a game underway from one not started or over. ESPN
+  // calls a delayed game `in` as well, though nobody is playing.
+  const STATE = { 1: "pre", 2: "in", 3: "post", 7: "in" };
+  const state = STATE[statusId] ?? STATE[1];
   return {
     id,
     name: `${awayAbbr} at ${homeAbbr}`,
@@ -79,8 +93,9 @@ export function makeGame(
       },
     ],
     status: {
-      period: statusId === "2" ? 3 : undefined,
-      displayClock: statusId === "2" ? "8:42" : undefined,
+      period: statusId === "7" ? period : statusId === "2" ? 3 : undefined,
+      displayClock:
+        statusId === "7" ? "8:11" : statusId === "2" ? "8:42" : undefined,
       type: { id: statusId, state, shortDetail: detail },
     },
   };

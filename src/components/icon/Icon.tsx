@@ -159,6 +159,19 @@ export function EventIcon() {
   );
 }
 
+/**
+ * The one shape here drawn at fill 1 rather than the set's own default. The bars
+ * are outlines unfilled, and at the height a mark draws them the holes close up
+ * into a smudge.
+ */
+export function PauseIcon() {
+  return (
+    <Icon name="PauseIcon">
+      <path d="M560-200v-560h160v560H560Zm-320 0v-560h160v560H240Z" />
+    </Icon>
+  );
+}
+
 export function CheckCircleIcon() {
   return (
     <Icon name="CheckCircleIcon">

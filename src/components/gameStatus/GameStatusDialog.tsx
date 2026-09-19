@@ -8,7 +8,7 @@ import { WeekGame } from "../../types/WeekGame";
 import matching from "../../utils/matching";
 import DialogCombobox from "../dialog/DialogCombobox";
 import DialogShell from "../dialog/DialogShell";
-import { CheckIcon, EventIcon, WarningIcon } from "../icon/Icon";
+import { CheckIcon, EventIcon, PauseIcon, WarningIcon } from "../icon/Icon";
 import GameStatusSummary from "./GameStatusSummary";
 import "./GameStatusDialog.scss";
 
@@ -51,6 +51,14 @@ function markFor(game: WeekGame, status?: GameStatus): Mark {
       word: "DONE",
     };
   }
+  if (status === GameStatus.DELAYED) {
+    return {
+      modifier: "--delayed",
+      label: "Delayed",
+      icon: <PauseIcon />,
+      word: "DLAY",
+    };
+  }
   if (status === GameStatus.LIVE) {
     return {
       modifier: "--live",
@@ -73,11 +81,11 @@ function markFor(game: WeekGame, status?: GameStatus): Mark {
  * Where a game stands, in one mark, on every game the search offers.
  *
  * Every state says so in a word beside its shape. LIVE beside a red dot for a game
- * being played, WARN beside a warning for a column ESPN lists no game for, which is
- * the one game the dialog can say nothing else about, DONE beside a tick once the
- * game is over, and SOON beside a calendar before kickoff. That a live game is being
- * asked about again is the progress bar's to say, which is how every other wait in
- * the app says it.
+ * being played, DLAY beside a pause for one that has stopped, WARN beside a warning
+ * for a column ESPN lists no game for, which is the one game the dialog can say
+ * nothing else about, DONE beside a tick once the game is over, and SOON beside a
+ * calendar before kickoff. That a live game is being asked about again is the
+ * progress bar's to say, which is how every other wait in the app says it.
  */
 function GameMark({
   game,

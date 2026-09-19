@@ -119,6 +119,11 @@ function scoreCell(
       explanationHeader = "Upcoming";
       break;
     }
+    case GameStatus.DELAYED: {
+      // The score stands, and nobody is adding to it, so it is not a live one.
+      explanationHeader = "Delayed";
+      break;
+    }
     default: {
       explanationHeader = `Live Score | ${gameResult.detailMessage}`;
       break;

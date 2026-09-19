@@ -36,7 +36,7 @@ Prefer the layer below them. A branch of `useWeekRouteGuard`, the wireframe's sh
 
 Writing a test here:
 
-- Fixture games come from `src/utils/scoring/leagueResultFixtures.ts` (`finalGame`, `upcomingGame`). Use them instead of hand-rolling a `LeagueResult`.
+- Fixture games come from `src/utils/scoring/leagueResultFixtures.ts` (`finalGame`, `liveGame`, `delayedGame`, `upcomingGame`). Use them instead of hand-rolling a `LeagueResult`.
 - Reading an exported workbook back flattens the fill onto `cell.s`, so assert `cell.s.fgColor.rgb`, not `cell.s.fill.fgColor.rgb`.
 - jsdom reports no layout: every rect is zero and `window.innerHeight` is 768. Anything that measures the page has its arithmetic tested apart from the hook that feeds it.
 - Mount through `mountApp` or `mountLoadedApp` in `src/appTestFixtures.tsx`, never by hand. They wrap `App` in `MemoryRouter`, `SettingsContextProvider`, `ToastContextProvider`, and `AppDataContextProvider`, with `Toaster` beside it. Toasts render in `Toaster`, so without it no toast assertion can pass.
@@ -57,7 +57,7 @@ The scoring path logs through `src/utils/debugLog.ts`, which is silent when the 
 
 ## Gotchas
 
-- `GameStatus` models only upcoming, live, and final, but `status` is assigned straight from ESPN's `status.type.id`, which also has ids for postponed and canceled. Those reach the same branch as a live game, so the header reads "Live Score" and ESPN's detail message is what tells the reader otherwise. A canceled game has no winner, so every pick on it scores a point.
+- `GameStatus` models only upcoming, live, delayed, and final, but `status` is assigned straight from ESPN's `status.type.id`, which also has ids for postponed and canceled. Those reach the same branch as a live game, so the header reads "Live Score" and ESPN's detail message is what tells the reader otherwise. A canceled game has no winner, so every pick on it scores a point.
 - Vite does not open a browser, so there is no `BROWSER=none` to set. `make run PORT=3001` moves the port, which is how you get two dev servers side by side. `strictPort` is on, so a busy port fails instead of silently sliding to the next one.
 - Sass prints deprecation warnings on compile. Noise, not breakage.
 - Breakpoints are Sass mixins. `src/styles/CLAUDE.md` names them and how to reach them.

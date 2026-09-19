@@ -362,7 +362,8 @@
   // The game dialog's own marks (`--live`, `--invalid`, `--final`, `--upcoming`),
   // each its own token rather than a direct read of the ramp step it shares with
   // a toast variant: `Toaster.scss` keeps its own pale fill in both modes, so the
-  // two need to move independently once dark mode darkens a mark instead.
+  // two need to move independently once dark mode darkens a mark instead. The
+  // `--delayed` mark wears the live pair, which is the one red the two share.
   --rak-mark-live-bg: var(--rak-danger-100);
   --rak-mark-live-text: var(--rak-danger-600);
   --rak-mark-invalid-bg: var(--rak-warning-300);
