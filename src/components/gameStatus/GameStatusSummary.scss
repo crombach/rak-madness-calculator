@@ -474,26 +474,25 @@
   text-align: center;
 }
 
-// Set with the two side labels it sits between, which share its row. Where the game
-// is up to is read off the scores below it, and a clock set larger than the words
-// either side of it reads as the answer the dialog was opened for.
+// Set with the strip under the scoreline, which is the other thing the dialog says
+// about the game rather than about either side.
 .game-status__detail {
   grid-row: 1;
   color: var(--rak-text);
-  font-size: var(--rak-text-xs);
+  font-size: var(--rak-text-sm);
   font-weight: var(--rak-weight-semibold);
 }
 
 // Set with the clock in the same column, which is the other half of where the game is
-// up to. Smaller than the records either side of it, because a down and distance runs
-// to `2nd & 7 at ATL 34`, and the middle column is only as wide as its widest line, so
-// every character here is width taken off the names beside it. `useScorelineFit`
-// is what gives those names the abbreviation where this line leaves them too little.
+// up to. A down and distance runs to `2nd & 7 at ATL 34`, and the middle column is
+// only as wide as its widest line, so every character here is width taken off the
+// names beside it. `useScorelineFit` is what gives those names the abbreviation where
+// this line leaves them too little.
 .game-status__down,
 .game-status__outcome {
   grid-row: 3;
   color: var(--rak-text-secondary);
-  font-size: var(--rak-text-xs);
+  font-size: var(--rak-text-sm);
 }
 
 .game-status__missing {

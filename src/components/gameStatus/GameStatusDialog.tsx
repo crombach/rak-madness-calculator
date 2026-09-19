@@ -143,18 +143,26 @@ export default function GameStatusDialog({
    */
   onGameFinal?: () => void;
 }) {
-  const [game, setGame] = useState<WeekGame>();
+  const [chosen, setChosen] = useState<string>();
   const [query, setQuery] = useState("");
 
   // Held still between renders, since the combobox reads the chosen game back off
   // this list by identity.
   const games = useMemo(() => scores?.games ?? [], [scores]);
 
+  // The choice is kept as the column, and the game read back off the list on every
+  // render, so a rescore that replaces every game carries it forward. Keeping the
+  // object instead would leave the dialog on the pass the reader opened, which
+  // still has the game live after the rescore that going final set off.
+  const game = useMemo(
+    () => games.find((it) => it.label === chosen),
+    [games, chosen],
+  );
+
   // A column arriving from outside stands in for a choice made in the search.
   useArrival(named, (label) => {
-    const arrived = games.find((it) => it.label === label);
-    setGame(arrived);
-    setQuery(arrived?.name ?? label);
+    setChosen(label);
+    setQuery(games.find((it) => it.label === label)?.name ?? label);
   });
 
   const { shown, isGameLoading } = useLiveGame({
@@ -182,7 +190,7 @@ export default function GameStatusDialog({
           items={games}
           filteredItems={matching(games, query, gameSearchText)}
           value={game}
-          onValueChange={setGame}
+          onValueChange={(next) => setChosen(next.label)}
           query={query}
           onQueryChange={setQuery}
           // The game alone. The column is what the list is read by and what the

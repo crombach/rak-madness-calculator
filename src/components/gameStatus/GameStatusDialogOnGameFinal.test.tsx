@@ -23,6 +23,9 @@ const proGame: WeekGame = {
 
 const scores: RakMadnessScores = { scores: [], games: [proGame] };
 
+/** The other game's ESPN event, which every fixture but that one shares. */
+const SECOND_EVENT_ID = "2";
+
 /**
  * `onGameFinal` is what wires the dialog's own live poll back into the week's
  * scores. `ResultsFrame` passes it `rescore`, which scores the workbook already in
@@ -54,6 +57,85 @@ describe("GameStatusDialog onGameFinal", () => {
     // Final stops the poll, so a further wait cannot call it again.
     await vi.advanceTimersByTimeAsync(POLL_MS * 3);
     expect(onGameFinal).toHaveBeenCalledTimes(1);
+
+    vi.useRealTimers();
+  });
+
+  it("stops after the rescore its own final sets off", async () => {
+    vi.useFakeTimers();
+    const onGameFinal = vi.fn();
+    getLeagueResultMock.mockResolvedValue(
+      liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 }),
+    );
+
+    const { rerender } = render(dialog(undefined, false, scores, onGameFinal));
+    rerender(dialog("P1", true, scores, onGameFinal));
+    await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
+
+    getLeagueResultMock.mockResolvedValue(
+      finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 14 }),
+    );
+    await vi.advanceTimersByTimeAsync(POLL_MS);
+    expect(onGameFinal).toHaveBeenCalledTimes(1);
+
+    // What the rescore hands back: a new list, every game in it a new object. This
+    // one still has the game live, which is the worst its own read of ESPN can be.
+    const rescored: RakMadnessScores = { scores: [], games: [{ ...proGame }] };
+    rerender(dialog("P1", true, rescored, onGameFinal));
+    await vi.advanceTimersByTimeAsync(POLL_MS * 4);
+
+    // Announced once, so the rescore cannot set off the next one.
+    expect(onGameFinal).toHaveBeenCalledTimes(1);
+    expect(
+      await screen.findByRole("img", { name: "Final" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("progressbar")).toBeNull();
+
+    vi.useRealTimers();
+  });
+
+  it("announces each game once, however often the reader goes back to one", async () => {
+    vi.useFakeTimers();
+    const onGameFinal = vi.fn();
+    const live = () =>
+      liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 });
+    // Two games rather than one, each on its own ESPN event, since what is
+    // announced is the event and not the column it was opened on.
+    const second: WeekGame = {
+      label: "P2",
+      league: League.PRO,
+      name: "DAL @ PHI",
+      result: { ...live(), id: SECOND_EVENT_ID },
+    };
+    const both: RakMadnessScores = { scores: [], games: [proGame, second] };
+    getLeagueResultMock.mockResolvedValue(live());
+
+    const { rerender } = render(dialog(undefined, false, both, onGameFinal));
+    rerender(dialog("P1", true, both, onGameFinal));
+    await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
+
+    // Answered by the event asked about, so each game's final names its own teams.
+    getLeagueResultMock.mockImplementation(async (_league, _week, eventId) =>
+      eventId === SECOND_EVENT_ID
+        ? finalGame({ home: "PHI", away: "DAL", homeScore: 20, awayScore: 17 })
+        : finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 14 }),
+    );
+    await vi.advanceTimersByTimeAsync(POLL_MS);
+    expect(onGameFinal).toHaveBeenCalledTimes(1);
+
+    // The rescore each final sets off, whose own read of ESPN still has both live.
+    const rescored: RakMadnessScores = {
+      scores: [],
+      games: [{ ...proGame }, { ...second }],
+    };
+    rerender(dialog("P2", true, rescored, onGameFinal));
+    await vi.advanceTimersByTimeAsync(POLL_MS);
+    expect(onGameFinal).toHaveBeenCalledTimes(2);
+
+    // Back to the first game, which was announced before the second one was.
+    rerender(dialog("P1", true, rescored, onGameFinal));
+    await vi.advanceTimersByTimeAsync(POLL_MS * 4);
+    expect(onGameFinal).toHaveBeenCalledTimes(2);
 
     vi.useRealTimers();
   });

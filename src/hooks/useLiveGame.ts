@@ -81,6 +81,13 @@ export default function useLiveGame({
     result: LeagueResult;
   }>();
   const [fetching, setFetching] = useState(false);
+  // Every game whose final has already been announced. The rescore `onGameFinal` sets
+  // off replaces every game, which restarts the poll below, and the same game would
+  // otherwise be announced final again on the first answer and rescore without end.
+  //
+  // A set rather than the last id, since a reader can go back to a game they have
+  // already watched finish, and one slot would have forgotten it by then.
+  const announced = useRef(new Set<string>());
 
   // The pieces the fetch needs, rather than the game itself, so a rebuilt object
   // cannot restart the poll on every render.
@@ -135,7 +142,8 @@ export default function useLiveGame({
         kickoff = kickoffAt(result);
         if (result == null || result.status !== GameStatus.FINAL) {
           timer = window.setTimeout(poll, POLL_MS);
-        } else {
+        } else if (!announced.current.has(eventId)) {
+          announced.current.add(eventId);
           onFinal.current?.();
         }
       };
