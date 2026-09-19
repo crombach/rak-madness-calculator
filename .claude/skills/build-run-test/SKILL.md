@@ -36,7 +36,7 @@ Prefer the layer below them. A branch of `useWeekRouteGuard`, the wireframe's sh
 
 Writing a test here:
 
-- Fixture games come from `src/utils/scoring/leagueResultFixtures.ts` (`finalGame`, `upcomingGame`). Use them instead of hand-rolling a `LeagueResult`.
+- Fixture games come from `src/utils/scoring/leagueResultFixtures.ts` (`finalGame`, `liveGame`, `delayedGame`, `upcomingGame`). Use them instead of hand-rolling a `LeagueResult`.
 - Reading an exported workbook back flattens the fill onto `cell.s`, so assert `cell.s.fgColor.rgb`, not `cell.s.fill.fgColor.rgb`.
 - jsdom reports no layout: every rect is zero and `window.innerHeight` is 768. Anything that measures the page has its arithmetic tested apart from the hook that feeds it.
 - Mount through `mountApp` or `mountLoadedApp` in `src/appTestFixtures.tsx`, never by hand. They wrap `App` in `MemoryRouter`, `SettingsContextProvider`, `ToastContextProvider`, and `AppDataContextProvider`, with `Toaster` beside it. Toasts render in `Toaster`, so without it no toast assertion can pass.

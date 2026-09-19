@@ -50,8 +50,9 @@ function competitor(abbr, homeAway, score) {
  * @param {number} awayScore
  * @param {"1"|"2"|"3"|"7"} statusId upcoming, live, final, or delayed (`GameStatus`)
  * @param {number} [period] which quarter a delayed game stopped in, `0` before
- *   kickoff. ESPN sends one either way, and the app says the quarter beside the
- *   word only where a quarter was played.
+ *   kickoff. ESPN sends one either way. Pass it on every `"7"`, since the app
+ *   says the quarter beside the word only where a quarter was played, and an
+ *   event built without one reads `Delayed` whatever the game had reached.
  */
 export function makeGame(
   id,
