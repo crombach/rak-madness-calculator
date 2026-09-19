@@ -104,7 +104,7 @@ describe("GameStatusDialog onStatusChange", () => {
     vi.useRealTimers();
   });
 
-  it("announces each game once, however often the reader goes back to one", async () => {
+  it("says nothing about a state it already announced, however often the reader goes back to a game", async () => {
     vi.useFakeTimers();
     const onStatusChange = vi.fn();
     const live = () =>

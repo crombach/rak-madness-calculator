@@ -10,7 +10,7 @@ const WEEK = 5;
 // the mocked fetch and rescoring pass to land. Move this whenever the app moves
 // `POLL_MS`. Never move `POLL_MS` itself to make this recording shorter, since
 // the recording is worth having only while the poll it waits out is the real one.
-const POLL_WAIT_MS = 16_000;
+const POLL_WAIT_MS = 21_000;
 
 const ROWS = [
   {
@@ -110,10 +110,10 @@ function events(gameOneFinal) {
 /**
  * Opens the Game Status dialog on a still-live pick, then does nothing until
  * the dialog's own background poll (not a click, not the navbar refresh
- * button) discovers the game went final. Proves `useLiveGame`'s `onFinal` ->
- * `GameStatusDialog`'s `onGameFinal` -> `ResultsFrame`'s `refresh` wiring: the
- * table's pick colors update and its `.table__cell-wipe` animation plays on
- * their own.
+ * button) discovers the game went final. Proves `useLiveGame`'s `onMoved` ->
+ * `GameStatusDialog`'s `onStatusChange` -> `ResultsLayout`'s `rescore` wiring:
+ * the table's pick colors update and its `.table__cell-wipe` animation plays
+ * on their own.
  */
 export default async function run({ page, context, baseUrl }) {
   const state = { gameOneFinal: false };
