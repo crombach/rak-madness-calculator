@@ -7,7 +7,6 @@ import {
   RakMadnessScores,
   Status,
 } from "../../../types/RakMadnessScores";
-import { GameStatus } from "../../../types/ESPN";
 import { League } from "../../../types/League";
 import { LeagueResult } from "../../../types/LeagueResult";
 import { WeekGame } from "../../../types/WeekGame";
@@ -19,6 +18,7 @@ import {
   SettingsContextProvider,
 } from "../../../context/SettingsContext";
 import {
+  delayedGame,
   finalGame,
   liveGame,
   upcomingGame,
@@ -400,15 +400,6 @@ describe("PicksTable, live games", () => {
     };
   }
 
-  /** Kicked off, then stopped, which ESPN reports with the state a live game has. */
-  function delayedGame(): LeagueResult {
-    return {
-      ...liveGame({ home: "CLEM", away: "UNC", homeScore: 10, awayScore: 3 }),
-      status: GameStatus.DELAYED,
-      detailMessage: "Delayed",
-    };
-  }
-
   // C1 is being played and P3 has stopped. The other three cover every state a
   // heading says nothing about: yet to kick off, over, and a column ESPN listed no
   // game for.
@@ -425,7 +416,16 @@ describe("PicksTable, live games", () => {
         finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 20 }),
       ),
       game("P2"),
-      game("P3", delayedGame()),
+      game(
+        "P3",
+        delayedGame({
+          home: "CLEM",
+          away: "UNC",
+          homeScore: 10,
+          awayScore: 3,
+          period: 4,
+        }),
+      ),
     ],
   };
 

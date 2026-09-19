@@ -62,17 +62,19 @@ export function makeGame(
   statusId,
   period,
 ) {
+  // An id neither table names reads as scheduled, the way every id but `2` and `3`
+  // did before there were tables.
   const DETAIL = {
     1: "Scheduled",
     2: "3rd Quarter",
     3: "Final",
     7: "Delayed",
   };
-  const detail = DETAIL[statusId];
+  const detail = DETAIL[statusId] ?? DETAIL[1];
   // What the app reads to tell a game underway from one not started or over. ESPN
   // calls a delayed game `in` as well, though nobody is playing.
   const STATE = { 1: "pre", 2: "in", 3: "post", 7: "in" };
-  const state = STATE[statusId];
+  const state = STATE[statusId] ?? STATE[1];
   return {
     id,
     name: `${awayAbbr} at ${homeAbbr}`,

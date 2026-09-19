@@ -5,12 +5,12 @@ import {
   within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { GameStatus } from "../../types/ESPN";
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
 import {
+  delayedGame,
   finalGame,
   liveGame,
   upcomingGame as upcomingGameFixture,
@@ -61,13 +61,14 @@ const upcomingGame = withEspnDetails(
   upcomingGameFixture({ home: "PHI", away: "DAL" }),
   "403",
 );
-/** Kicked off, then stopped, which ESPN reports with the state a live game has. */
-const delayedGame = withEspnDetails(
-  {
-    ...liveGame({ home: "CLEM", away: "UNC", homeScore: 10, awayScore: 3 }),
-    status: GameStatus.DELAYED,
-    detailMessage: "Delayed",
-  },
+const delayed = withEspnDetails(
+  delayedGame({
+    home: "CLEM",
+    away: "UNC",
+    homeScore: 10,
+    awayScore: 3,
+    period: 4,
+  }),
   "404",
 );
 
@@ -100,8 +101,8 @@ const games: Array<WeekGame> = [
   {
     label: "P3",
     league: League.PRO,
-    name: delayedGame.shortName,
-    result: delayedGame,
+    name: delayed.shortName,
+    result: delayed,
   },
 ];
 
