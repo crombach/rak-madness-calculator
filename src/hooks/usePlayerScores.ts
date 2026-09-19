@@ -114,6 +114,14 @@ export default function usePlayerScores(
   // rescore is far the quicker of the two, so the first one out must not stop the
   // button on behalf of the one still working.
   const passesRunning = useRef(0);
+  // A rescore a pass in flight turned away. One flag rather than a queue, since
+  // every rescore reads the same workbook against the same week, so a second one
+  // would do the first one's work again.
+  const isRescorePending = useRef(false);
+  // `rescore` itself, so a pass can run the one it turned away on its way out.
+  // Held in a ref because what drains it is `attemptScoring`, which `scoreWeek`
+  // and `rescore` are both built on.
+  const pendingRescore = useRef<(() => Promise<void>) | undefined>(undefined);
   // The scores an attempt can be diffed against, and the week and season they are
   // for. A week or season switch leaves this behind, so the new week's first
   // score is never read as a change from the old week's last one.
@@ -149,6 +157,14 @@ export default function usePlayerScores(
     previousScores.current = undefined;
     showScoreChanges(NO_SCORE_CHANGES);
   }, [showScoreChanges]);
+
+  // Runs a rescore a pass turned away, now that that pass is over. Called at the
+  // end of every pass, since the two flags a rescore yields to are cleared in two
+  // different places.
+  const drainRescore = useCallback(() => {
+    if (!isRescorePending.current) return;
+    void pendingRescore.current?.();
+  }, []);
 
   const attemptScoring = useCallback(
     async ({
@@ -213,11 +229,26 @@ export default function usePlayerScores(
           setScoresLoading(false);
           setAttemptedFor(attempted);
           isAttemptInFlight.current = false;
+          drainRescore();
         }
       }
     },
-    [selectedWeek, season, showToast, clearScores, showScoreChanges],
+    [
+      selectedWeek,
+      season,
+      showToast,
+      clearScores,
+      showScoreChanges,
+      drainRescore,
+    ],
   );
+
+  // A game that went final in the week the reader has left is not the week they
+  // moved to. Declared over the effect that scores the new week, so the flag is
+  // gone before that week's own pass could drain it.
+  useEffect(() => {
+    isRescorePending.current = false;
+  }, [selectedWeek, season]);
 
   useEffect(() => {
     if (!selectedWeek || season == null) return;
@@ -344,16 +375,28 @@ export default function usePlayerScores(
       await scoreWeek(true);
     } finally {
       isRefreshInFlight.current = false;
+      drainRescore();
     }
-  }, [scoreWeek]);
+  }, [scoreWeek, drainRescore]);
 
   /** What a game polled final asks for: the same workbook, scored against it again. */
   const rescore = useCallback(async () => {
     // Nobody asked for this one, so it yields to anything already running rather
-    // than superseding it.
-    if (isAttemptInFlight.current || isRefreshInFlight.current) return;
+    // than superseding it. The request is held rather than dropped, and whichever
+    // pass turned it away runs it on its way out. A game is final once, so the
+    // poll that saw it never asks again, and a dropped request would leave the
+    // table on the old outcome until the reader refreshed.
+    if (isAttemptInFlight.current || isRefreshInFlight.current) {
+      isRescorePending.current = true;
+      return;
+    }
+    isRescorePending.current = false;
     await scoreWeek(false);
   }, [scoreWeek]);
+
+  useEffect(() => {
+    pendingRescore.current = rescore;
+  }, [rescore]);
 
   return useMemo(
     () => ({

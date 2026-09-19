@@ -273,6 +273,45 @@ describe("usePlayerScores, refresh", () => {
     );
   });
 
+  it("runs a rescore the pass in flight turned away", async () => {
+    // A game goes final while a refresh is reading the sheet. The rescore yields
+    // to that refresh, but a game is final once, so the poll never asks again. If
+    // the refresh's own read of ESPN missed the final, nothing else would reach
+    // the table before the reader refreshed by hand.
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+    const scoringCallsBefore = getPlayerScoresMock.mock.calls.length;
+
+    let releaseSheet: () => void = () => {};
+    global.fetch = vi.fn(
+      async () =>
+        new Promise((resolve) => {
+          releaseSheet = () => resolve(spreadsheetResponse());
+        }),
+    ) as unknown as typeof fetch;
+
+    let asked: Promise<unknown> | undefined;
+    await act(async () => {
+      asked = result.current.refresh();
+      // Turned away, since the refresh holds the sheet open.
+      await result.current.rescore();
+    });
+    expect(getPlayerScoresMock).toHaveBeenCalledTimes(scoringCallsBefore);
+
+    await act(async () => {
+      releaseSheet();
+      await asked;
+    });
+
+    // The refresh scored once, and the rescore it turned away scored after it.
+    await waitFor(() =>
+      expect(getPlayerScoresMock).toHaveBeenCalledTimes(scoringCallsBefore + 2),
+    );
+  });
+
   it("keeps the button turning until the last pass over the week is done", async () => {
     // A rescore and a refresh can run together, and the rescore is far the
     // quicker of the two. Whichever finishes first must not stop the button on
