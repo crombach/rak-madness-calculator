@@ -218,8 +218,12 @@ $ink-rise-warning: math.div(20, 960);
   @include ink-height(var(--rak-caps-ink), $ink-share-event);
 }
 
+// The dot's own red, not the word's. The live pill beside it draws its dot in
+// that token, so the two shapes are the one red and only the words are darker.
 .game-status__mark.--delayed .game-status__mark-icon svg {
   @include ink-height(var(--rak-caps-ink), $ink-share-pause);
+
+  fill: var(--rak-live-dot);
 }
 
 // Already cropped to its own edges rather than a square Material box, so it fills the
