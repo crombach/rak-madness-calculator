@@ -359,10 +359,11 @@
   // with its own fixed dark text, and the two need to move independently once
   // dark mode darkens this cell instead of the mark.
   --rak-cell-unscoreable: var(--rak-warning-300);
-  // The game dialog's own marks (`--live`, `--invalid`, `--final`, `--upcoming`),
-  // each its own token rather than a direct read of the ramp step it shares with
-  // a toast variant: `Toaster.scss` keeps its own pale fill in both modes, so the
-  // two need to move independently once dark mode darkens a mark instead.
+  // The game dialog's own marks (`--live`, `--invalid`, `--final`, `--upcoming`,
+  // `--delayed`), each its own token rather than a direct read of the ramp step it
+  // shares with a toast variant: `Toaster.scss` keeps its own pale fill in both
+  // modes, so the two need to move independently once dark mode darkens a mark
+  // instead.
   --rak-mark-live-bg: var(--rak-danger-100);
   --rak-mark-live-text: var(--rak-danger-600);
   --rak-mark-invalid-bg: var(--rak-warning-300);
@@ -371,6 +372,10 @@
   --rak-mark-final-text: var(--rak-success-600);
   --rak-mark-upcoming-bg: var(--rak-neutral-100);
   --rak-mark-upcoming-text: var(--rak-neutral-700);
+  // The pale blue a player still in contention is filled with, which is the one
+  // hue in the app that says a thing is neither running nor settled.
+  --rak-mark-delayed-bg: var(--rak-in-contention-300);
+  --rak-mark-delayed-text: var(--rak-info-700);
   // The dot for a game being played, read by the mark inside the dialog's live
   // pill and by the picks table's column heading alike, so the two are the one
   // red. A step per mode, since 1.4.11 asks 3:1 of a shape that carries meaning
@@ -777,6 +782,9 @@ html {
   --rak-mark-final-text: var(--rak-text);
   --rak-mark-upcoming-bg: #3d3d3d;
   --rak-mark-upcoming-text: var(--rak-text);
+  // The blue above darkens with the contention cell it is read from, so only the
+  // ink on it is said again here.
+  --rak-mark-delayed-text: var(--rak-text);
 
   // The toast's own darkened fills, off the same hues as their light
   // pastel. `primary` and `neutral` are both gray chrome, so they take the

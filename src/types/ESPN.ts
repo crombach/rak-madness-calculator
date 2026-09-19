@@ -7,6 +7,12 @@ export enum GameStatus {
   UPCOMING = "1",
   LIVE = "2",
   FINAL = "3",
+  /**
+   * A game that has stopped, whether before kickoff or part way through. ESPN sends
+   * it with a state of `in`, the same state a game being played carries, so it is
+   * modeled here rather than left to fall through as postponed and canceled do.
+   */
+  DELAYED = "7",
 }
 
 export type EspnEvent = {
@@ -21,11 +27,12 @@ export type EspnEvent = {
 /** Whether a game has yet to start, is underway, or is over. */
 export type EspnState = "pre" | "in" | "post";
 
-/** The state ESPN sends beside each of the three ids above. */
+/** The state ESPN sends beside each of the ids above. */
 export const ESPN_STATE: Record<GameStatus, EspnState> = {
   [GameStatus.UPCOMING]: "pre",
   [GameStatus.LIVE]: "in",
   [GameStatus.FINAL]: "post",
+  [GameStatus.DELAYED]: "in",
 };
 
 export type EspnStatus = {
@@ -35,7 +42,7 @@ export type EspnStatus = {
   displayClock?: string;
   type: {
     /**
-     * ESPN's fine-grained status. Far more ids than the three above: halftime,
+     * ESPN's fine-grained status. Far more ids than the ones above: halftime,
      * the end of a quarter, postponed and canceled each have their own.
      */
     id: GameStatus;

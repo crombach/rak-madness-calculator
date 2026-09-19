@@ -5,7 +5,7 @@
 
 // CheckIcon's own aspect in Icon.tsx, `viewBox="257 -654 451 333"`. Named once
 // here because the slot below is sized to it whichever mark is showing, not
-// only when the checkmark itself is. It is the widest of the four shapes.
+// only when the checkmark itself is. It is the widest of the five shapes.
 $check-icon-ratio: math.div(451, 333);
 
 // How wide each shape's ink runs inside its own box, as a share of it. Read off
@@ -15,6 +15,7 @@ $check-icon-ratio: math.div(451, 333);
 // padded against. The checkmark fills its own box across, so it needs no share here.
 $ink-across-event: 0.75;
 $ink-across-warning: math.div(880, 960);
+$ink-across-pause: math.div(800, 960);
 
 // The room the mono face leaves to the right of a capital, past that letter's ink.
 // Measured in a browser, since a stylesheet cannot read a side bearing off a font.
@@ -69,9 +70,9 @@ $cap-right-bearing: 0.065em;
   font-size: var(--rak-text-sm);
 }
 
-// What every mark is shaped like, the four sharing everything but their hue.
+// What every mark is shaped like, the five sharing everything but their hue.
 //
-// Monospace, and every word four letters, so all four come out the same size. Set in
+// Monospace, and every word four letters, so all five come out the same size. Set in
 // the body face, `WARN` would run wider than `LIVE` and the list's right edge would
 // step in and out as a game kicked off.
 @mixin mark-pill($background, $foreground, $ink) {
@@ -136,6 +137,18 @@ $cap-right-bearing: 0.065em;
     );
   }
 
+  // The pause circle's ink is that circle, so its box is square and divides the
+  // same way across as it does down.
+  &.--delayed {
+    @include mark-pill(
+      var(--rak-mark-delayed-bg),
+      var(--rak-mark-delayed-text),
+      calc(
+        var(--rak-caps-ink) * #{math.div($ink-across-pause, $ink-share-pause)}
+      )
+    );
+  }
+
   // Quiet beside the other three, since a game yet to kick off is nothing the pool
   // can act on.
   &.--upcoming {
@@ -158,7 +171,7 @@ $cap-right-bearing: 0.065em;
 }
 
 // One width for every mark's shape, the checkmark's own, which is the widest of the
-// four. So a pill's width comes from its word alone, never from which shape happens
+// five. So a pill's width comes from its word alone, never from which shape happens
 // to sit beside it. Narrower shapes center inside it rather than filling it.
 .game-status__mark-icon {
   display: flex;
@@ -199,6 +212,10 @@ $ink-rise-warning: math.div(20, 960);
 
 .game-status__mark.--upcoming .game-status__mark-icon svg {
   @include ink-height(var(--rak-caps-ink), $ink-share-event);
+}
+
+.game-status__mark.--delayed .game-status__mark-icon svg {
+  @include ink-height(var(--rak-caps-ink), $ink-share-pause);
 }
 
 // Already cropped to its own edges rather than a square Material box, so it fills the

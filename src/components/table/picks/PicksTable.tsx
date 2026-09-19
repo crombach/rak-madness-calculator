@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, ReactNode } from "react";
 import { useScoreChanges } from "../../../context/AppDataContext";
 import { useShowGameStatus } from "../../../context/GameStatusContext";
 import { GameStatus } from "../../../types/ESPN";
@@ -14,6 +14,7 @@ import {
   pickChangeKey,
 } from "../../../utils/scoring/gameColumns";
 import { fillStatus } from "../../../utils/scoring/getPickResults";
+import { PauseCircleIcon } from "../../icon/Icon";
 import PlayerName from "../playerName/PlayerName";
 import TableShell, {
   PICK_COL_CLASS,
@@ -37,37 +38,66 @@ const PICK_STATUS_LABEL: Partial<Record<Status, string>> = {
   unscoreable: "Unscoreable",
 };
 
+/**
+ * What a column heading wears, for the two states a reader watching the table is
+ * waiting on. Every other state is the cells' own fill to say.
+ *
+ * The same shapes the game dialog's marks use, so a dot and a pause mean the same
+ * thing wherever a reader meets them.
+ */
+const HEADING_MARK: Partial<
+  Record<GameStatus, { mark: ReactNode; word: string }>
+> = {
+  [GameStatus.LIVE]: {
+    mark: <span className="table__live-dot" aria-hidden="true" />,
+    word: "Live",
+  },
+  [GameStatus.DELAYED]: {
+    mark: (
+      <span className="table__delay-icon" aria-hidden="true">
+        <PauseCircleIcon />
+      </span>
+    ),
+    word: "Delayed",
+  },
+};
+
 function leagueHeaders({
   labels,
-  liveLabels,
+  statusByLabel,
   onClick,
 }: {
   labels: Array<string>;
-  liveLabels: Set<string>;
+  /** Where each column's game stands, for the headings a mark is drawn on. */
+  statusByLabel: Map<string, GameStatus>;
   onClick: (gameLabel: string) => void;
 }) {
-  return labels.map((header) => (
-    // The class is what gives a game's column its width, which the wireframe gives
-    // the same column before there is a game in it.
-    <th key={header} className={PICK_COL_CLASS} scope="col">
-      {/* Opens the same game every cell under this heading opens, which is the
-          one row of the column a reader with no pick of their own can reach. */}
-      <button
-        type="button"
-        className="table__cell-button"
-        onClick={() => onClick(header)}
-      >
-        {/* Before the label, where the dialog's own live mark carries its dot. */}
-        {liveLabels.has(header) && (
-          <span className="table__live-dot" aria-hidden="true" />
-        )}
-        {header}
-        {/* A column heading is read out again on every cell under it, so this
-            reaches a reader on any pick in the game, not just the heading. */}
-        {liveLabels.has(header) && <span className="table__sr-only">Live</span>}
-      </button>
-    </th>
-  ));
+  return labels.map((header) => {
+    const status = statusByLabel.get(header);
+    const heading = status != null ? HEADING_MARK[status] : undefined;
+    return (
+      // The class is what gives a game's column its width, which the wireframe gives
+      // the same column before there is a game in it.
+      <th key={header} className={PICK_COL_CLASS} scope="col">
+        {/* Opens the same game every cell under this heading opens, which is the
+            one row of the column a reader with no pick of their own can reach. */}
+        <button
+          type="button"
+          className="table__cell-button"
+          onClick={() => onClick(header)}
+        >
+          {/* Before the label, where the dialog's own mark carries its shape. */}
+          {heading?.mark}
+          {header}
+          {/* A column heading is read out again on every cell under it, so this
+              reaches a reader on any pick in the game, not just the heading. */}
+          {heading != null && (
+            <span className="table__sr-only">{heading.word}</span>
+          )}
+        </button>
+      </th>
+    );
+  });
 }
 
 function PickCell({
@@ -161,13 +191,14 @@ function PicksTable({ scores }: { scores?: RakMadnessScores | null }) {
   const collegeLabels = leagueLabels(collegeCount, "college");
   const proLabels = leagueLabels(proCount, "pro");
   // The label is the one thing a game and the column it was picked in share, and
-  // it is what the dialog matches on too. Tested against `LIVE` rather than away
-  // from `FINAL`, because the statuses ESPN has that this app does not model,
-  // postponed among them, fall straight through the enum.
-  const liveLabels = new Set(
-    (scores.games ?? [])
-      .filter((game) => game.result?.status === GameStatus.LIVE)
-      .map((game) => game.label),
+  // it is what the dialog matches on too. Every game's status is kept, and
+  // `HEADING_MARK` is what decides which of them a heading says anything about, so
+  // a status ESPN has that this app does not model draws nothing rather than
+  // passing for one it does.
+  const statusByLabel = new Map(
+    (scores.games ?? []).flatMap((game) =>
+      game.result != null ? [[game.label, game.result.status] as const] : [],
+    ),
   );
 
   return (
@@ -182,13 +213,13 @@ function PicksTable({ scores }: { scores?: RakMadnessScores | null }) {
           </th>
           {leagueHeaders({
             labels: collegeLabels,
-            liveLabels,
+            statusByLabel,
             onClick: showGameStatus,
           })}
           <th scope="col">College Score</th>
           {leagueHeaders({
             labels: proLabels,
-            liveLabels,
+            statusByLabel,
             onClick: showGameStatus,
           })}
           <th scope="col">Pro Score</th>

@@ -5,6 +5,7 @@ import {
   within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { GameStatus } from "../../types/ESPN";
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
@@ -60,6 +61,15 @@ const upcomingGame = withEspnDetails(
   upcomingGameFixture({ home: "PHI", away: "DAL" }),
   "403",
 );
+/** Kicked off, then stopped, which ESPN reports with the state a live game has. */
+const delayedGame = withEspnDetails(
+  {
+    ...liveGame({ home: "CLEM", away: "UNC", homeScore: 10, awayScore: 3 }),
+    status: GameStatus.DELAYED,
+    detailMessage: "Delayed",
+  },
+  "404",
+);
 
 const games: Array<WeekGame> = [
   {
@@ -87,6 +97,12 @@ const games: Array<WeekGame> = [
     name: upcomingGame.shortName,
     result: upcomingGame,
   },
+  {
+    label: "P3",
+    league: League.PRO,
+    name: delayedGame.shortName,
+    result: delayedGame,
+  },
 ];
 
 const scores: RakMadnessScores = { scores: [], games };
@@ -107,6 +123,7 @@ describe("the games a query offers", () => {
       "C2",
       "P1",
       "P2",
+      "P3",
     ]);
   });
 
@@ -208,8 +225,8 @@ describe("GameStatusDialog", () => {
     await user.click(screen.getByRole("combobox", { name: "Game" }));
 
     // Every entry says where its game stands: the live game LIVE, the one that is
-    // over a tick, the one yet to start a calendar, and the column ESPN has no game
-    // for a warning.
+    // over a tick, the one yet to start a calendar, the one ESPN has stopped a
+    // pause, and the column ESPN has no game for a warning.
     await screen.findByRole("option", { name: /KC @ BUF/ });
 
     // Under the search, whatever room is left below it, so the list never covers the
@@ -230,6 +247,7 @@ describe("GameStatusDialog", () => {
       ["Not listed by ESPN"],
       ["Live"],
       ["Yet to kick off"],
+      ["Delayed"],
     ]);
     expect(
       within(screen.getByRole("option", { name: /DAL @ PHI/ })).getByTestId(
@@ -242,6 +260,7 @@ describe("GameStatusDialog", () => {
       "WARN",
       "LIVE",
       "SOON",
+      "DLAY",
     ]);
 
     await user.click(screen.getByRole("option", { name: /DAL @ PHI/ }));

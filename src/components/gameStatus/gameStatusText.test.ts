@@ -51,6 +51,30 @@ describe("detailText", () => {
     expect(detailText({ ...LIVE, period: 2, clock: "0:00" })).toBe("Halftime");
   });
 
+  it("says a game stopped part way through over the quarter it stopped in", () => {
+    const delayed = {
+      ...LIVE,
+      status: GameStatus.DELAYED,
+      period: 4,
+      clock: "8:11",
+      detailMessage: "Delayed",
+    };
+    expect(detailText(delayed)).toBe("Delayed Q4");
+  });
+
+  it("says a game stopped before kickoff in the word alone, not as a quarter", () => {
+    // ESPN sends a period of zero for a game no quarter has been played in, which
+    // read as a quarter would come out `Q0`.
+    const delayed = {
+      ...UPCOMING,
+      status: GameStatus.DELAYED,
+      period: 0,
+      clock: "0:00",
+      detailMessage: "Delayed",
+    };
+    expect(detailText(delayed)).toBe("Delayed");
+  });
+
   it("keeps ESPN's own word for a stage the app has no short form for", () => {
     const postponed = {
       ...UPCOMING,

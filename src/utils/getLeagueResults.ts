@@ -208,16 +208,21 @@ function gameVenue(venue?: EspnVenue): string | undefined {
 }
 
 /**
- * ESPN's status for a game, as the three the app models.
+ * ESPN's status for a game, as the four the app models.
  *
  * `state` is what says a game is underway, not `id`: halftime and the end of a
  * quarter carry ids of their own, and off the id alone a game at the half is
- * neither live nor final.
+ * neither live nor final. A delayed game is the one state that state gets wrong.
+ * ESPN calls it `in` as well, though nobody is playing, so it is read off the id
+ * before the state is asked.
  *
  * Everything else keeps its id, so a postponed or canceled game still falls
- * through all three rather than passing for one of them.
+ * through all four rather than passing for one of them.
  */
 function gameStatus({ type }: EspnStatus): GameStatus {
+  if (type.id === GameStatus.DELAYED) {
+    return GameStatus.DELAYED;
+  }
   return type.state === "in" ? GameStatus.LIVE : type.id;
 }
 
