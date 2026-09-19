@@ -25,6 +25,12 @@ export const LOADING_MS = 500;
  * `null` for a game under way, which is asked about on every tick, and for a
  * kickoff `Date` ESPN gave nothing to parse, which no comparison can answer.
  */
+export function kickoffAt(result: LeagueResult | null): number | null {
+  if (result?.status !== GameStatus.UPCOMING) return null;
+  const kickoff = result.date.getTime();
+  return Number.isFinite(kickoff) ? kickoff : null;
+}
+
 /**
  * Everything the picks table draws off a game: the mark on its column heading, and
  * the score every pick under that heading is scored against.
@@ -34,12 +40,6 @@ export const LOADING_MS = 500;
  */
 function tableState(result: LeagueResult): string {
   return `${result.status}:${result.home.score}-${result.away.score}`;
-}
-
-export function kickoffAt(result: LeagueResult | null): number | null {
-  if (result?.status !== GameStatus.UPCOMING) return null;
-  const kickoff = result.date.getTime();
-  return Number.isFinite(kickoff) ? kickoff : null;
 }
 
 /**
