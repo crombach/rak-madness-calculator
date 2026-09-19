@@ -148,6 +148,17 @@ describe("getPickResults, game state", () => {
     expect(result.explanation.downDistanceText).toBe("2nd & 7");
   });
 
+  it("marks a delayed game incomplete and says so instead of calling it live", () => {
+    const delayed: LeagueResult = {
+      ...bufBeatKcBy10,
+      status: GameStatus.DELAYED,
+      detailMessage: "Delayed",
+    };
+    const result = getPickResults(["BUF"], byTeam([delayed]))[0];
+    expect(result.isFinal).toBe(false);
+    expect(result.explanation.header).toBe("Delayed");
+  });
+
   it("marks an upcoming game incomplete", () => {
     const upcoming: LeagueResult = {
       ...bufBeatKcBy10,
@@ -182,7 +193,7 @@ describe("getPickResults, game state", () => {
   });
 });
 
-// GameStatus models only UPCOMING, LIVE, and FINAL, but `status` is assigned
+// GameStatus models UPCOMING, LIVE, DELAYED, and FINAL, but `status` is assigned
 // straight from ESPN's `status.type.id`, which has ids for postponed, canceled,
 // and other states. Those reach the same default branch as a live game, so the
 // header reads "Live Score" and ESPN's own detail message is what tells the

@@ -217,7 +217,9 @@ function gameVenue(venue?: EspnVenue): string | undefined {
  * before the state is asked.
  *
  * Everything else keeps its id, so a postponed or canceled game still falls
- * through all four rather than passing for one of them.
+ * through all four rather than passing for one of them. Suspended (`8`) and rain
+ * delay (`17`) are stoppages too, and are knowingly left out: a game carrying one
+ * reads as live and says ESPN's own word for it under a quarter that has stopped.
  */
 function gameStatus({ type }: EspnStatus): GameStatus {
   if (type.id === GameStatus.DELAYED) {
