@@ -243,8 +243,8 @@ export default function usePlayerScores(
     ],
   );
 
-  // A game that went final in the week the reader has left is not the week they
-  // moved to. Declared over the effect that scores the new week, so the flag is
+  // A game that moved in the week the reader has left is not the week they moved
+  // to. Declared over the effect that scores the new week, so the flag is
   // gone before that week's own pass could drain it.
   useEffect(() => {
     isRescorePending.current = false;
@@ -328,9 +328,9 @@ export default function usePlayerScores(
           // uploaded is replaced by it, which is the point: the upload
           // stands in until the week reaches the database.
           //
-          // A game polled final asks for none of that. It rescores what is in
-          // hand, since the reader did not ask for anything and a sheet
-          // arriving under them is not what a settled game means.
+          // A game the poll saw move asks for none of that. It rescores what is
+          // in hand, since the reader did not ask for anything and a sheet
+          // arriving under them is not what a moved game means.
           loadPicks:
             !refetch && inHand != null
               ? async () => inHand
@@ -379,13 +379,13 @@ export default function usePlayerScores(
     }
   }, [scoreWeek, drainRescore]);
 
-  /** What a game polled final asks for: the same workbook, scored against it again. */
+  /** What a game the poll saw move asks for: the same workbook, scored again. */
   const rescore = useCallback(async () => {
     // Nobody asked for this one, so it yields to anything already running rather
     // than superseding it. The request is held rather than dropped, and whichever
-    // pass turned it away runs it on its way out. A game is final once, so the
-    // poll that saw it never asks again, and a dropped request would leave the
-    // table on the old outcome until the reader refreshed.
+    // pass turned it away runs it on its way out. The poll asks once for each
+    // state it finds, so it never asks again for a dropped one. The table would
+    // keep the state before it until the reader refreshed.
     if (isAttemptInFlight.current || isRefreshInFlight.current) {
       isRescorePending.current = true;
       return;

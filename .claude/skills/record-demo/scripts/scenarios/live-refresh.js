@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   buildPicksWorkbook,
   makeGame,
@@ -6,11 +9,33 @@ import {
 
 const SEASON = 2024;
 const WEEK = 5;
-// Real time, matching `POLL_MS` in `src/hooks/useLiveGame.ts`, plus slack for
-// the mocked fetch and rescoring pass to land. Move this whenever the app moves
-// `POLL_MS`. Never move `POLL_MS` itself to make this recording shorter, since
-// the recording is worth having only while the poll it waits out is the real one.
-const POLL_WAIT_MS = 16_000;
+
+/** Where the app names the interval this scenario has to wait out. */
+const POLL_SOURCE = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../../../..",
+  "src/hooks/useLiveGame.ts",
+);
+
+/**
+ * `POLL_MS`, read out of the hook rather than copied here.
+ *
+ * A copy went stale the one time the app moved the interval, and the scenario
+ * then stopped the recording before the poll it is about had fired.
+ */
+function pollMs() {
+  const source = fs.readFileSync(POLL_SOURCE, "utf8");
+  const found = source.match(/export const POLL_MS = ([\d_]+)/);
+  if (found == null) {
+    throw new Error(`No POLL_MS in ${POLL_SOURCE}`);
+  }
+  return Number(found[1].replaceAll("_", ""));
+}
+
+// Real time. One second over the poll itself, for the mocked fetch and the
+// rescoring pass to land. Never move `POLL_MS` to make this recording shorter,
+// since the recording is worth having only while the poll is the real one.
+const POLL_WAIT_MS = pollMs() + 1_000;
 
 const ROWS = [
   {
@@ -110,10 +135,10 @@ function events(gameOneFinal) {
 /**
  * Opens the Game Status dialog on a still-live pick, then does nothing until
  * the dialog's own background poll (not a click, not the navbar refresh
- * button) discovers the game went final. Proves `useLiveGame`'s `onFinal` ->
- * `GameStatusDialog`'s `onGameFinal` -> `ResultsFrame`'s `refresh` wiring: the
- * table's pick colors update and its `.table__cell-wipe` animation plays on
- * their own.
+ * button) discovers the game went final. Proves `useLiveGame`'s `onMoved` ->
+ * `GameStatusDialog`'s `onStatusChange` -> `ResultsLayout`'s `rescore` wiring:
+ * the table's pick colors update and its `.table__cell-wipe` animation plays
+ * on their own.
  */
 export default async function run({ page, context, baseUrl }) {
   const state = { gameOneFinal: false };

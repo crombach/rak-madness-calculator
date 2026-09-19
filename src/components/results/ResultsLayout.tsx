@@ -32,7 +32,7 @@ export default function ResultsLayout() {
         navigate(resultsPath(seasonParam, weekParam, next), { replace: true })
       }
       onRefresh={refresh}
-      onGameFinal={rescore}
+      onStatusChange={rescore}
       isRefreshing={isRefreshing}
       scores={scores}
       week={selectedWeek}
