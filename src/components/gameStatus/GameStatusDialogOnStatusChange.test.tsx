@@ -222,33 +222,50 @@ describe("GameStatusDialog onStatusChange", () => {
     await vi.advanceTimersByTimeAsync(POLL_MS * 2);
     expect(onStatusChange).toHaveBeenCalledTimes(1);
 
-    // The rescore lands, so the week now has the game stopped too.
-    const stopped: RakMadnessScores = {
-      scores: [],
-      games: [
-        {
-          ...proGame,
-          result: delayedGame({
-            home: "BUF",
-            away: "KC",
-            homeScore: 7,
-            awayScore: 0,
-            period: 3,
-          }),
-        },
-      ],
-    };
-    rerender(dialog("P1", true, stopped, onStatusChange));
-
-    // Play resumes, which is a second move and a second mark for the table.
+    // Play resumes, which is a second move and a second mark for the table. The
+    // rescore the first move set off has not landed, so the week's own copy still
+    // has the game live. What the poll last announced is what this is measured
+    // against, or a game going back to where the week has it would be read as a
+    // game that never moved. At the score the week already has, so the mark is the
+    // only thing that moved.
     getLeagueResultMock.mockResolvedValue(
-      liveGame({ home: "BUF", away: "KC", homeScore: 14, awayScore: 0 }),
+      liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 }),
     );
     await vi.advanceTimersByTimeAsync(POLL_MS);
     expect(onStatusChange).toHaveBeenCalledTimes(2);
     expect(
       await screen.findByRole("img", { name: "Live" }),
     ).toBeInTheDocument();
+
+    vi.useRealTimers();
+  });
+
+  it("says so when a live game's score moves", async () => {
+    // Every pick under the column is scored against this number, so a score the
+    // week does not have yet is a table full of outcomes that are out of date.
+    vi.useFakeTimers();
+    const onStatusChange = vi.fn();
+    getLeagueResultMock.mockResolvedValue(
+      liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 }),
+    );
+
+    const { rerender } = render(
+      dialog(undefined, false, scores, onStatusChange),
+    );
+    rerender(dialog("P1", true, scores, onStatusChange));
+    await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
+    expect(onStatusChange).not.toHaveBeenCalled();
+
+    getLeagueResultMock.mockResolvedValue(
+      liveGame({ home: "BUF", away: "KC", homeScore: 14, awayScore: 0 }),
+    );
+    await vi.advanceTimersByTimeAsync(POLL_MS);
+    expect(onStatusChange).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText("14")).toBeInTheDocument();
+
+    // The same score on the polls after it, which is not a move.
+    await vi.advanceTimersByTimeAsync(POLL_MS * 3);
+    expect(onStatusChange).toHaveBeenCalledTimes(1);
 
     vi.useRealTimers();
   });

@@ -7,7 +7,7 @@ import { getLeagueResult } from "../utils/getLeagueResults";
 import latestOnly from "../utils/latestOnly";
 
 /** How often a game still being played is asked about again. */
-export const POLL_MS = 15_000;
+export const POLL_MS = 20_000;
 
 /**
  * The floor on how long `isGameLoading` stays set.
@@ -25,6 +25,17 @@ export const LOADING_MS = 500;
  * `null` for a game under way, which is asked about on every tick, and for a
  * kickoff `Date` ESPN gave nothing to parse, which no comparison can answer.
  */
+/**
+ * Everything the picks table draws off a game: the mark on its column heading, and
+ * the score every pick under that heading is scored against.
+ *
+ * Compared as one string rather than field by field, since a move in any of them
+ * costs the week the same rescore.
+ */
+function tableState(result: LeagueResult): string {
+  return `${result.status}:${result.home.score}-${result.away.score}`;
+}
+
 export function kickoffAt(result: LeagueResult | null): number | null {
   if (result?.status !== GameStatus.UPCOMING) return null;
   const kickoff = result.date.getTime();
@@ -71,9 +82,10 @@ export default function useLiveGame({
    * `.table__cell-wipe` animations can catch up to what the dialog saw before
    * the next scheduled refresh would have.
    *
-   * Every move counts, not the final alone. A column heading wears a mark for a
-   * game being played and for one that has stopped, and a reader watching the
-   * table would otherwise be told about neither until they refreshed.
+   * Every move counts, not the final alone. A heading wears a mark for a game being
+   * played and for one that has stopped, and a score that moves past the line turns
+   * every pick under that heading, so a reader watching the table would otherwise be
+   * told about none of it until they refreshed.
    */
   onStatusChange?: () => void;
 }): { shown?: LeagueResult; isGameLoading: boolean } {
@@ -96,18 +108,18 @@ export default function useLiveGame({
   //
   // Keyed by game rather than held as one slot, since a reader can go back to a game
   // they have already watched move, and one slot would have forgotten it by then. It
-  // holds the latest status rather than every status, so a game that goes live, stops
+  // holds the latest state rather than every state, so a game that goes live, stops
   // and starts again is announced all three times.
-  const announced = useRef(new Map<string, GameStatus>());
+  const announced = useRef(new Map<string, string>());
 
   // The pieces the fetch needs, rather than the game itself, so a rebuilt object
   // cannot restart the poll on every render.
   const label = game?.label;
   const league = game?.league;
   const eventId = game?.result?.id;
-  // Where the week's own scores have this game, which is what a fresher answer is
+  // The game as the week's own scores have it, which is what a fresher answer is
   // measured against. A poll that agrees with it has nothing to announce.
-  const scored = game?.result?.status;
+  const scored = game?.result != null ? tableState(game.result) : undefined;
   // A game the week was scored on after it finished cannot come back any other way,
   // so it is shown as the scoring pass left it rather than asked about again.
   const settled =
@@ -154,12 +166,15 @@ export default function useLiveGame({
         // answer at all is asked about again, since the next week's list may hold
         // it.
         kickoff = kickoffAt(result);
-        if (
-          result != null &&
-          result.status !== scored &&
-          announced.current.get(eventId) !== result.status
-        ) {
-          announced.current.set(eventId, result.status);
+        // Measured against the last state announced for this game. The week's own
+        // copy stands in only until there is one. It is a scoring pass behind
+        // whenever the rescore an announcement set off has not landed. A game that
+        // goes back to where the week still has it would otherwise read as one
+        // that never moved.
+        const moved = result != null ? tableState(result) : undefined;
+        const last = announced.current.get(eventId) ?? scored;
+        if (moved != null && moved !== last) {
+          announced.current.set(eventId, moved);
           onMoved.current?.();
         }
         if (result == null || result.status !== GameStatus.FINAL) {

@@ -5,7 +5,7 @@ import { SEASON } from "../../weekFixtures";
 import GameStatusDialog from "./GameStatusDialog";
 
 /**
- * Shared by `GameStatusDialog.test.tsx` and `GameStatusDialogOnGameFinal.test.tsx`,
+ * Shared by `GameStatusDialog.test.tsx` and `GameStatusDialogOnStatusChange.test.tsx`,
  * which mock the same fetch and open the dialog the same way but cannot share a
  * file. Base UI leaves scroll-lock and focus guards behind a mounted dialog, which
  * puts a second dialog's own search out of reach.
