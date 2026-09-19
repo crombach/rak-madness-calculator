@@ -15,7 +15,7 @@ $check-icon-ratio: math.div(451, 333);
 // padded against. The checkmark fills its own box across, so it needs no share here.
 $ink-across-event: 0.75;
 $ink-across-warning: math.div(880, 960);
-$ink-across-pause: math.div(800, 960);
+$ink-across-pause: math.div(480, 960);
 
 // The room the mono face leaves to the right of a capital, past that letter's ink.
 // Measured in a browser, since a stylesheet cannot read a side bearing off a font.
@@ -137,8 +137,8 @@ $cap-right-bearing: 0.065em;
     );
   }
 
-  // The pause circle's ink is that circle, so its box is square and divides the
-  // same way across as it does down.
+  // The pause is the one shape whose ink is wider down than across, the gap
+  // between its two bars included, so the two shares differ.
   &.--delayed {
     @include mark-pill(
       var(--rak-mark-delayed-bg),

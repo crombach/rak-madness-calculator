@@ -8,12 +8,7 @@ import { WeekGame } from "../../types/WeekGame";
 import matching from "../../utils/matching";
 import DialogCombobox from "../dialog/DialogCombobox";
 import DialogShell from "../dialog/DialogShell";
-import {
-  CheckIcon,
-  EventIcon,
-  PauseCircleIcon,
-  WarningIcon,
-} from "../icon/Icon";
+import { CheckIcon, EventIcon, PauseIcon, WarningIcon } from "../icon/Icon";
 import GameStatusSummary from "./GameStatusSummary";
 import "./GameStatusDialog.scss";
 
@@ -60,7 +55,7 @@ function markFor(game: WeekGame, status?: GameStatus): Mark {
     return {
       modifier: "--delayed",
       label: "Delayed",
-      icon: <PauseCircleIcon />,
+      icon: <PauseIcon />,
       word: "DLAY",
     };
   }

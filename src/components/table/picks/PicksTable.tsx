@@ -14,7 +14,7 @@ import {
   pickChangeKey,
 } from "../../../utils/scoring/gameColumns";
 import { fillStatus } from "../../../utils/scoring/getPickResults";
-import { PauseCircleIcon } from "../../icon/Icon";
+import { PauseIcon } from "../../icon/Icon";
 import PlayerName from "../playerName/PlayerName";
 import TableShell, {
   PICK_COL_CLASS,
@@ -55,7 +55,7 @@ const HEADING_MARK: Partial<
   [GameStatus.DELAYED]: {
     mark: (
       <span className="table__delay-icon" aria-hidden="true">
-        <PauseCircleIcon />
+        <PauseIcon />
       </span>
     ),
     word: "Delayed",

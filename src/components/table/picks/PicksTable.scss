@@ -63,9 +63,9 @@
   // than a hue of its own. A delay is nothing the pool has to act on, and the red
   // beside it is what a reader is scanning the headings for.
   .table__header th .table__delay-icon {
-    // Bigger than the dot beside it, because this shape is an outline and a
-    // circle drawn to that width would read as the lighter of the two marks.
-    --rak-delay-icon-size: 0.85em;
+    // Taller than the dot beside it, because two narrow bars carry less ink than
+    // a circle and read as the lighter mark at the same height.
+    --rak-delay-icon-size: 0.7em;
 
     flex: 0 0 auto;
     display: flex;
