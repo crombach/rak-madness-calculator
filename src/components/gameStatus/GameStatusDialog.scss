@@ -137,12 +137,16 @@ $cap-right-bearing: 0.065em;
     );
   }
 
-  // The pause is the one shape whose ink is wider down than across, the gap
+  // The live pill's own red. A game stopped part way through is the same thing to
+  // a reader as one being played, so the two marks are told apart by their shape
+  // and their word rather than by a hue of their own.
+  //
+  // The pause is the one shape whose ink runs taller than it is wide, the gap
   // between its two bars included, so the two shares differ.
   &.--delayed {
     @include mark-pill(
-      var(--rak-mark-delayed-bg),
-      var(--rak-mark-delayed-text),
+      var(--rak-mark-live-bg),
+      var(--rak-mark-live-text),
       calc(
         var(--rak-caps-ink) * #{math.div($ink-across-pause, $ink-share-pause)}
       )

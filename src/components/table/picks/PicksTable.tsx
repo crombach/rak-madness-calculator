@@ -88,7 +88,9 @@ function leagueHeaders({
         >
           {/* Before the label, where the dialog's own mark carries its shape. */}
           {heading?.mark}
-          {header}
+          {/* Wrapped so a mark beside it can be centered on the capitals it is
+              set in rather than on the line box they sit in. */}
+          <span className="table__heading-label">{header}</span>
           {/* A column heading is read out again on every cell under it, so this
               reaches a reader on any pick in the game, not just the heading. */}
           {heading != null && (

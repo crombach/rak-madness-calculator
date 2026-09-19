@@ -59,9 +59,9 @@
     background-color: var(--rak-live-dot);
   }
 
-  // The pause marking a game that has stopped, in the heading's own ink rather
-  // than a hue of its own. A delay is nothing the pool has to act on, and the red
-  // beside it is what a reader is scanning the headings for.
+  // The pause marking a game that has stopped, in the dot's own red. A game
+  // stopped in the fourth quarter is the same thing to a reader as one being
+  // played: a column still to settle.
   .table__header th .table__delay-icon {
     // Taller than the dot beside it, because two narrow bars carry less ink than
     // a circle and read as the lighter mark at the same height.
@@ -73,7 +73,7 @@
     svg {
       @include ink-height(var(--rak-delay-icon-size), $ink-share-pause);
 
-      fill: currentColor;
+      fill: var(--rak-live-dot);
     }
   }
 }
