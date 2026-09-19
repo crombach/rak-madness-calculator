@@ -1,3 +1,5 @@
+import { LEAGUE_PREFIX } from "./gameColumns";
+import { PicksRow } from "./parsePicksWorkbook";
 import parsePick from "./parsePick";
 import { ResultsIndex } from "./resultsIndex";
 
@@ -7,7 +9,7 @@ import { ResultsIndex } from "./resultsIndex";
  */
 export default function getTiebreakerScore(
   tiebreakerGameKey: string | undefined,
-  firstRow: any,
+  firstRow: PicksRow,
   college: ResultsIndex,
   pro: ResultsIndex,
 ): number | undefined {
@@ -18,6 +20,6 @@ export default function getTiebreakerScore(
     firstRow[tiebreakerGameKey],
   );
   if (tiebreakerTeam == null) return undefined;
-  const index = tiebreakerGameKey.startsWith("P") ? pro : college;
+  const index = tiebreakerGameKey.startsWith(LEAGUE_PREFIX.pro) ? pro : college;
   return index.finalByTeam.get(tiebreakerTeam)?.totalScore;
 }

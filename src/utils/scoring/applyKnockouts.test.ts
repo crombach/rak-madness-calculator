@@ -53,13 +53,8 @@ describe("applyKnockouts", () => {
     ]);
 
     expect(result[0].status.isKnockedOut).toBe(false);
-    expect(result[0].status.explanation).toBe("Not knocked out!");
-  });
-
-  it("calls the leader the winner once the tiebreaker game is final", () => {
-    const result = applyKnockouts([player({ name: "Alice", total: 3 })], 47);
-
-    expect(result[0].status.explanation).toBe("Winner!");
+    // Nothing ended their week, so there is no reason to carry.
+    expect(result[0].status.explanation).toBeUndefined();
   });
 
   it("lets no row knock anyone out under a name two rows share", () => {
@@ -105,7 +100,6 @@ describe("applyKnockouts", () => {
     ]);
 
     expect(result[1].status.isKnockedOut).toBe(false);
-    expect(result[1].status.explanation).toBe("Not knocked out!");
   });
 
   it("leaves a player who left one game blank in contention", () => {

@@ -2,6 +2,7 @@ import { CSSProperties, ReactNode, useEffect, useState } from "react";
 import { FactCheckIcon, LeaderboardIcon, UpdateIcon } from "../icon/Icon";
 import Button from "../button/Button";
 import "./ScoresNavbar.scss";
+import getClasses from "../../utils/getClasses";
 
 export type ScoresView = "Scoreboard" | "Picks";
 
@@ -88,7 +89,10 @@ export default function ScoresNavbar({
     <nav className="scores-nav" aria-label="Results view">
       {isLiveMounted && (
         <div
-          className={`scores-nav__live ${isWeekLive ? "" : "--collapsed"}`}
+          className={getClasses(
+            "scores-nav__live",
+            !isWeekLive && "--collapsed",
+          )}
           style={
             {
               "--collapse-duration": `${COLLAPSE_DURATION_MS}ms`,

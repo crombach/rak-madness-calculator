@@ -3,7 +3,7 @@ import { Status } from "../types/RakMadnessScores";
 import {
   PICK_STATUS_FILL,
   PLAYER_STATUS_FILL,
-  PlayerStanding,
+  PlayerRowStatus,
 } from "./pickStatusFill";
 
 /** The token each status is drawn from in the browser. */
@@ -14,8 +14,8 @@ const TOKEN_FOR_STATUS: Record<Status, string> = {
   incomplete: "--rak-surface",
 };
 
-/** The token each standing fills a name cell with in the browser. */
-const TOKEN_FOR_STANDING: Record<PlayerStanding, string> = {
+/** The token each row status fills a name cell with in the browser. */
+const TOKEN_FOR_ROW_STATUS: Record<PlayerRowStatus, string> = {
   inContention: "--rak-in-contention-300",
   knockedOut: "--rak-knocked-out-300",
   // `--rak-cell-unscoreable` reads this token in light mode, which is the fill
@@ -95,25 +95,25 @@ describe("PICK_STATUS_FILL", () => {
 });
 
 describe("PLAYER_STATUS_FILL", () => {
-  it("fills a standing with the same color the browser draws it in", () => {
+  it("fills a row status with the same color the browser draws it in", () => {
     const tokens = tokenValues();
 
-    Object.entries(TOKEN_FOR_STANDING).forEach(([standing, token]) => {
+    Object.entries(TOKEN_FOR_ROW_STATUS).forEach(([rowStatus, token]) => {
       const declared = tokens.get(token);
       expect(
         declared,
         `${token} is not declared in src/index.scss`,
       ).toBeDefined();
       expect(
-        PLAYER_STATUS_FILL[standing as PlayerStanding].rgb.toLowerCase(),
-        `${standing} should match ${token}`,
+        PLAYER_STATUS_FILL[rowStatus as PlayerRowStatus].rgb.toLowerCase(),
+        `${rowStatus} should match ${token}`,
       ).toBe(expand(declared as string));
     });
   });
 
-  it("covers every standing a name cell can have", () => {
+  it("covers every row status a name cell can have", () => {
     expect(Object.keys(PLAYER_STATUS_FILL).sort()).toEqual(
-      Object.keys(TOKEN_FOR_STANDING).sort(),
+      Object.keys(TOKEN_FOR_ROW_STATUS).sort(),
     );
   });
 });

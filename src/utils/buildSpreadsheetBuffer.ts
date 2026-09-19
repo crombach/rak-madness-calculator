@@ -6,7 +6,7 @@ import {
 import {
   PICK_STATUS_FILL,
   PLAYER_STATUS_FILL,
-  PlayerStanding,
+  PlayerRowStatus,
 } from "./pickStatusFill";
 import rangeWithPrefix from "./rangeWithPrefix";
 import { fillStatus } from "./scoring/getPickResults";
@@ -87,21 +87,21 @@ function pickCell(result: PickResult) {
 }
 
 /**
- * Where a player stands, in the order the tables settle it. A shared name comes
- * first: neither row can be told from the other, so no standing read off that name
- * belongs to either of them.
+ * What a row says about its player, in the order the tables settle it. A shared
+ * name comes first. Neither row can be told from the other, so nothing read off
+ * that name belongs to either of them.
  */
-function standingOf(
+function rowStatusOf(
   player: PlayerScore,
   repeated: Set<string>,
   showStatus: boolean,
-): PlayerStanding {
+): PlayerRowStatus {
   if (repeated.has(player.name)) return "nameConflict";
   if (!showStatus) return "noStatus";
   return player.status.isKnockedOut ? "knockedOut" : "inContention";
 }
 
-function playerNameCell(player: PlayerScore, standing: PlayerStanding) {
+function playerNameCell(player: PlayerScore, rowStatus: PlayerRowStatus) {
   return {
     t: CellType.Text,
     v: player.name,
@@ -111,7 +111,7 @@ function playerNameCell(player: PlayerScore, standing: PlayerStanding) {
       },
       fill: {
         patternType: "solid",
-        fgColor: PLAYER_STATUS_FILL[standing],
+        fgColor: PLAYER_STATUS_FILL[rowStatus],
       },
       border: allSides(Border.NORMAL),
     },
@@ -193,7 +193,7 @@ export default async function buildSpreadsheetBuffer(
     ...scoresObject.scores.map((player, index) => {
       return [
         normalCell({ value: index + 1, alignment: "left", isBold: true }),
-        playerNameCell(player, standingOf(player, repeated, showStatus)),
+        playerNameCell(player, rowStatusOf(player, repeated, showStatus)),
         normalCell({ value: player.tiebreaker.pick ?? "N/A" }),
         normalCell({ value: player.tiebreaker.distance ?? "N/A" }),
         normalCell({ value: player.score.college }),
@@ -237,7 +237,7 @@ export default async function buildSpreadsheetBuffer(
     ...scoresObject.scores.map((player, index) => {
       return [
         normalCell({ value: index + 1, alignment: "left", isBold: true }),
-        playerNameCell(player, standingOf(player, repeated, showStatus)),
+        playerNameCell(player, rowStatusOf(player, repeated, showStatus)),
         ...player.college.map(pickCell),
         normalCell({ value: player.score.college, alignment: "center" }),
         ...player.pro.map(pickCell),

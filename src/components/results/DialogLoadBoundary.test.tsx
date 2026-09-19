@@ -12,13 +12,16 @@ describe("DialogLoadBoundary", () => {
     const logged = vi.spyOn(console, "error").mockImplementation(() => {});
     const onError = vi.fn();
 
-    render(
+    const { container } = render(
       <DialogLoadBoundary onError={onError}>
         <Throws />
       </DialogLoadBoundary>,
     );
 
     expect(onError).toHaveBeenCalledTimes(1);
+    // Nothing drawn in place of the dialog. The reload the reason asks for is
+    // the way out, so a half-drawn dialog would only be something to click.
+    expect(container).toBeEmptyDOMElement();
     logged.mockRestore();
   });
 

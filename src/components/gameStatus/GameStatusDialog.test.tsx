@@ -21,7 +21,7 @@ vi.mock("../../utils/getLeagueResults");
 import matching from "../../utils/matching";
 import { SEASON } from "../../weekFixtures";
 import { gameSearchText } from "./GameStatusDialog";
-import { getGameResultMock } from "../../utils/getGameResultMock";
+import { getLeagueResultMock } from "../../utils/getLeagueResultMock";
 import { dialog, WEEK } from "./gameStatusDialogTestSupport";
 
 /**
@@ -139,16 +139,16 @@ describe("GameStatusDialog", () => {
   it("fetches the open game, keeps it up to date, and stops when it is final", async () => {
     vi.useFakeTimers();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-    getGameResultMock.mockResolvedValue(proGame);
+    getLeagueResultMock.mockResolvedValue(proGame);
 
     // Closed, so there is nothing to watch and nothing is asked for.
     const { rerender } = render(dialog(undefined, false, scores));
     await vi.advanceTimersByTimeAsync(POLL_MS * 2);
-    expect(getGameResultMock).not.toHaveBeenCalled();
+    expect(getLeagueResultMock).not.toHaveBeenCalled();
 
     // Opened on a cell in the pro column.
     rerender(dialog("P1", true, scores));
-    expect(getGameResultMock).toHaveBeenCalledWith(
+    expect(getLeagueResultMock).toHaveBeenCalledWith(
       League.PRO,
       WEEK,
       "401",
@@ -174,20 +174,20 @@ describe("GameStatusDialog", () => {
 
     // Ten seconds on, the same game is asked about again, and the answer replaces
     // what was on screen.
-    getGameResultMock.mockResolvedValue(
+    getLeagueResultMock.mockResolvedValue(
       withEspnDetails(
         liveGame({ home: "BUF", away: "KC", homeScore: 14, awayScore: 7 }),
         "401",
       ),
     );
     await vi.advanceTimersByTimeAsync(POLL_MS);
-    expect(getGameResultMock).toHaveBeenCalledTimes(2);
+    expect(getLeagueResultMock).toHaveBeenCalledTimes(2);
     expect(await screen.findByText("14")).toBeInTheDocument();
 
     // A poll says it is out the way a first fetch does, and the game already on
     // screen stays up behind the bar.
     const held = deferred();
-    getGameResultMock.mockReturnValue(held.promise);
+    getLeagueResultMock.mockReturnValue(held.promise);
     await vi.advanceTimersByTimeAsync(POLL_MS);
     expect(
       await screen.findByRole("progressbar", { name: "Fetching the game" }),
@@ -204,7 +204,7 @@ describe("GameStatusDialog", () => {
     // Another game chosen from the search. The one on screen stays there behind the
     // bar until the new one arrives, rather than the dialog emptying and filling.
     const pending = deferred();
-    getGameResultMock.mockReturnValue(pending.promise);
+    getLeagueResultMock.mockReturnValue(pending.promise);
     await user.click(screen.getByRole("combobox", { name: "Game" }));
 
     // Every entry says where its game stands: the live game LIVE, the one that is
@@ -251,7 +251,7 @@ describe("GameStatusDialog", () => {
     expect(screen.getByRole("combobox", { name: "Game" })).not.toHaveFocus();
     expect(document.activeElement).toHaveClass("dialog__popup");
 
-    expect(getGameResultMock).toHaveBeenLastCalledWith(
+    expect(getLeagueResultMock).toHaveBeenLastCalledWith(
       League.PRO,
       WEEK,
       "403",
@@ -277,19 +277,19 @@ describe("GameStatusDialog", () => {
     // A game the week was already scored on after it finished is shown as it was
     // scored, without being asked for at all. Nothing about it can have changed, and
     // there is nothing left to poll for either.
-    const askedBeforeFinal = getGameResultMock.mock.calls.length;
+    const askedBeforeFinal = getLeagueResultMock.mock.calls.length;
     await user.click(screen.getByRole("combobox", { name: "Game" }));
     await user.click(await screen.findByRole("option", { name: /MICH @ OSU/ }));
     expect(screen.getByText("OSU Team")).toBeInTheDocument();
     expect(screen.queryByRole("progressbar")).toBeNull();
     expect(screen.getByRole("img", { name: "Final" })).toBeInTheDocument();
     await vi.advanceTimersByTimeAsync(POLL_MS * 3);
-    expect(getGameResultMock).toHaveBeenCalledTimes(askedBeforeFinal);
+    expect(getLeagueResultMock).toHaveBeenCalledTimes(askedBeforeFinal);
 
     // The same switch made with the last game's fetch still outstanding. The answer
     // lands after the switch, and the finished game stays where it is.
     const stray = deferred();
-    getGameResultMock.mockReturnValue(stray.promise);
+    getLeagueResultMock.mockReturnValue(stray.promise);
     await user.click(screen.getByRole("combobox", { name: "Game" }));
     await user.click(await screen.findByRole("option", { name: /KC @ BUF/ }));
     expect(
@@ -307,16 +307,16 @@ describe("GameStatusDialog", () => {
     expect(screen.queryByText("BUF Team")).toBeNull();
 
     // Back on the live game, which is asked about again on the way in.
-    getGameResultMock.mockResolvedValue(proGame);
+    getLeagueResultMock.mockResolvedValue(proGame);
     await user.click(screen.getByRole("combobox", { name: "Game" }));
     await user.click(await screen.findByRole("option", { name: /KC @ BUF/ }));
     expect(await screen.findByText("BUF Team")).toBeInTheDocument();
 
     // Closing takes the watch off it, whatever the game is doing.
     rerender(dialog("P1", false, scores));
-    const askedByClose = getGameResultMock.mock.calls.length;
+    const askedByClose = getLeagueResultMock.mock.calls.length;
     await vi.advanceTimersByTimeAsync(POLL_MS * 3);
-    expect(getGameResultMock).toHaveBeenCalledTimes(askedByClose);
+    expect(getLeagueResultMock).toHaveBeenCalledTimes(askedByClose);
 
     vi.useRealTimers();
   });

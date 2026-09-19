@@ -3,7 +3,7 @@ import { GameStatus } from "../types/ESPN";
 import { WeekInfo } from "../types/League";
 import { LeagueResult } from "../types/LeagueResult";
 import { WeekGame } from "../types/WeekGame";
-import { getGameResult } from "../utils/getLeagueResults";
+import { getLeagueResult } from "../utils/getLeagueResults";
 import latestOnly from "../utils/latestOnly";
 
 /** How often a game still being played is asked about again. */
@@ -113,7 +113,7 @@ export default function useLiveGame({
         const asked = Date.now();
         setFetching(true);
         try {
-          result = await getGameResult(league, week, eventId, season);
+          result = await getLeagueResult(league, week, eventId, season);
         } catch (error) {
           console.warn(`Failed to fetch game ${eventId}`, error);
         }

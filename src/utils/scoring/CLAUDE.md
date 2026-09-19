@@ -20,7 +20,6 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 - `weekShape`: open games, holes, and whether the week ran out. One walk per
   set of rows
 - `remainingGames`: the open games
-- `unscoreableGames`: games nobody scores
 - `applyKnockouts`: who can still win, why not. A row under a shared name
   knocks nobody out
 - `repeatedNames`: the names more than one row was entered under

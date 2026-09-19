@@ -22,8 +22,9 @@ export default function parsePick(pickString: string) {
     .replace(/-$/, "")
     .trim();
   return {
-    // A blank cell reaches here as the string "undefined". It names no team, and a
-    // matchup that took one for a team would never find its real game.
+    // A blank cell reaches here as "", which holds no letter and so names no team.
+    // The word "undefined" is held out because a workbook has carried it as text,
+    // and a matchup that took one for a team would never find its real game.
     teamAbbreviation:
       /[A-Za-z]/.test(abbreviation) && abbreviation !== "undefined"
         ? abbreviation.toUpperCase()

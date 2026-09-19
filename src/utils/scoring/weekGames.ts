@@ -1,10 +1,9 @@
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import { GameSpread, WeekGame } from "../../types/WeekGame";
-import rangeWithPrefix from "../rangeWithPrefix";
-import { LEAGUE_PREFIX, LEAGUES, LeagueKey } from "./gameColumns";
+import { leagueLabels, LEAGUES, LeagueKey } from "./gameColumns";
 import parsePick from "./parsePick";
-import { ParsedPicks } from "./parsePicksWorkbook";
+import { ParsedPicks, PicksRow } from "./parsePicksWorkbook";
 import { findMatchup, indexResults, ResultsIndex } from "./resultsIndex";
 
 const ESPN_LEAGUE: Record<LeagueKey, League> = {
@@ -21,7 +20,7 @@ const ESPN_LEAGUE: Record<LeagueKey, League> = {
  * without its game keys at all, since nothing can tell which of the two was meant.
  */
 function gameSpread(
-  rows: Array<any>,
+  rows: Array<PicksRow>,
   gameKey: string,
   result: LeagueResult,
 ): GameSpread | undefined {
@@ -63,7 +62,7 @@ export default function weekGames(
   return LEAGUES.flatMap((league) => {
     const index = indexed?.[league] ?? indexResults(results[league]);
     const keys = league === "college" ? parsed.collegeKeys : parsed.proKeys;
-    const labels = rangeWithPrefix(keys.length, LEAGUE_PREFIX[league]);
+    const labels = leagueLabels(keys.length, league);
     return keys.map((key, position) => {
       const teams = parsed.matchupsByGameKey.get(key);
       // The same first-match rule `ResultsIndex` is built with.

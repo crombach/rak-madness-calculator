@@ -111,7 +111,7 @@ describe("Standing", () => {
       <Standing
         scores={scores}
         playerName="Rak"
-        result={{ kind: "clinched", player: "Rak" }}
+        result={{ kind: "clinched", playerName: "Rak" }}
       />,
     );
 
@@ -126,7 +126,7 @@ describe("Standing", () => {
       <Standing
         scores={tied}
         playerName="Rak"
-        result={{ kind: "clinched", player: "Rak" }}
+        result={{ kind: "clinched", playerName: "Rak" }}
       />,
     );
 
@@ -138,7 +138,7 @@ describe("Standing", () => {
       <Standing
         scores={scores}
         playerName="Rak"
-        result={{ kind: "clinched", player: "Alice" }}
+        result={{ kind: "clinched", playerName: "Alice" }}
       />,
     );
 

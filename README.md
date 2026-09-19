@@ -33,7 +33,7 @@ make format     # eslint --fix, then prettier
 
 `make help` lists every target.
 
-`npm run pages:dev` builds first, then serves `./build` through wrangler on port 3000. Use it to exercise the Cloudflare side. Use `make run` for hot reload. The `/api/picks` route lists the seasons that have picks, and `/api/picks/<season>/<week>` reads `picks/<season>/<week>.xlsx` from the `RAK_MADNESS_BUCKET` binding declared in `wrangler.toml`. Locally that bucket is simulated and starts empty, so both routes come back empty or 404 and the app falls back to manual spreadsheet upload. `wrangler.toml` carries the command that seeds it.
+`npm run pages:dev` builds first, then serves `./build` through wrangler on port 3000. Use it to exercise the Cloudflare side. Use `make run` for hot reload. [`functions/api/picks/CLAUDE.md`](functions/api/picks/CLAUDE.md) describes what the two `/api/picks` routes serve. Locally their R2 bucket is simulated and starts empty, so both come back empty or 404 and the app falls back to manual spreadsheet upload. `wrangler.toml` carries the command that seeds it.
 
 ## Deploying
 

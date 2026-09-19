@@ -187,13 +187,12 @@ export default function applyKnockouts(
       }
     }
 
+    // No explanation, which is what says nothing ended this player's week.
+    // `status.explanation` is the knockout reason, and only the analysis dialog
+    // reads it, so a line about still being in contention reaches no reader.
     return {
       ...activeScore,
-      status: {
-        ...activeScore.status,
-        isKnockedOut: false,
-        explanation: tiebreakerScore != null ? "Winner!" : "Not knocked out!",
-      },
+      status: { ...activeScore.status, isKnockedOut: false },
     };
   });
 }

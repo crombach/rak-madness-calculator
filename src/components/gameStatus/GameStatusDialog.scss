@@ -1,5 +1,7 @@
 @use "sass:math";
 @use "../../styles/ink" as *;
+@use "../../styles/text" as *;
+@use "../../styles/label" as *;
 
 // CheckIcon's own aspect in Icon.tsx, `viewBox="257 -654 451 333"`. Named once
 // here because the slot below is sized to it whichever mark is showing, not
@@ -53,11 +55,9 @@ $cap-right-bearing: 0.065em;
 }
 
 .dialog__option .game-status__option-name {
+  @include truncate-line;
+
   flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   text-align: left;
 }
 
@@ -88,8 +88,9 @@ $cap-right-bearing: 0.065em;
   color: $foreground;
   font-family: var(--rak-font-mono);
   font-size: var(--rak-text-xs);
-  font-weight: var(--rak-weight-bold);
-  letter-spacing: var(--rak-label-tracking);
+  // Every word a mark carries is already written in capitals, so the casing the
+  // mixin sets changes nothing and only the weight and the tracking are new.
+  @include micro-label;
 }
 
 // Every mark is a pill, and every one sits against the same edge, so what changes

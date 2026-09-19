@@ -11,7 +11,7 @@ import { POLL_MS } from "../../hooks/useLiveGame";
 
 vi.mock("../../utils/getLeagueResults");
 
-import { getGameResultMock } from "../../utils/getGameResultMock";
+import { getLeagueResultMock } from "../../utils/getLeagueResultMock";
 import { dialog } from "./gameStatusDialogTestSupport";
 
 const proGame: WeekGame = {
@@ -33,7 +33,7 @@ describe("GameStatusDialog onGameFinal", () => {
   it("calls onGameFinal once the polled game goes final, and not again after", async () => {
     vi.useFakeTimers();
     const onGameFinal = vi.fn();
-    getGameResultMock.mockResolvedValue(
+    getLeagueResultMock.mockResolvedValue(
       liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 }),
     );
 
@@ -42,7 +42,7 @@ describe("GameStatusDialog onGameFinal", () => {
     await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
     expect(onGameFinal).not.toHaveBeenCalled();
 
-    getGameResultMock.mockResolvedValue(
+    getLeagueResultMock.mockResolvedValue(
       finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 14 }),
     );
     await vi.advanceTimersByTimeAsync(POLL_MS);
@@ -84,13 +84,13 @@ describe("GameStatusDialog onGameFinal", () => {
     // goes up on the render that opens the dialog. No wait, and nothing asked for.
     expect(screen.getByText("24")).toBeInTheDocument();
     expect(screen.queryByRole("progressbar")).toBeNull();
-    expect(getGameResultMock).not.toHaveBeenCalled();
+    expect(getLeagueResultMock).not.toHaveBeenCalled();
     expect(
       await screen.findByRole("img", { name: "Final" }),
     ).toBeInTheDocument();
     await vi.advanceTimersByTimeAsync(POLL_MS * 2);
 
-    expect(getGameResultMock).not.toHaveBeenCalled();
+    expect(getLeagueResultMock).not.toHaveBeenCalled();
     expect(onGameFinal).not.toHaveBeenCalled();
 
     vi.useRealTimers();

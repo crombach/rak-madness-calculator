@@ -8,7 +8,7 @@
   inset: 0;
   z-index: var(--rak-z-dialog);
   background-color: var(--rak-scrim);
-  transition: opacity 200ms ease;
+  transition: opacity var(--rak-duration-medium) var(--rak-ease-standard);
 
   &[data-starting-style],
   &[data-ending-style] {
@@ -82,8 +82,8 @@
   background-color: var(--rak-surface-raised);
   box-shadow: var(--rak-shadow-dialog);
   transition:
-    opacity 200ms ease,
-    transform 200ms ease;
+    opacity var(--rak-duration-medium) var(--rak-ease-standard),
+    transform var(--rak-duration-medium) var(--rak-ease-standard);
 
   &:focus-visible {
     outline: none;

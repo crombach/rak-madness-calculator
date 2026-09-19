@@ -1,0 +1,19 @@
+// Mixins only, so this emits no CSS of its own however many files pull it in.
+
+/**
+ * One line, cut short with an ellipsis where it runs out of room.
+ *
+ * `min-width: 0` is what lets it shrink at all inside a flex row, whose items
+ * refuse to go under their content's width without it. The face a caller sets
+ * may carry no ellipsis of its own, in which case the one drawn comes from the
+ * fallback stack.
+ *
+ * The room to cut to is left to the caller. A name in a table column and a name
+ * in a popup are cut to different widths for different reasons.
+ */
+@mixin truncate-line {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

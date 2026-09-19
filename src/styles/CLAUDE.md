@@ -19,3 +19,4 @@ keyframes. Design tokens live in `src/index.scss` instead.
   and `lcd-field`, the same well for a control typed or chosen into instead
 - `_listbox.scss`: `listbox-popup` and `listbox-item`, a Base UI popup list's shape
 - `_skeleton.scss`: `skeleton-surface`, `skeleton-sheen`, `skeleton-reserve`
+- `_text.scss`: `truncate-line`, one line cut short where it runs out of room
