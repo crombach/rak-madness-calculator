@@ -58,6 +58,39 @@ describe("GameStatusDialog onGameFinal", () => {
     vi.useRealTimers();
   });
 
+  it("stops after the rescore its own final sets off", async () => {
+    vi.useFakeTimers();
+    const onGameFinal = vi.fn();
+    getLeagueResultMock.mockResolvedValue(
+      liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 }),
+    );
+
+    const { rerender } = render(dialog(undefined, false, scores, onGameFinal));
+    rerender(dialog("P1", true, scores, onGameFinal));
+    await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
+
+    getLeagueResultMock.mockResolvedValue(
+      finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 14 }),
+    );
+    await vi.advanceTimersByTimeAsync(POLL_MS);
+    expect(onGameFinal).toHaveBeenCalledTimes(1);
+
+    // What the rescore hands back: a new list, every game in it a new object. This
+    // one still has the game live, which is the worst its own read of ESPN can be.
+    const rescored: RakMadnessScores = { scores: [], games: [{ ...proGame }] };
+    rerender(dialog("P1", true, rescored, onGameFinal));
+    await vi.advanceTimersByTimeAsync(POLL_MS * 4);
+
+    // Announced once, so the rescore cannot set off the next one.
+    expect(onGameFinal).toHaveBeenCalledTimes(1);
+    expect(
+      await screen.findByRole("img", { name: "Final" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("progressbar")).toBeNull();
+
+    vi.useRealTimers();
+  });
+
   it("shows a game already final on the first render, without fetching it", async () => {
     vi.useFakeTimers();
     const onGameFinal = vi.fn();
