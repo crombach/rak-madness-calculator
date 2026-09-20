@@ -1,6 +1,7 @@
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, screen, waitFor } from "@testing-library/react";
 import { PropsWithChildren } from "react";
 import { MockedFunction } from "vitest";
+import Toaster from "../components/toaster/Toaster";
 import { ToastContextProvider } from "../context/ToastContext";
 import { notFoundResponse, spreadsheetResponse } from "../responseTestFixtures";
 import { League, WeekInfo } from "../types/League";
@@ -78,6 +79,16 @@ function scoresWithPick(status: Status): RakMadnessScores {
 
 function wrapper({ children }: PropsWithChildren<object>) {
   return <ToastContextProvider>{children}</ToastContextProvider>;
+}
+
+/** Toasts render in `Toaster`, so a case that reads one needs it mounted. */
+function toastingWrapper({ children }: PropsWithChildren<object>) {
+  return (
+    <ToastContextProvider>
+      {children}
+      <Toaster />
+    </ToastContextProvider>
+  );
 }
 
 beforeEach(() => {
@@ -595,6 +606,55 @@ describe("usePlayerScores, refresh", () => {
     });
 
     expect(result.current.scores).toEqual(scoresFor(5));
+  });
+
+  it("says nothing when a poll's scoring throws", async () => {
+    // Nobody asked for a poll, so a poll that cannot finish says so to the
+    // console and to nobody else. A toast over the table would be the first the
+    // reader heard of a pass they never started.
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper: toastingWrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+
+    getPlayerScoresMock.mockRejectedValueOnce(new Error("espn down"));
+    await act(async () => {
+      await result.current.rescore([League.PRO]);
+    });
+
+    expect(
+      screen.queryByText("Failed to calculate scores for week 5."),
+    ).toBeNull();
+    expect(result.current.scores).toEqual(scoresFor(5));
+  });
+
+  it("scores the move again when the poll that saw it could not score it", async () => {
+    // The baseline belongs to the scores on screen. A pass that threw left the
+    // old ones there, so the next poll has to see the same move and score it,
+    // not gate the week behind a failure nobody was told about.
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+
+    // One standing, held across both polls, so only the baseline can decide
+    // whether the second one scores.
+    fetchLeagueResultsMock.mockResolvedValue(movedWeek(7));
+    getPlayerScoresMock.mockRejectedValueOnce(new Error("espn down"));
+    await act(async () => {
+      await result.current.rescore([League.PRO]);
+    });
+    const scoringCallsBefore = getPlayerScoresMock.mock.calls.length;
+
+    getPlayerScoresMock.mockResolvedValue(scoresFor(6));
+    await act(async () => {
+      await result.current.rescore([League.PRO]);
+    });
+
+    expect(getPlayerScoresMock).toHaveBeenCalledTimes(scoringCallsBefore + 1);
+    expect(result.current.scores).toEqual(scoresFor(6));
   });
 
   it("drops the score changes once the wipe that shows them has run", async () => {

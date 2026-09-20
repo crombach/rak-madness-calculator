@@ -382,12 +382,10 @@ export default function usePlayerScores(
         return undefined;
       }
 
-      // Measured before the baseline is replaced, and replaced in the same pass
-      // that read it. A move can be seen once and never twice, however far behind
-      // the scores the rescore it sets off runs.
       const moved = hasMoved(leagues, held, fetched);
-      heldResults.current = { key, results: fetched };
       if (gateOnMovement && !moved) {
+        // Nothing to score, so the week on screen already stands for this fetch.
+        heldResults.current = { key, results: fetched };
         finish();
         return fetched;
       }
@@ -401,6 +399,12 @@ export default function usePlayerScores(
           fetched,
         );
         if (!isLatest()) return fetched;
+        // Advanced by a pass that scored, and by that pass alone. A move is seen
+        // once, since the pass that scores it replaces what it was measured
+        // against. A pass whose scoring threw leaves the baseline where it was,
+        // so the next one sees the move again rather than gating the week behind
+        // a failure.
+        heldResults.current = { key, results: fetched };
         const before =
           previousScores.current?.key === key
             ? previousScores.current.scores
@@ -417,7 +421,9 @@ export default function usePlayerScores(
         if (!keepScoresOnFailure) {
           clearScores();
         }
-        showToast(onScoreFailure);
+        if (!quietFailure) {
+          showToast(onScoreFailure);
+        }
       } finally {
         if (isLatest()) {
           finish();
@@ -588,8 +594,17 @@ export default function usePlayerScores(
       // state it finds, so it never asks again for a dropped one. The table would
       // keep the state before it until the reader refreshed.
       if (isAttemptInFlight.current || isRefreshInFlight.current) {
+        // Both leagues where either request named none, since an unnamed rescore
+        // asks for every league. Otherwise the union, so a reader who opens a
+        // second game does not drop the first one's league on the floor.
+        const waiting = isRescorePending.current
+          ? pendingLeagues.current
+          : leagues;
         isRescorePending.current = true;
-        pendingLeagues.current = leagues;
+        pendingLeagues.current =
+          leagues == null || waiting == null
+            ? undefined
+            : [...new Set([...waiting, ...leagues])];
         return undefined;
       }
       isRescorePending.current = false;

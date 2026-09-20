@@ -175,7 +175,14 @@ export default function useLiveGame({
         // Undefined where a pass in flight turned this one away, or where the
         // fetch failed. Either way nothing moves on screen and the next tick asks
         // again.
-        const fetched = await poll.current?.([league]);
+        // A refresh that throws must not take the poll down with it. Nothing on
+        // screen moves, and the next tick asks again.
+        let fetched: LeagueResults | undefined;
+        try {
+          fetched = await poll.current?.([league]);
+        } catch (error) {
+          console.warn(`Failed to poll the ${league} week`, error);
+        }
         if (!isCurrent()) return;
         // The week can go out from under a tick: a failed refresh clears the
         // scores. Come round again rather than stop, since the deps no longer
