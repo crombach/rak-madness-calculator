@@ -12,10 +12,11 @@ import { errorToast, useToastActions } from "../../context/ToastContext";
 import { GameStatusContextProvider } from "../../context/GameStatusContext";
 import { PlayerAnalysisContextProvider } from "../../context/PlayerAnalysisContext";
 import useWarmTeamLogos from "../../hooks/useWarmTeamLogos";
-import { WeekInfo } from "../../types/League";
+import { League } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
+import { LeagueResults } from "../../utils/scoring/leagueResults";
 import LogoButton, { APP_NAME } from "../navbar/LogoButton";
 import ScoresNavbar, { ScoresView } from "../navbar/ScoresNavbar";
 import PageLayout from "../pageLayout/PageLayout";
@@ -67,11 +68,10 @@ export default function ResultsFrame({
   isReady = false,
   onViewChange = doNothing,
   onRefresh = doNothing,
-  onStatusChange = doNothing,
+  onPoll,
   isRefreshing = false,
+  fetchingLeagues,
   scores,
-  week,
-  season,
   children,
 }: PropsWithChildren<{
   view: ScoresView;
@@ -79,14 +79,15 @@ export default function ResultsFrame({
   isReady?: boolean;
   onViewChange?: (view: ScoresView) => void;
   onRefresh?: () => void;
-  /** Run when a game the reader is watching is polled somewhere new. */
-  onStatusChange?: () => void;
+  /** Pulls one league, and rescores the week where anything in it moved. */
+  onPoll?: (
+    leagues: ReadonlyArray<League>,
+  ) => Promise<LeagueResults | undefined>;
   isRefreshing?: boolean;
+  /** Which leagues have a request in flight, for the Game Status bar. */
+  fetchingLeagues?: ReadonlySet<League>;
   /** What the player analysis is worked out from. Absent while a week loads. */
   scores?: RakMadnessScores;
-  /** The week the scores are for, which fetching one of its games again needs. */
-  week?: WeekInfo;
-  season?: number;
 }>) {
   const navigate = useNavigate();
   // Absent on the redirect routes, which render this frame before they know which
@@ -246,9 +247,8 @@ export default function ResultsFrame({
               onOpenChange={close}
               gameLabel={opened?.kind === "game" ? opened.label : undefined}
               scores={scores}
-              week={week}
-              season={season}
-              onStatusChange={onStatusChange}
+              fetchingLeagues={fetchingLeagues}
+              onPoll={onPoll}
             />
           </Suspense>
         </DialogLoadBoundary>

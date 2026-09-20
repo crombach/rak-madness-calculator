@@ -10,6 +10,8 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
   a cell is drawn by. One answer per cell
   text, held against the week's index
 - `resultsIndex`: a week by team and by matchup, built once
+- `leagueResults`: `fetchLeagueResults`, the named leagues fetched and the
+  rest kept, and `hasMoved`, whether a fetch costs a rescore
 - `gameColumns`: `LEAGUES`, `LEAGUE_PREFIX`, `gameLabels`
 - `weekGames`: each column, game and line
 - `getTiebreakerScore`: the Monday night total
@@ -26,6 +28,6 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 - `scoreChanges`: what a refresh changed
 - `getPlayerAnalysis`: what a player must do, plus `getSettledAnalysis`,
   the answers a week already holds, which the dialog asks before it waits
-- `leagueResultFixtures`: test game builders
+- `leagueResultFixtures`: test game builders, and `weekOf`, one league's week
 - `benchFixtures`: the 80x22 worst week the benchmarks measure, every game
   picked

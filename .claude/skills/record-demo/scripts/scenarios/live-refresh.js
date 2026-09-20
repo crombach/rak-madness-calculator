@@ -135,10 +135,10 @@ function events(gameOneFinal) {
 /**
  * Opens the Game Status dialog on a still-live pick, then does nothing until
  * the dialog's own background poll (not a click, not the navbar refresh
- * button) discovers the game went final. Proves `useLiveGame`'s `onMoved` ->
- * `GameStatusDialog`'s `onStatusChange` -> `ResultsLayout`'s `rescore` wiring:
- * the table's pick colors update and its `.table__cell-wipe` animation plays
- * on their own.
+ * button) discovers the game went final. Proves `useLiveGame`'s `onPoll` ->
+ * `GameStatusDialog`'s `onPoll` -> `ResultsLayout`'s `rescore` wiring: the
+ * table's pick colors update and its `.table__cell-wipe` animation plays on
+ * their own.
  */
 export default async function run({ page, context, baseUrl }) {
   const state = { gameOneFinal: false };

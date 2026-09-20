@@ -7,7 +7,7 @@ import {
   HomeAway,
 } from "../types/ESPN";
 import { League, WeekInfo } from "../types/League";
-import { getLeagueResults, getLeagueResultsById } from "./getLeagueResults";
+import { getLeagueResults } from "./getLeagueResults";
 
 vi.mock("./getLeagueInfo");
 
@@ -405,39 +405,6 @@ describe("getLeagueResults, mapping", () => {
     mockFetch([bufVsKc]);
     const [withNone] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
     expect(withNone.venue).toBeUndefined();
-  });
-});
-
-describe("getLeagueResultsById", () => {
-  it("comes back with every game of the week, whoever picked them", async () => {
-    mockFetch([
-      espnEvent({ home: "BUF", away: "KC", id: "1" }),
-      espnEvent({ home: "DAL", away: "PHI", id: "2" }),
-    ]);
-    const week = await getLeagueResultsById(League.PRO, WEEK);
-    expect(week.get("1")?.shortName).toBe("KC @ BUF");
-    expect(week.get("2")?.shortName).toBe("PHI @ DAL");
-  });
-
-  it("holds no game the week no longer lists", async () => {
-    mockFetch([espnEvent({ home: "BUF", away: "KC", id: "1" })]);
-    const week = await getLeagueResultsById(League.PRO, WEEK);
-    expect(week.get("9")).toBeUndefined();
-  });
-
-  it("keeps a college game played before the week began", async () => {
-    // The list a week is scored from drops these, because ESPN hands back the whole
-    // bowl season at once. A game being watched was already chosen.
-    mockFetch([
-      espnEvent({
-        home: "OSU",
-        away: "MICH",
-        id: "7",
-        date: "2024-09-01T17:00Z",
-      }),
-    ]);
-    const week = await getLeagueResultsById(League.COLLEGE, WEEK);
-    expect(week.get("7")?.shortName).toBe("MICH @ OSU");
   });
 });
 

@@ -1,22 +1,23 @@
 import { act, renderHook } from "@testing-library/react";
 import { GameStatus } from "../types/ESPN";
-import { League, WeekInfo } from "../types/League";
+import { League } from "../types/League";
 import { WeekGame } from "../types/WeekGame";
-import { getLeagueWeekMock, weekOf } from "../utils/getLeagueWeekMock";
-import { liveGame, upcomingGame } from "../utils/scoring/leagueResultFixtures";
+import {
+  liveGame,
+  upcomingGame,
+  weekOf,
+} from "../utils/scoring/leagueResultFixtures";
+import { LeagueResults } from "../utils/scoring/leagueResults";
 import useLiveGame, { kickoffAt, POLL_MS } from "./useLiveGame";
-
-vi.mock("../utils/getLeagueResults");
 
 const NOW = new Date("2024-10-06T12:00:00Z");
 const HOUR_MS = 60 * 60 * 1000;
 
-const WEEK: WeekInfo = {
-  value: 5,
-  label: "Week 5",
-  startDate: new Date("2024-10-01T00:00:00Z"),
-  endDate: new Date("2024-10-08T00:00:00Z"),
-};
+function poller() {
+  return vi.fn<
+    (leagues: ReadonlyArray<League>) => Promise<LeagueResults | undefined>
+  >();
+}
 
 /** The fixture's own kickoff is fixed, so each case says where it sits from `NOW`. */
 function kickoffIn(ms: number) {
@@ -62,7 +63,6 @@ describe("useLiveGame", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(NOW);
-    getLeagueWeekMock.mockReset();
   });
 
   afterEach(() => {
@@ -71,7 +71,8 @@ describe("useLiveGame", () => {
 
   it("asks once about a game that has not kicked off, then nothing until kickoff", async () => {
     const result = kickoffIn(2 * HOUR_MS);
-    getLeagueWeekMock.mockResolvedValue(weekOf(result));
+    const onPoll = poller();
+    onPoll.mockResolvedValue(weekOf("pro", result));
     const game: WeekGame = {
       label: "P1",
       league: League.PRO,
@@ -80,28 +81,49 @@ describe("useLiveGame", () => {
     };
 
     const games = [game];
-    renderHook(() => useLiveGame({ open: true, game, games, week: WEEK }));
+    renderHook(() => useLiveGame({ open: true, game, games, onPoll }));
     await act(() => vi.advanceTimersByTimeAsync(0));
-    expect(getLeagueWeekMock).toHaveBeenCalledTimes(1);
+    expect(onPoll).toHaveBeenCalledTimes(1);
 
-    // The 15 second poll would have asked four more times over this minute.
+    // The 20 second poll would have asked four more times over this minute.
     await act(() => vi.advanceTimersByTimeAsync(POLL_MS * 4));
-    expect(getLeagueWeekMock).toHaveBeenCalledTimes(1);
+    expect(onPoll).toHaveBeenCalledTimes(1);
 
-    getLeagueWeekMock.mockResolvedValue(
-      weekOf(liveGame({ home: "BUF", away: "KC", homeScore: 0, awayScore: 0 })),
+    onPoll.mockResolvedValue(
+      weekOf(
+        "pro",
+        liveGame({ home: "BUF", away: "KC", homeScore: 0, awayScore: 0 }),
+      ),
     );
     await act(() => vi.advanceTimersByTimeAsync(2 * HOUR_MS - POLL_MS * 4));
-    expect(getLeagueWeekMock).toHaveBeenCalledTimes(2);
+    expect(onPoll).toHaveBeenCalledTimes(2);
 
     // Kicked off, so it is back on the poll.
     await act(() => vi.advanceTimersByTimeAsync(POLL_MS));
-    expect(getLeagueWeekMock).toHaveBeenCalledTimes(3);
+    expect(onPoll).toHaveBeenCalledTimes(3);
   });
 
-  it("hands back the game it fetched", async () => {
+  it("names the watched game's league, which is the one fetch the poll costs", async () => {
     const result = kickoffIn(2 * HOUR_MS);
-    getLeagueWeekMock.mockResolvedValue(weekOf(result));
+    const onPoll = poller();
+    onPoll.mockResolvedValue(weekOf("pro", result));
+    const game: WeekGame = {
+      label: "P1",
+      league: League.PRO,
+      name: "KC @ BUF",
+      result,
+    };
+
+    renderHook(() => useLiveGame({ open: true, game, games: [game], onPoll }));
+    await act(() => vi.advanceTimersByTimeAsync(0));
+
+    expect(onPoll).toHaveBeenCalledWith([League.PRO]);
+  });
+
+  it("hands back the game the fetch answered with", async () => {
+    const result = kickoffIn(2 * HOUR_MS);
+    const onPoll = poller();
+    onPoll.mockResolvedValue(weekOf("pro", result));
     const game: WeekGame = {
       label: "P1",
       league: League.PRO,
@@ -111,10 +133,72 @@ describe("useLiveGame", () => {
 
     const games = [game];
     const { result: hook } = renderHook(() =>
-      useLiveGame({ open: true, game, games, week: WEEK }),
+      useLiveGame({ open: true, game, games, onPoll }),
     );
     await act(() => vi.advanceTimersByTimeAsync(0));
 
     expect(hook.current.shown?.status).toBe(GameStatus.UPCOMING);
+  });
+
+  it("hands back nothing where a pass in flight turned the poll away", async () => {
+    const result = liveGame({
+      home: "BUF",
+      away: "KC",
+      homeScore: 7,
+      awayScore: 0,
+    });
+    const onPoll = poller();
+    onPoll.mockResolvedValue(undefined);
+    const game: WeekGame = {
+      label: "P1",
+      league: League.PRO,
+      name: "KC @ BUF",
+      result,
+    };
+
+    const { result: hook } = renderHook(() =>
+      useLiveGame({ open: true, game, games: [game], onPoll }),
+    );
+    await act(() => vi.advanceTimersByTimeAsync(0));
+
+    expect(hook.current.shown).toBeUndefined();
+    // Still on the poll, so the next tick asks again.
+    await act(() => vi.advanceTimersByTimeAsync(POLL_MS));
+    expect(onPoll).toHaveBeenCalledTimes(2);
+  });
+
+  it("stays on the poll while the week is away", async () => {
+    // A failed refresh drops the scores, so the week can go out from under a
+    // tick. The week is no longer in the effect's deps, so a tick that stopped
+    // here would stay stopped until the dialog was opened again.
+    const result = liveGame({
+      home: "BUF",
+      away: "KC",
+      homeScore: 7,
+      awayScore: 0,
+    });
+    const onPoll = poller();
+    onPoll.mockResolvedValue(weekOf("pro", result));
+    const game: WeekGame = {
+      label: "P1",
+      league: League.PRO,
+      name: "KC @ BUF",
+      result,
+    };
+
+    const { rerender } = renderHook(
+      ({ games }: { games?: Array<WeekGame> }) =>
+        useLiveGame({ open: true, game, games, onPoll }),
+      { initialProps: { games: [game] as Array<WeekGame> | undefined } },
+    );
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(onPoll).toHaveBeenCalledTimes(1);
+
+    rerender({ games: undefined });
+    await act(() => vi.advanceTimersByTimeAsync(POLL_MS));
+    expect(onPoll).toHaveBeenCalledTimes(2);
+
+    await act(() => vi.advanceTimersByTimeAsync(POLL_MS));
+    expect(onPoll).toHaveBeenCalledTimes(3);
   });
 });

@@ -56,9 +56,6 @@ async function getLeagueEvents(
   league: League,
   week: WeekInfo, // Rak Madness week, corresponds with NFL regular season week
   season?: number,
-  // Left off when looking up one game by id, since Rak has put a game
-  // outside the NFL week in the picks sheet, making it otherwise unfetchable.
-  { datedFromWeekStart = true }: { datedFromWeekStart?: boolean } = {},
 ): Promise<Array<EspnEvent>> {
   // This league's calendar and no other. The other league's week count decides
   // nothing below, and asking for it is a round trip to ESPN the answer waits on.
@@ -97,7 +94,6 @@ async function getLeagueEvents(
         // ESPN jams the entire college postseason into one week. Events before
         // the given NFL week are dropped. Events after are kept, because a
         // picks sheet has once named a game outside the NFL week.
-        if (!datedFromWeekStart) return events;
         return events.filter(
           (event) => new Date(event.date).valueOf() >= week.startDate.valueOf(),
           // && eventDate.valueOf() <= week.endDate.valueOf()
@@ -415,35 +411,4 @@ export async function getLeagueResults(
   }
 
   return inDateOrder(league, [...results, ...kept]);
-}
-
-/**
- * The league's week, fetched again, under ESPN's id for each game.
- *
- * The same league fetch the scoring pass makes, indexed rather than picked over by
- * matchup, so watching a live game needs no second endpoint and no second way of
- * reading one. Keyed by id because the caller watches one game and holds the rest
- * by the id the week already has for them.
- *
- * One scoreboard is the whole league's week however few of its games are wanted, so
- * a game being watched carries every other game of its league back with it for
- * nothing. A game the week no longer lists is simply absent. A season or week switch
- * can do that while a dialog is open on it.
- */
-export async function getLeagueResultsById(
-  league: League,
-  week: WeekInfo,
-  season?: number,
-): Promise<Map<string, LeagueResult>> {
-  const events = await getLeagueEvents(league, week, season, {
-    datedFromWeekStart: false,
-  });
-  const byId = new Map<string, LeagueResult>();
-  events.forEach((event: EspnEvent) => {
-    const result = toLeagueResult(event);
-    if (result != null) {
-      byId.set(event.id, result);
-    }
-  });
-  return byId;
 }

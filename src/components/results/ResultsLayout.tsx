@@ -15,7 +15,7 @@ import resultsPath from "./resultsPath";
 export default function ResultsLayout() {
   const { season: seasonParam, week: weekParam } = useParams();
   const navigate = useNavigate();
-  const { refresh, rescore, isRefreshing, scores, selectedWeek, loadedSeason } =
+  const { refresh, rescore, isRefreshing, fetchingLeagues, scores } =
     useAppData();
   const guard = useWeekRouteGuard(seasonParam, weekParam);
 
@@ -32,11 +32,10 @@ export default function ResultsLayout() {
         navigate(resultsPath(seasonParam, weekParam, next), { replace: true })
       }
       onRefresh={refresh}
-      onStatusChange={rescore}
+      onPoll={rescore}
       isRefreshing={isRefreshing}
+      fetchingLeagues={fetchingLeagues}
       scores={scores}
-      week={selectedWeek}
-      season={loadedSeason}
     >
       <Outlet />
     </ResultsFrame>
