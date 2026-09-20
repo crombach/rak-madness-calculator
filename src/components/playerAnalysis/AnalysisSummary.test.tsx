@@ -668,7 +668,10 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(notes()[0]).toBe("Every way above needs MNF Points ≤ 41.");
+    expect(notes()).toEqual([
+      "Every way above needs MNF Points ≤ 41.",
+      `${SHORTEST_NOTE} The shortest that wins without the MNF Points tiebreaker needs 4.`,
+    ]);
   });
 
   it("counts one way asking for a total as one way", () => {
