@@ -591,6 +591,10 @@ function reduceRoutes(
       shares: {
         routeCount: rests.length,
         games: sharesIn(rests, contested, playerIndex),
+        // Read off the whole route rather than off `rests`, so it counts the
+        // must-win games the block above the table names as well as the games in
+        // it. A reader adds up what both ask of them, not what one of them does.
+        shortest: bitCount(minimal[0].hits),
         // Held back where the block below says it once.
         mondayNight: isWholeStory
           ? undefined
@@ -848,20 +852,19 @@ export default function getPlayerAnalysis(
   // can be read one at a time, and a table is what stands in where they cannot.
   if (whole.shares != null) {
     // What the table cannot say by standing in two halves. Both lists are held
-    // fewest games first, so each one's cheapest way is the one on top of it.
-    // The subtraction answers zero where that cheapest way already takes the week
-    // alone, and the fallback answers zero where no way takes it alone at all.
-    // Neither has a higher bar to name, so the line below is left off for both.
-    const outrightCost =
-      outright.length > 0
-        ? bitCount(outright[0].hits) - bitCount(minimal[0].hits)
-        : 0;
+    // fewest games first, so each one's shortest way is the one on top of it.
+    // Left off where that shortest way already takes the week alone, and where no
+    // way takes it alone at all: neither has a higher bar to name.
+    const shortestOutright =
+      outright.length > 0 ? bitCount(outright[0].hits) : 0;
     return {
       kind: "paths",
       playerName: player.name,
       ...whole,
       shares:
-        outrightCost > 0 ? { ...whole.shares, outrightCost } : whole.shares,
+        shortestOutright > whole.shares.shortest
+          ? { ...whole.shares, shortestOutright }
+          : whole.shares,
     };
   }
 

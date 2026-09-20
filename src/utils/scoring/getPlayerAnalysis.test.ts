@@ -462,7 +462,7 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
     expect(mustWin(result)).toEqual(["P1"]);
   });
 
-  it("says what the cheapest way to win outright costs over the cheapest way", () => {
+  it("counts the shortest way to win outright beside the shortest way", () => {
     // Bob and Carl are each a point up, over separate halves of the week. One
     // game off either half draws Alice level with that rival, which the totals
     // then decide, so the cheapest way through leans on them. Clearing both
@@ -484,15 +484,16 @@ describe("getPlayerAnalysis, the shares past what a list can show", () => {
     ]);
 
     const result = paths(getPlayerAnalysis(scores, "Alice"));
-    expect(result.shares?.outrightCost).toBe(1);
+    expect(result.shares?.shortest).toBe(5);
+    expect(result.shares?.shortestOutright).toBe(6);
   });
 
-  it("leaves the cost off where the cheapest way already wins outright", () => {
+  it("leaves the higher bar off where the shortest way already wins outright", () => {
     // Every way through `manyRoutes` clears both rivals on points, so no way
     // leans on the total and there is nothing a further game would buy.
     const result = paths(getPlayerAnalysis(manyRoutes(), "Alice"));
     expect(result.shares?.routeCount).toBe(15);
-    expect(result.shares?.outrightCost).toBeUndefined();
+    expect(result.shares?.shortestOutright).toBeUndefined();
   });
 
   it("counts a game over every route, not over the ones a list would keep", () => {

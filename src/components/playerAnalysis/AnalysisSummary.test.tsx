@@ -20,6 +20,7 @@ function routesOf(count: number): Array<VictoryRoute> {
 function sharesOf(count: number): PickShares {
   return {
     routeCount: 20,
+    shortest: 3,
     games: Array.from({ length: count }, (_, index) => ({
       label: `P${index + 1}`,
       pick: `T${index + 1} -3`,
@@ -70,6 +71,9 @@ function notes(): Array<string> {
     (note) => note.textContent ?? "",
   );
 }
+
+/** What `sharesOf` costs, which every table below carries under it. */
+const SHORTEST_NOTE = "The shortest way needs 3 correct picks.";
 
 /** The one tiebreaker range the cases below need: a week won at 45 or under. */
 const RAK_BY_45 = { kind: "range" as const, max: 45 };
@@ -528,7 +532,7 @@ describe("AnalysisSummary", () => {
     const result: PlayerAnalysis = { ...base, shares: sharesOf(3) };
     render(<AnalysisSummary result={result} />);
 
-    expect(blockHeading("20 ways")).toBeInTheDocument();
+    expect(blockHeading("20 ways to win")).toBeInTheDocument();
     expect(shareRows()).toEqual(["P1T1 -315%", "P2T2 -310%", "P3T3 -35%"]);
   });
 
@@ -558,6 +562,7 @@ describe("AnalysisSummary", () => {
       ...base,
       shares: {
         routeCount: 400,
+        shortest: 3,
         games: [
           { label: "P1", pick: "KC -3", routes: 399 },
           { label: "P2", pick: "BUF -1", routes: 1 },
@@ -569,35 +574,35 @@ describe("AnalysisSummary", () => {
     expect(shareRows()).toEqual(["P1KC -399%", "P2BUF -11%"]);
   });
 
-  it("says what the shortest way to win outright costs", () => {
+  it("counts the higher bar against the shortest way, not against nothing", () => {
     const result: PlayerAnalysis = {
       ...base,
-      shares: { ...sharesOf(2), outrightCost: 1 },
+      shares: { ...sharesOf(2), shortest: 3, shortestOutright: 4 },
     };
     render(<AnalysisSummary result={result} />);
 
     expect(notes()).toEqual([
-      "The shortest way to win outright needs 1 more correct pick.",
+      `${SHORTEST_NOTE} The shortest that wins without the MNF Points tiebreaker needs 4.`,
     ]);
   });
 
-  it("counts more than one such pick as picks", () => {
+  it("counts one pick as a pick", () => {
     const result: PlayerAnalysis = {
       ...base,
-      shares: { ...sharesOf(2), outrightCost: 2 },
+      shares: { ...sharesOf(2), shortest: 1 },
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(notes()[0]).toContain("2 more correct picks");
+    expect(notes()).toEqual(["The shortest way needs 1 correct pick."]);
   });
 
-  it("says nothing about the higher bar where no way clears it", () => {
-    // A table with no `outrightCost` is one where no set of picks takes the week
-    // on its own, so there is no number of extra picks that buys anything.
+  it("says how many picks a way takes where no way clears the higher bar", () => {
+    // A table with no `shortestOutright` is one where no set of picks takes the
+    // week on its own. How many picks the ways themselves take still stands.
     const result: PlayerAnalysis = { ...base, shares: sharesOf(2) };
     render(<AnalysisSummary result={result} />);
 
-    expect(notes()).toEqual([]);
+    expect(notes()).toEqual([SHORTEST_NOTE]);
   });
 
   it("answers the totals with the way out of them, in that order", () => {
@@ -610,15 +615,15 @@ describe("AnalysisSummary", () => {
           routes: 8,
           isAlways: true,
         },
-        outrightCost: 1,
+        shortestOutright: 4,
       },
     };
     render(<AnalysisSummary result={result} />);
 
     // The totals first, since the line under them is the answer to them.
     expect(notes()).toEqual([
-      "Every way needs the MNF Points tiebreaker. 8 ways need MNF Points ≤ 41.",
-      "The shortest way to win outright needs 1 more correct pick.",
+      "Every way needs the MNF Points tiebreaker. 8 of the 20 ways need MNF Points ≤ 41.",
+      `${SHORTEST_NOTE} The shortest that wins without the MNF Points tiebreaker needs 4.`,
     ]);
   });
 
@@ -637,9 +642,54 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     // The ways asking for something else are left to the count to imply.
-    expect(notes()).toEqual(["8 ways need MNF Points ≤ 41."]);
+    expect(notes()).toEqual([
+      "8 of the 20 ways need MNF Points ≤ 41.",
+      SHORTEST_NOTE,
+    ]);
     // Not every way is held to it, so it is not a condition on the table.
     expect(mnfLines()).toEqual([]);
+  });
+
+  it("names the bar where the table is the outright half", () => {
+    // A shares table under the outright divider stands over a second block of
+    // cheaper ways. Its count is of its own ways, so a sentence saying `the
+    // shortest way` would be read against the block below, which asks fewer.
+    const result: PlayerAnalysis = {
+      ...base,
+      pool: { choose: 2, games: [...sharesOf(3).games] },
+      outright: { mustWin: [], shares: { ...sharesOf(2), shortest: 6 } },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(notes()).toEqual([
+      "The shortest way to win outright needs 6 correct picks.",
+    ]);
+    // The divider above already says which bar, so the title does not repeat it.
+    expect(blockHeading("20 ways")).toBeInTheDocument();
+  });
+
+  it("says every way where the count is the table's own", () => {
+    // Every way in the table wanting one total, which reaches the sentence only
+    // where a way outside it wins without one. A fraction of itself would read as
+    // holding some of them back.
+    const result: PlayerAnalysis = {
+      ...base,
+      shares: {
+        ...sharesOf(2),
+        mondayNight: {
+          points: { kind: "range", max: 41 },
+          routes: 20,
+          isAlways: false,
+        },
+        shortestOutright: 4,
+      },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(notes()).toEqual([
+      "Every way above needs MNF Points ≤ 41.",
+      `${SHORTEST_NOTE} The shortest that wins without the MNF Points tiebreaker needs 4.`,
+    ]);
   });
 
   it("counts one way asking for a total as one way", () => {
@@ -656,7 +706,10 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(notes()).toEqual(["1 way needs MNF Points ≤ 41."]);
+    expect(notes()).toEqual([
+      "1 of the 20 ways needs MNF Points ≤ 41.",
+      SHORTEST_NOTE,
+    ]);
   });
 
   it("says the total is always needed where every route asks a different one", () => {
@@ -676,7 +729,8 @@ describe("AnalysisSummary", () => {
     // No way is held to this one, so the table takes no `AND` line.
     expect(mnfLines()).toEqual([]);
     expect(notes()).toEqual([
-      "Every way needs the MNF Points tiebreaker. 8 ways need MNF Points ≥ 20.",
+      "Every way needs the MNF Points tiebreaker. 8 of the 20 ways need MNF Points ≥ 20.",
+      SHORTEST_NOTE,
     ]);
   });
 
@@ -695,7 +749,7 @@ describe("AnalysisSummary", () => {
     };
     render(<AnalysisSummary result={result} />);
 
-    expect(notes()).toEqual([]);
+    expect(notes()).toEqual([SHORTEST_NOTE]);
     expect(mnfLines()).toEqual(["AND MNF Points ≤ 45"]);
   });
 });
