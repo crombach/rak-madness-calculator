@@ -54,11 +54,16 @@ function Ways({
   // not conjoined to them, since the halves are read one at a time, but the word
   // below would say the choice takes the week on its own.
   hoisted,
+  // On for the half that takes the week alone. A table of shares counts the games
+  // its own ways need, and the half below asks fewer, so a count that did not say
+  // which bar it held would be read against the wrong one.
+  isOutright,
 }: {
   ways: WaysThrough;
   showMondayNight: boolean;
   conjoined?: boolean;
   hoisted?: boolean;
+  isOutright?: boolean;
 }) {
   const hasMustWin = ways.mustWin.length > 0;
   // `Must win` names a demand on its own. `One of` and `Any 2 of` name a choice
@@ -99,6 +104,7 @@ function Ways({
           conjoined={hasMustWin || conjoined}
           shares={ways.shares}
           showMondayNight={showMondayNight}
+          isOutright={isOutright}
         />
       )}
     </>
@@ -218,6 +224,7 @@ export default function AnalysisBody({
             ways={past(result.outright, hoisted)}
             showMondayNight={false}
             hoisted={hoisted.length > 0}
+            isOutright
           />
           <h3 className="analysis__divider">
             To win with MNF Points tiebreaker:

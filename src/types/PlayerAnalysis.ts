@@ -69,10 +69,15 @@ export type PickShares = {
     isAlways: boolean;
   };
   /**
-   * Games the shortest way asks the player to get right, must-win games included.
+   * Games the shortest of these ways asks the player to get right, must-win games
+   * included.
    *
    * A share names a game and not a way, so nothing else in the table says how many
    * games a way takes. Without it `shortestOutright` counts against nothing.
+   *
+   * These ways, never every way to win: a `PickShares` under `outright` counts the
+   * shortest way to take the week alone, which is not the shortest way to win. The
+   * block rendering it names which bar it stands for.
    */
   shortest: number;
   /**

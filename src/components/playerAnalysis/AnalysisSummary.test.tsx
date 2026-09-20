@@ -650,6 +650,24 @@ describe("AnalysisSummary", () => {
     expect(mnfLines()).toEqual([]);
   });
 
+  it("names the bar where the table is the outright half", () => {
+    // A shares table under the outright divider stands over a second block of
+    // cheaper ways. Its count is of its own ways, so a sentence saying `the
+    // shortest way` would be read against the block below, which asks fewer.
+    const result: PlayerAnalysis = {
+      ...base,
+      pool: { choose: 2, games: [...sharesOf(3).games] },
+      outright: { mustWin: [], shares: { ...sharesOf(2), shortest: 6 } },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(notes()).toEqual([
+      "The shortest way to win outright needs 6 correct picks.",
+    ]);
+    // The divider above already says which bar, so the title does not repeat it.
+    expect(blockHeading("20 ways")).toBeInTheDocument();
+  });
+
   it("says every way where the count is the table's own", () => {
     // Every way in the table wanting one total, which reaches the sentence only
     // where a way outside it wins without one. A fraction of itself would read as

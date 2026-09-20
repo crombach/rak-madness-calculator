@@ -60,28 +60,38 @@ function SharesMondayNight({
 }
 
 /**
- * How many games a way takes, and the way out of the tiebreaker above that.
+ * How many games a way in this table takes, and the way out of the tiebreaker.
  *
  * A share names a game and not a way, so no row here says how many games one way
  * asks for. The first sentence is that number, and nothing else on screen gives it:
  * a reader without it cannot tell a table wanting two picks from one wanting eight.
  *
+ * The sentence names the bar its own table holds, because a table under the outright
+ * divider stands over a second block of cheaper ways. `The shortest way` there would
+ * be read against those, and they ask fewer games than this count.
+ *
  * A list of ways shows the higher bar by standing in two halves, one asking more
  * games and no total. The halves would stand twice over the same games here, so the
  * second sentence says the bar instead. It is a count and never a way to reach it,
  * since the shortest way to win outright need not be the shortest way through with
- * games added, and the table shows no way for a reader to add them to.
+ * games added, and the table shows no way for a reader to add them to. A table that
+ * is already the outright half has no higher bar left to name.
  */
 function SharesCost({
   shortest,
   outright,
+  isOutright,
 }: {
   shortest: number;
   outright?: number;
+  isOutright?: boolean;
 }) {
+  const way = isOutright
+    ? "The shortest way to win outright"
+    : "The shortest way";
   return (
     <p className="analysis__note --upright">
-      {`The shortest way needs ${plural(shortest, "correct pick")}.`}
+      {`${way} needs ${plural(shortest, "correct pick")}.`}
       {outright != null &&
         ` The shortest that wins without the MNF Points tiebreaker needs ${outright}.`}
     </p>
@@ -98,10 +108,15 @@ export default function AnalysisShares({
   // Off where every route asks the same of the tiebreaker, which the section below
   // then states once rather than under this table.
   showMondayNight,
+  // On where these are the ways to win outright, which the divider above the block
+  // names. The ways to win at all stand in a second block under their own divider,
+  // so a count here that did not say which bar it held would be read against those.
+  isOutright,
 }: {
   conjoined?: boolean;
   shares: PickShares;
   showMondayNight: boolean;
+  isOutright?: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const folded = shares.games.length - SHARES_SHOWN_AT_FIRST;
@@ -113,9 +128,13 @@ export default function AnalysisShares({
     <Section
       conjoined={conjoined}
       // `to win` rather than the bare count, which named no thing the ways are
-      // ways to. The dividers naming the two bars stand over a list of routes and
-      // never over this table, so nothing else here says it.
-      title={`${plural(shares.routeCount, "way")} to win`}
+      // ways to. Left off under the outright divider, which says it already and
+      // would have the title claim a bar the block below this one undercuts.
+      title={
+        isOutright
+          ? plural(shares.routeCount, "way")
+          : `${plural(shares.routeCount, "way")} to win`
+      }
     >
       <table className="analysis__shares">
         <thead>
@@ -153,6 +172,7 @@ export default function AnalysisShares({
       <SharesCost
         shortest={shares.shortest}
         outright={shares.shortestOutright}
+        isOutright={isOutright}
       />
       {folded > 0 && (
         <Button
