@@ -69,24 +69,29 @@ export type PickShares = {
     isAlways: boolean;
   };
   /**
-   * How many more games the cheapest way to win outright asks for than the
-   * cheapest way to win at all.
+   * Games the shortest way asks the player to get right, must-win games included.
    *
-   * Absent where no way wins outright, and where the cheapest way already does.
+   * A share names a game and not a way, so nothing else in the table says how many
+   * games a way takes. Without it `shortestOutright` counts against nothing.
+   */
+  shortest: number;
+  /**
+   * The same count for the shortest way that wins with the tiebreaker out of it.
+   *
+   * Absent where no way wins without it, and where the shortest way already does.
    * Only a table gives this, since a list of ways says it by standing in two
    * halves instead.
    *
    * A count of the ways that win outright would not do. A way taking the week
    * alone holds a smaller winning way inside it, so it stands in both lists, and
-   * counting it against `routeCount` would count one win twice. Two cheapest ways
+   * counting it against `routeCount` would count one win twice. Two shortest ways
    * compare without that.
    *
-   * The two cheapest ways need not be one inside the other. Every outright way
-   * holds some winning way, which is what keeps this count at or above zero, but
-   * the one it holds need not be the cheapest of them. So this is the gap between
-   * two bars, not a list of games to add to any one way.
+   * The two shortest ways need not be one inside the other. Every outright way
+   * holds some winning way, but the one it holds need not be the shortest of them.
+   * So these are two bars, not a list of games to add to any one way.
    */
-  outrightCost?: number;
+  shortestOutright?: number;
 };
 
 /**
