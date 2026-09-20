@@ -1,4 +1,4 @@
-import { bench, describe } from "vitest";
+import { test } from "vitest";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import applyKnockouts from "./applyKnockouts";
 import {
@@ -50,71 +50,79 @@ const sundayNight = weekAt("sundayNight");
 const settled = weekAt("settled");
 const atSearchLimit = weekAt(MAX_SEARCHED_GAMES);
 
-describe("getPlayerScores, end to end", () => {
+test("getPlayerScores, end to end", async ({ bench }) => {
   const run = (phase: WeekPhase) => async () => {
     globalThis.fetch = benchFetch(phase);
     localStorage.clear();
     await getPlayerScores(BENCH_WEEK, picksBuffer, SEASON);
   };
 
-  bench("kickoff", run("kickoff"));
-  bench("sunday night", run("sundayNight"));
-  bench("settled", run("settled"));
+  await bench.compare(
+    bench("kickoff", run("kickoff")),
+    bench("sunday night", run("sundayNight")),
+    bench("settled", run("settled")),
+  );
 });
 
-describe("scorePlayers", () => {
-  bench("kickoff", () => {
-    scorePlayers(parsed, kickoff.results, kickoff.tiebreaker);
-  });
-  bench("sunday night", () => {
-    scorePlayers(parsed, sundayNight.results, sundayNight.tiebreaker);
-  });
+test("scorePlayers", async ({ bench }) => {
+  await bench.compare(
+    bench("kickoff", () => {
+      scorePlayers(parsed, kickoff.results, kickoff.tiebreaker);
+    }),
+    bench("sunday night", () => {
+      scorePlayers(parsed, sundayNight.results, sundayNight.tiebreaker);
+    }),
+  );
 });
 
 // A fresh array per run, because `weekShape` holds its answer against the one it
 // was handed and the app always hands it rows `scorePlayers` has just built.
-describe("applyKnockouts", () => {
-  bench("sunday night", () => {
-    applyKnockouts([...sundayNight.sorted], sundayNight.tiebreaker);
-  });
-  bench("settled", () => {
-    applyKnockouts([...settled.sorted], settled.tiebreaker);
-  });
+test("applyKnockouts", async ({ bench }) => {
+  await bench.compare(
+    bench("sunday night", () => {
+      applyKnockouts([...sundayNight.sorted], sundayNight.tiebreaker);
+    }),
+    bench("settled", () => {
+      applyKnockouts([...settled.sorted], settled.tiebreaker);
+    }),
+  );
 });
 
-describe("weekGames", () => {
-  bench("sunday night", () => {
+test("weekGames", async ({ bench }) => {
+  await bench("sunday night", () => {
     weekGames(parsed, sundayNight.results, sundayNight.indexed);
-  });
+  }).run();
 });
 
-describe("weekShape", () => {
-  bench("sunday night", () => {
+test("weekShape", async ({ bench }) => {
+  await bench("sunday night", () => {
     weekShape([...sundayNight.scores.scores]);
-  });
+  }).run();
 });
 
-describe("getPlayerAnalysis", () => {
+test("getPlayerAnalysis", async ({ bench }) => {
   // A fixed row rather than the widest, so the number holds run to run.
   const chased = sundayNight.scores.scores[10].name;
 
-  bench("two games open", () => {
-    getPlayerAnalysis(sundayNight.scores, chased);
-  });
-  bench("settled", () => {
-    getPlayerAnalysis(settled.scores, chased);
-  });
-  // The dialog's ceiling: as many games open as the routes are worked out for, so
-  // this is the slowest answer a reader can ask for, and what moving
-  // `MAX_SEARCHED_GAMES` is measured on.
-  bench("at the search limit", () => {
-    getPlayerAnalysis(
-      atSearchLimit.scores,
-      atSearchLimit.scores.scores[10].name,
-    );
-  });
-  // A game more than the limit, which answers off a walk of the players instead.
-  bench("above the search limit", () => {
-    getPlayerAnalysis(kickoff.scores, kickoff.scores.scores[10].name);
-  });
+  await bench.compare(
+    bench("two games open", () => {
+      getPlayerAnalysis(sundayNight.scores, chased);
+    }),
+    bench("settled", () => {
+      getPlayerAnalysis(settled.scores, chased);
+    }),
+    // The dialog's ceiling: as many games open as the routes are worked out for, so
+    // this is the slowest answer a reader can ask for, and what moving
+    // `MAX_SEARCHED_GAMES` is measured on.
+    bench("at the search limit", () => {
+      getPlayerAnalysis(
+        atSearchLimit.scores,
+        atSearchLimit.scores.scores[10].name,
+      );
+    }),
+    // A game more than the limit, which answers off a walk of the players instead.
+    bench("above the search limit", () => {
+      getPlayerAnalysis(kickoff.scores, kickoff.scores.scores[10].name);
+    }),
+  );
 });

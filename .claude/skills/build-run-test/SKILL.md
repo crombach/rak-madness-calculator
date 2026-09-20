@@ -11,7 +11,7 @@ description: How to build, run, and test this repo. Read before any npm, make, t
 
 ## Toolchain
 
-- Vite 8, React 19, TypeScript 6, Vitest 4, ESLint 9 flat config, wrangler 4.
+- Vite 8, React 19, TypeScript 6, Vitest 5, ESLint 9 flat config, wrangler 4.
 - Base UI for behavior, react-router 8 for routing, SCSS for looks. There is no theme provider. `src/CLAUDE.md` covers the `--rak-*` design tokens, `src/styles/CLAUDE.md` the Sass mixins, `src/components/icon/CLAUDE.md` the icons.
 - Node `v22.23` (`.nvmrc`), npm 10 (`lockfileVersion: 3`). `nvm use` before anything. wrangler 4 refuses to run on Node 20, and jsdom 30 needs `>=22.22.2`, which is why the pin carries a minor. `make setup` fails with an actionable message on an older Node or another major.
 - CI signals on a PR: `check` (`.github/workflows/check.yml`) runs the same `make check` you run locally, `conventional-commit-title` (`.github/workflows/pr-title.yml`) matches the title format, and `Cloudflare Pages` builds from git using the dashboard's own settings. Break `make check` locally and CI breaks the same way.
@@ -53,7 +53,9 @@ Writing a test here:
 
 The scoring path logs through `src/utils/debugLog.ts`, which is silent when the Vite mode is `test`. Console output during a test run is now a signal, not background noise.
 
-`make bench` runs `vitest bench --run --mode test`, and `make check` leaves it out. `--mode test` is what keeps `debugLog` quiet, because that mode is the only one it is silent in.
+`make bench` runs `vitest bench --run --mode test --reporter=verbose`, and `make check` leaves it out. `--mode test` is what keeps `debugLog` quiet, because that mode is the only one it is silent in. `--reporter=verbose` is what prints the tables. The default reporter runs the benchmarks and shows none of their numbers.
+
+Vitest 5 rewrote the benchmark API. A benchmark is now a fixture on a test, not a test of its own: `test("name", async ({ bench }) => ...)`, with `bench.compare(...)` for a table of rivals and `bench("name", fn).run()` for a lone number. `bench` only exists in a `*.bench.ts` file. `bench.compare` interleaves the iterations of everything it is given, so benchmarks that share state across runs, like a warm cache filled by a cold one, need separate tests instead.
 
 ## Gotchas
 
