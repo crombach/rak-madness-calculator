@@ -17,6 +17,10 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Every install path runs `npm ci`, which takes the lockfile exactly and
+    # ignores these ranges. So leave a range alone whenever it already admits
+    # the new version, and let the lockfile carry the bump on its own.
+    versioning-strategy: increase-if-necessary
     # Seven version-update groups, plus a PR for each major outside one.
     # A security update is exempt from this limit and does not count toward it.
     open-pull-requests-limit: 10
