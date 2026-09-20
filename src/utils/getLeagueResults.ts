@@ -418,22 +418,32 @@ export async function getLeagueResults(
 }
 
 /**
- * One game, fetched again.
+ * The league's week, fetched again, under ESPN's id for each game.
  *
- * The same league fetch the scoring pass makes, picked over by event id rather
- * than by matchup, so watching a live game needs no second endpoint and no second
- * way of reading one. Null where the week no longer holds that game. A season
- * or week switch can do that while a dialog is open on it.
+ * The same league fetch the scoring pass makes, indexed rather than picked over by
+ * matchup, so watching a live game needs no second endpoint and no second way of
+ * reading one. Keyed by id because the caller watches one game and holds the rest
+ * by the id the week already has for them.
+ *
+ * One scoreboard is the whole league's week however few of its games are wanted, so
+ * a game being watched carries every other game of its league back with it for
+ * nothing. A game the week no longer lists is simply absent. A season or week switch
+ * can do that while a dialog is open on it.
  */
-export async function getLeagueResult(
+export async function getLeagueResultsById(
   league: League,
   week: WeekInfo,
-  eventId: string,
   season?: number,
-): Promise<LeagueResult | null> {
+): Promise<Map<string, LeagueResult>> {
   const events = await getLeagueEvents(league, week, season, {
     datedFromWeekStart: false,
   });
-  const event = events.find((it: EspnEvent) => it.id === eventId);
-  return event != null ? toLeagueResult(event) : null;
+  const byId = new Map<string, LeagueResult>();
+  events.forEach((event: EspnEvent) => {
+    const result = toLeagueResult(event);
+    if (result != null) {
+      byId.set(event.id, result);
+    }
+  });
+  return byId;
 }
