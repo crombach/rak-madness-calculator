@@ -7,7 +7,7 @@ import {
   HomeAway,
 } from "../types/ESPN";
 import { League, WeekInfo } from "../types/League";
-import { getLeagueResult, getLeagueResults } from "./getLeagueResults";
+import { getLeagueResults, getLeagueResultsById } from "./getLeagueResults";
 
 vi.mock("./getLeagueInfo");
 
@@ -408,24 +408,26 @@ describe("getLeagueResults, mapping", () => {
   });
 });
 
-describe("getLeagueResult", () => {
-  it("finds the game with that id, whoever picked it", async () => {
+describe("getLeagueResultsById", () => {
+  it("comes back with every game of the week, whoever picked them", async () => {
     mockFetch([
       espnEvent({ home: "BUF", away: "KC", id: "1" }),
       espnEvent({ home: "DAL", away: "PHI", id: "2" }),
     ]);
-    const result = await getLeagueResult(League.PRO, WEEK, "2");
-    expect(result?.shortName).toBe("PHI @ DAL");
+    const week = await getLeagueResultsById(League.PRO, WEEK);
+    expect(week.get("1")?.shortName).toBe("KC @ BUF");
+    expect(week.get("2")?.shortName).toBe("PHI @ DAL");
   });
 
-  it("comes back with nothing where the week no longer holds the game", async () => {
+  it("holds no game the week no longer lists", async () => {
     mockFetch([espnEvent({ home: "BUF", away: "KC", id: "1" })]);
-    expect(await getLeagueResult(League.PRO, WEEK, "9")).toBeNull();
+    const week = await getLeagueResultsById(League.PRO, WEEK);
+    expect(week.get("9")).toBeUndefined();
   });
 
-  it("finds a college game played before the week began", async () => {
+  it("keeps a college game played before the week began", async () => {
     // The list a week is scored from drops these, because ESPN hands back the whole
-    // bowl season at once. One being looked up by id was already chosen.
+    // bowl season at once. A game being watched was already chosen.
     mockFetch([
       espnEvent({
         home: "OSU",
@@ -434,8 +436,8 @@ describe("getLeagueResult", () => {
         date: "2024-09-01T17:00Z",
       }),
     ]);
-    const result = await getLeagueResult(League.COLLEGE, WEEK, "7");
-    expect(result?.shortName).toBe("MICH @ OSU");
+    const week = await getLeagueResultsById(League.COLLEGE, WEEK);
+    expect(week.get("7")?.shortName).toBe("MICH @ OSU");
   });
 });
 

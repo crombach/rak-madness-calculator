@@ -16,7 +16,7 @@ import { POLL_MS } from "../../hooks/useLiveGame";
 
 vi.mock("../../utils/getLeagueResults");
 
-import { getLeagueResultMock } from "../../utils/getLeagueResultMock";
+import { getLeagueWeekMock, weekOf } from "../../utils/getLeagueWeekMock";
 import { dialog } from "./gameStatusDialogTestSupport";
 
 const proGame: WeekGame = {
@@ -42,8 +42,8 @@ describe("GameStatusDialog onStatusChange", () => {
   it("calls onStatusChange once the polled game goes final, and not again after", async () => {
     vi.useFakeTimers();
     const onStatusChange = vi.fn();
-    getLeagueResultMock.mockResolvedValue(
-      liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 }),
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 })),
     );
 
     const { rerender } = render(
@@ -53,8 +53,10 @@ describe("GameStatusDialog onStatusChange", () => {
     await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
     expect(onStatusChange).not.toHaveBeenCalled();
 
-    getLeagueResultMock.mockResolvedValue(
-      finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 14 }),
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(
+        finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 14 }),
+      ),
     );
     await vi.advanceTimersByTimeAsync(POLL_MS);
     expect(onStatusChange).toHaveBeenCalledTimes(1);
@@ -72,8 +74,8 @@ describe("GameStatusDialog onStatusChange", () => {
   it("stops after the rescore its own final sets off", async () => {
     vi.useFakeTimers();
     const onStatusChange = vi.fn();
-    getLeagueResultMock.mockResolvedValue(
-      liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 }),
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 })),
     );
 
     const { rerender } = render(
@@ -82,8 +84,10 @@ describe("GameStatusDialog onStatusChange", () => {
     rerender(dialog("P1", true, scores, onStatusChange));
     await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
 
-    getLeagueResultMock.mockResolvedValue(
-      finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 14 }),
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(
+        finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 14 }),
+      ),
     );
     await vi.advanceTimersByTimeAsync(POLL_MS);
     expect(onStatusChange).toHaveBeenCalledTimes(1);
@@ -118,18 +122,32 @@ describe("GameStatusDialog onStatusChange", () => {
       result: { ...live(), id: SECOND_EVENT_ID },
     };
     const both: RakMadnessScores = { scores: [], games: [proGame, second] };
-    getLeagueResultMock.mockResolvedValue(live());
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(live(), { ...live(), id: SECOND_EVENT_ID }),
+    );
 
     const { rerender } = render(dialog(undefined, false, both, onStatusChange));
     rerender(dialog("P1", true, both, onStatusChange));
     await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
 
-    // Answered by the event asked about, so each game's final names its own teams.
-    getLeagueResultMock.mockImplementation(async (_league, _week, eventId) =>
-      eventId === SECOND_EVENT_ID
-        ? finalGame({ home: "PHI", away: "DAL", homeScore: 20, awayScore: 17 })
-        : finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 14 }),
+    // Both games over on the one answer, which is what a scoreboard carrying the
+    // league's whole week gives back.
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(
+        finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 14 }),
+        {
+          ...finalGame({
+            home: "PHI",
+            away: "DAL",
+            homeScore: 20,
+            awayScore: 17,
+          }),
+          id: SECOND_EVENT_ID,
+        },
+      ),
     );
+    // Once, not once per game. The rescore it asks for reads the whole week, so a
+    // second call would score the same workbook against the same games again.
     await vi.advanceTimersByTimeAsync(POLL_MS);
     expect(onStatusChange).toHaveBeenCalledTimes(1);
 
@@ -140,12 +158,100 @@ describe("GameStatusDialog onStatusChange", () => {
     };
     rerender(dialog("P2", true, rescored, onStatusChange));
     await vi.advanceTimersByTimeAsync(POLL_MS);
-    expect(onStatusChange).toHaveBeenCalledTimes(2);
+    expect(onStatusChange).toHaveBeenCalledTimes(1);
 
-    // Back to the first game, which was announced before the second one was.
+    // Back to the first game, which the same poll announced.
     rerender(dialog("P1", true, rescored, onStatusChange));
     await vi.advanceTimersByTimeAsync(POLL_MS * 4);
-    expect(onStatusChange).toHaveBeenCalledTimes(2);
+    expect(onStatusChange).toHaveBeenCalledTimes(1);
+
+    vi.useRealTimers();
+  });
+
+  it("says so when a game nobody is watching moves", async () => {
+    // One scoreboard is the league's whole week, so the poll already holds every
+    // other game of it. A reader watching a game that has not moved still sees the
+    // column beside it catch up.
+    vi.useFakeTimers();
+    const onStatusChange = vi.fn();
+    const live = () =>
+      liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 });
+    const second: WeekGame = {
+      label: "P2",
+      league: League.PRO,
+      name: "DAL @ PHI",
+      result: { ...live(), id: SECOND_EVENT_ID },
+    };
+    const both: RakMadnessScores = { scores: [], games: [proGame, second] };
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(live(), { ...live(), id: SECOND_EVENT_ID }),
+    );
+
+    const { rerender } = render(dialog(undefined, false, both, onStatusChange));
+    rerender(dialog("P1", true, both, onStatusChange));
+    await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
+    expect(onStatusChange).not.toHaveBeenCalled();
+
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(live(), {
+        ...finalGame({
+          home: "PHI",
+          away: "DAL",
+          homeScore: 20,
+          awayScore: 17,
+        }),
+        id: SECOND_EVENT_ID,
+      }),
+    );
+    await vi.advanceTimersByTimeAsync(POLL_MS);
+    expect(onStatusChange).toHaveBeenCalledTimes(1);
+
+    // What moved was the other column, which is the rescore's to draw.
+    expect(screen.getByRole("img", { name: "Live" })).toBeInTheDocument();
+
+    // Nothing moves after it, so nothing more is announced.
+    await vi.advanceTimersByTimeAsync(POLL_MS * 3);
+    expect(onStatusChange).toHaveBeenCalledTimes(1);
+
+    vi.useRealTimers();
+  });
+
+  it("says nothing about a game of the league it did not fetch", async () => {
+    // The poll asks the watched game's league alone, so a college game is not in
+    // the answer and cannot be measured against the week's copy of it.
+    vi.useFakeTimers();
+    const onStatusChange = vi.fn();
+    const live = () =>
+      liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 });
+    const collegeGame: WeekGame = {
+      label: "C1",
+      league: League.COLLEGE,
+      name: "MICH @ OSU",
+      result: { ...live(), id: SECOND_EVENT_ID },
+    };
+    const both: RakMadnessScores = {
+      scores: [],
+      games: [proGame, collegeGame],
+    };
+    // Answered as the pro fetch, which would hold no college game whatever ids it
+    // carried. The college game's id is in it, so only the league test turns it away.
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(live(), {
+        ...finalGame({
+          home: "OSU",
+          away: "MICH",
+          homeScore: 20,
+          awayScore: 17,
+        }),
+        id: SECOND_EVENT_ID,
+      }),
+    );
+
+    const { rerender } = render(dialog(undefined, false, both, onStatusChange));
+    rerender(dialog("P1", true, both, onStatusChange));
+    await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
+    await vi.advanceTimersByTimeAsync(POLL_MS * 3);
+    expect(onStatusChange).not.toHaveBeenCalled();
 
     vi.useRealTimers();
   });
@@ -161,8 +267,8 @@ describe("GameStatusDialog onStatusChange", () => {
       result: upcomingGame({ home: "BUF", away: "KC" }),
     };
     const waiting: RakMadnessScores = { scores: [], games: [upcoming] };
-    getLeagueResultMock.mockResolvedValue(
-      upcomingGame({ home: "BUF", away: "KC" }),
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(upcomingGame({ home: "BUF", away: "KC" })),
     );
 
     const { rerender } = render(
@@ -173,8 +279,8 @@ describe("GameStatusDialog onStatusChange", () => {
     // The poll agrees with the week, so there is nothing to tell it.
     expect(onStatusChange).not.toHaveBeenCalled();
 
-    getLeagueResultMock.mockResolvedValue(
-      liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 }),
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 })),
     );
     await vi.advanceTimersByTimeAsync(POLL_MS);
     expect(onStatusChange).toHaveBeenCalledTimes(1);
@@ -189,11 +295,131 @@ describe("GameStatusDialog onStatusChange", () => {
     vi.useRealTimers();
   });
 
+  it("keeps polling for the league after the watched game is final", async () => {
+    // The reader opens the early game and it finishes while the later ones are
+    // still being played. Their columns are what the poll now keeps in step, so it
+    // cannot stop at the watched game's own final.
+    vi.useFakeTimers();
+    const onStatusChange = vi.fn();
+    const later: WeekGame = {
+      label: "P2",
+      league: League.PRO,
+      name: "DAL @ PHI",
+      result: {
+        ...liveGame({ home: "PHI", away: "DAL", homeScore: 3, awayScore: 0 }),
+        id: SECOND_EVENT_ID,
+      },
+    };
+    const both: RakMadnessScores = { scores: [], games: [proGame, later] };
+    const stillPlaying = () => ({
+      ...liveGame({ home: "PHI", away: "DAL", homeScore: 3, awayScore: 0 }),
+      id: SECOND_EVENT_ID,
+    });
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(
+        liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 }),
+        stillPlaying(),
+      ),
+    );
+
+    const { rerender } = render(dialog(undefined, false, both, onStatusChange));
+    rerender(dialog("P1", true, both, onStatusChange));
+    await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
+    expect(onStatusChange).not.toHaveBeenCalled();
+
+    // The watched game goes final. The other one has not moved.
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(
+        finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 14 }),
+        stillPlaying(),
+      ),
+    );
+    await vi.advanceTimersByTimeAsync(POLL_MS);
+    expect(onStatusChange).toHaveBeenCalledTimes(1);
+
+    // The later game moves after that, with the watched one long over. The old
+    // poll stopped at the watched game's final and would report nothing here.
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(
+        finalGame({ home: "BUF", away: "KC", homeScore: 24, awayScore: 14 }),
+        {
+          ...finalGame({
+            home: "PHI",
+            away: "DAL",
+            homeScore: 20,
+            awayScore: 17,
+          }),
+          id: SECOND_EVENT_ID,
+        },
+      ),
+    );
+    await vi.advanceTimersByTimeAsync(POLL_MS);
+    expect(onStatusChange).toHaveBeenCalledTimes(2);
+
+    // Every game of the league is over now, so the poll stops for good.
+    const askedByTheEnd = getLeagueWeekMock.mock.calls.length;
+    await vi.advanceTimersByTimeAsync(POLL_MS * 4);
+    expect(getLeagueWeekMock).toHaveBeenCalledTimes(askedByTheEnd);
+    expect(onStatusChange).toHaveBeenCalledTimes(2);
+
+    vi.useRealTimers();
+  });
+
+  it("does not let the watched game's kickoff silence the league", async () => {
+    // The reader opens the Sunday night column in the afternoon. Waiting on that
+    // kickoff would leave the whole afternoon slate unannounced.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2024-10-06T17:00:00Z"));
+    const onStatusChange = vi.fn();
+    const tonight: WeekGame = {
+      label: "P2",
+      league: League.PRO,
+      name: "DAL @ PHI",
+      result: {
+        ...upcomingGame({ home: "PHI", away: "DAL" }),
+        id: SECOND_EVENT_ID,
+        date: new Date("2024-10-07T00:20:00Z"),
+      },
+    };
+    const waiting: WeekGame = {
+      ...proGame,
+      result: upcomingGame({ home: "BUF", away: "KC" }),
+    };
+    const both: RakMadnessScores = { scores: [], games: [waiting, tonight] };
+    const notYet = () => ({
+      ...upcomingGame({ home: "PHI", away: "DAL" }),
+      id: SECOND_EVENT_ID,
+      date: new Date("2024-10-07T00:20:00Z"),
+    });
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(upcomingGame({ home: "BUF", away: "KC" }), notYet()),
+    );
+
+    const { rerender } = render(dialog(undefined, false, both, onStatusChange));
+    // Opened on the night game, which is hours away.
+    rerender(dialog("P2", true, both, onStatusChange));
+    await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
+    expect(onStatusChange).not.toHaveBeenCalled();
+
+    // The afternoon game kicks off. Its own kickoff has passed, so the poll asks
+    // rather than waiting on the night game's.
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(
+        liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 }),
+        notYet(),
+      ),
+    );
+    await vi.advanceTimersByTimeAsync(POLL_MS);
+    expect(onStatusChange).toHaveBeenCalledTimes(1);
+
+    vi.useRealTimers();
+  });
+
   it("says so when a game stops and again when it starts again", async () => {
     vi.useFakeTimers();
     const onStatusChange = vi.fn();
-    getLeagueResultMock.mockResolvedValue(
-      liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 }),
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 })),
     );
 
     const { rerender } = render(
@@ -203,14 +429,16 @@ describe("GameStatusDialog onStatusChange", () => {
     await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
     expect(onStatusChange).not.toHaveBeenCalled();
 
-    getLeagueResultMock.mockResolvedValue(
-      delayedGame({
-        home: "BUF",
-        away: "KC",
-        homeScore: 7,
-        awayScore: 0,
-        period: 3,
-      }),
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(
+        delayedGame({
+          home: "BUF",
+          away: "KC",
+          homeScore: 7,
+          awayScore: 0,
+          period: 3,
+        }),
+      ),
     );
     await vi.advanceTimersByTimeAsync(POLL_MS);
     expect(onStatusChange).toHaveBeenCalledTimes(1);
@@ -228,8 +456,8 @@ describe("GameStatusDialog onStatusChange", () => {
     // against, or a game going back to where the week has it would be read as a
     // game that never moved. At the score the week already has, so the mark is the
     // only thing that moved.
-    getLeagueResultMock.mockResolvedValue(
-      liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 }),
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 })),
     );
     await vi.advanceTimersByTimeAsync(POLL_MS);
     expect(onStatusChange).toHaveBeenCalledTimes(2);
@@ -245,8 +473,8 @@ describe("GameStatusDialog onStatusChange", () => {
     // week does not have yet is a table full of outcomes that are out of date.
     vi.useFakeTimers();
     const onStatusChange = vi.fn();
-    getLeagueResultMock.mockResolvedValue(
-      liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 }),
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 0 })),
     );
 
     const { rerender } = render(
@@ -256,8 +484,10 @@ describe("GameStatusDialog onStatusChange", () => {
     await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
     expect(onStatusChange).not.toHaveBeenCalled();
 
-    getLeagueResultMock.mockResolvedValue(
-      liveGame({ home: "BUF", away: "KC", homeScore: 14, awayScore: 0 }),
+    getLeagueWeekMock.mockResolvedValue(
+      weekOf(
+        liveGame({ home: "BUF", away: "KC", homeScore: 14, awayScore: 0 }),
+      ),
     );
     await vi.advanceTimersByTimeAsync(POLL_MS);
     expect(onStatusChange).toHaveBeenCalledTimes(1);
@@ -296,13 +526,13 @@ describe("GameStatusDialog onStatusChange", () => {
     // goes up on the render that opens the dialog. No wait, and nothing asked for.
     expect(screen.getByText("24")).toBeInTheDocument();
     expect(screen.queryByRole("progressbar")).toBeNull();
-    expect(getLeagueResultMock).not.toHaveBeenCalled();
+    expect(getLeagueWeekMock).not.toHaveBeenCalled();
     expect(
       await screen.findByRole("img", { name: "Final" }),
     ).toBeInTheDocument();
     await vi.advanceTimersByTimeAsync(POLL_MS * 2);
 
-    expect(getLeagueResultMock).not.toHaveBeenCalled();
+    expect(getLeagueWeekMock).not.toHaveBeenCalled();
     expect(onStatusChange).not.toHaveBeenCalled();
 
     vi.useRealTimers();
