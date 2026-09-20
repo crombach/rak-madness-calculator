@@ -21,13 +21,20 @@ updates:
     # ignores these ranges. So leave a range alone whenever it already admits
     # the new version, and let the lockfile carry the bump on its own.
     versioning-strategy: increase-if-necessary
-    # Seven version-update groups, plus a PR for each major outside one.
+    # Six version-update groups, plus a PR for each major outside one.
     # A security update is exempt from this limit and does not count toward it.
     open-pull-requests-limit: 10
     commit-message:
       prefix: chore
       prefix-development: chore
       include: scope
+    ignore:
+      # `.nvmrc` pins Node 22, and `check.yml` feeds that file to setup-node.
+      # A major here would typecheck the code against a newer Node's
+      # declarations than anything that runs it. Raise `.nvmrc` first, then
+      # this range by hand.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     groups:
       # One advisory can reach several packages at once. Today's reached
       # js-yaml and, through wrangler and miniflare, sharp.
@@ -35,12 +42,17 @@ updates:
         applies-to: security-updates
         patterns: ["*"]
 
+      # `@base-ui/react` and `@testing-library/react` both cap the React major
+      # they accept, today `^19`. Leave either behind on a React major and the
+      # peer range it declares no longer admits the react in the same PR.
       react:
         patterns:
           - react
           - react-dom
           - "@types/react"
           - "@types/react-dom"
+          - "@base-ui/react"
+          - "@testing-library/*"
 
       # `eslint` and `@eslint/js` ship from one repo on one major. Alongside
       # them, `typescript-eslint` pins a `typescript` range, today
@@ -68,9 +80,6 @@ updates:
         patterns:
           - wrangler
           - "@cloudflare/*"
-
-      testing-library:
-        patterns: ["@testing-library/*"]
 
       # One release train, one version across all four faces.
       fontsource:
