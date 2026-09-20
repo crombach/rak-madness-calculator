@@ -6,19 +6,19 @@
 # nothing enforces it here.
 #
 # Groups match in the order listed, first match wins, so the catch-all is last.
-# Each group below is a set of packages that break each other when they move
-# apart: a lint PR that lifted `eslint` without `@eslint/js` would fail
-# `make check` on its own. Those groups take every SemVer bump, majors included,
-# because a coordinated major is exactly the case that must arrive as one PR.
-# Everything else groups only minor and patch, which leaves a lone major to
-# arrive by itself and get read on its own.
+# Each group below holds packages that constrain each other, through a peer
+# range or through a shared release train. Those groups take every SemVer bump,
+# majors included, because a coordinated major is exactly the case that must
+# arrive as one PR. Everything else groups only minor and patch, which leaves a
+# lone major to arrive by itself and get read on its own.
 version: 2
 updates:
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
-    # Seven groups, plus a PR for each major that falls outside one.
+    # Seven version-update groups, plus a PR for each major outside one.
+    # A security update is exempt from this limit and does not count toward it.
     open-pull-requests-limit: 10
     commit-message:
       prefix: chore
@@ -38,17 +38,22 @@ updates:
           - "@types/react"
           - "@types/react-dom"
 
-      # `@eslint/js` tracks `eslint`, and `typescript-eslint` tracks its parser.
+      # `eslint` and `@eslint/js` ship from one repo on one major. Alongside
+      # them, `typescript-eslint` pins a `typescript` range, today
+      # `>=4.8.4 <6.1.0`, so `typescript` moves in this group rather than as a
+      # bump of its own.
       eslint:
         patterns:
           - eslint
           - "@eslint/*"
           - "eslint-plugin-*"
           - eslint-config-prettier
+          - typescript
           - typescript-eslint
           - "@typescript-eslint/*"
 
-      # Vitest majors follow Vite majors.
+      # `@vitejs/plugin-react` pins one `vite` major. Vitest accepts three, so
+      # the plugin is what holds this group together.
       vite:
         patterns:
           - vite
