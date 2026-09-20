@@ -100,7 +100,9 @@ beforeEach(() => {
   // A different score every fetch, so the move gate lets every pass through. The
   // gate itself is covered by the cases that pin this to one answer.
   let fetches = 0;
-  fetchLeagueResultsMock.mockImplementation(async () => movedWeek(fetches++ * 7));
+  fetchLeagueResultsMock.mockImplementation(async () =>
+    movedWeek(fetches++ * 7),
+  );
 });
 
 describe("usePlayerScores", () => {
