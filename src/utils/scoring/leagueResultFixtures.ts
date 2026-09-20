@@ -1,5 +1,7 @@
 import { GameStatus, HomeAway } from "../../types/ESPN";
 import { LeagueResult } from "../../types/LeagueResult";
+import { LeagueKey } from "./gameColumns";
+import { LeagueResults } from "./leagueResults";
 
 const NO_POSSESSION = {};
 const GAME_DATE = new Date("2024-10-06T17:00:00Z");
@@ -138,4 +140,29 @@ export function upcomingGame({
     loser: { team: null, homeAway: null, by: 0 },
     totalScore: 0,
   };
+}
+
+/**
+ * What one fetch answers with: the named league's whole week, and nothing for the
+ * other. Written here rather than in each test, since a fetch is given a week and a
+ * test is written about the one or two games in it.
+ *
+ * Throws on two games sharing an id. Every fixture above carries the same
+ * placeholder id, so a week built from two of them without spreading a new id onto
+ * one would otherwise collapse to a single game and pass whatever it was meant to
+ * prove.
+ */
+export function weekOf(
+  league: LeagueKey,
+  ...results: Array<LeagueResult>
+): LeagueResults {
+  const ids = new Set(results.map((result) => result.id));
+  if (ids.size !== results.length) {
+    throw new Error(
+      `weekOf was given ${results.length} games under ${ids.size} id(s). Give each one its own id.`,
+    );
+  }
+  return league === "college"
+    ? { college: results, pro: [] }
+    : { college: [], pro: results };
 }

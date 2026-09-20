@@ -1,9 +1,4 @@
-import {
-  render,
-  screen,
-  waitForElementToBeRemoved,
-  within,
-} from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
@@ -14,16 +9,13 @@ import {
   finalGame,
   liveGame,
   upcomingGame as upcomingGameFixture,
+  weekOf,
 } from "../../utils/scoring/leagueResultFixtures";
+import { LeagueResults } from "../../utils/scoring/leagueResults";
 import { POLL_MS } from "../../hooks/useLiveGame";
-
-vi.mock("../../utils/getLeagueResults");
-
 import matching from "../../utils/matching";
-import { SEASON } from "../../weekFixtures";
 import { gameSearchText } from "./GameStatusDialog";
-import { getLeagueWeekMock, weekOf } from "../../utils/getLeagueWeekMock";
-import { dialog, WEEK } from "./gameStatusDialogTestSupport";
+import { dialog } from "./gameStatusDialogTestSupport";
 
 /**
  * The shared fixtures build a game ESPN's own boxscore never quite is: no id
@@ -108,6 +100,10 @@ const games: Array<WeekGame> = [
 
 const scores: RakMadnessScores = { scores: [], games };
 
+/** What the app says is in flight while it fetches one league or the other. */
+const PRO_IN_FLIGHT: ReadonlySet<League> = new Set([League.PRO]);
+const COLLEGE_IN_FLIGHT: ReadonlySet<League> = new Set([League.COLLEGE]);
+
 /**
  * A promise the case decides when to answer, so a fetch can be left in flight.
  *
@@ -115,12 +111,12 @@ const scores: RakMadnessScores = { scores: [], games };
  * left outstanding. `weekOf` is what puts them under the ids the poll reads them by.
  */
 function deferred() {
-  let answer: (week: Map<string, LeagueResult>) => void = () => undefined;
-  const promise = new Promise<Map<string, LeagueResult>>((resolve) => {
+  let answer: (week: LeagueResults) => void = () => undefined;
+  const promise = new Promise<LeagueResults>((resolve) => {
     answer = resolve;
   });
   const settle = (...results: Array<LeagueResult>) =>
-    answer(weekOf(...results));
+    answer(weekOf("pro", ...results));
   return { promise, settle };
 }
 
@@ -161,19 +157,23 @@ describe("the games a query offers", () => {
  * each game reads like is covered against `GameStatusSummary` instead.
  */
 describe("GameStatusDialog", () => {
-  it("fetches the open game, keeps it up to date, and stops when it is final", async () => {
+  it("polls the open game's league, keeps it up to date, and stops when it is final", async () => {
     vi.useFakeTimers();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-    getLeagueWeekMock.mockResolvedValue(weekOf(proGame));
+    const onPoll =
+      vi.fn<
+        (leagues: ReadonlyArray<League>) => Promise<LeagueResults | undefined>
+      >();
+    onPoll.mockResolvedValue(weekOf("pro", proGame));
 
     // Closed, so there is nothing to watch and nothing is asked for.
-    const { rerender } = render(dialog(undefined, false, scores));
+    const { rerender } = render(dialog(undefined, false, scores, onPoll));
     await vi.advanceTimersByTimeAsync(POLL_MS * 2);
-    expect(getLeagueWeekMock).not.toHaveBeenCalled();
+    expect(onPoll).not.toHaveBeenCalled();
 
-    // Opened on a cell in the pro column, which asks for that league's week.
-    rerender(dialog("P1", true, scores));
-    expect(getLeagueWeekMock).toHaveBeenCalledWith(League.PRO, WEEK, SEASON);
+    // Opened on a cell in the pro column, which asks for that league and no other.
+    rerender(dialog("P1", true, scores, onPoll, PRO_IN_FLIGHT));
+    expect(onPoll).toHaveBeenCalledWith([League.PRO]);
     expect(
       screen.getByRole("progressbar", { name: "Fetching the game" }),
     ).toHaveAttribute("aria-busy", "true");
@@ -188,14 +188,18 @@ describe("GameStatusDialog", () => {
     expect(screen.getByRole("img", { name: "Live" })).toHaveTextContent("LIVE");
 
     // The score the fetch came back with, in place of the one the week was scored at.
-    await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
-    expect(screen.getByText("8:42 - 3rd Quarter")).toBeInTheDocument();
+    expect(await screen.findByText("8:42 - 3rd Quarter")).toBeInTheDocument();
     expect(screen.getByText("BUF Team")).toBeInTheDocument();
+    // The bar goes out with the fetch, which is the app's to say and not the
+    // dialog's.
+    rerender(dialog("P1", true, scores, onPoll));
+    expect(screen.queryByRole("progressbar")).toBeNull();
 
-    // Ten seconds on, the same game is asked about again, and the answer replaces
+    // Twenty seconds on, the league is asked about again, and the answer replaces
     // what was on screen.
-    getLeagueWeekMock.mockResolvedValue(
+    onPoll.mockResolvedValue(
       weekOf(
+        "pro",
         withEspnDetails(
           liveGame({ home: "BUF", away: "KC", homeScore: 14, awayScore: 7 }),
           "401",
@@ -203,14 +207,14 @@ describe("GameStatusDialog", () => {
       ),
     );
     await vi.advanceTimersByTimeAsync(POLL_MS);
-    expect(getLeagueWeekMock).toHaveBeenCalledTimes(2);
+    expect(onPoll).toHaveBeenCalledTimes(2);
     expect(await screen.findByText("14")).toBeInTheDocument();
 
-    // A poll says it is out the way a first fetch does, and the game already on
-    // screen stays up behind the bar.
+    // A fetch says it is out, and the game already on screen stays up behind the bar.
     const held = deferred();
-    getLeagueWeekMock.mockReturnValue(held.promise);
+    onPoll.mockReturnValue(held.promise);
     await vi.advanceTimersByTimeAsync(POLL_MS);
+    rerender(dialog("P1", true, scores, onPoll, PRO_IN_FLIGHT));
     expect(
       await screen.findByRole("progressbar", { name: "Fetching the game" }),
     ).toBeInTheDocument();
@@ -218,15 +222,16 @@ describe("GameStatusDialog", () => {
 
     held.settle(proGame);
     expect(await screen.findByText("0")).toBeInTheDocument();
-    // The bar outstays the fetch, so a poll the cache answers at once still reads
-    // as a refresh rather than as a flicker.
-    expect(screen.getByRole("progressbar")).toBeInTheDocument();
-    await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
+    // A fetch of the other league draws nothing over this one, since it cannot
+    // change the game on screen.
+    rerender(dialog("P1", true, scores, onPoll, COLLEGE_IN_FLIGHT));
+    expect(screen.queryByRole("progressbar")).toBeNull();
 
-    // Another game chosen from the search. The one on screen stays there behind the
-    // bar until the new one arrives, rather than the dialog emptying and filling.
+    // Another game chosen from the search. The one on screen stays there until the
+    // new one arrives, rather than the dialog emptying and filling.
     const pending = deferred();
-    getLeagueWeekMock.mockReturnValue(pending.promise);
+    onPoll.mockReturnValue(pending.promise);
+    rerender(dialog("P1", true, scores, onPoll, PRO_IN_FLIGHT));
     await user.click(screen.getByRole("combobox", { name: "Game" }));
 
     // Every entry says where its game stands: the live game LIVE, the one that is
@@ -275,14 +280,9 @@ describe("GameStatusDialog", () => {
     expect(screen.getByRole("combobox", { name: "Game" })).not.toHaveFocus();
     expect(document.activeElement).toHaveClass("dialog__popup");
 
-    // The league's whole week, not the game. One scoreboard answers for every game
-    // in it, so the game being switched to is picked out of the answer rather than
-    // named in the request.
-    expect(getLeagueWeekMock).toHaveBeenLastCalledWith(
-      League.PRO,
-      WEEK,
-      SEASON,
-    );
+    // The league, not the game. One fetch answers for every game in it, so the game
+    // being switched to is picked out of the answer rather than named in the ask.
+    expect(onPoll).toHaveBeenLastCalledWith([League.PRO]);
     expect(
       screen.getByRole("progressbar", { name: "Fetching the game" }),
     ).toBeInTheDocument();
@@ -295,37 +295,40 @@ describe("GameStatusDialog", () => {
     ).toBeInTheDocument();
 
     pending.settle(upcomingGame);
-    await waitForElementToBeRemoved(() => screen.queryByRole("progressbar"));
-    expect(screen.getByText("PHI Team")).toBeInTheDocument();
+    rerender(dialog("P2", true, scores, onPoll));
+    expect(screen.queryByRole("progressbar")).toBeNull();
+    expect(await screen.findByText("PHI Team")).toBeInTheDocument();
     // Not started, so the search says so rather than that there is something to watch.
     expect(screen.queryByRole("img", { name: /Live/ })).toBeNull();
 
     // A game the week was already scored on after it finished is shown as it was
     // scored, without being asked for at all. Nothing about it can have changed, and
-    // there is nothing left to poll for either.
-    const askedBeforeFinal = getLeagueWeekMock.mock.calls.length;
+    // there is nothing left to poll for either. Its league's week is over with it,
+    // so no fetch runs on behalf of the columns beside it.
+    const askedBeforeFinal = onPoll.mock.calls.length;
     await user.click(screen.getByRole("combobox", { name: "Game" }));
     await user.click(await screen.findByRole("option", { name: /MICH @ OSU/ }));
     expect(screen.getByText("OSU Team")).toBeInTheDocument();
     expect(screen.queryByRole("progressbar")).toBeNull();
     expect(screen.getByRole("img", { name: "Final" })).toBeInTheDocument();
     await vi.advanceTimersByTimeAsync(POLL_MS * 3);
-    expect(getLeagueWeekMock).toHaveBeenCalledTimes(askedBeforeFinal);
+    expect(onPoll).toHaveBeenCalledTimes(askedBeforeFinal);
+
+    // The bar stays dark over it even while its own league is being fetched for the
+    // columns beside it, since nothing a fetch comes back with can change it.
+    rerender(dialog("C1", true, scores, onPoll, COLLEGE_IN_FLIGHT));
+    expect(screen.queryByRole("progressbar")).toBeNull();
 
     // The same switch made with the last game's fetch still outstanding. The answer
     // lands after the switch, and the finished game stays where it is.
     const stray = deferred();
-    getLeagueWeekMock.mockReturnValue(stray.promise);
+    onPoll.mockReturnValue(stray.promise);
     await user.click(screen.getByRole("combobox", { name: "Game" }));
     await user.click(await screen.findByRole("option", { name: /KC @ BUF/ }));
-    expect(
-      screen.getByRole("progressbar", { name: "Fetching the game" }),
-    ).toBeInTheDocument();
 
     await user.click(screen.getByRole("combobox", { name: "Game" }));
     await user.click(await screen.findByRole("option", { name: /MICH @ OSU/ }));
     expect(screen.getByText("OSU Team")).toBeInTheDocument();
-    expect(screen.queryByRole("progressbar")).toBeNull();
 
     stray.settle(proGame);
     await vi.advanceTimersByTimeAsync(POLL_MS);
@@ -333,16 +336,16 @@ describe("GameStatusDialog", () => {
     expect(screen.queryByText("BUF Team")).toBeNull();
 
     // Back on the live game, which is asked about again on the way in.
-    getLeagueWeekMock.mockResolvedValue(weekOf(proGame));
+    onPoll.mockResolvedValue(weekOf("pro", proGame));
     await user.click(screen.getByRole("combobox", { name: "Game" }));
     await user.click(await screen.findByRole("option", { name: /KC @ BUF/ }));
     expect(await screen.findByText("BUF Team")).toBeInTheDocument();
 
     // Closing takes the watch off it, whatever the game is doing.
-    rerender(dialog("P1", false, scores));
-    const askedByClose = getLeagueWeekMock.mock.calls.length;
+    rerender(dialog("P1", false, scores, onPoll));
+    const askedByClose = onPoll.mock.calls.length;
     await vi.advanceTimersByTimeAsync(POLL_MS * 3);
-    expect(getLeagueWeekMock).toHaveBeenCalledTimes(askedByClose);
+    expect(onPoll).toHaveBeenCalledTimes(askedByClose);
 
     vi.useRealTimers();
   });

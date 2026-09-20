@@ -2,10 +2,11 @@ import { ReactNode, useMemo, useState } from "react";
 import useArrival from "../../hooks/useArrival";
 import useLiveGame from "../../hooks/useLiveGame";
 import { GameStatus } from "../../types/ESPN";
-import { WeekInfo } from "../../types/League";
+import { League } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
 import matching from "../../utils/matching";
+import { LeagueResults } from "../../utils/scoring/leagueResults";
 import DialogCombobox from "../dialog/DialogCombobox";
 import DialogShell from "../dialog/DialogShell";
 import { CheckIcon, EventIcon, PauseIcon, WarningIcon } from "../icon/Icon";
@@ -123,26 +124,25 @@ export default function GameStatusDialog({
   onOpenChange,
   gameLabel: named,
   scores,
-  week,
-  season,
-  onStatusChange,
+  fetchingLeagues,
+  onPoll,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** The column the dialog was opened on, by clicking one of its cells. */
   gameLabel?: string;
   scores?: RakMadnessScores;
-  /** Which week the games belong to, needed to fetch one again. */
-  week?: WeekInfo;
-  season?: number;
+  /** Which leagues have a request in flight, which is what the busy bar says. */
+  fetchingLeagues?: ReadonlySet<League>;
   /**
-   * Called when the game shown here is polled somewhere the week's scores do not
-   * have it, so the week can be rescored. The picks table's column marks then say
-   * that the game is being played, has stopped or is over, and its
-   * `.table__cell-wipe` animations play for whatever the move changed, instead of
-   * waiting for the next manual refresh.
+   * Fetches the league of the game shown here, and rescores the week where anything
+   * in that league moved. The picks table's column marks then say that a game is
+   * being played, has stopped or is over, and its `.table__cell-wipe` animations
+   * play for whatever the move changed, instead of waiting for a manual refresh.
    */
-  onStatusChange?: () => void;
+  onPoll?: (
+    leagues: ReadonlyArray<League>,
+  ) => Promise<LeagueResults | undefined>;
 }) {
   const [chosen, setChosen] = useState<string>();
   const [query, setQuery] = useState("");
@@ -166,14 +166,19 @@ export default function GameStatusDialog({
     setQuery(games.find((it) => it.label === label)?.name ?? label);
   });
 
-  const { shown, isGameLoading } = useLiveGame({
+  const { shown } = useLiveGame({
     open,
     game,
     games: scores?.games,
-    week,
-    season,
-    onStatusChange,
+    onPoll,
   });
+
+  // A game the week already has final is never fetched, so a fetch running on
+  // behalf of the week's other columns draws nothing over it.
+  const isGameLoading =
+    game?.result != null &&
+    game.result.status !== GameStatus.FINAL &&
+    fetchingLeagues?.has(game.league) === true;
 
   return (
     <DialogShell

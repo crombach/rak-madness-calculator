@@ -1,27 +1,23 @@
-import { WeekInfo } from "../../types/League";
+import { League } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import doNothing from "../../utils/doNothing";
-import { SEASON } from "../../weekFixtures";
+import { LeagueResults } from "../../utils/scoring/leagueResults";
 import GameStatusDialog from "./GameStatusDialog";
 
 /**
- * Shared by `GameStatusDialog.test.tsx` and `GameStatusDialogOnStatusChange.test.tsx`,
- * which mock the same fetch and open the dialog the same way but cannot share a
+ * Shared by `GameStatusDialog.test.tsx` and `GameStatusDialogPolling.test.tsx`,
+ * which stub the same fetch and open the dialog the same way but cannot share a
  * file. Base UI leaves scroll-lock and focus guards behind a mounted dialog, which
  * puts a second dialog's own search out of reach.
  */
-export const WEEK: WeekInfo = {
-  value: 5,
-  label: "Week 5",
-  startDate: new Date("2024-10-01T00:00:00Z"),
-  endDate: new Date("2024-10-08T00:00:00Z"),
-};
-
 export function dialog(
   gameLabel: string | undefined,
   open: boolean,
   scores: RakMadnessScores,
-  onStatusChange?: () => void,
+  onPoll?: (
+    leagues: ReadonlyArray<League>,
+  ) => Promise<LeagueResults | undefined>,
+  fetchingLeagues?: ReadonlySet<League>,
 ) {
   return (
     <GameStatusDialog
@@ -29,9 +25,8 @@ export function dialog(
       onOpenChange={doNothing}
       gameLabel={gameLabel}
       scores={scores}
-      week={WEEK}
-      season={SEASON}
-      onStatusChange={onStatusChange}
+      onPoll={onPoll}
+      fetchingLeagues={fetchingLeagues}
     />
   );
 }

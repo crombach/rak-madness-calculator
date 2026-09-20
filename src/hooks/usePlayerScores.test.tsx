@@ -3,10 +3,12 @@ import { PropsWithChildren } from "react";
 import { MockedFunction } from "vitest";
 import { ToastContextProvider } from "../context/ToastContext";
 import { notFoundResponse, spreadsheetResponse } from "../responseTestFixtures";
-import { WeekInfo } from "../types/League";
+import { League, WeekInfo } from "../types/League";
 import { RakMadnessScores, Status } from "../types/RakMadnessScores";
 import { writeCachedPicks } from "../utils/picksCache";
 import { getPlayerScores } from "../utils/scoring/getPlayerScores";
+import { liveGame, weekOf } from "../utils/scoring/leagueResultFixtures";
+import { fetchLeagueResults } from "../utils/scoring/leagueResults";
 import { SEASON, week } from "../weekFixtures";
 import usePlayerScores from "./usePlayerScores";
 
@@ -14,9 +16,28 @@ vi.mock("../utils/scoring/getPlayerScores", () => ({
   getPlayerScores: vi.fn(),
 }));
 
+// `fetchLeagueResults` alone. `hasMoved` stays real, since what the gate does with
+// an answer is half of what these cases are about.
+vi.mock("../utils/scoring/leagueResults", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../utils/scoring/leagueResults")>()),
+  fetchLeagueResults: vi.fn(),
+}));
+
 const getPlayerScoresMock = getPlayerScores as MockedFunction<
   typeof getPlayerScores
 >;
+
+const fetchLeagueResultsMock = fetchLeagueResults as MockedFunction<
+  typeof fetchLeagueResults
+>;
+
+/** A pro week whose one game has moved since the fetch before, in its score. */
+function movedWeek(score: number) {
+  return weekOf(
+    "pro",
+    liveGame({ home: "BUF", away: "KC", homeScore: score, awayScore: 0 }),
+  );
+}
 
 /**
  * Held still, not built per render. `usePlayerScores` keys its scoring callback on
@@ -65,6 +86,10 @@ beforeEach(() => {
   global.fetch = vi.fn(async () =>
     Promise.resolve(spreadsheetResponse()),
   ) as unknown as typeof fetch;
+  // A different score every fetch, so the move gate lets every pass through. The
+  // gate itself is covered by the cases that pin this to one answer.
+  let fetches = 0;
+  fetchLeagueResultsMock.mockImplementation(async () => movedWeek(fetches++ * 7));
 });
 
 describe("usePlayerScores", () => {
@@ -222,6 +247,103 @@ describe("usePlayerScores, refresh", () => {
     expect(global.fetch).toHaveBeenCalledTimes(fetchCallsBefore);
   });
 
+  it("fetches only the league a poll named", async () => {
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+
+    await act(async () => {
+      await result.current.rescore([League.PRO]);
+    });
+
+    expect(fetchLeagueResultsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ leagues: ["pro"] }),
+    );
+  });
+
+  it("fetches both leagues for a refresh the reader asked for", async () => {
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+
+    await act(async () => {
+      await result.current.refresh();
+    });
+
+    expect(fetchLeagueResultsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ leagues: ["college", "pro"] }),
+    );
+  });
+
+  it("does not score, or turn the button, for a poll that finds nothing moved", async () => {
+    // Twenty seconds of a game nobody is playing is most of a Sunday. Rescoring
+    // it would spin the button over a table that cannot have changed.
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+    const scoringCallsBefore = getPlayerScoresMock.mock.calls.length;
+
+    fetchLeagueResultsMock.mockResolvedValue(movedWeek(7));
+    await act(async () => {
+      // The first of these moves, since the pass before it fetched another score.
+      await result.current.rescore([League.PRO]);
+      await result.current.rescore([League.PRO]);
+      await result.current.rescore([League.PRO]);
+    });
+
+    expect(getPlayerScoresMock).toHaveBeenCalledTimes(scoringCallsBefore + 1);
+    expect(result.current.isRefreshing).toBe(false);
+  });
+
+  it("hands a poll back what it fetched, whether or not anything moved", async () => {
+    // The dialog draws a clock and a down off this, and neither costs a rescore.
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+
+    const standing = movedWeek(7);
+    fetchLeagueResultsMock.mockResolvedValue(standing);
+    let first: unknown;
+    let second: unknown;
+    await act(async () => {
+      first = await result.current.rescore([League.PRO]);
+      second = await result.current.rescore([League.PRO]);
+    });
+
+    expect(first).toBe(standing);
+    expect(second).toBe(standing);
+  });
+
+  it("scores a refresh the reader asked for even where no game moved", async () => {
+    // The sheet is rewritten when it turns out to carry an error, so asking is how
+    // a correction reaches a live week. No game has to move for that.
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+
+    fetchLeagueResultsMock.mockResolvedValue(movedWeek(7));
+    await act(async () => {
+      await result.current.refresh();
+    });
+    const scoringCallsBefore = getPlayerScoresMock.mock.calls.length;
+
+    await act(async () => {
+      await result.current.refresh();
+    });
+
+    expect(getPlayerScoresMock).toHaveBeenCalledTimes(scoringCallsBefore + 1);
+  });
+
   it("keeps the button turning after the scores it asked for land", async () => {
     // A rescore of the workbook in hand answers in single milliseconds. Stopped
     // with the answer, the button would flash and read as a button that did
@@ -248,10 +370,10 @@ describe("usePlayerScores, refresh", () => {
     expect(result.current.isRefreshing).toBe(false);
   });
 
-  it("reads the sheet for a pull that lands while a rescore is running", async () => {
-    // A pull fires on every release, whatever `isRefreshing` says, so it reaches
+  it("reads the sheet for a fetch that lands while a rescore is running", async () => {
+    // A fetch fires on every release, whatever `isRefreshing` says, so it reaches
     // this while a game polled final is still rescoring. Nothing under the
-    // controls holds a window of its own, so the pull is not turned away by one.
+    // controls holds a window of its own, so the fetch is not turned away by one.
     // The button is inert for that half second and never gets here.
     getPlayerScoresMock.mockResolvedValue(scoresFor(5));
     const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
@@ -350,6 +472,42 @@ describe("usePlayerScores, refresh", () => {
     expect(result.current.isRefreshing).toBe(false);
   });
 
+  it("stops the button when a superseded refresh's fetch fails", async () => {
+    // The week moved out from under a refresh, and the fetch it left running
+    // then threw. Nothing of that pass reaches the screen, but the button it
+    // turned is still this hook's to stop.
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result, rerender } = renderHook(
+      ({ selectedWeek }: { selectedWeek: WeekInfo }) =>
+        usePlayerScores(selectedWeek, SEASON),
+      { initialProps: { selectedWeek: WEEK_5 }, wrapper },
+    );
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+
+    let failFetch: () => void = () => {};
+    fetchLeagueResultsMock.mockImplementation(
+      () =>
+        new Promise((_resolve, reject) => {
+          failFetch = () => reject(new Error("ESPN is down"));
+        }),
+    );
+
+    let asked: Promise<unknown> | undefined;
+    await act(async () => {
+      asked = result.current.refresh();
+    });
+    expect(result.current.isRefreshing).toBe(true);
+
+    // The week moves first, so the failure below lands on a superseded pass.
+    rerender({ selectedWeek: week(6) });
+    await act(async () => {
+      failFetch();
+      await asked;
+    });
+
+    await waitFor(() => expect(result.current.isRefreshing).toBe(false));
+  });
+
   it("replaces a workbook the reader uploaded with the one in the database", async () => {
     // The uploaded sheet stands in until the week reaches the database. Once it
     // is there, it is the week's own, so a refresh takes it back.
@@ -370,6 +528,7 @@ describe("usePlayerScores, refresh", () => {
       WEEK_5,
       expect.objectContaining({ byteLength: uploaded.byteLength }),
       SEASON,
+      expect.anything(),
     );
 
     await act(async () => {
@@ -380,6 +539,7 @@ describe("usePlayerScores, refresh", () => {
       WEEK_5,
       expect.objectContaining({ byteLength: upstream.byteLength }),
       SEASON,
+      expect.anything(),
     );
   });
 

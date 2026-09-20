@@ -1,15 +1,10 @@
-import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import { GameSpread, WeekGame } from "../../types/WeekGame";
 import { leagueLabels, LEAGUES, LeagueKey } from "./gameColumns";
+import { ESPN_LEAGUE } from "./leagueResults";
 import parsePick from "./parsePick";
 import { ParsedPicks, PicksRow } from "./parsePicksWorkbook";
 import { findMatchup, indexResults, ResultsIndex } from "./resultsIndex";
-
-const ESPN_LEAGUE: Record<LeagueKey, League> = {
-  college: League.COLLEGE,
-  pro: League.PRO,
-};
 
 /**
  * The pool's line on the game, read off the picks and turned around where they wrote
