@@ -548,6 +548,15 @@ describe("AnalysisSummary", () => {
     expect(shareRows()).toHaveLength(5);
   });
 
+  it("stands the button under the table it opens, not under the notes", () => {
+    const result: PlayerAnalysis = { ...base, shares: sharesOf(8) };
+    render(<AnalysisSummary result={result} />);
+
+    expect(
+      document.querySelector(".analysis__shares")?.nextElementSibling,
+    ).toBe(screen.getByRole("button", { name: "Show more" }));
+  });
+
   it("leaves the button off where every game is already open", () => {
     const result: PlayerAnalysis = { ...base, shares: sharesOf(5) };
     render(<AnalysisSummary result={result} />);
