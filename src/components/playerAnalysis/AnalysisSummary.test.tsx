@@ -552,9 +552,9 @@ describe("AnalysisSummary", () => {
     const result: PlayerAnalysis = { ...base, shares: sharesOf(8) };
     render(<AnalysisSummary result={result} />);
 
-    expect(document.querySelector(".analysis__shares")?.nextElementSibling).toBe(
-      screen.getByRole("button", { name: "Show more" }),
-    );
+    expect(
+      document.querySelector(".analysis__shares")?.nextElementSibling,
+    ).toBe(screen.getByRole("button", { name: "Show more" }));
   });
 
   it("leaves the button off where every game is already open", () => {
