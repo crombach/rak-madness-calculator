@@ -161,6 +161,17 @@ export default function AnalysisShares({
           ))}
         </tbody>
       </table>
+      {folded > 0 && (
+        <Button
+          className="analysis__more"
+          variant="soft"
+          size="sm"
+          ariaExpanded={isExpanded}
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          {isExpanded ? "Show fewer" : "Show more"}
+        </Button>
+      )}
       {/* A total is a condition on a route and these rows are not routes, so the
           one the most routes ask for is said under them rather than in a column. */}
       {points && (
@@ -174,17 +185,6 @@ export default function AnalysisShares({
         outright={shares.shortestOutright}
         isOutright={isOutright}
       />
-      {folded > 0 && (
-        <Button
-          className="analysis__more"
-          variant="soft"
-          size="sm"
-          ariaExpanded={isExpanded}
-          onClick={() => setIsExpanded(!isExpanded)}
-        >
-          {isExpanded ? "Show fewer" : "Show more"}
-        </Button>
-      )}
     </Section>
   );
 }
