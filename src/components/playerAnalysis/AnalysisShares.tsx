@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PickShares } from "../../types/PlayerAnalysis";
-import plural from "../../utils/plural";
+import plural, { verbFor } from "../../utils/plural";
 import Button from "../button/Button";
 import { Section } from "./analysisParts";
 import { MondayNightPoints } from "./mondayNight";
@@ -53,7 +53,7 @@ function SharesMondayNight({
       {points.isAlways && "Every way needs the MNF Points tiebreaker. "}
       {isEvery
         ? "Every way above needs "
-        : `${points.routes} of the ${plural(total, "way")} ${points.routes === 1 ? "needs" : "need"} `}
+        : `${points.routes} of the ${plural(total, "way")} ${verbFor(points.routes, "need")} `}
       <MondayNightPoints outlook={points.points} />.
     </p>
   );

@@ -12,11 +12,15 @@ keyframes. Design tokens live in `src/index.scss` instead.
   swap rather than extra room.
 - `_focus.scss`: `focus-ring`, the app's one focus ring, and `$focus-ring-reach`,
   the room it needs outside a control a scrolling ancestor would clip it against
-- `_ink.scss`: `ink-height`, an icon drawn as tall as the text beside it
+- `_ink.scss`: `ink-height`, an icon drawn as tall as the text beside it, the
+  faces' cap shares, and `live-dot`, the one red dot for a game being played
 - `_a11y.scss`: `visually-hidden`
 - `_label.scss`: `micro-label`, the tracked capitals every small label is set in
 - `_lcd.scss`: `lcd-glass`, the readout the scoreline and the navbar name share,
   and `lcd-field`, the same well for a control typed or chosen into instead
 - `_listbox.scss`: `listbox-popup` and `listbox-item`, a Base UI popup list's shape
 - `_skeleton.scss`: `skeleton-surface`, `skeleton-sheen`, `skeleton-reserve`
-- `_text.scss`: `truncate-line`, one line cut short where it runs out of room
+- `_picks.scss`: `pick-type`, `pick-face`, `pick-label`, and `ruled-block` with
+  its `$rule-*` colors. How a pick, its game ID and a ruled block look anywhere
+- `_text.scss`: `truncate-line`, one line cut short where it runs out of room,
+  and `player-name-face` and `my-player-name`, the tables' name type

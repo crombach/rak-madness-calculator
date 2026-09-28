@@ -1,0 +1,37 @@
+// How the app sets a pick, and the rule player analysis draws down a block of them.
+
+// One way among several of getting there.
+$rule-option: var(--rak-gold-500);
+// What has to happen.
+$rule-required: var(--rak-danger-500);
+// A player still standing. The step of their name cell's hue dark enough to read
+// as a rule, which the 300 fill is not.
+$rule-alive: var(--rak-in-contention-on-light);
+
+/** The face and size a list of picks is set in. */
+@mixin pick-type {
+  font-family: var(--rak-font-mono);
+  font-size: var(--rak-text-sm);
+}
+
+/** A team and its spread. */
+@mixin pick-face {
+  @include pick-type;
+
+  font-weight: var(--rak-weight-semibold);
+}
+
+/** The game a pick is on, a step back from the team beside it. */
+@mixin pick-label {
+  color: var(--rak-text-tertiary);
+  font-weight: var(--rak-weight-bold);
+}
+
+/**
+ * A subtle fill with a rule down its start edge alone, so a stack of them reads
+ * as a list rather than as a stack of boxes. Padding is left to the caller.
+ */
+@mixin ruled-block($rule: $rule-option) {
+  border-inline-start: var(--rak-border-width) solid $rule;
+  background-color: var(--rak-fill-subtle);
+}

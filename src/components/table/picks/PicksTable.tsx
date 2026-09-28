@@ -1,4 +1,4 @@
-import { memo, ReactNode } from "react";
+import { memo } from "react";
 import { useScoreChanges } from "../../../context/AppDataContext";
 import { useShowGameStatus } from "../../../context/GameStatusContext";
 import { GameStatus } from "../../../types/ESPN";
@@ -14,13 +14,13 @@ import {
   pickChangeKey,
 } from "../../../utils/scoring/gameColumns";
 import { fillStatus } from "../../../utils/scoring/getPickResults";
-import { PauseIcon } from "../../icon/Icon";
 import PlayerName from "../playerName/PlayerName";
 import TableShell, {
   PICK_COL_CLASS,
   PLAYER_COL_CLASS,
   RankCell,
 } from "../TableShell";
+import { HEADING_MARK, statusByLabel } from "./headingMark";
 import "./PicksTable.scss";
 
 /** Rank, player, college score, pro score, and total score. */
@@ -36,30 +36,6 @@ const PICK_STATUS_LABEL: Partial<Record<Status, string>> = {
   yes: "Right",
   no: "Wrong",
   unscoreable: "Unscoreable",
-};
-
-/**
- * What a column heading wears, for the two states a reader watching the table is
- * waiting on. Every other state is the cells' own fill to say.
- *
- * The same shapes the game dialog's marks use, so a dot and a pause mean the same
- * thing wherever a reader meets them.
- */
-const HEADING_MARK: Partial<
-  Record<GameStatus, { mark: ReactNode; word: string }>
-> = {
-  [GameStatus.LIVE]: {
-    mark: <span className="table__live-dot" aria-hidden="true" />,
-    word: "Live",
-  },
-  [GameStatus.DELAYED]: {
-    mark: (
-      <span className="table__delay-icon" aria-hidden="true">
-        <PauseIcon />
-      </span>
-    ),
-    word: "Delayed",
-  },
 };
 
 function leagueHeaders({
@@ -84,6 +60,11 @@ function leagueHeaders({
         <button
           type="button"
           className="table__cell-button"
+          // Screen readers re-announce this heading on every cell below it.
+          // aria-label comma-joins the word, since flex spacing runs it into the label.
+          aria-label={[header, heading?.word]
+            .filter((part) => part != null)
+            .join(", ")}
           onClick={() => onClick(header)}
         >
           {/* Before the label, where the dialog's own mark carries its shape. */}
@@ -91,11 +72,6 @@ function leagueHeaders({
           {/* Wrapped so a mark beside it can be centered on the capitals it is
               set in rather than on the line box they sit in. */}
           <span className="table__heading-label">{header}</span>
-          {/* A column heading is read out again on every cell under it, so this
-              reaches a reader on any pick in the game, not just the heading. */}
-          {heading != null && (
-            <span className="table__sr-only">{heading.word}</span>
-          )}
         </button>
       </th>
     );
@@ -192,16 +168,7 @@ function PicksTable({ scores }: { scores?: RakMadnessScores | null }) {
   // sits under cannot disagree about which game they mean.
   const collegeLabels = leagueLabels(collegeCount, "college");
   const proLabels = leagueLabels(proCount, "pro");
-  // The label is the one thing a game and the column it was picked in share, and
-  // it is what the dialog matches on too. Every game's status is kept, and
-  // `HEADING_MARK` is what decides which of them a heading says anything about, so
-  // a status ESPN has that this app does not model draws nothing rather than
-  // passing for one it does.
-  const statusByLabel = new Map(
-    (scores.games ?? []).flatMap((game) =>
-      game.result != null ? [[game.label, game.result.status] as const] : [],
-    ),
-  );
+  const statuses = statusByLabel(scores.games);
 
   return (
     <TableShell
@@ -215,13 +182,13 @@ function PicksTable({ scores }: { scores?: RakMadnessScores | null }) {
           </th>
           {leagueHeaders({
             labels: collegeLabels,
-            statusByLabel,
+            statusByLabel: statuses,
             onClick: showGameStatus,
           })}
           <th scope="col">College Score</th>
           {leagueHeaders({
             labels: proLabels,
-            statusByLabel,
+            statusByLabel: statuses,
             onClick: showGameStatus,
           })}
           <th scope="col">Pro Score</th>

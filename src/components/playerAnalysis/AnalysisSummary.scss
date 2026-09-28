@@ -1,4 +1,5 @@
 @use "../../styles/label" as *;
+@use "../../styles/picks" as *;
 
 // Flex column plus its own gap, the shape most of this sheet's blocks share.
 @mixin stacked($gap) {
@@ -127,8 +128,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  font-family: var(--rak-font-mono);
-  font-size: var(--rak-text-sm);
+  @include pick-type;
 }
 
 // One pick reads as a chip of two halves: which game, then what to back in it.
@@ -163,7 +163,7 @@
   // rule sits outside both, as it does on the box in every block beside this
   // one, so a pick starts at the x a must-win pick and a route's pick start at.
   padding-inline-start: calc(var(--rak-block-inset) + var(--rak-pick-inset));
-  border-inline-start: var(--rak-border-width) solid var(--rak-gold-500);
+  @include ruled-block;
   // Square against the rule, the way a route's box is, so the two read as one
   // mark rather than as a chip that happens to have an edge.
   border-start-start-radius: 0;
@@ -172,8 +172,7 @@
 
 // A word naming what follows it rather than saying anything itself.
 .analysis__pick-label {
-  color: var(--rak-text-tertiary);
-  font-weight: var(--rak-weight-bold);
+  @include pick-label;
 }
 
 .analysis__pick-label {
@@ -204,10 +203,7 @@
 .analysis__must-win,
 .analysis__shares {
   padding: var(--rak-space-2) var(--rak-block-inset);
-  // Drawn on the left alone, so a stack of routes reads as a list of alternatives
-  // rather than as a stack of boxes.
-  border-inline-start: var(--rak-border-width) solid var(--rak-gold-500);
-  background-color: var(--rak-fill-subtle);
+  @include ruled-block;
 }
 
 .analysis__route {
@@ -217,7 +213,7 @@
 // Red against the routes' gold, since these games are what has to happen rather
 // than one way among several of getting there.
 .analysis__must-win {
-  border-inline-start-color: var(--rak-danger-500);
+  border-inline-start-color: $rule-required;
 }
 
 // One game a row against the routes needing it, standing where a list of those
@@ -232,8 +228,7 @@
   // chips in the must-win block above. Nothing is drawn between the cells, so the
   // spacing goes to zero and the rules below are the only lines.
   border-spacing: 0;
-  font-family: var(--rak-font-mono);
-  font-size: var(--rak-text-sm);
+  @include pick-type;
 
   // A row stands as far off its neighbours as a route stands off the route under
   // it, and its text starts where the text inside a route's pick chip starts. A
@@ -334,10 +329,9 @@
 // own, or inside a sentence under the shares. The face is set here rather than by
 // each of those, so a total reads the same in all three.
 .analysis__mnf-points {
+  @include pick-face;
+
   color: var(--rak-text);
-  font-family: var(--rak-font-mono);
-  font-size: var(--rak-text-sm);
-  font-weight: var(--rak-weight-semibold);
 }
 
 // The two halves of the answer, each read against the blocks under it. A heading

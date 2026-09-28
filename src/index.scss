@@ -47,9 +47,16 @@
   --rak-text-md: 1rem;
   --rak-text-lg: 1.25rem;
   // Off the scale above, because it is the size a phone's table is set at and the
-  // width every column is declared in. The caption over the table reads it too, so
-  // the two stay one head with a line through it however either is changed.
+  // width every column is declared in. The caption over the table is set in this
+  // too, and stays here where `--rak-text-cells` below grows.
   --rak-text-table: 0.8rem;
+  // What a table's cells, and the swing games' player names, are set in: the
+  // phone's size above, and the body size where `roomy-screen` gives the room.
+  --rak-text-cells: var(--rak-text-table);
+
+  @include roomy-screen {
+    --rak-text-cells: var(--rak-text-md);
+  }
 
   --rak-weight-medium: 500;
   --rak-weight-semibold: 600;

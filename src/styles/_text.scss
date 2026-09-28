@@ -17,3 +17,14 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/** A player's name as the tables set it: the mono face, at the body's weight. */
+@mixin player-name-face {
+  font-family: var(--rak-font-mono);
+  font-weight: normal;
+}
+
+/** The reader's own name, told from the names beside it by weight. */
+@mixin my-player-name {
+  font-weight: var(--rak-weight-bold);
+}

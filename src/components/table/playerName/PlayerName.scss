@@ -20,6 +20,7 @@
   // would make its row taller than every other row in the table. The whole name
   // is in the player analysis the cell opens.
   .player-name__name {
+    @include player-name-face;
     @include truncate-line;
 
     max-width: var(--rak-table-player-name-width);
@@ -29,5 +30,5 @@
 // Set heavier inside the rules `Table.scss` draws above and below the row, so the
 // reader's own row is told from its neighbors by weight as well as by that mark.
 .--mine .player-name__name {
-  font-weight: var(--rak-weight-bold);
+  @include my-player-name;
 }

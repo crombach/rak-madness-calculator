@@ -439,7 +439,11 @@ describe("PicksTable, live games", () => {
 
     const live = header("C1");
     expect(live.querySelector(".table__live-dot")).toBeInTheDocument();
-    expect(live).toHaveTextContent("Live");
+    // Checks the computed accessible name, not textContent. Chromium runs the
+    // label and the hidden word together with no space between them.
+    expect(
+      within(live).getByRole("button", { name: "C1, Live" }),
+    ).toBeInTheDocument();
   });
 
   it("marks the column of a game ESPN has stopped, in a pause rather than the dot", () => {
@@ -448,7 +452,9 @@ describe("PicksTable, live games", () => {
     const delayed = header("P3");
     expect(delayed.querySelector(".table__delay-icon")).toBeInTheDocument();
     expect(delayed.querySelector(".table__live-dot")).toBeNull();
-    expect(delayed).toHaveTextContent("Delayed");
+    expect(
+      within(delayed).getByRole("button", { name: "P3, Delayed" }),
+    ).toBeInTheDocument();
   });
 
   it("leaves every column alone whose game is neither being played nor stopped", () => {
@@ -458,8 +464,9 @@ describe("PicksTable, live games", () => {
       const quiet = header(label);
       expect(quiet.querySelector(".table__live-dot")).toBeNull();
       expect(quiet.querySelector(".table__delay-icon")).toBeNull();
-      expect(quiet).not.toHaveTextContent("Live");
-      expect(quiet).not.toHaveTextContent("Delayed");
+      expect(
+        within(quiet).getByRole("button", { name: label }),
+      ).toBeInTheDocument();
     });
   });
 

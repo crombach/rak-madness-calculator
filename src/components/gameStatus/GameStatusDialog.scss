@@ -2,6 +2,7 @@
 @use "../../styles/ink" as *;
 @use "../../styles/text" as *;
 @use "../../styles/label" as *;
+@use "../../styles/picks" as *;
 
 // CheckIcon's own aspect in Icon.tsx, `viewBox="257 -654 451 333"`. Named once
 // here because the slot below is sized to it whichever mark is showing, not
@@ -52,7 +53,7 @@ $cap-right-bearing: 0.065em;
 .dialog__option .game-status__option-label {
   flex: 0 0 auto;
   min-width: 2.5ch;
-  color: var(--rak-text-secondary);
+  @include pick-label;
 }
 
 .dialog__option .game-status__option-name {
@@ -192,10 +193,7 @@ $cap-right-bearing: 0.065em;
 
 // Drawn to its own edges, so its height is all ink and there is no box to divide.
 .game-status__live-dot {
-  width: var(--rak-caps-ink);
-  height: var(--rak-caps-ink);
-  border-radius: 50%;
-  background-color: var(--rak-live-dot);
+  @include live-dot;
 }
 
 // The one glyph of the five whose ink is not centered in its own box. Its `viewBox`
