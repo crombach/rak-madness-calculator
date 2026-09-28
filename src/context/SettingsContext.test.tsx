@@ -256,6 +256,9 @@ describe("SettingsContext, the experimental features", () => {
 
     await user.click(screen.getByRole("button", { name: "opt out" }));
 
+    expect(screen.getByTestId("experimentalFeatures")).toHaveTextContent(
+      "false",
+    );
     expect(localStorage.getItem(EXPERIMENTAL_FEATURES_KEY)).toBeNull();
   });
 

@@ -233,6 +233,10 @@ describe("SettingsDialog, the experimental features", () => {
 
     await user.click(choice("Experimental Features", "Off"));
 
+    expect(choice("Experimental Features", "Off")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
     expect(localStorage.getItem(EXPERIMENTAL_FEATURES_KEY)).toBeNull();
   });
 });

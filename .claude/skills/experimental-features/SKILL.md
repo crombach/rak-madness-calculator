@@ -36,11 +36,11 @@ A feature is experimental when it reads `experimentalFeatures`. No registry, no 
 
 ## Release a feature to everyone
 
-1. `grep -rn experimentalFeatures src` for the feature's call sites. Skip `SettingsContext.tsx`, `SettingsDialog.tsx`, and their tests. Those own the setting.
+1. `grep -rn experimentalFeatures src` for the feature's call sites. Skip `SettingsContext.tsx`, `SettingsDialog.tsx`, `LogoButton.tsx`, and their tests. Those own the setting and its navbar β, not a feature.
 2. At each one, delete the check and keep the code the true branch ran.
 3. Delete the tests of the feature's off state. Keep the on-state tests, without the seeded key.
-4. Keep the setting and its dialog row when no call site remains. The next gated feature reuses them.
+4. Keep the setting, its dialog row, and the β when no call site remains. The next gated feature reuses them.
 
 ## Remove an abandoned feature
 
-Delete the feature's code, its `experimentalFeatures` checks, and its tests. Keep the setting and its dialog row.
+Delete the feature's code, its `experimentalFeatures` checks, and its tests. Keep the setting, its dialog row, and the β.
