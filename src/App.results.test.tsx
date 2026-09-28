@@ -64,17 +64,15 @@ describe("the app, results views", () => {
     expect(scoreboard).toHaveAttribute("aria-pressed", "true");
   });
 
-  // The navbar already marks which view you are on, so the caption names the week
-  // and nothing else. Switching views must not change a word of it.
-  it("names the same week across both views", async () => {
+  it("names the view and the week in the caption", async () => {
     const user = await mountWithScores();
     await user.click(screen.getByText("View Results"));
 
-    const expected = `Rak Madness · ${SEASON} Season · Week ${CURRENT_WEEK}`;
-    expect(resultsCaption()).toHaveTextContent(expected);
+    const week = `${SEASON} Season · Week ${CURRENT_WEEK}`;
+    expect(resultsCaption()).toHaveTextContent(`Scoreboard · ${week}`);
 
     await user.click(screen.getByRole("button", { name: "Picks" }));
-    expect(resultsCaption()).toHaveTextContent(expected);
+    expect(resultsCaption()).toHaveTextContent(`Picks · ${week}`);
   });
 
   it("returns home from the logo button", async () => {
