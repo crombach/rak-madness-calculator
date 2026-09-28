@@ -39,11 +39,8 @@ const loadGameStatusDialog = () => import("../gameStatus/GameStatusDialog");
 const PlayerAnalysisDialog = lazy(loadPlayerAnalysisDialog);
 const GameStatusDialog = lazy(loadGameStatusDialog);
 
-/** The pool the app scores, which is not the app's own name. */
-const POOL_NAME = "Rak Madness";
-
 /** What the caption is sized from on a route that does not know the week yet. */
-const CAPTION_STAND_IN = `${POOL_NAME} · 0000 Season · Week 00`;
+const CAPTION_STAND_IN = "Scoreboard · 0000 Season · Week 00";
 
 /**
  * What the tables have opened, which is one thing at a time.
@@ -211,7 +208,7 @@ export default function ResultsFrame({
         >
           {hasWeek && (
             <span className="results-caption__text">
-              {`${POOL_NAME} · ${seasonParam} Season · Week ${weekParam}`}
+              {`${view} · ${seasonParam} Season · Week ${weekParam}`}
             </span>
           )}
         </p>
