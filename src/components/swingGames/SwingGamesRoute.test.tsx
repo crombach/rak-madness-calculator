@@ -31,6 +31,16 @@ import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
 
 const SWINGS_PATH = `/${SEASON}/${CURRENT_WEEK}/swings`;
 
+/** Steps back through the router's history, as the browser's own button does. */
+function BackButton() {
+  const navigate = useNavigate();
+  return (
+    <button type="button" onClick={() => navigate(-1)}>
+      Back
+    </button>
+  );
+}
+
 /** The toggle's `aria-label`: the game, then its player count. */
 function bandName(game: string, count: number) {
   return `${game}, ${plural(count, "player")}`;
@@ -322,6 +332,31 @@ describe("the swing games route", () => {
       ).toBeInTheDocument();
     });
 
+    it("starts every game open again in another week", async () => {
+      // A fresh spreadsheet per fetch, since each week reads its own body.
+      vi.mocked(global.fetch).mockImplementation(() =>
+        Promise.resolve(spreadsheetResponse()),
+      );
+      getPlayerScoresMock.mockResolvedValue(twoGameScores());
+      const user = mountApp(SWINGS_PATH, {
+        earlier: [`/${SEASON}/${CURRENT_WEEK - 1}/swings`],
+        beside: <BackButton />,
+      });
+      const band = await screen.findByRole("button", {
+        name: bandName("P1 KC at DEN", 1),
+      });
+      await user.click(band);
+      expect(band).toHaveAttribute("aria-expanded", "false");
+
+      await user.click(screen.getByRole("button", { name: "Back" }));
+
+      await waitFor(() =>
+        expect(
+          screen.getByRole("button", { name: bandName("P1 KC at DEN", 1) }),
+        ).toHaveAttribute("aria-expanded", "true"),
+      );
+    });
+
     it("folds and opens from the keyboard", async () => {
       const user = mountApp(SWINGS_PATH);
       const band = await screen.findByRole("button", {
@@ -459,15 +494,6 @@ describe("the swing games route", () => {
   });
 
   describe("a week with nothing to show", () => {
-    function BackButton() {
-      const navigate = useNavigate();
-      return (
-        <button type="button" onClick={() => navigate(-1)}>
-          Back
-        </button>
-      );
-    }
-
     /** Level on points, with both on KC, so P1 knocks nobody out. */
     function quietScores() {
       const scores = week([
