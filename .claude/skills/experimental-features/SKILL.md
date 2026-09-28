@@ -5,7 +5,7 @@ description: Gate a work-in-progress feature behind the Experimental Features se
 
 # Experimental features
 
-One setting gates every work-in-progress feature: `experimentalFeatures` from `useSettings()` in `src/context/SettingsContext.tsx`. Any reader can turn it on in the settings dialog. Off by default.
+`experimentalFeatures` from `useSettings()` in `src/context/SettingsContext.tsx` gates every work-in-progress feature. Any reader can turn it on in the settings dialog. Off by default.
 
 - Never add a per-feature flag or a second setting. Every gated feature reads this one value.
 - Never move `Footer.tsx`'s `SETTINGS_CHANGED_AT` for gating or releasing a feature. The dialog did not change.
@@ -21,7 +21,7 @@ A feature is experimental when it reads `experimentalFeatures`. No registry, no 
    return experimentalFeatures && <Link to="swings">Swing Games</Link>;
    ```
 
-2. Redirect the feature's route when false. Otherwise a pasted URL still reaches it. Keep the route component to this check and render the page inside it. The page's own hooks then never run while off, and no hook sits after an early return. Redirect to the nearest page that is not experimental.
+2. Redirect the feature's route when false. Otherwise a pasted URL still reaches it. Keep the route component to this check and render the page inside it. The page's own hooks then never run while off, and no hook sits after an early return. Redirect to the page that holds the feature's entry point.
 
    ```tsx
    export default function SwingGamesRoute() {

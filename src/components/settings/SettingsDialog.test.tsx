@@ -225,6 +225,10 @@ describe("SettingsDialog, the experimental features", () => {
     const user = mountDialog();
     await user.click(choice("Experimental Features", "On"));
 
+    expect(choice("Experimental Features", "On")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
     expect(localStorage.getItem(EXPERIMENTAL_FEATURES_KEY)).toBe("on");
 
     await user.click(choice("Experimental Features", "Off"));
