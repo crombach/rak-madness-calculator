@@ -122,3 +122,17 @@
     color: var(--rak-glass-unlit);
   }
 }
+
+// On the plate beside the glass rather than lit in it, since the display face
+// has no β. The button's own gap sets it off from the glass, and the key has no
+// padding of its own to keep it off the far edge.
+.logo-button__beta {
+  padding-inline-end: var(--rak-space-2);
+  color: var(--rak-on-solid);
+  font-weight: var(--rak-weight-bold);
+  font-size: var(--rak-text-sm);
+
+  @include roomy-screen {
+    font-size: var(--rak-text-md);
+  }
+}

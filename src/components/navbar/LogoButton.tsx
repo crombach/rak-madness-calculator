@@ -1,3 +1,4 @@
+import { useSettings } from "../../context/SettingsContext";
 import Button from "../button/Button";
 import "./LogoButton.scss";
 
@@ -18,9 +19,17 @@ const DSEG14_ALL_SEGMENTS = "~";
  */
 const UNLIT_SEGMENTS = APP_NAME.replace(/\S/g, DSEG14_ALL_SEGMENTS);
 
+const BETA_MARK = "β";
+export const BETA_WORD = "beta";
+
 export default function LogoButton({ onClick }: { onClick: () => void }) {
+  const { experimentalFeatures } = useSettings();
   return (
-    <Button onClick={onClick} className="logo-button">
+    <Button
+      onClick={onClick}
+      className="logo-button"
+      ariaLabel={experimentalFeatures ? `${APP_NAME} ${BETA_WORD}` : undefined}
+    >
       <span className="logo-button__name">
         <span className="logo-button__name-ghost" aria-hidden="true">
           {UNLIT_SEGMENTS}
@@ -32,6 +41,11 @@ export default function LogoButton({ onClick }: { onClick: () => void }) {
         */}
         <span className="logo-button__name-text">{APP_NAME}</span>
       </span>
+      {experimentalFeatures && (
+        <span className="logo-button__beta" aria-hidden="true">
+          {BETA_MARK}
+        </span>
+      )}
     </Button>
   );
 }
