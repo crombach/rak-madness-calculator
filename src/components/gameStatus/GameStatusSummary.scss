@@ -267,12 +267,10 @@
 .game-status__side-label {
   @include micro-label;
 
-  // Level with the clock across the row, which is set two steps larger. Centered, the
-  // smaller text reads a pixel high, because each line box is centered on its own
-  // height and a 12px box puts its baseline higher inside the row than a 14px one.
+  // Level with the clock across the row, at its size.
   align-self: baseline;
   color: var(--rak-text-secondary);
-  font-size: var(--rak-text-xs);
+  font-size: var(--rak-text-sm);
   font-weight: normal;
 }
 
@@ -326,10 +324,10 @@
   }
 }
 
-// At the side label's size, since text this small reads lighter the smaller it is set.
+// At the size of the down or outcome across the row.
 .game-status__record {
   color: var(--rak-text-secondary);
-  font-size: var(--rak-text-xs);
+  font-size: var(--rak-text-sm);
 }
 
 .game-status__score {
