@@ -245,25 +245,17 @@ export function toLeagueResult(event: EspnEvent): LeagueResult | null {
   const { score: awayScore } = awaySide;
 
   let winner: EspnCompetitor | null = null;
-  let loser: EspnCompetitor | null = null;
   let winnerHomeAway: HomeAway | null = null;
-  let loserHomeAway: HomeAway | null = null;
   if (status === GameStatus.FINAL) {
     if (homeScore > awayScore) {
       winner = home;
-      loser = away;
       winnerHomeAway = HomeAway.HOME;
-      loserHomeAway = HomeAway.AWAY;
     } else if (awayScore > homeScore) {
       winner = away;
-      loser = home;
       winnerHomeAway = HomeAway.AWAY;
-      loserHomeAway = HomeAway.HOME;
     }
   }
 
-  const winnerScore = winner === home ? homeScore : awayScore;
-  const loserScore = winner === home ? awayScore : homeScore;
   // Unsigned, so a live game the home team leads never reads as a negative
   // margin just because there is no winner yet.
   const scoreMargin = Math.abs(homeScore - awayScore);
@@ -299,15 +291,7 @@ export function toLeagueResult(event: EspnEvent): LeagueResult | null {
       homeAway: winnerHomeAway,
       by: scoreMargin,
     },
-    loser: {
-      team: loser && {
-        name: loser.team.displayName,
-        abbreviation: teamAbbreviation(loser),
-      },
-      homeAway: loserHomeAway,
-      by: scoreMargin,
-    },
-    totalScore: winnerScore + loserScore,
+    totalScore: homeScore + awayScore,
   };
 }
 

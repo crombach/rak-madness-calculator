@@ -236,12 +236,11 @@ describe("getLeagueResults, mapping", () => {
     expect(result.away.team.abbreviation).toBe("KC");
   });
 
-  it("records the winner, the loser, and the margin", async () => {
+  it("records the winner and the margin", async () => {
     mockFetch([bufVsKc]);
     const [result] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
     expect(result.winner.team?.abbreviation).toBe("BUF");
     expect(result.winner.homeAway).toBe(HomeAway.HOME);
-    expect(result.loser.team?.abbreviation).toBe("KC");
     expect(result.winner.by).toBe(10);
   });
 
@@ -249,7 +248,6 @@ describe("getLeagueResults, mapping", () => {
     mockFetch([espnEvent({ home: "BUF", away: "KC", awayScore: 30 })]);
     const [result] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
     expect(result.winner.team).toBeNull();
-    expect(result.loser.team).toBeNull();
   });
 
   it("leaves the winner unset while the game is live", async () => {
@@ -315,7 +313,6 @@ describe("getLeagueResults, mapping", () => {
     ]);
     const [result] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
     expect(result.winner.by).toBe(10);
-    expect(result.loser.by).toBe(10);
   });
 
   it("reads down and distance and which side has the ball", async () => {

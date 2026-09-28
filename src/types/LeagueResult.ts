@@ -15,8 +15,8 @@ export type Possession = {
 };
 
 /**
- * One end of a finished game, read from the winner's side or the loser's. `by` is
- * the margin, which is zero on both sides of a tie, and the team is absent there.
+ * The winning end of a finished game. `by` is the margin, which is zero for a
+ * tie, where the team is absent.
  */
 export type GameOutcome = {
   team: Team | null;
@@ -58,6 +58,5 @@ export type LeagueResult = {
   venue?: string;
   possession: Possession;
   winner: GameOutcome;
-  loser: GameOutcome;
   totalScore: number;
 };
