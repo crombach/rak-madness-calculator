@@ -32,11 +32,7 @@ export const NO_SWINGS: SwingGames = { games: [] };
  * Each open game, with the players it knocks out whichever way it falls.
  *
  * Read off `getMustWin`, a verdict per pick per player, never the route search, so
- * it answers above `MAX_SEARCHED_GAMES` too. `scoring.bench.ts` measures it on the
- * 80-player week `benchFixtures` builds. In Node on an M-series laptop the worst
- * case, every game open at kickoff, answers in about 8ms, and the search limit's
- * week in about 6ms. `getPlayerAnalysis` asked for every player of that same week
- * takes about 1.2s.
+ * it answers above `MAX_SEARCHED_GAMES` too.
  */
 export default function getSwingGames(scores: RakMadnessScores): SwingGames {
   if (isWeekWon(scores)) return NO_SWINGS;
