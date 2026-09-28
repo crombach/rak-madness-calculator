@@ -53,11 +53,6 @@ export function finalGame({
       homeAway: isTie ? null : homeWon ? HomeAway.HOME : HomeAway.AWAY,
       by: Math.abs(homeScore - awayScore),
     },
-    loser: {
-      team: isTie ? null : homeWon ? awayTeam : homeTeam,
-      homeAway: isTie ? null : homeWon ? HomeAway.AWAY : HomeAway.HOME,
-      by: Math.abs(homeScore - awayScore),
-    },
     totalScore: homeScore + awayScore,
   };
 }
@@ -86,7 +81,6 @@ export function liveGame({
     away: side(away, awayScore),
     possession: NO_POSSESSION,
     winner: { team: null, homeAway: null, by: 0 },
-    loser: { team: null, homeAway: null, by: 0 },
     totalScore: homeScore + awayScore,
   };
 }
@@ -137,7 +131,6 @@ export function upcomingGame({
     away: side(away, 0),
     possession: NO_POSSESSION,
     winner: { team: null, homeAway: null, by: 0 },
-    loser: { team: null, homeAway: null, by: 0 },
     totalScore: 0,
   };
 }
