@@ -15,14 +15,17 @@ export type Theme = "light" | "dark" | "auto";
 const THEME_SETTING = "theme";
 const PLAYER_NAME_SETTING = "playerName";
 const LIVE_ANALYSIS_SETTING = "liveAnalysis";
+const EXPERIMENTAL_FEATURES_SETTING = "experimentalFeatures";
 
 /** The exact key `settingsStore` writes to, for a test that reads localStorage directly. */
 export const THEME_KEY = PREFIX + THEME_SETTING;
 export const PLAYER_NAME_KEY = PREFIX + PLAYER_NAME_SETTING;
 export const LIVE_ANALYSIS_KEY = PREFIX + LIVE_ANALYSIS_SETTING;
+export const EXPERIMENTAL_FEATURES_KEY = PREFIX + EXPERIMENTAL_FEATURES_SETTING;
 
 /** The only value this setting is ever stored as, the default being stored as nothing. */
 const LIVE_ANALYSIS_OFF = "off";
+const EXPERIMENTAL_FEATURES_ON = "on";
 
 /** Follow the operating system, which is what the app did before it could be told. */
 const DEFAULT_THEME: Theme = "auto";
@@ -56,6 +59,9 @@ type Settings = {
    */
   liveAnalysis: boolean;
   setLiveAnalysis: (enabled: boolean) => void;
+  /** Whether the reader opted into work-in-progress features. */
+  experimentalFeatures: boolean;
+  setExperimentalFeatures: (enabled: boolean) => void;
 };
 
 // Defaults rather than a throw, following `PlayerAnalysisContext`. The tables read
@@ -67,6 +73,8 @@ const SettingsContext = createContext<Settings>({
   setPlayerName: doNothing,
   liveAnalysis: true,
   setLiveAnalysis: doNothing,
+  experimentalFeatures: false,
+  setExperimentalFeatures: doNothing,
 });
 
 function storedTheme(): Theme {
@@ -158,6 +166,11 @@ export function SettingsContextProvider({ children }: PropsWithChildren) {
   );
   const [liveAnalysis, setLiveAnalysisState] =
     useState<boolean>(storedLiveAnalysis);
+  const [experimentalFeatures, setExperimentalFeaturesState] =
+    useState<boolean>(
+      () =>
+        readSetting(EXPERIMENTAL_FEATURES_SETTING) === EXPERIMENTAL_FEATURES_ON,
+    );
 
   useEffect(() => {
     applyTheme(theme);
@@ -195,6 +208,14 @@ export function SettingsContextProvider({ children }: PropsWithChildren) {
     writeSetting(LIVE_ANALYSIS_SETTING, next ? "" : LIVE_ANALYSIS_OFF);
   }, []);
 
+  const setExperimentalFeatures = useCallback((next: boolean) => {
+    setExperimentalFeaturesState(next);
+    writeSetting(
+      EXPERIMENTAL_FEATURES_SETTING,
+      next ? EXPERIMENTAL_FEATURES_ON : "",
+    );
+  }, []);
+
   const value = useMemo(
     () => ({
       theme,
@@ -203,8 +224,19 @@ export function SettingsContextProvider({ children }: PropsWithChildren) {
       setPlayerName,
       liveAnalysis,
       setLiveAnalysis,
+      experimentalFeatures,
+      setExperimentalFeatures,
     }),
-    [theme, setTheme, playerName, setPlayerName, liveAnalysis, setLiveAnalysis],
+    [
+      theme,
+      setTheme,
+      playerName,
+      setPlayerName,
+      liveAnalysis,
+      setLiveAnalysis,
+      experimentalFeatures,
+      setExperimentalFeatures,
+    ],
   );
 
   return (

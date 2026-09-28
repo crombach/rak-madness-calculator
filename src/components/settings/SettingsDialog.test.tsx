@@ -1,6 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import {
+  EXPERIMENTAL_FEATURES_KEY,
   LIVE_ANALYSIS_KEY,
   PLAYER_NAME_KEY,
   SettingsContextProvider,
@@ -30,19 +31,32 @@ function choiceLabels(group: string): Array<string> {
     .map((button) => button.textContent);
 }
 
+/** One choice under one heading, since more than one row offers On and Off. */
+function choice(group: string, label: string): HTMLElement {
+  return within(screen.getByRole("group", { name: group })).getByRole(
+    "button",
+    { name: label },
+  );
+}
+
 beforeEach(() => {
   localStorage.clear();
   delete document.documentElement.dataset.theme;
 });
 
 describe("SettingsDialog", () => {
-  it("asks for the name first, then the analysis, then the theme", () => {
+  it("asks for the name, the analysis, the theme, then the experiments", () => {
     mountDialog();
     const headings = screen
       .getAllByRole("heading", { level: 3 })
       .map((heading) => heading.textContent);
 
-    expect(headings).toEqual(["Player Name", "Live Player Analysis", "Theme"]);
+    expect(headings).toEqual([
+      "Player Name",
+      "Live Player Analysis",
+      "Theme",
+      "Experimental Features",
+    ]);
   });
 
   it("closes from the shell's own close button", async () => {
@@ -160,7 +174,7 @@ describe("SettingsDialog, the live player analysis", () => {
   it("starts on", () => {
     mountDialog();
 
-    expect(screen.getByRole("button", { name: "On" })).toHaveAttribute(
+    expect(choice("Live Player Analysis", "On")).toHaveAttribute(
       "aria-pressed",
       "true",
     );
@@ -168,9 +182,9 @@ describe("SettingsDialog, the live player analysis", () => {
 
   it("saves the choice to disable, and shows it as chosen", async () => {
     const user = mountDialog();
-    await user.click(screen.getByRole("button", { name: "Off" }));
+    await user.click(choice("Live Player Analysis", "Off"));
 
-    expect(screen.getByRole("button", { name: "Off" })).toHaveAttribute(
+    expect(choice("Live Player Analysis", "Off")).toHaveAttribute(
       "aria-pressed",
       "true",
     );
@@ -179,8 +193,8 @@ describe("SettingsDialog, the live player analysis", () => {
 
   it("forgets the choice on the way back to enabled, the default", async () => {
     const user = mountDialog();
-    await user.click(screen.getByRole("button", { name: "Off" }));
-    await user.click(screen.getByRole("button", { name: "On" }));
+    await user.click(choice("Live Player Analysis", "Off"));
+    await user.click(choice("Live Player Analysis", "On"));
 
     expect(localStorage.getItem(LIVE_ANALYSIS_KEY)).toBeNull();
   });
@@ -189,9 +203,32 @@ describe("SettingsDialog, the live player analysis", () => {
     localStorage.setItem(LIVE_ANALYSIS_KEY, "off");
     mountDialog();
 
-    expect(screen.getByRole("button", { name: "Off" })).toHaveAttribute(
+    expect(choice("Live Player Analysis", "Off")).toHaveAttribute(
       "aria-pressed",
       "true",
     );
+  });
+});
+
+describe("SettingsDialog, the experimental features", () => {
+  it("offers on then off, and starts off", () => {
+    mountDialog();
+
+    expect(choiceLabels("Experimental Features")).toEqual(["On", "Off"]);
+    expect(choice("Experimental Features", "Off")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  it("saves the opt-in, and forgets it on the way back out", async () => {
+    const user = mountDialog();
+    await user.click(choice("Experimental Features", "On"));
+
+    expect(localStorage.getItem(EXPERIMENTAL_FEATURES_KEY)).toBe("on");
+
+    await user.click(choice("Experimental Features", "Off"));
+
+    expect(localStorage.getItem(EXPERIMENTAL_FEATURES_KEY)).toBeNull();
   });
 });

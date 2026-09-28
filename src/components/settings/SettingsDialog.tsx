@@ -15,7 +15,7 @@ const THEMES: Array<{ value: Theme; label: string }> = [
 
 // The on choice first, against the alphabetical order above, because these two are
 // one setting's two states rather than three peers.
-const LIVE_ANALYSIS: Array<{ value: boolean; label: string }> = [
+const ON_OFF: Array<{ value: boolean; label: string }> = [
   { value: true, label: "On" },
   { value: false, label: "Off" },
 ];
@@ -35,9 +35,12 @@ export default function SettingsDialog({
     setPlayerName,
     liveAnalysis,
     setLiveAnalysis,
+    experimentalFeatures,
+    setExperimentalFeatures,
   } = useSettings();
   const themeLabelId = useId();
   const liveAnalysisLabelId = useId();
+  const experimentalFeaturesLabelId = useId();
   const nameInputId = useId();
   const nameInput = useRef<HTMLInputElement>(null);
 
@@ -100,7 +103,7 @@ export default function SettingsDialog({
             role="group"
             aria-labelledby={liveAnalysisLabelId}
           >
-            {LIVE_ANALYSIS.map(({ value, label }) => (
+            {ON_OFF.map(({ value, label }) => (
               <Button
                 key={label}
                 compact
@@ -145,6 +148,30 @@ export default function SettingsDialog({
           <p className="settings__hint">
             Auto mode honors your device settings.
           </p>
+        </section>
+
+        <section className="settings__section">
+          <h3 className="settings__label" id={experimentalFeaturesLabelId}>
+            Experimental Features
+          </h3>
+          <div
+            className="settings__choices"
+            role="group"
+            aria-labelledby={experimentalFeaturesLabelId}
+          >
+            {ON_OFF.map(({ value, label }) => (
+              <Button
+                key={label}
+                compact
+                selected={experimentalFeatures === value}
+                onClick={() => setExperimentalFeatures(value)}
+                className="settings__choice"
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+          <p className="settings__hint">Preview work-in-progress features.</p>
         </section>
       </div>
     </DialogShell>

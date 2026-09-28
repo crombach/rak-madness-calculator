@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import {
+  EXPERIMENTAL_FEATURES_KEY,
   LIVE_ANALYSIS_KEY,
   PLAYER_NAME_KEY,
   SettingsContextProvider,
@@ -18,6 +19,8 @@ function Probe({ candidate = "Linebacher" }: { candidate?: string }) {
     setPlayerName,
     liveAnalysis,
     setLiveAnalysis,
+    experimentalFeatures,
+    setExperimentalFeatures,
   } = useSettings();
   const isMine = useIsMyPlayer(candidate);
   return (
@@ -28,6 +31,11 @@ function Probe({ candidate = "Linebacher" }: { candidate?: string }) {
       <span data-testid="liveAnalysis">{String(liveAnalysis)}</span>
       <button onClick={() => setLiveAnalysis(false)}>hide analysis</button>
       <button onClick={() => setLiveAnalysis(true)}>show analysis</button>
+      <span data-testid="experimentalFeatures">
+        {String(experimentalFeatures)}
+      </span>
+      <button onClick={() => setExperimentalFeatures(true)}>opt in</button>
+      <button onClick={() => setExperimentalFeatures(false)}>opt out</button>
       {(["light", "dark", "auto"] as Array<Theme>).map((option) => (
         <button key={option} onClick={() => setTheme(option)}>
           {option}
@@ -225,6 +233,39 @@ describe("SettingsContext, the live player analysis", () => {
     mountProbe();
 
     expect(screen.getByTestId("liveAnalysis")).toHaveTextContent("true");
+  });
+});
+
+describe("SettingsContext, the experimental features", () => {
+  it("is off for a reader who has never opted in", () => {
+    mountProbe();
+
+    expect(screen.getByTestId("experimentalFeatures")).toHaveTextContent(
+      "false",
+    );
+  });
+
+  it("saves the opt-in, and forgets it on the way back out", async () => {
+    const user = mountProbe();
+    await user.click(screen.getByRole("button", { name: "opt in" }));
+
+    expect(screen.getByTestId("experimentalFeatures")).toHaveTextContent(
+      "true",
+    );
+    expect(localStorage.getItem(EXPERIMENTAL_FEATURES_KEY)).toBe("on");
+
+    await user.click(screen.getByRole("button", { name: "opt out" }));
+
+    expect(localStorage.getItem(EXPERIMENTAL_FEATURES_KEY)).toBeNull();
+  });
+
+  it("starts on where it was left on", () => {
+    localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
+    mountProbe();
+
+    expect(screen.getByTestId("experimentalFeatures")).toHaveTextContent(
+      "true",
+    );
   });
 });
 

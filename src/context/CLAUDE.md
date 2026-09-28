@@ -5,8 +5,8 @@
   `WeekOutcomeContext`, whether the week is over or already won, and
   `ScoreChangesContext`, what the last refresh changed for the tables to flash,
   separately.
-- `SettingsContext`: the theme, the reader's own name, and whether a live week
-  says where players stand, from `settingsStore`. Writes `data-theme` for
+- `SettingsContext`: the theme, the reader's name, live analysis, and the
+  experimental opt-in, from `settingsStore`. Writes `data-theme` for
   `index.scss`, and answers `useIsMyPlayer`.
 - `ToastContext`: the toast list, split from its actions.
 - `PlayerAnalysisContext`: how a name cell opens the player analysis on that
