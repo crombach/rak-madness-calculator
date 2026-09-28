@@ -13,6 +13,7 @@ first paint it sets `data-theme` from storage and preloads the logo's face.
 ## Subdirectories
 
 - [`functions/`](functions/CLAUDE.md) — the picks routes, on Pages and R2
+- [`ideas/`](ideas/CLAUDE.md) — features to build next, and their plans
 - [`public/`](public/CLAUDE.md) — icons, manifest, robots, the logo's font
 - [`src/`](src/CLAUDE.md) — application source
 
