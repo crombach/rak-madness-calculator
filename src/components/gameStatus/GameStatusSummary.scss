@@ -267,12 +267,10 @@
 .game-status__side-label {
   @include micro-label;
 
-  // Level with the clock across the row, which is set two steps larger. Centered, the
-  // smaller text reads a pixel high, because each line box is centered on its own
-  // height and a 12px box puts its baseline higher inside the row than a 14px one.
+  // Level with the clock across the row, at its size.
   align-self: baseline;
   color: var(--rak-text-secondary);
-  font-size: var(--rak-text-xs);
+  font-size: var(--rak-text-sm);
   font-weight: normal;
 }
 
@@ -326,6 +324,7 @@
   }
 }
 
+// At the size of the down or outcome across the row.
 .game-status__record {
   color: var(--rak-text-secondary);
   font-size: var(--rak-text-sm);
@@ -476,6 +475,9 @@
   justify-self: center;
   min-width: 0;
   margin: 0;
+  color: var(--rak-text);
+  font-size: var(--rak-text-sm);
+  font-weight: var(--rak-weight-semibold);
   text-align: center;
 }
 
@@ -485,21 +487,16 @@
   grid-row: 1;
   // Both sides of the row take their baseline from the same place, or neither does.
   align-self: baseline;
-  color: var(--rak-text);
-  font-size: var(--rak-text-sm);
-  font-weight: var(--rak-weight-semibold);
 }
 
-// Set with the clock in the same column, in its color as well as its size, which is
-// the other half of where the game is up to. A down and distance runs to
-// `2nd & 7 at ATL 34`, and the middle column is only as wide as its widest line, so
-// every character here is width taken off the names beside it. `useScorelineFit` is
-// what gives those names the abbreviation where this line leaves them too little.
+// Set like the clock in the same column, which is the other half of where the game is
+// up to. A down and distance runs to `2nd & 7 at ATL 34`, and the middle column is
+// only as wide as its widest line, so every character here is width taken off the
+// names beside it. `useScorelineFit` is what gives those names the abbreviation where
+// this line leaves them too little.
 .game-status__down,
 .game-status__outcome {
   grid-row: 3;
-  color: var(--rak-text);
-  font-size: var(--rak-text-sm);
 }
 
 .game-status__missing {
