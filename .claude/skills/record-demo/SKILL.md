@@ -23,8 +23,9 @@ node .claude/skills/record-demo/scripts/record.js \
 
 Drop `--mp4` to keep the raw `.webm`. Add `--base-url` for a non-default dev
 server port, `--viewport WxH` for a different size (default `430x900`, this
-app's own phone-first default), and `--touch` for a scenario driving a touch
-gesture, which also turns off every `can-hover` rule.
+app's own phone-first default), `--touch` for a scenario driving a touch
+gesture, which also turns off every `can-hover` rule, and
+`--device-scale-factor <n>` for a phone screenshot's own pixel density.
 
 ## Take a screenshot instead
 

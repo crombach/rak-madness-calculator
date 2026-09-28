@@ -36,6 +36,9 @@ function parseArgs(argv) {
       case "--touch":
         args.touch = true;
         break;
+      case "--device-scale-factor":
+        args.deviceScaleFactor = Number(next());
+        break;
       case "--mp4":
         args.mp4 = true;
         break;
@@ -45,7 +48,7 @@ function parseArgs(argv) {
   }
   if (!args.scenario || !args.out) {
     throw new Error(
-      "Usage: record.js --scenario <path> --out <file> [--screenshot] [--base-url <url>] [--viewport WxH] [--touch] [--mp4]",
+      "Usage: record.js --scenario <path> --out <file> [--screenshot] [--base-url <url>] [--viewport WxH] [--touch] [--device-scale-factor <n>] [--mp4]",
     );
   }
   return args;
@@ -61,6 +64,7 @@ async function main() {
     screenshot: args.screenshot,
     viewport: { width: args.viewportWidth, height: args.viewportHeight },
     touch: args.touch,
+    deviceScaleFactor: args.deviceScaleFactor,
     mp4: args.mp4,
   });
 
