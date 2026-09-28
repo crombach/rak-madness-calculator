@@ -80,7 +80,7 @@ function PlayerName({
           <span className="table__sr-only">
             {player.status.isKnockedOut
               ? "Knocked out"
-              : isWeekWon
+              : isWeekWon && !hasNameConflict
                 ? "Won the week"
                 : "Still in contention"}
           </span>

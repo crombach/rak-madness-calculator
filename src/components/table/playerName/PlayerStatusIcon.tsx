@@ -12,7 +12,7 @@ import "./PlayerStatusIcon.scss";
  * Where a player stands, in one icon. Shared by the tables' name cells and the
  * player analysis search, so the same player is marked the same way in both.
  *
- * Still standing at the end of the week is what winning the week is, and so is
+ * A player still standing at the end of the week wins it. So does one left
  * standing alone before then.
  *
  * A name two rows of the workbook share takes the warning a game nobody can score

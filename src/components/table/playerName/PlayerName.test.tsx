@@ -37,14 +37,14 @@ const knockoutChange = {
   picks: new Map(),
 };
 
-function mountCell(player = knockedOut) {
+function mountCell(player = knockedOut, hasNameConflict?: boolean) {
   return render(
     <SettingsContextProvider>
       <PlayerAnalysisContextProvider showPlayerAnalysis={vi.fn()}>
         <table>
           <tbody>
             <tr>
-              <PlayerName player={player} />
+              <PlayerName player={player} hasNameConflict={hasNameConflict} />
             </tr>
           </tbody>
         </table>
@@ -123,6 +123,13 @@ describe("PlayerName", () => {
 
     expect(cell()).toHaveTextContent("Won the week");
     expect(cell()).not.toHaveTextContent("Still in contention");
+  });
+
+  it("tells a screen reader no win for a row under a shared name", () => {
+    mockIsWeekWon.mockReturnValue(true);
+    mountCell(playerScore({ name: "Alice" }), true);
+
+    expect(cell()).not.toHaveTextContent("Won the week");
   });
 
   it("draws no trophy under a wipe the deciding knockout left", () => {
