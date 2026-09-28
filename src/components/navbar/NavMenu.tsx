@@ -151,10 +151,13 @@ function NavPopup({
   );
 }
 
-/** A disabled item's reason, read by a screen reader only. */
+/**
+ * A disabled item's reason, read by a screen reader only. Hidden from the item's
+ * name, which it sits inside, so it reaches the reader once, as the description.
+ */
 function DisabledReason({ id, reason }: { id: string; reason: string }) {
   return (
-    <span id={id} className="nav-menu__sr-only">
+    <span id={id} className="nav-menu__sr-only" aria-hidden="true">
       {reason}
     </span>
   );
@@ -291,6 +294,7 @@ function DisabledDrawerItem({
   const reasonId = useId();
   return (
     <span
+      role="link"
       className="nav-drawer__item"
       aria-disabled="true"
       aria-current={isCurrent ? "page" : undefined}

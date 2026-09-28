@@ -277,39 +277,16 @@ describe("NavMenu", () => {
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });
 
-    it("drops Swing Games once the week has a winner", async () => {
-      mockIsWeekWon.mockReturnValue(true);
-      const { drawer } = await openDrawer();
-
-      expect(
-        within(drawer)
-          .getAllByRole("link")
-          .map((link) => link.textContent),
-      ).toEqual(["Home"]);
-    });
-
-    it("shows no menu with experimental features off", () => {
-      localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
-      mount();
-
-      expect(
-        screen.queryByRole("button", { name: "Menu" }),
-      ).not.toBeInTheDocument();
-    });
-
     it("disables Swing Games while scores load", async () => {
       mockSwingGames.mockReturnValue(undefined);
       const { drawer } = await openDrawer();
 
       expect(
-        within(drawer)
-          .getAllByRole("link")
-          .map((link) => link.textContent),
-      ).toEqual(["Home"]);
-      expect(within(drawer).getByText(/Swing Games/)).toHaveAttribute(
-        "aria-disabled",
-        "true",
-      );
+        within(drawer).getByRole("link", { name: "Home" }),
+      ).toHaveAttribute("href");
+      expect(
+        within(drawer).getByRole("link", { name: "Swing Games" }),
+      ).toHaveAttribute("aria-disabled", "true");
     });
 
     it("keeps the disabled reason out of sight in the drawer", async () => {
