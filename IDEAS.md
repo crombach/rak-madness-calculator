@@ -25,8 +25,8 @@ XLSX file.
 ## What-if mode
 
 Let a reader set the result of each remaining game and see the standings change.
-Pass the invented results through `getPlayerScores` and `applyKnockouts` in place
-of the ESPN results. The player analysis search in `getPlayerAnalysis` already
+Pass the invented results to `getPlayerScores` as its `results` argument, in place
+of the ESPN results. It applies the knockouts itself. The player analysis search in `getPlayerAnalysis` already
 scores outcomes that have not happened yet. Look there first for a path to reuse.
 
 ## Swing games
