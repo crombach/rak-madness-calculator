@@ -504,6 +504,12 @@
   font-size: var(--rak-text-sm);
 }
 
+// Weighted like the clock over the scores, since once the game is over the two are
+// the pair of lines that say how it went.
+.game-status__outcome {
+  font-weight: var(--rak-weight-semibold);
+}
+
 .game-status__missing {
   margin: 0;
   color: var(--rak-text-secondary);
