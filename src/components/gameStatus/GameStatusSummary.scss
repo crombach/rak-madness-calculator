@@ -326,9 +326,11 @@
   }
 }
 
+// At the side label's size, since text this small reads lighter the smaller it is set,
+// and the two framing the name are meant to read as one shade.
 .game-status__record {
   color: var(--rak-text-secondary);
-  font-size: var(--rak-text-sm);
+  font-size: var(--rak-text-xs);
 }
 
 .game-status__score {
