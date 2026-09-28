@@ -1,19 +1,38 @@
 import { Drawer } from "@base-ui/react/drawer";
 import { Menu } from "@base-ui/react/menu";
-import { ReactNode, useState } from "react";
-import { Link, useLocation } from "react-router";
+import { Tooltip } from "@base-ui/react/tooltip";
+import { ReactNode, useId, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router";
+import {
+  useAppData,
+  useIsWeekWon,
+  useSwingGames,
+} from "../../context/AppDataContext";
+import cssMediaQuery from "../../hooks/cssMediaQuery";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import { buttonClasses } from "../button/Button";
+import LabeledSelect, { seasonLabel } from "../home/LabeledSelect";
 import { CloseIcon, HomeIcon, MenuIcon, SwapVertIcon } from "../icon/Icon";
-import resultsPath from "../results/resultsPath";
+import resultsPath, { ResultsPage } from "../results/resultsPath";
+import { WeekInfo } from "../../types/League";
 import "./NavMenu.scss";
 
 type Week = number | string | undefined;
+
+/** What an item's visibility and enabled rules can read. */
+type NavContext = {
+  isWeekWon: boolean;
+  swingGames: ReturnType<typeof useSwingGames>;
+};
 
 type NavItem = {
   label: string;
   icon: ReactNode;
   path: (season: Week, week: Week) => string;
+  /** Left out for an item that always shows. */
+  hidden?: (context: NavContext) => boolean;
+  /** A reason to show and disable the item for, or undefined to leave it enabled. */
+  disabledReason?: (context: NavContext) => string | undefined;
 };
 
 const ITEMS: Array<NavItem> = [
@@ -22,18 +41,18 @@ const ITEMS: Array<NavItem> = [
     label: "Swing Games",
     icon: <SwapVertIcon />,
     path: (season, week) => resultsPath(season, week, "Swing Games"),
+    hidden: ({ isWeekWon }) => isWeekWon,
+    disabledReason: ({ swingGames }) =>
+      swingGames == null || swingGames.games.length === 0
+        ? "No game knocks anyone out"
+        : undefined,
   },
 ];
 
 const TRIGGER_CLASSES = buttonClasses({ compact: true, iconOnly: true });
 
-/** The query `index.scss` exports for everything short of `wide-screen`. */
-function belowWideQuery(): string {
-  return getComputedStyle(document.documentElement)
-    .getPropertyValue("--rak-below-wide")
-    .trim()
-    .replace(/^"|"$/g, "");
-}
+// Shorter than Base UI's default 600ms, since the reason is short enough to skim fast.
+const TOOLTIP_DELAY_MS = 200;
 
 /**
  * The hamburger every page opens beside the scoreboard/picks switch. A drawer
@@ -42,30 +61,39 @@ function belowWideQuery(): string {
 export default function NavMenu({
   season,
   week,
+  page,
   disabled = false,
 }: {
   season: Week;
   week: Week;
+  /**
+   * The results page a week picked in the drawer navigates to. Left out on the
+   * home page, where picking a week only sets it, the same as its own select.
+   */
+  page?: ResultsPage;
   disabled?: boolean;
 }) {
-  const [query] = useState(belowWideQuery);
+  const [query] = useState(() => cssMediaQuery("--rak-below-wide"));
   const isNarrow = useMediaQuery(query);
   const { pathname } = useLocation();
-  const links = ITEMS.map((item) => {
+  const isWeekWon = useIsWeekWon();
+  const swingGames = useSwingGames();
+  const context: NavContext = { isWeekWon, swingGames };
+  const links = ITEMS.filter((item) => !item.hidden?.(context)).map((item) => {
     const path = item.path(season, week);
-    return { ...item, path, isCurrent: pathname === path };
+    return {
+      ...item,
+      path,
+      isCurrent: pathname === path,
+      disabledReason: item.disabledReason?.(context),
+    };
   });
 
   return (
     <>
       <div className="navbar__divider" />
       {isNarrow ? (
-        <NavDrawer
-          season={season}
-          week={week}
-          links={links}
-          disabled={disabled}
-        />
+        <NavDrawer page={page} links={links} disabled={disabled} />
       ) : (
         <NavPopup links={links} disabled={disabled} />
       )}
@@ -73,7 +101,11 @@ export default function NavMenu({
   );
 }
 
-type NavLink = Omit<NavItem, "path"> & { path: string; isCurrent: boolean };
+type NavLink = Omit<NavItem, "path" | "disabledReason"> & {
+  path: string;
+  isCurrent: boolean;
+  disabledReason?: string;
+};
 
 function NavPopup({
   links,
@@ -98,18 +130,28 @@ function NavPopup({
           sideOffset={4}
         >
           <Menu.Popup className="nav-menu__popup">
-            {links.map(({ label, icon, path, isCurrent }) => (
-              <Menu.LinkItem
-                key={label}
-                closeOnClick
-                className="nav-menu__item"
-                render={<Link to={path} />}
-                aria-current={isCurrent ? "page" : undefined}
-              >
-                {icon}
-                {label}
-              </Menu.LinkItem>
-            ))}
+            {links.map(({ label, icon, path, isCurrent, disabledReason }) =>
+              disabledReason != null ? (
+                <DisabledNavItem
+                  key={label}
+                  label={label}
+                  icon={icon}
+                  reason={disabledReason}
+                  isCurrent={isCurrent}
+                />
+              ) : (
+                <Menu.LinkItem
+                  key={label}
+                  closeOnClick
+                  className="nav-menu__item"
+                  render={<Link to={path} />}
+                  aria-current={isCurrent ? "page" : undefined}
+                >
+                  {icon}
+                  {label}
+                </Menu.LinkItem>
+              ),
+            )}
           </Menu.Popup>
         </Menu.Positioner>
       </Menu.Portal>
@@ -117,18 +159,96 @@ function NavPopup({
   );
 }
 
+/** A disabled item's reason, read by a screen reader only. */
+function DisabledReason({ id, reason }: { id: string; reason: string }) {
+  return (
+    <span id={id} className="nav-menu__sr-only">
+      {reason}
+    </span>
+  );
+}
+
+/**
+ * A disabled popup item. Base UI keeps `Menu.Item` focusable while disabled, so
+ * the reason shows as a tooltip on hover or keyboard focus, and sits in an
+ * `aria-describedby` span too, for a reader neither reaches.
+ */
+function DisabledNavItem({
+  label,
+  icon,
+  reason,
+  isCurrent,
+}: {
+  label: string;
+  icon: ReactNode;
+  reason: string;
+  isCurrent: boolean;
+}) {
+  const reasonId = useId();
+  return (
+    <Tooltip.Root>
+      <Tooltip.Trigger
+        delay={TOOLTIP_DELAY_MS}
+        render={
+          <Menu.Item
+            disabled
+            className="nav-menu__item"
+            aria-current={isCurrent ? "page" : undefined}
+            aria-describedby={reasonId}
+          />
+        }
+      >
+        {icon}
+        {label}
+        <DisabledReason id={reasonId} reason={reason} />
+      </Tooltip.Trigger>
+      <Tooltip.Portal>
+        <Tooltip.Positioner
+          className="nav-menu__tooltip-positioner"
+          side="left"
+          align="center"
+          sideOffset={4}
+        >
+          <Tooltip.Popup role="tooltip" className="nav-menu__tooltip">
+            {reason}
+          </Tooltip.Popup>
+        </Tooltip.Positioner>
+      </Tooltip.Portal>
+    </Tooltip.Root>
+  );
+}
+
 function NavDrawer({
-  season,
-  week,
+  page,
   links,
   disabled,
 }: {
-  season: Week;
-  week: Week;
+  page?: ResultsPage;
   links: Array<NavLink>;
   disabled: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const {
+    selectableSeasons,
+    requestedSeason,
+    loadedSeason,
+    setSelectedSeason,
+    selectableWeeks,
+    selectedWeek,
+    setSelectedWeek,
+    isWeeksLoading,
+  } = useAppData();
+
+  // Same event the home page's own week select fires. Navigating besides is
+  // this control's own addition, since a results page has a URL to keep in step.
+  function chooseWeek(chosen: WeekInfo | null) {
+    setSelectedWeek(chosen ?? undefined);
+    if (chosen != null && page != null) {
+      navigate(resultsPath(loadedSeason, chosen.value, page));
+    }
+    setOpen(false);
+  }
 
   return (
     <Drawer.Root open={open} onOpenChange={setOpen} swipeDirection="right">
@@ -152,31 +272,95 @@ function NavDrawer({
                 <CloseIcon />
               </Drawer.Close>
             </header>
-            {week != null && (
-              <p className="nav-drawer__week">
-                {season} · Week {week}
-              </p>
-            )}
+            <div className="nav-drawer__pickers">
+              <LabeledSelect<number>
+                ariaLabel="Season"
+                className="nav-drawer__picker select__trigger"
+                positionerClassName="nav-drawer__picker-positioner select__positioner"
+                value={requestedSeason ?? loadedSeason ?? null}
+                onValueChange={(chosen) =>
+                  chosen != null && setSelectedSeason(chosen)
+                }
+                disabled={isWeeksLoading}
+                placeholder="Select a season..."
+                renderValue={seasonLabel}
+                items={selectableSeasons}
+                itemKey={(chosen) => chosen}
+                itemLabel={seasonLabel}
+              />
+              <LabeledSelect<WeekInfo>
+                ariaLabel="Week"
+                className="nav-drawer__picker select__trigger"
+                positionerClassName="nav-drawer__picker-positioner select__positioner"
+                value={selectedWeek ?? null}
+                onValueChange={chooseWeek}
+                disabled={isWeeksLoading}
+                placeholder="Select a week..."
+                renderValue={(chosen) => chosen.label}
+                items={selectableWeeks}
+                itemKey={(chosen) => chosen.value}
+                itemLabel={(chosen) => chosen.label}
+              />
+            </div>
             <nav aria-label="Pages">
+              <hr className="nav-drawer__divider" />
               <ul className="nav-drawer__list">
-                {links.map(({ label, icon, path, isCurrent }) => (
-                  <li key={label}>
-                    <Link
-                      to={path}
-                      className="nav-drawer__item"
-                      aria-current={isCurrent ? "page" : undefined}
-                      onClick={() => setOpen(false)}
-                    >
-                      {icon}
-                      {label}
-                    </Link>
-                  </li>
-                ))}
+                {links.map(
+                  ({ label, icon, path, isCurrent, disabledReason }) => (
+                    <li key={label}>
+                      {disabledReason != null ? (
+                        <DisabledDrawerItem
+                          label={label}
+                          icon={icon}
+                          reason={disabledReason}
+                          isCurrent={isCurrent}
+                        />
+                      ) : (
+                        <Link
+                          to={path}
+                          className="nav-drawer__item"
+                          aria-current={isCurrent ? "page" : undefined}
+                          onClick={() => setOpen(false)}
+                        >
+                          {icon}
+                          {label}
+                        </Link>
+                      )}
+                    </li>
+                  ),
+                )}
               </ul>
             </nav>
           </Drawer.Popup>
         </Drawer.Viewport>
       </Drawer.Portal>
     </Drawer.Root>
+  );
+}
+
+/** A disabled drawer row. The reason reaches only a screen reader, through this span. */
+function DisabledDrawerItem({
+  label,
+  icon,
+  reason,
+  isCurrent,
+}: {
+  label: string;
+  icon: ReactNode;
+  reason: string;
+  isCurrent: boolean;
+}) {
+  const reasonId = useId();
+  return (
+    <span
+      className="nav-drawer__item"
+      aria-disabled="true"
+      aria-current={isCurrent ? "page" : undefined}
+      aria-describedby={reasonId}
+    >
+      {icon}
+      {label}
+      <DisabledReason id={reasonId} reason={reason} />
+    </span>
   );
 }

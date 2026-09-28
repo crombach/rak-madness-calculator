@@ -194,7 +194,12 @@ export default function ResultsFrame({
             onRefresh={onRefresh}
             isRefreshing={isRefreshing}
           />
-          <NavMenu season={seasonParam} week={weekParam} disabled={!hasWeek} />
+          <NavMenu
+            season={seasonParam}
+            week={weekParam}
+            page={view}
+            disabled={!hasWeek}
+          />
         </>
       }
     >

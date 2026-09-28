@@ -1,15 +1,19 @@
 import { Select } from "@base-ui/react/select";
 import { UnfoldMoreIcon } from "../icon/Icon";
+import "./LabeledSelect.scss";
+
+/** Title case, to read like the week labels ESPN sends. */
+export const seasonLabel = (season: number) => `${season} Season`;
 
 /**
- * The season and week pickers' shared shape. A Base UI select styled by
- * `home__week-input`/`select__*`, so both read from one place instead of
- * drifting apart one field at a time. Those rules live in HomePage.scss,
- * its only caller's sheet.
+ * A Base UI select in the app's one `select__*` look, read as a readout rather
+ * than a form field. Backs the home page's season and week pickers, and the
+ * same pair in the nav drawer.
  */
 export default function LabeledSelect<T>({
   ariaLabel,
   className,
+  positionerClassName = "select__positioner",
   value,
   onValueChange,
   disabled,
@@ -21,6 +25,8 @@ export default function LabeledSelect<T>({
 }: {
   ariaLabel: string;
   className: string;
+  /** Left out for the app's default overlay stacking. */
+  positionerClassName?: string;
   value: T | null;
   onValueChange: (value: T | null) => void;
   disabled?: boolean;
@@ -48,7 +54,7 @@ export default function LabeledSelect<T>({
       </Select.Trigger>
       <Select.Portal>
         <Select.Positioner
-          className="select__positioner"
+          className={positionerClassName}
           sideOffset={4}
           // Base UI otherwise lays the popup over the trigger and sizes it
           // to the viewport to do so, past the rows the stylesheet allows.

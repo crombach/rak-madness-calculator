@@ -1,32 +1,147 @@
+@use "../../styles/a11y" as *;
 @use "../../styles/breakpoints" as *;
 @use "../../styles/focus" as *;
 @use "../../styles/label" as *;
-@use "../../styles/lcd" as *;
 @use "../../styles/listbox" as *;
 
 .nav-menu__positioner {
   z-index: var(--rak-z-overlay);
 }
 
+// The lamp a chosen key wears, shared by the drawer's full-width row and the
+// popup's key: lit the same way (`Button.scss`'s `.--selectable::before` /
+// `.--selected::before`), stood along whichever edge each context stands its
+// keys on.
+@mixin nav-item-lamp($edge) {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+
+    @if $edge == left {
+      top: var(--rak-space-2);
+      bottom: var(--rak-space-2);
+      left: 0;
+      width: var(--rak-border-width);
+      border-radius: 0 var(--rak-border-width) var(--rak-border-width) 0;
+    } @else {
+      left: var(--rak-space-2);
+      right: var(--rak-space-2);
+      bottom: 0;
+      height: var(--rak-border-width);
+      border-radius: var(--rak-border-width) var(--rak-border-width) 0 0;
+    }
+  }
+
+  &[aria-current="page"]::before {
+    background-color: var(--rak-led-on);
+    box-shadow: var(--rak-led-socket), var(--rak-led-glow);
+  }
+}
+
 .nav-menu__popup {
   @include listbox-popup;
 
-  min-width: 10rem;
-  color: var(--rak-text-secondary);
+  min-width: 12rem;
+  // The same ramp `Navbar.scss`'s `.navbar` sets, repeated because Base UI
+  // portals this popup outside the bar's own DOM, so nothing of the bar
+  // cascades into it. Kept as a second copy rather than a shared mixin: this
+  // file does not otherwise touch `Navbar.scss`.
+  --rak-primary-400: var(--rak-nav-key);
+  --rak-primary-500: var(--rak-nav-fill);
+  --rak-primary-600: var(--rak-nav-key-active);
+  --rak-primary-700: var(--rak-nav-key-edge);
+  --rak-on-solid: var(--rak-nav-ink);
+  --rak-key-top: var(--rak-nav-key-top);
+  --rak-led-on: var(--rak-nav-led);
+  --rak-key-face: var(--rak-primary-400);
+  --rak-key-active: var(--rak-primary-600);
+
+  background-color: var(--rak-primary-500);
+  box-shadow: var(--rak-shadow-band-navbar);
+  color: var(--rak-on-solid);
 }
 
 .nav-menu__item {
   @include listbox-item;
+  @include nav-item-lamp(bottom);
 
   gap: var(--rak-space-2);
   // Each item is a link, which would otherwise draw in the browser's blue.
   color: inherit;
+  font-size: var(--rak-text-sm);
+  font-weight: var(--rak-weight-semibold);
   text-decoration: none;
+  // A key's own fill and press step, not the neutral ramp `listbox-item` reads
+  // for a card-style popup: these read as keys on the bar, not a list on a card.
+  background-color: var(--rak-key-face);
+
+  &[data-highlighted] {
+    background-color: var(--rak-key-active);
+  }
 
   &[aria-current="page"] {
-    background-color: var(--rak-selected-fill);
+    background-color: var(--rak-key-active);
     font-weight: var(--rak-weight-semibold);
   }
+
+  // A key that can be chosen carries the lamp unlit, same as `Button.scss`'s
+  // `.--selectable::before`.
+  &::before {
+    background-color: var(--rak-led-off);
+    box-shadow: var(--rak-led-socket);
+  }
+
+  // No divider between keys, and no dimmed edge past the disabled bar itself.
+  & + & {
+    border-top: none;
+  }
+
+  &[data-disabled] {
+    // `--rak-disabled-text` is built for a light surface and reads near
+    // 1:1 against this dark key face. The enabled ink at 70% clears 3:1
+    // in both themes and stays under the enabled item's own contrast.
+    --rak-key-disabled-ink: color-mix(
+      in srgb,
+      var(--rak-on-solid) 70%,
+      transparent
+    );
+
+    // The same fill every other key wears. Written last, so it overrides the
+    // highlighted and current-page fills above for a key that is also one of those.
+    background-color: var(--rak-key-face);
+    color: var(--rak-key-disabled-ink);
+
+    @include can-hover {
+      cursor: not-allowed;
+    }
+
+    &::before {
+      background-color: transparent;
+      box-shadow: none;
+    }
+  }
+}
+
+// A disabled item's reason, read by a screen reader instead of shown, in
+// either the popup or the drawer.
+.nav-menu__sr-only {
+  @include visually-hidden;
+}
+
+.nav-menu__tooltip-positioner {
+  z-index: var(--rak-z-overlay);
+}
+
+.nav-menu__tooltip {
+  max-width: 12rem;
+  padding: var(--rak-space-1) var(--rak-space-2);
+  border-radius: var(--rak-radius-xs);
+  background-color: var(--rak-nav-key-active);
+  box-shadow: var(--rak-shadow-band-navbar);
+  color: var(--rak-nav-ink);
+  font-size: var(--rak-text-xs);
 }
 
 // The drawer below `wide-screen`, timed and eased like `DialogShell.scss`'s sheet.
@@ -118,31 +233,49 @@
   color: var(--rak-text-tertiary);
 }
 
-.nav-drawer__week {
-  @include lcd-glass;
+.nav-drawer__pickers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+}
 
-  margin: 0;
-  padding: var(--rak-space-2) var(--rak-space-3);
-  color: var(--rak-glass-ink);
-  font-size: var(--rak-text-md);
-  font-weight: var(--rak-weight-bold);
-  letter-spacing: var(--rak-label-tracking);
-  text-transform: uppercase;
+.nav-drawer__picker {
+  width: 100%;
+  min-height: var(--rak-touch-target);
+}
+
+// Above the drawer's own stack (`--rak-z-dialog`), since this popup opens
+// from a control inside it and `--rak-z-overlay` alone sits well under that.
+.nav-drawer__picker-positioner {
+  z-index: calc(var(--rak-z-dialog) + 2);
 }
 
 .nav-drawer__list {
   margin: 0;
   padding: 0;
   list-style: none;
+}
 
-  // `--rak-divider` has no dark value, and glares on the dark drawer.
-  li + li {
-    border-top: var(--rak-border-width-hairline) solid var(--rak-fill-muted);
-  }
+// The rule between rows and the one over the list share this declaration,
+// off the same `--rak-on-solid` token `Navbar.scss`'s own divider reads.
+.nav-drawer__divider,
+.nav-drawer__list li + li {
+  border-top: var(--rak-border-width-hairline) solid var(--rak-on-solid);
+}
+
+.nav-drawer__divider {
+  // Flush above the list, so only the first row's own padding sets the gap
+  // to its label, the same as the padding either side of a row's own border
+  // does. The popup's `gap` alone spaces it from the pickers above.
+  margin: 0;
+  border-right: none;
+  border-bottom: none;
+  border-left: none;
 }
 
 .nav-drawer__item {
-  position: relative;
+  @include nav-item-lamp(left);
+
   display: flex;
   align-items: center;
   gap: var(--rak-space-3);
@@ -165,25 +298,31 @@
     }
   }
 
-  // The lamp a chosen key wears along its lower edge, stood on end.
-  &::before {
-    content: "";
-    position: absolute;
-    top: var(--rak-space-2);
-    bottom: var(--rak-space-2);
-    left: 0;
-    width: var(--rak-border-width);
-    border-radius: 0 var(--rak-border-width) var(--rak-border-width) 0;
-  }
-
   &[aria-current="page"] {
     background-color: var(--rak-selected-fill);
     color: var(--rak-text);
     font-weight: var(--rak-weight-semibold);
+  }
 
+  &[aria-disabled="true"] {
+    color: var(--rak-disabled-text);
+
+    &:active {
+      background-color: transparent;
+    }
+
+    @include can-hover {
+      cursor: not-allowed;
+
+      &:hover {
+        background-color: transparent;
+      }
+    }
+
+    // No lamp, even for a disabled row that is also the current page.
     &::before {
-      background-color: var(--rak-led-on);
-      box-shadow: var(--rak-led-socket), var(--rak-led-glow);
+      background-color: transparent;
+      box-shadow: none;
     }
   }
 }
