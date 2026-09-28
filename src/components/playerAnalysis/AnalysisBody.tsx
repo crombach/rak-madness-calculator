@@ -12,6 +12,7 @@ import AnalysisShares from "./AnalysisShares";
 import "./AnalysisSummary.scss";
 
 type PathsResult = Extract<PlayerAnalysis, { kind: "paths" }>;
+type ClinchedResult = Extract<PlayerAnalysis, { kind: "clinched" }>;
 
 const NAME_LIST = new Intl.ListFormat("en", { type: "conjunction" });
 
@@ -130,6 +131,25 @@ function Lead({ result }: { result: PathsResult }) {
   );
 }
 
+function clinchedLine(
+  { playerName, sharedWith, canBeTied }: ClinchedResult,
+  week: string,
+  isEveryGameSettled?: boolean,
+): string {
+  const others = NAME_LIST.format(sharedWith);
+  if (isEveryGameSettled) {
+    return sharedWith.length > 0
+      ? `${playerName} has tied for ${week} with ${others}.`
+      : `${playerName} has won ${week}.`;
+  }
+  if (sharedWith.length > 0) {
+    return `${playerName} has clinched a tie for ${week} with ${others}.`;
+  }
+  return canBeTied
+    ? `${playerName} has clinched at least a tie for ${week}.`
+    : `${playerName} has clinched ${week}.`;
+}
+
 /** What the player has to do, or why there is nothing left to do about it. */
 export default function AnalysisBody({
   result,
@@ -156,17 +176,7 @@ export default function AnalysisBody({
     // The standing calls a clinched player the winner, not the week, so this names
     // it.
     const week = weekNumber != null ? `week ${weekNumber}` : "the week";
-    const { playerName, sharedWith } = result;
-    const others = NAME_LIST.format(sharedWith);
-    const line =
-      sharedWith.length === 0
-        ? isEveryGameSettled
-          ? `${playerName} has won ${week}.`
-          : `${playerName} has clinched ${week}.`
-        : isEveryGameSettled
-          ? `${playerName} has tied for ${week} with ${others}.`
-          : `${playerName} has clinched a tie for ${week} with ${others}.`;
-    return <Message lines={[line]} />;
+    return <Message lines={[clinchedLine(result, week, isEveryGameSettled)]} />;
   }
 
   if (result.kind === "headline") {

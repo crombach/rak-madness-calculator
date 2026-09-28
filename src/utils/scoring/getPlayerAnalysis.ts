@@ -13,9 +13,13 @@ import {
   compareOnMerit,
   comparePlayerScoresOnMerit,
   Merit,
+  meritOf,
 } from "./comparePlayerScores";
 import isWinnerDecided, { standingPlayers } from "./isWinnerDecided";
-import remainingGames, { RemainingGame } from "./remainingGames";
+import remainingGames, {
+  pickDifference,
+  RemainingGame,
+} from "./remainingGames";
 
 /**
  * The most games still to play the routes are worked out for. Only the contested
@@ -739,7 +743,39 @@ function clinched(
         ),
     )
     .map((it) => it.player.name);
-  return { kind: "clinched", playerName: player.name, sharedWith };
+  const canBeTied = rivals.some(({ player: rival, index }) =>
+    drawsLevel(games, player, playerIndex, rival, index, isMondayNightSettled),
+  );
+  return { kind: "clinched", playerName: player.name, sharedWith, canBeTied };
+}
+
+/**
+ * Whether the rival draws level with the player once every game left falls the
+ * rival's way. The player leads by the least in every tier at once there, so a
+ * rival who can tie the clinch at all ties it there.
+ */
+function drawsLevel(
+  games: Array<RemainingGame>,
+  player: PlayerScore,
+  playerIndex: number,
+  rival: PlayerScore,
+  rivalIndex: number,
+  isMondayNightSettled: boolean,
+): boolean {
+  if (mondayNightSplit(player, rival, isMondayNightSettled) != null) {
+    return false;
+  }
+  const merit = meritOf(rival);
+  games.forEach((game) => {
+    if (pickDifference(game, rivalIndex, playerIndex) === "none") return;
+    merit.total += 1;
+    if (game.league === "college") {
+      merit.college += 1;
+    } else if (game.cells[rivalIndex].hasSpread) {
+      merit.proAgainstTheSpread += 1;
+    }
+  });
+  return compareOnMerit(meritOf(player), merit) === 0;
 }
 
 /** Everyone still able to take the week off this player. */

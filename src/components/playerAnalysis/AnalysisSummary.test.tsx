@@ -128,7 +128,12 @@ describe("AnalysisSummary", () => {
   it("says a player has clinched a week with games still to play", () => {
     render(
       <AnalysisSummary
-        result={{ kind: "clinched", playerName: "Alice", sharedWith: [] }}
+        result={{
+          kind: "clinched",
+          playerName: "Alice",
+          sharedWith: [],
+          canBeTied: false,
+        }}
         weekNumber={12}
       />,
     );
@@ -137,10 +142,33 @@ describe("AnalysisSummary", () => {
     expect(screen.getByText("Alice has clinched week 12.")).toBeInTheDocument();
   });
 
+  it("says a clinch is at least a tie while a rival can still draw level", () => {
+    render(
+      <AnalysisSummary
+        result={{
+          kind: "clinched",
+          playerName: "Alice",
+          sharedWith: [],
+          canBeTied: true,
+        }}
+        weekNumber={12}
+      />,
+    );
+
+    expect(
+      screen.getByText("Alice has clinched at least a tie for week 12."),
+    ).toBeInTheDocument();
+  });
+
   it("says a player has won a week once it is complete", () => {
     render(
       <AnalysisSummary
-        result={{ kind: "clinched", playerName: "Alice", sharedWith: [] }}
+        result={{
+          kind: "clinched",
+          playerName: "Alice",
+          sharedWith: [],
+          canBeTied: false,
+        }}
         weekNumber={12}
         shape={COMPLETE}
       />,
@@ -156,6 +184,7 @@ describe("AnalysisSummary", () => {
           kind: "clinched",
           playerName: "Alice",
           sharedWith: ["Bob", "Carol"],
+          canBeTied: true,
         }}
         weekNumber={12}
       />,
@@ -171,7 +200,12 @@ describe("AnalysisSummary", () => {
   it("names who a won tie is shared with once the week is complete", () => {
     render(
       <AnalysisSummary
-        result={{ kind: "clinched", playerName: "Alice", sharedWith: ["Bob"] }}
+        result={{
+          kind: "clinched",
+          playerName: "Alice",
+          sharedWith: ["Bob"],
+          canBeTied: true,
+        }}
         weekNumber={12}
         shape={COMPLETE}
       />,

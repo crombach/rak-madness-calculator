@@ -133,8 +133,14 @@ export type PlayerAnalysis =
   /**
    * No result left can take the week off them. `sharedWith` names the rivals who
    * win the week with them, since no result left can separate the two.
+   * `canBeTied` is whether any result left draws a rival level with them.
    */
-  | { kind: "clinched"; playerName: string; sharedWith: Array<string> }
+  | {
+      kind: "clinched";
+      playerName: string;
+      sharedWith: Array<string>;
+      canBeTied: boolean;
+    }
   /**
    * Too many games left to work out the routes, so only the games that can be
    * proven one at a time are named. Nothing here is a way through.

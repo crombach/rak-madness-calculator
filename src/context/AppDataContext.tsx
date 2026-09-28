@@ -42,25 +42,25 @@ type AppData = ReturnType<typeof useLeagueWeeks> &
 const AppDataContext = createContext<AppData | undefined>(undefined);
 
 /**
- * Whether the week on screen is over, so whoever is left standing has won.
+ * How the week on screen stands. `isOver` is every game settled, so whoever is
+ * left standing has won. `isWon` is a winner known, games left or not, so the one
+ * left standing wears the trophy.
  *
  * Its own context rather than a field on `AppData`, because every player cell
  * reads it. On `AppData` they would each re-render on every loading flag the app
  * data carries, which is the same reason the toast list and its actions are
- * split. False with no provider above, so a table can still be rendered on its
+ * split. Both false with no provider above, so a table can still be rendered on its
  * own with scores handed straight to it.
  */
-const WinnerDecidedContext = createContext(false);
+type WeekOutcome = { isOver: boolean; isWon: boolean };
 
-/**
- * Whether the week on screen has its winner, games left or not, so the one left
- * standing wears the trophy. Split from `WinnerDecidedContext` for the same reason.
- */
-const WeekWonContext = createContext(false);
+const NO_OUTCOME: WeekOutcome = { isOver: false, isWon: false };
+
+const WeekOutcomeContext = createContext<WeekOutcome>(NO_OUTCOME);
 
 /**
  * What the most recent scoring attempt changed, so a table can flash only the
- * cells that moved. Its own context for the same reason `WinnerDecidedContext` is.
+ * cells that moved. Its own context for the same reason `WeekOutcomeContext` is.
  * Every pick and player cell reads it, and `AppData` re-renders on every loading
  * flag it carries.
  */
@@ -130,11 +130,13 @@ export function AppDataContextProvider({
   );
 
   const { scores, scoreChanges } = playerScores;
-  const winnerDecided = useMemo(
-    () => scores != null && isWinnerDecided(scores),
+  const weekOutcome = useMemo(
+    () =>
+      scores == null
+        ? NO_OUTCOME
+        : { isOver: isWinnerDecided(scores), isWon: isWeekWon(scores) },
     [scores],
   );
-  const weekWon = useMemo(() => scores != null && isWeekWon(scores), [scores]);
 
   // The seasons with picks, plus the one running now whether or not it has any.
   // That season's weeks are scored from a spreadsheet the user uploads until its
@@ -180,13 +182,11 @@ export function AppDataContextProvider({
 
   return (
     <AppDataContext.Provider value={value}>
-      <WinnerDecidedContext.Provider value={winnerDecided}>
-        <WeekWonContext.Provider value={weekWon}>
-          <ScoreChangesContext.Provider value={scoreChanges}>
-            {children}
-          </ScoreChangesContext.Provider>
-        </WeekWonContext.Provider>
-      </WinnerDecidedContext.Provider>
+      <WeekOutcomeContext.Provider value={weekOutcome}>
+        <ScoreChangesContext.Provider value={scoreChanges}>
+          {children}
+        </ScoreChangesContext.Provider>
+      </WeekOutcomeContext.Provider>
     </AppDataContext.Provider>
   );
 }
@@ -200,11 +200,11 @@ export function useAppData(): AppData {
 }
 
 export function useIsWinnerDecided(): boolean {
-  return useContext(WinnerDecidedContext);
+  return useContext(WeekOutcomeContext).isOver;
 }
 
 export function useIsWeekWon(): boolean {
-  return useContext(WeekWonContext);
+  return useContext(WeekOutcomeContext).isWon;
 }
 
 export function useScoreChanges(): ScoreChanges {
