@@ -12,14 +12,31 @@ One setting gates every work-in-progress feature: `experimentalFeatures` from `u
 
 ## Gate a feature
 
-1. Hide every entry point when `experimentalFeatures` is false: a nav item, a link, a button.
-2. Redirect its route with `<Navigate replace>` when false. Otherwise a pasted URL still reaches it.
-3. Skip any work only the feature needs, such as a memoized derivation in a context, when false.
-4. Test both states. Opt in by seeding `EXPERIMENTAL_FEATURES_KEY` as `"on"` in `localStorage`. Leave it unset for off.
+A feature is experimental when it reads `experimentalFeatures`. No registry, no list, no comment marker. That read is how every later step finds it.
+
+1. Hide every entry point when the value is false: a nav item, a link, a button.
+
+   ```tsx
+   const { experimentalFeatures } = useSettings();
+   return experimentalFeatures && <Link to="swings">Swing Games</Link>;
+   ```
+
+2. Redirect the feature's route when false. Otherwise a pasted URL still reaches it. Keep the route component to this check and render the page inside it. The page's own hooks then never run while off, and no hook sits after an early return. Redirect to the nearest page that is not experimental.
+
+   ```tsx
+   export default function SwingGamesRoute() {
+     const { experimentalFeatures } = useSettings();
+     if (!experimentalFeatures) return <Navigate replace to="../scoreboard" />;
+     return <SwingGames />;
+   }
+   ```
+
+3. Skip work only the feature needs when false, such as a memoized derivation in a context. Return the value the feature's empty state already handles.
+4. Test both states. Opt in by seeding `EXPERIMENTAL_FEATURES_KEY` from `SettingsContext` as `"on"` in `localStorage`, in `beforeEach` or before the mount. Leave it unset for off. Assert the entry point is absent and the route redirects when off.
 
 ## Release a feature to everyone
 
-1. `grep -rn experimentalFeatures src` for the feature's call sites.
+1. `grep -rn experimentalFeatures src` for the feature's call sites. Skip `SettingsContext.tsx`, `SettingsDialog.tsx`, and their tests. Those own the setting.
 2. At each one, delete the check and keep the code the true branch ran.
 3. Delete the tests of the feature's off state. Keep the on-state tests, without the seeded key.
 4. Keep the setting and its dialog row when no call site remains. The next gated feature reuses them.
