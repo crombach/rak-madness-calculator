@@ -246,6 +246,14 @@ export function SettingsIcon() {
   );
 }
 
+export function MenuIcon() {
+  return (
+    <Icon name="MenuIcon">
+      <path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z" />
+    </Icon>
+  );
+}
+
 export function GitHubIcon() {
   return (
     <Icon name="GitHubIcon" viewBox="0 0 24 24">

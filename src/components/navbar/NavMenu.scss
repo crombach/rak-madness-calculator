@@ -1,0 +1,20 @@
+@use "../../styles/listbox" as *;
+
+.nav-menu__positioner {
+  z-index: var(--rak-z-overlay);
+}
+
+.nav-menu__popup {
+  @include listbox-popup;
+
+  min-width: 10rem;
+  color: var(--rak-text-secondary);
+}
+
+.nav-menu__item {
+  @include listbox-item;
+
+  // Each item is a link, which would otherwise draw in the browser's blue.
+  color: inherit;
+  text-decoration: none;
+}

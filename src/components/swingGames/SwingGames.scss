@@ -1,0 +1,133 @@
+@use "../../styles/breakpoints" as *;
+@use "../../styles/focus" as *;
+@use "../../styles/label" as *;
+@use "../../styles/skeleton" as *;
+
+.swing-games {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-4);
+  flex: 1;
+  // `100cqi` is the scrolling box `PageLayout.scss` declares the container on,
+  // so a phone gets the whole screen and never a sideways scroll.
+  width: min(100cqi, 32rem);
+  padding: var(--rak-space-4);
+  background-color: var(--rak-surface);
+  color: var(--rak-text);
+
+  &.--loading {
+    @include skeleton-sheen;
+  }
+}
+
+.swing-games__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+}
+
+.swing-games__title {
+  margin: 0;
+}
+
+// The band a game's heading stands on in the table, which opens the same dialog.
+.swing-games__game {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rak-space-2);
+  width: 100%;
+  min-height: var(--rak-touch-target);
+  padding: var(--rak-space-2) var(--rak-space-3);
+  border: 0;
+  border-radius: var(--rak-radius-sm);
+  background-color: var(--rak-band-header);
+  box-shadow: var(--rak-shadow-band-header);
+  color: var(--rak-on-solid);
+  font: inherit;
+  font-size: var(--rak-text-md);
+  text-align: start;
+  cursor: pointer;
+  transition: background-color var(--rak-duration-fast) var(--rak-ease-standard);
+
+  @include micro-label;
+  @include focus-ring;
+
+  @include can-hover {
+    &:hover {
+      background-color: color-mix(
+        in srgb,
+        var(--rak-band-header) var(--rak-hover-strength),
+        black
+      );
+    }
+  }
+
+  &:active {
+    background-color: color-mix(
+      in srgb,
+      var(--rak-band-header) var(--rak-press-strength),
+      black
+    );
+  }
+}
+
+.swing-games__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-1);
+}
+
+.swing-games__pick {
+  margin: 0;
+  font-family: var(--rak-font-mono);
+  font-size: var(--rak-text-sm);
+  font-weight: var(--rak-weight-semibold);
+}
+
+.swing-games__out {
+  margin: 0;
+  color: var(--rak-text-secondary);
+  font-size: var(--rak-text-sm);
+}
+
+.swing-games__players {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rak-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.swing-games__link {
+  align-self: flex-start;
+  text-decoration: none;
+}
+
+.swing-games__skeleton-game {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+}
+
+.swing-games__skeleton-bar {
+  @include skeleton-surface;
+
+  display: block;
+  height: 0.8rem;
+
+  &.--title {
+    width: 100%;
+    height: var(--rak-touch-target);
+  }
+
+  &.--pick {
+    width: 5rem;
+  }
+
+  &.--players {
+    width: 14rem;
+    height: 1.75rem;
+  }
+}

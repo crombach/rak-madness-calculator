@@ -1,5 +1,7 @@
 # src
 
+Narrowest supported viewport: 360px. Fit layouts and take screenshots there.
+
 - `index.tsx`: Vite entry, loaded by the root `index.html`. React 19 `createRoot`
   mount into `#root`, wraps `App` in `BrowserRouter`, `SettingsContextProvider`,
   `ToastContextProvider`, and `AppDataContextProvider`, with `Toaster` beside it.

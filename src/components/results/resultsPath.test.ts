@@ -18,6 +18,10 @@ describe("resultsPath", () => {
     expect(resultsPath(2024, 3, "Scoreboard")).toBe("/2024/3/scoreboard");
   });
 
+  it("builds the swing games page's target", () => {
+    expect(resultsPath(2024, 3, "Swing Games")).toBe("/2024/3/swings");
+  });
+
   it("keeps an absent week as the literal string 'undefined'", () => {
     expect(resultsPath(2024, undefined, "Scoreboard")).toBe(
       "/2024/undefined/scoreboard",

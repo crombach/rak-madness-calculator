@@ -1,12 +1,11 @@
 import { Outlet, useMatch, useNavigate, useParams } from "react-router";
 import { useAppData } from "../../context/AppDataContext";
 import useWeekRouteGuard from "../../hooks/useWeekRouteGuard";
-import { ScoresView } from "../navbar/ScoresNavbar";
 import ResultsFrame from "./ResultsFrame";
-import resultsPath from "./resultsPath";
+import resultsPath, { ResultsPage } from "./resultsPath";
 
 /**
- * Chrome for a week's results, shared by both views.
+ * Chrome for a week's results, shared by every page of them.
  *
  * A layout route rather than a piece of each view, so switching between the
  * scoreboard and the picks does not remount the refresh button and drop the
@@ -20,16 +19,24 @@ export default function ResultsLayout() {
   const guard = useWeekRouteGuard(seasonParam, weekParam);
 
   // The route decides which view is showing, not component state.
-  const view: ScoresView = useMatch("/:season/:week/picks")
-    ? "Picks"
-    : "Scoreboard";
+  const isPicks = useMatch("/:season/:week/picks") != null;
+  const isSwings = useMatch("/:season/:week/swings") != null;
+  const view: ResultsPage = isSwings
+    ? "Swing Games"
+    : isPicks
+      ? "Picks"
+      : "Scoreboard";
 
   return (
     <ResultsFrame
       view={view}
       isReady={guard.status === "ready"}
+      // Leaving swings pushes, so Back returns to it. The menu pushed it, so a
+      // replace would leave two entries for the page before it.
       onViewChange={(next) =>
-        navigate(resultsPath(seasonParam, weekParam, next), { replace: true })
+        navigate(resultsPath(seasonParam, weekParam, next), {
+          replace: !isSwings,
+        })
       }
       onRefresh={refresh}
       onPoll={rescore}

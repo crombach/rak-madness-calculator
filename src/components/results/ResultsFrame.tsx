@@ -18,10 +18,13 @@ import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
 import LogoButton, { APP_NAME } from "../navbar/LogoButton";
+import NavMenu from "../navbar/NavMenu";
 import ScoresNavbar, { ScoresView } from "../navbar/ScoresNavbar";
 import PageLayout from "../pageLayout/PageLayout";
+import SwingGamesSkeleton from "../swingGames/SwingGamesSkeleton";
 import SkeletonTable from "../table/SkeletonTable";
 import DialogLoadBoundary from "./DialogLoadBoundary";
+import { ResultsPage } from "./resultsPath";
 import "./ResultsFrame.scss";
 
 /*
@@ -71,7 +74,7 @@ export default function ResultsFrame({
   scores,
   children,
 }: PropsWithChildren<{
-  view: ScoresView;
+  view: ResultsPage;
   /** Left false by a route that has nothing to show and never will. */
   isReady?: boolean;
   onViewChange?: (view: ScoresView) => void;
@@ -91,6 +94,7 @@ export default function ResultsFrame({
   // week they are headed for.
   const { season: seasonParam, week: weekParam } = useParams();
   const hasWeek = Boolean(seasonParam && weekParam);
+  const scoresView: ScoresView | null = view === "Swing Games" ? null : view;
   // Once every game is final there is nothing left to fetch, so the refresh button
   // and the divider beside it go rather than sit there doing nothing.
   const isWeekSettled = useIsWeekSettled();
@@ -181,14 +185,17 @@ export default function ResultsFrame({
       navbarRight={
         // Rendered while the week loads, so the navbar's shape won't shift under
         // the pointer once it lands. Disabled until there's anything to switch to.
-        <ScoresNavbar
-          view={view}
-          disabled={!isReady}
-          isWeekLive={!isWeekSettled}
-          onViewChange={onViewChange}
-          onRefresh={onRefresh}
-          isRefreshing={isRefreshing}
-        />
+        <>
+          <ScoresNavbar
+            view={scoresView}
+            disabled={!isReady}
+            isWeekLive={!isWeekSettled}
+            onViewChange={onViewChange}
+            onRefresh={onRefresh}
+            isRefreshing={isRefreshing}
+          />
+          <NavMenu season={seasonParam} week={weekParam} disabled={!hasWeek} />
+        </>
       }
     >
       <div className="results-scores">
@@ -214,7 +221,13 @@ export default function ResultsFrame({
         </p>
         <PlayerAnalysisContextProvider showPlayerAnalysis={showPlayerAnalysis}>
           <GameStatusContextProvider showGameStatus={showGameStatus}>
-            {isReady ? children : <SkeletonTable view={view} />}
+            {isReady ? (
+              children
+            ) : scoresView == null ? (
+              <SwingGamesSkeleton />
+            ) : (
+              <SkeletonTable view={scoresView} />
+            )}
           </GameStatusContextProvider>
         </PlayerAnalysisContextProvider>
       </div>

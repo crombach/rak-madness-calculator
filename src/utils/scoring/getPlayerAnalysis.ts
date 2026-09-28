@@ -278,23 +278,20 @@ function evaluate(
  * search reads one per subset of them.
  *
  * Empty rather than partial where it can prove nothing. That is a player who cannot
- * take the week even with every pick landing. A list this returns holds every
+ * take the week even with every pick landing. A mask this returns holds every
  * must-win game there is.
  */
 function provenMustWin(
   mineMask: number,
   read: (outcome: number) => Verdict,
-  contested: Array<RemainingGame>,
-  playerIndex: number,
-): Array<RemainingPick> {
-  if (read(mineMask).kind === "loss") return [];
-  return contested.flatMap((game, bit) => {
-    const mask = 1 << bit;
-    if ((mineMask & mask) === 0) return [];
-    return read(mineMask & ~mask).kind === "loss"
-      ? [{ label: game.label, pick: game.cells[playerIndex].text }]
-      : [];
-  });
+): number {
+  if (read(mineMask).kind === "loss") return 0;
+  let proven = 0;
+  for (let bits = mineMask; bits !== 0; bits &= bits - 1) {
+    const bit = bits & -bits;
+    if (read(mineMask & ~bit).kind === "loss") proven |= bit;
+  }
+  return proven;
 }
 
 function outlookOf(verdict: Verdict, isSettled: boolean): MondayNightOutlook {
@@ -785,29 +782,19 @@ function liveRivals(
   return standingPlayers(players).filter((it) => it.index !== playerIndex);
 }
 
-/**
- * Where a player stands in a week, and what they still have to do to win it.
- *
- * Answers for every player, knocked out or not, and for a week already decided as
- * well as one being played. Undefined where the sheet holds nobody by that name,
- * which is the only way the question has no answer at all.
- *
- * A game of the player's own that lands on the line is read as their win alone. The
- * pool scores a push for both sides, so it also scores for the rival who picked the
- * other side, and a route named here can fall to that. Read the other way this
- * answers nothing. Winning every game they picked would leave the gap where it
- * started, so a player even a point back could never be told they are live. Every
- * other answer holds either way. A knockout and a must-win game only become more
- * true, and a clinch reads a week where none of the player's own picks land, which
- * is a week with no push in them to read.
- */
-export default function getPlayerAnalysis(
-  scores: RakMadnessScores,
-  playerName: string,
-): PlayerAnalysis | undefined {
-  const settled = settledAnalysis(scores, playerName);
-  if (settled == null) return undefined;
-  if (settled.analysis != null) return settled.analysis;
+/** The setup the search and the must-win check share, for a player still open. */
+type Reading = {
+  player: PlayerScore;
+  playerIndex: number;
+  games: Array<RemainingGame>;
+  contested: Array<RemainingGame>;
+  /** The contested games the player picked a team in. */
+  mineMask: number;
+  read: (outcome: number) => Verdict;
+  isMondayNightSettled: boolean;
+};
+
+function readingOf(scores: RakMadnessScores, settled: Settled): Reading {
   const { playerIndex, player, rivals } = settled;
   const players = scores.scores;
 
@@ -862,6 +849,76 @@ export default function getPlayerAnalysis(
   const read = (outcome: number) =>
     evaluate(me, against, outcome | skippedMask, isMondayNightSettled);
 
+  return {
+    player,
+    playerIndex,
+    games,
+    contested,
+    mineMask,
+    read,
+    isMondayNightSettled,
+  };
+}
+
+/** A must-win game, with the team the player needs it to go to. */
+export type MustWinPick = RemainingPick & { team: string };
+
+/**
+ * The games no win of this player's can do without, read one game at a time.
+ *
+ * Empty for any player the week already answers for, knocked out or clinched, for a
+ * name the sheet does not hold, and for a player no set of picks can save. Costs a
+ * verdict per game the player picked, however many games are open.
+ */
+export function getMustWin(
+  scores: RakMadnessScores,
+  playerName: string,
+): Array<MustWinPick> {
+  const settled = settledAnalysis(scores, playerName);
+  if (settled == null || settled.analysis != null) return [];
+  const { playerIndex, contested, mineMask, read } = readingOf(scores, settled);
+  const proven = provenMustWin(mineMask, read);
+  return contested.flatMap((game, bit) => {
+    const cell = game.cells[playerIndex];
+    // A bit in `mineMask` always holds a team.
+    if ((proven & (1 << bit)) === 0 || cell.team == null) return [];
+    return [{ label: game.label, pick: cell.text, team: cell.team }];
+  });
+}
+
+/**
+ * Where a player stands in a week, and what they still have to do to win it.
+ *
+ * Answers for every player, knocked out or not, and for a week already decided as
+ * well as one being played. Undefined where the sheet holds nobody by that name,
+ * which is the only way the question has no answer at all.
+ *
+ * A game of the player's own that lands on the line is read as their win alone. The
+ * pool scores a push for both sides, so it also scores for the rival who picked the
+ * other side, and a route named here can fall to that. Read the other way this
+ * answers nothing. Winning every game they picked would leave the gap where it
+ * started, so a player even a point back could never be told they are live. Every
+ * other answer holds either way. A knockout and a must-win game only become more
+ * true, and a clinch reads a week where none of the player's own picks land, which
+ * is a week with no push in them to read.
+ */
+export default function getPlayerAnalysis(
+  scores: RakMadnessScores,
+  playerName: string,
+): PlayerAnalysis | undefined {
+  const settled = settledAnalysis(scores, playerName);
+  if (settled == null) return undefined;
+  if (settled.analysis != null) return settled.analysis;
+  const {
+    player,
+    playerIndex,
+    games,
+    contested,
+    mineMask,
+    read,
+    isMondayNightSettled,
+  } = readingOf(scores, settled);
+
   // Above the ceiling only the must-win games are answered, which cost a verdict
   // each rather than a search. What is left over is a count of wins, and a count
   // names no games, so there is nothing in it a reader could act on.
@@ -869,7 +926,7 @@ export default function getPlayerAnalysis(
     return {
       kind: "headline",
       playerName: player.name,
-      mustWin: provenMustWin(mineMask, read, contested, playerIndex),
+      mustWin: picksIn(provenMustWin(mineMask, read), contested, playerIndex),
     };
   }
 
@@ -889,7 +946,7 @@ export default function getPlayerAnalysis(
     minimal[0].hits === 0 &&
     minimal[0].verdict.kind === "win"
   ) {
-    return clinched(scores, playerIndex, rivals);
+    return clinched(scores, playerIndex, settled.rivals);
   }
 
   // Both lists are held fewest games first, so the way asking least of the player

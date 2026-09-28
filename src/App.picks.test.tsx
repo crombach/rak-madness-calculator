@@ -342,6 +342,7 @@ describe("the app, automatic picks fetch", () => {
     expect(getPlayerScoresMock).not.toHaveBeenCalled();
     expect(screen.getByText("View Results")).toBeDisabled();
     expect(screen.getByText("Export Results")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled();
   });
 
   it("re-fetches when the week changes", async () => {
