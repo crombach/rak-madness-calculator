@@ -187,6 +187,12 @@
   --rak-nav-key-active: #464646;
   --rak-nav-key-edge: #3b3b3b;
   --rak-nav-ink: #fff;
+  // A key in the bar that cannot be pressed. Dark mode's own disabled key, and
+  // not redefined there, so the bar reads the same in both modes. The app's
+  // light disabled fill is near white, and stood out of this dark bar.
+  --rak-nav-disabled-bg: #262626;
+  --rak-nav-disabled-text: #939393;
+  --rak-nav-disabled-edge: #121212;
   // The lit rim along a key's top edge, weaker than the one every other key in
   // the app wears. That 70% white was set against a near-white key face. On the
   // dark face a key in this bar carries, it reads as a white line rather than as
