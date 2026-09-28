@@ -2,7 +2,7 @@ import { readdir, rm } from "node:fs/promises";
 import path from "node:path";
 import react from "@vitejs/plugin-react";
 import type { Plugin } from "vite";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 const DEV_PORT = Number(process.env.PORT ?? 3000);
 
@@ -41,6 +41,9 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    // A checkout under here has its own src/, which the default excludes miss
+    // because they skip only node_modules and .git.
+    exclude: [...configDefaults.exclude, ".claude/worktrees/**"],
     setupFiles: ["./src/setupTests.ts"],
     // The suites assert on class names, never on rendered styles.
     css: false,

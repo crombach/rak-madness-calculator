@@ -10,7 +10,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["build/", "coverage/", ".wrangler/"] },
+  { ignores: ["build/", "coverage/", ".wrangler/", ".claude/worktrees/**"] },
   js.configs.recommended,
   tseslint.configs.recommended,
   // These three still call context methods ESLint 10 removed, and their peer
