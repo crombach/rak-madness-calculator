@@ -187,11 +187,21 @@
   --rak-nav-key-active: #464646;
   --rak-nav-key-edge: #3b3b3b;
   --rak-nav-ink: #fff;
+  // A key in the bar that cannot be pressed. Dark mode's own disabled key, and
+  // not redefined there, so the bar reads the same in both modes. The app's
+  // light disabled fill is near white, and stood out of this dark bar.
+  --rak-nav-disabled-bg: #262626;
+  --rak-nav-disabled-text: #939393;
+  --rak-nav-disabled-edge: #121212;
   // The lit rim along a key's top edge, weaker than the one every other key in
   // the app wears. That 70% white was set against a near-white key face. On the
   // dark face a key in this bar carries, it reads as a white line rather than as
   // an edge, and a key held down looks as raised as its neighbors.
   --rak-nav-key-top: inset 0 1px 0 rgb(255 255 255 / 25%);
+  // A mark cut into the bar rather than printed on it: ink darker than the
+  // fill, and the lower lip of the cut catching the same light as a key's rim.
+  --rak-nav-carve-ink: #2b2b2b;
+  --rak-nav-carve-lip: rgb(255 255 255 / 25%);
   // The lamp saying which view is chosen. `--rak-info-400`, which rules the
   // reader's own row and lit this lamp when the bar was near white, is 2.30:1
   // on the face a chosen key wears now. Its own value rather than a step on
@@ -679,6 +689,8 @@ html {
   // A literal, like the fills above: the bar pins `--rak-key-top` to this, and
   // a read back would be a cycle. Unchanged from what this mode always wore.
   --rak-nav-key-top: inset 0 1px 0 rgb(255 255 255 / 18%);
+  --rak-nav-carve-ink: #262626;
+  --rak-nav-carve-lip: rgb(255 255 255 / 18%);
   --rak-nav-led: var(--rak-info-200);
   // The combobox field, back to the same dark fill this step always stood on
   // in this mode. The readout glass needs no override: `--rak-glass-fill`

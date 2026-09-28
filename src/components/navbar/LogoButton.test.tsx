@@ -1,6 +1,14 @@
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import LogoButton, { APP_NAME } from "./LogoButton";
+import {
+  EXPERIMENTAL_FEATURES_KEY,
+  SettingsContextProvider,
+} from "../../context/SettingsContext";
+import LogoButton, { APP_NAME, BETA_WORD } from "./LogoButton";
+
+beforeEach(() => {
+  localStorage.clear();
+});
 
 describe("LogoButton", () => {
   it("calls onClick when pressed", async () => {
@@ -13,5 +21,17 @@ describe("LogoButton", () => {
   it("keeps the unlit segments out of the accessible name", () => {
     render(<LogoButton onClick={() => undefined} />);
     expect(screen.getByRole("button")).toHaveAccessibleName(APP_NAME);
+  });
+
+  it("marks the name beta while experimental features are on", () => {
+    localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
+    render(
+      <SettingsContextProvider>
+        <LogoButton onClick={() => undefined} />
+      </SettingsContextProvider>,
+    );
+    expect(screen.getByRole("button")).toHaveAccessibleName(
+      `${APP_NAME} ${BETA_WORD}`,
+    );
   });
 });
