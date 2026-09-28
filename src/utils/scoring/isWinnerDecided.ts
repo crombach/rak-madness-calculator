@@ -4,6 +4,7 @@ import {
   Status,
 } from "../../types/RakMadnessScores";
 import { LEAGUES } from "./gameColumns";
+import repeatedNames from "./repeatedNames";
 
 /** Whether the pick can be scored either way, which is what ends a game for it. */
 export function hasOutcome(status: Status): boolean {
@@ -40,4 +41,31 @@ export default function isWinnerDecided(scores: RakMadnessScores): boolean {
       ),
     ),
   );
+}
+
+/**
+ * Every row still able to take the week, with its index.
+ *
+ * A row under a name two rows share is left out for the same reason
+ * `applyKnockouts` leaves it out: the workbook is wrong about who that row is, so
+ * it takes the week off nobody. Without this the analysis would name a threat the
+ * tables say knocks nobody out.
+ */
+export function standingPlayers(
+  players: Array<PlayerScore>,
+): Array<{ player: PlayerScore; index: number }> {
+  const repeated = repeatedNames(players);
+  return players
+    .map((player, index) => ({ player, index }))
+    .filter(
+      ({ player }) => !player.status.isKnockedOut && !repeated.has(player.name),
+    );
+}
+
+/**
+ * Whether the week has a winner, or the knockouts have left only one player who
+ * can still be it.
+ */
+export function isWeekWon(scores: RakMadnessScores): boolean {
+  return isWinnerDecided(scores) || standingPlayers(scores.scores).length === 1;
 }

@@ -12,7 +12,7 @@ import useLeagueWeeks from "../hooks/useLeagueWeeks";
 import usePicksSeasons from "../hooks/usePicksSeasons";
 import usePlayerScores from "../hooks/usePlayerScores";
 import { WeekInfo } from "../types/League";
-import isWinnerDecided from "../utils/scoring/isWinnerDecided";
+import isWinnerDecided, { isWeekWon } from "../utils/scoring/isWinnerDecided";
 import { NO_SCORE_CHANGES, ScoreChanges } from "../utils/scoring/scoreChanges";
 
 type AppData = ReturnType<typeof useLeagueWeeks> &
@@ -51,6 +51,12 @@ const AppDataContext = createContext<AppData | undefined>(undefined);
  * own with scores handed straight to it.
  */
 const WinnerDecidedContext = createContext(false);
+
+/**
+ * Whether the week on screen has its winner, games left or not, so the one left
+ * standing wears the trophy. Split from `WinnerDecidedContext` for the same reason.
+ */
+const WeekWonContext = createContext(false);
 
 /**
  * What the most recent scoring attempt changed, so a table can flash only the
@@ -128,6 +134,7 @@ export function AppDataContextProvider({
     () => scores != null && isWinnerDecided(scores),
     [scores],
   );
+  const weekWon = useMemo(() => scores != null && isWeekWon(scores), [scores]);
 
   // The seasons with picks, plus the one running now whether or not it has any.
   // That season's weeks are scored from a spreadsheet the user uploads until its
@@ -174,9 +181,11 @@ export function AppDataContextProvider({
   return (
     <AppDataContext.Provider value={value}>
       <WinnerDecidedContext.Provider value={winnerDecided}>
-        <ScoreChangesContext.Provider value={scoreChanges}>
-          {children}
-        </ScoreChangesContext.Provider>
+        <WeekWonContext.Provider value={weekWon}>
+          <ScoreChangesContext.Provider value={scoreChanges}>
+            {children}
+          </ScoreChangesContext.Provider>
+        </WeekWonContext.Provider>
       </WinnerDecidedContext.Provider>
     </AppDataContext.Provider>
   );
@@ -192,6 +201,10 @@ export function useAppData(): AppData {
 
 export function useIsWinnerDecided(): boolean {
   return useContext(WinnerDecidedContext);
+}
+
+export function useIsWeekWon(): boolean {
+  return useContext(WeekWonContext);
 }
 
 export function useScoreChanges(): ScoreChanges {

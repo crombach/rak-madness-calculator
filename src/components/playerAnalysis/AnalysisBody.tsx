@@ -13,6 +13,8 @@ import "./AnalysisSummary.scss";
 
 type PathsResult = Extract<PlayerAnalysis, { kind: "paths" }>;
 
+const NAME_LIST = new Intl.ListFormat("en", { type: "conjunction" });
+
 /**
  * The games both blocks call must-win, which is the games every way to win the week
  * needs. Each block reads its own list against its own ways, so a game every way
@@ -152,15 +154,19 @@ export default function AnalysisBody({
 
   if (result.kind === "clinched") {
     // The standing calls a clinched player the winner, not the week, so this names
-    // it. Only an open week needs it below, since a finished one can't be undone.
-    return (
-      <Message
-        lines={[
-          `${result.playerName} has won ${weekNumber != null ? `week ${weekNumber}` : "the week"}.`,
-          isEveryGameSettled ? undefined : "No other player can surpass them.",
-        ]}
-      />
-    );
+    // it.
+    const week = weekNumber != null ? `week ${weekNumber}` : "the week";
+    const { playerName, sharedWith } = result;
+    const others = NAME_LIST.format(sharedWith);
+    const line =
+      sharedWith.length === 0
+        ? isEveryGameSettled
+          ? `${playerName} has won ${week}.`
+          : `${playerName} has clinched ${week}.`
+        : isEveryGameSettled
+          ? `${playerName} has tied for ${week} with ${others}.`
+          : `${playerName} has clinched a tie for ${week} with ${others}.`;
+    return <Message lines={[line]} />;
   }
 
   if (result.kind === "headline") {

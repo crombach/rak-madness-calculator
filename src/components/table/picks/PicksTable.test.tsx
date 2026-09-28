@@ -30,6 +30,7 @@ import PicksTable from "./PicksTable";
 vi.mock("../../../context/AppDataContext", () => ({
   useScoreChanges: vi.fn(),
   useIsWinnerDecided: () => false,
+  useIsWeekWon: () => false,
 }));
 
 const mockScoreChanges = useScoreChanges as Mock;

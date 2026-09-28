@@ -78,6 +78,9 @@ const SHORTEST_NOTE = "The shortest way needs 3 correct picks.";
 /** The one tiebreaker range the cases below need: a week won at 45 or under. */
 const RAK_BY_45 = { kind: "range" as const, max: 45 };
 
+/** A week with nothing left to play. */
+const COMPLETE = { remaining: [], unscoreable: [], isEveryGameSettled: true };
+
 const base = {
   kind: "paths" as const,
   playerName: "Alice",
@@ -122,35 +125,61 @@ describe("AnalysisSummary", () => {
     expect(screen.getByText("Bob cannot win this week.")).toBeInTheDocument();
   });
 
-  it("says nothing left can undo a clinch with games still to play", () => {
+  it("says a player has clinched a week with games still to play", () => {
     render(
       <AnalysisSummary
-        result={{ kind: "clinched", playerName: "Alice" }}
+        result={{ kind: "clinched", playerName: "Alice", sharedWith: [] }}
         weekNumber={12}
       />,
     );
 
     // The header calls Alice the winner without naming the week, so this does.
-    expect(screen.getByText("Alice has won week 12.")).toBeInTheDocument();
-    expect(
-      screen.getByText("No other player can surpass them."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Alice has clinched week 12.")).toBeInTheDocument();
   });
 
-  it("leaves a clinch that also ends the week to its one line", () => {
+  it("says a player has won a week once it is complete", () => {
     render(
       <AnalysisSummary
-        result={{ kind: "clinched", playerName: "Alice" }}
+        result={{ kind: "clinched", playerName: "Alice", sharedWith: [] }}
         weekNumber={12}
-        shape={{ remaining: [], unscoreable: [], isEveryGameSettled: true }}
+        shape={COMPLETE}
       />,
     );
 
     expect(screen.getByText("Alice has won week 12.")).toBeInTheDocument();
-    // Nothing is still to be played, so saying it cannot be undone adds nothing.
+  });
+
+  it("names who a clinched tie is shared with", () => {
+    render(
+      <AnalysisSummary
+        result={{
+          kind: "clinched",
+          playerName: "Alice",
+          sharedWith: ["Bob", "Carol"],
+        }}
+        weekNumber={12}
+      />,
+    );
+
     expect(
-      screen.queryByText(/Nothing still to be played/),
-    ).not.toBeInTheDocument();
+      screen.getByText(
+        "Alice has clinched a tie for week 12 with Bob and Carol.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("names who a won tie is shared with once the week is complete", () => {
+    render(
+      <AnalysisSummary
+        result={{ kind: "clinched", playerName: "Alice", sharedWith: ["Bob"] }}
+        weekNumber={12}
+        shape={COMPLETE}
+      />,
+    );
+
+    expect(
+      screen.getByText("Alice has tied for week 12 with Bob."),
+    ).toBeInTheDocument();
   });
 
   it("says only when the paths arrive on a week too big to search", () => {

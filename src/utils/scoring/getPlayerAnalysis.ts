@@ -9,10 +9,13 @@ import {
   WaysThrough,
 } from "../../types/PlayerAnalysis";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
-import { compareOnMerit, Merit } from "./comparePlayerScores";
-import isWinnerDecided from "./isWinnerDecided";
+import {
+  compareOnMerit,
+  comparePlayerScoresOnMerit,
+  Merit,
+} from "./comparePlayerScores";
+import isWinnerDecided, { standingPlayers } from "./isWinnerDecided";
 import remainingGames, { RemainingGame } from "./remainingGames";
-import repeatedNames from "./repeatedNames";
 
 /**
  * The most games still to play the routes are worked out for. Only the contested
@@ -185,6 +188,22 @@ function meritIn(side: Side, total: number, outcome: number): Merit {
 }
 
 /**
+ * The two Monday night guesses, where the total still to come can separate these
+ * two players. Undefined where it cannot, or already has.
+ */
+function mondayNightSplit(
+  a: PlayerScore,
+  b: PlayerScore,
+  isMondayNightSettled: boolean,
+): [number, number] | undefined {
+  const mine = a.tiebreaker.pick;
+  const theirs = b.tiebreaker.pick;
+  if (isMondayNightSettled || mine == null || theirs == null || mine === theirs)
+    return undefined;
+  return [mine, theirs];
+}
+
+/**
  * Whether one outcome takes the week, and on what.
  *
  * Winning means finishing level with everyone or better. `applyKnockouts` leaves a
@@ -216,21 +235,20 @@ function evaluate(
     if (theirTotal < myTotal) continue;
 
     myMerit ??= meritIn(me, myTotal, outcome);
-    const mine = me.player.tiebreaker.pick;
-    const theirs = rival.player.tiebreaker.pick;
     const behindOnLowerTiers =
       compareOnMerit(myMerit, meritIn(rival, theirTotal, outcome)) > 0;
-    if (
-      isMondayNightSettled ||
-      mine == null ||
-      theirs == null ||
-      mine === theirs
-    ) {
+    const split = mondayNightSplit(
+      me.player,
+      rival.player,
+      isMondayNightSettled,
+    );
+    if (split == null) {
       // Monday night cannot separate them, or it already has, so the tiers
       // `compareOnMerit` runs decide it.
       if (behindOnLowerTiers) return LOSS;
       continue;
     }
+    const [mine, theirs] = split;
 
     isLevel = true;
     const midpoint = (mine + theirs) / 2;
@@ -673,51 +691,63 @@ function settledAnalysis(
   if (playerIndex < 0) return undefined;
 
   const player = players[playerIndex];
-  const clinched: PlayerAnalysis = {
-    kind: "clinched",
-    playerName: player.name,
-  };
   if (player.status.isKnockedOut) {
     return { playerIndex, player, rivals: [], analysis: knockedOut(player) };
-  }
-
-  // Nothing left to play means the knockouts settled it, and whoever they
-  // left standing won, decided here since the search's tier order may differ.
-  if (isWinnerDecided(scores)) {
-    return { playerIndex, player, rivals: [], analysis: clinched };
   }
 
   // A knocked out player cannot take the week off anyone, so they are not measured
   // against. That is what keeps the search small late in a week.
   const rivals = liveRivals(players, playerIndex);
-  if (rivals.length === 0) {
-    return { playerIndex, player, rivals, analysis: clinched };
+
+  // Nothing left to play means the knockouts settled it, and whoever they
+  // left standing won, decided here since the search's tier order may differ.
+  if (isWinnerDecided(scores) || rivals.length === 0) {
+    return {
+      playerIndex,
+      player,
+      rivals,
+      analysis: clinched(scores, playerIndex, rivals),
+    };
   }
 
   return { playerIndex, player, rivals };
 }
 
 /**
- * Everyone still able to take the week off this player.
- *
- * A row under a name two rows share is left out for the same reason
- * `applyKnockouts` leaves it out: the workbook is wrong about who that row is, so
- * it takes the week off nobody. Without this the analysis would name a threat the
- * tables say knocks nobody out.
+ * A clinch, with the rivals it is shared with. A rival the player can never be
+ * separated from is level on every tier now, and stays level on each: the same
+ * team on every game left, and no Monday night guess the total can split. Rows
+ * disagreeing on a game's spread leave it unscoreable, so the same team carries
+ * the same spread.
  */
+function clinched(
+  scores: RakMadnessScores,
+  playerIndex: number,
+  rivals: Array<{ player: PlayerScore; index: number }>,
+): PlayerAnalysis {
+  const players = scores.scores;
+  const isMondayNightSettled = scores.tiebreaker != null;
+  const player = players[playerIndex];
+  const games = remainingGames(players);
+  const sharedWith = rivals
+    .filter(
+      ({ player: rival, index }) =>
+        comparePlayerScoresOnMerit(player, rival) === 0 &&
+        mondayNightSplit(player, rival, isMondayNightSettled) == null &&
+        games.every(
+          (game) => game.cells[playerIndex].team === game.cells[index].team,
+        ),
+    )
+    .map((it) => it.player.name);
+  return { kind: "clinched", playerName: player.name, sharedWith };
+}
+
+/** Everyone still able to take the week off this player. */
 function liveRivals(
   players: RakMadnessScores["scores"],
   playerIndex: number,
 ): Array<{ player: RakMadnessScores["scores"][number]; index: number }> {
-  const repeated = repeatedNames(players);
-  return players
-    .map((it, index) => ({ player: it, index }))
-    .filter(
-      (it) =>
-        it.index !== playerIndex &&
-        !it.player.status.isKnockedOut &&
-        !repeated.has(it.player.name),
-    );
+  return standingPlayers(players).filter((it) => it.index !== playerIndex);
 }
 
 /**
@@ -824,7 +854,7 @@ export default function getPlayerAnalysis(
     minimal[0].hits === 0 &&
     minimal[0].verdict.kind === "win"
   ) {
-    return { kind: "clinched", playerName: player.name };
+    return clinched(scores, playerIndex, rivals);
   }
 
   // Both lists are held fewest games first, so the way asking least of the player

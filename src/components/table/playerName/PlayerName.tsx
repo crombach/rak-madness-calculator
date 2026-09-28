@@ -88,7 +88,7 @@ function PlayerName({
                 <PlayerStatusIcon
                   isKnockedOut={previousKnockedOut}
                   hasNameConflict={hasNameConflict}
-                  isWinnerDecided={false}
+                  isWeekWon={false}
                 />,
               )}
             </span>

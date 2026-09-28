@@ -4,7 +4,7 @@ import {
   RakMadnessScores,
   Status,
 } from "../../types/RakMadnessScores";
-import isWinnerDecided from "./isWinnerDecided";
+import isWinnerDecided, { isWeekWon } from "./isWinnerDecided";
 
 function pickResult(status: Status): PickResult {
   return {
@@ -24,6 +24,10 @@ function player(name: string, statuses: Array<Status>): PlayerScore {
     pro: statuses.map(pickResult),
     status: { hasNoPicks: false, isKnockedOut: false },
   };
+}
+
+function knockedOut(score: PlayerScore): PlayerScore {
+  return { ...score, status: { ...score.status, isKnockedOut: true } };
 }
 
 function week(
@@ -84,5 +88,45 @@ describe("isWinnerDecided", () => {
 
   it("holds off until the Monday night tiebreaker is settled", () => {
     expect(isWinnerDecided(week([player("Alice", ["yes"])]))).toBe(false);
+  });
+});
+
+describe("isWeekWon", () => {
+  it("calls a running week won once the knockouts leave one player standing", () => {
+    expect(
+      isWeekWon(
+        week([
+          player("Alice", ["yes", "incomplete"]),
+          knockedOut(player("Bob", ["no", "incomplete"])),
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  it("holds off while two players are still standing", () => {
+    expect(
+      isWeekWon(
+        week([
+          player("Alice", ["yes", "incomplete"]),
+          player("Bob", ["no", "incomplete"]),
+        ]),
+      ),
+    ).toBe(false);
+  });
+
+  it("does not count a row under a shared name as a rival", () => {
+    expect(
+      isWeekWon(
+        week([
+          player("Alice", ["yes", "incomplete"]),
+          player("Bob", ["no", "incomplete"]),
+          player("Bob", ["no", "incomplete"]),
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  it("calls a decided week won", () => {
+    expect(isWeekWon(week([player("Alice", ["yes", "no"])], 41))).toBe(true);
   });
 });

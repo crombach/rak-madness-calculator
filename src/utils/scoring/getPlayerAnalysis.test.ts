@@ -128,6 +128,7 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
       playerName: "Alice",
+      sharedWith: [],
     });
   });
 
@@ -143,6 +144,7 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
       playerName: "Alice",
+      sharedWith: [],
     });
   });
 
@@ -160,6 +162,7 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
       playerName: "Alice",
+      sharedWith: [],
     });
   });
 
@@ -176,10 +179,43 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
       playerName: "Alice",
+      sharedWith: ["Bob"],
     });
     expect(getPlayerAnalysis(scores, "Bob")).toEqual({
       kind: "clinched",
       playerName: "Bob",
+      sharedWith: ["Alice"],
+    });
+  });
+
+  it("clinches a tie with a rival no remaining game can separate", () => {
+    // Level now, the same pick on the one game left, and the same Monday night
+    // guess, so nothing still to happen can split them.
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 5,
+        pro: [pick("KC -3")],
+        tiebreakerPick: 45,
+      }),
+      player({
+        name: "Bob",
+        total: 5,
+        pro: [pick("KC -3")],
+        tiebreakerPick: 45,
+      }),
+      player({
+        name: "Carol",
+        total: 0,
+        pro: [pick("DEN +3")],
+        isKnockedOut: true,
+      }),
+    ]);
+
+    expect(getPlayerAnalysis(scores, "Alice")).toEqual({
+      kind: "clinched",
+      playerName: "Alice",
+      sharedWith: ["Bob"],
     });
   });
 
@@ -239,6 +275,7 @@ describe("getSettledAnalysis, the answers that need no search", () => {
     expect(getSettledAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
       playerName: "Alice",
+      sharedWith: [],
     });
   });
 
@@ -256,6 +293,7 @@ describe("getSettledAnalysis, the answers that need no search", () => {
     expect(getSettledAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
       playerName: "Alice",
+      sharedWith: [],
     });
   });
 
@@ -901,6 +939,7 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
       playerName: "Alice",
+      sharedWith: [],
     });
   });
 

@@ -1,6 +1,7 @@
 import { Mock } from "vitest";
 import { render, screen } from "@testing-library/react";
 import {
+  useIsWeekWon,
   useIsWinnerDecided,
   useScoreChanges,
 } from "../../../context/AppDataContext";
@@ -14,10 +15,12 @@ import { playerScore } from "../../../weekFixtures";
 import PlayerName from "./PlayerName";
 
 vi.mock("../../../context/AppDataContext", () => ({
+  useIsWeekWon: vi.fn(),
   useIsWinnerDecided: vi.fn(),
   useScoreChanges: vi.fn(),
 }));
 
+const mockIsWeekWon = useIsWeekWon as Mock;
 const mockIsWinnerDecided = useIsWinnerDecided as Mock;
 const mockScoreChanges = useScoreChanges as Mock;
 
@@ -56,6 +59,7 @@ function cell(): HTMLElement {
 
 beforeEach(() => {
   localStorage.clear();
+  mockIsWeekWon.mockReturnValue(false);
   mockIsWinnerDecided.mockReturnValue(false);
   mockScoreChanges.mockReturnValue(NO_SCORE_CHANGES);
 });
@@ -114,9 +118,9 @@ describe("PlayerName", () => {
   });
 
   it("draws no trophy under a wipe the deciding knockout left", () => {
-    // The week reads as over the moment this knockout lands, and the player it
+    // The week reads as won the moment this knockout lands, and the player it
     // knocked out is not the one left standing.
-    mockIsWinnerDecided.mockReturnValue(true);
+    mockIsWeekWon.mockReturnValue(true);
     mockScoreChanges.mockReturnValue(knockoutChange);
     mountCell();
 

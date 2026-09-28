@@ -130,8 +130,11 @@ export type VictoryRoute = {
 export type PlayerAnalysis =
   /** `explanation` is the reason `applyKnockouts` already wrote. */
   | { kind: "knockedOut"; playerName: string; explanation?: string }
-  /** No result left can take the week off them. */
-  | { kind: "clinched"; playerName: string }
+  /**
+   * No result left can take the week off them. `sharedWith` names the rivals no
+   * result left can separate from them either, who win the week with them.
+   */
+  | { kind: "clinched"; playerName: string; sharedWith: Array<string> }
   /**
    * Too many games left to work out the routes, so only the games that can be
    * proven one at a time are named. Nothing here is a way through.
