@@ -37,10 +37,11 @@ const ITEMS: Array<NavItem> = [
     icon: <SwapVertIcon />,
     path: (season, week) => resultsPath(season, week, "Swing Games"),
     hidden: ({ isWeekWon }) => isWeekWon,
-    disabledReason: ({ swingGames }) =>
-      swingGames == null || swingGames.games.length === 0
-        ? "No game knocks anyone out"
-        : undefined,
+    disabledReason: ({ swingGames }) => {
+      if (swingGames == null) return "Scores still loading";
+      if (swingGames.games.length === 0) return "No game knocks anyone out";
+      return undefined;
+    },
   },
 ];
 
@@ -295,6 +296,8 @@ function DisabledDrawerItem({
   return (
     <span
       role="link"
+      // Focusable like the popup's disabled item, so Tab reaches its reason too.
+      tabIndex={0}
       className="nav-drawer__item"
       aria-disabled="true"
       aria-current={isCurrent ? "page" : undefined}

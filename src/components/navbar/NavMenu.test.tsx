@@ -161,6 +161,7 @@ describe("NavMenu", () => {
       });
 
       expect(item).toHaveAttribute("data-disabled");
+      expect(item).toHaveAccessibleDescription("Scores still loading");
     });
 
     it("disables Swing Games once no open game can knock anyone out", async () => {
