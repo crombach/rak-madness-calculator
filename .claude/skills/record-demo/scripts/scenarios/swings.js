@@ -14,6 +14,10 @@ const THEME = process.env.SWINGS_THEME ?? "light";
 const HOVER = process.env.SWINGS_HOVER === "1";
 
 const THEME_KEY = "rak-madness:settings:theme";
+const PLAYER_NAME_KEY = "rak-madness:settings:playerName";
+
+/** The reader, a KC backer, so their name leads P1's crowded side. */
+const MY_NAME = "Dee";
 
 const KC_BACKERS = [
   "Ann",
@@ -41,11 +45,11 @@ function rows() {
   ];
 }
 
-/** Upcoming, so neither game has been decided yet. */
+/** P1 live and close enough to swing either way, P2 yet to start. */
 function events() {
   return {
     events: [
-      makeGame("P1EVT", "DEN", "KC", 0, 0, "1"),
+      makeGame("P1EVT", "DEN", "KC", 7, 6, "2", 3),
       makeGame("P2EVT", "LAR", "SF", 0, 0, "1"),
     ],
   };
@@ -62,15 +66,18 @@ export default async function run({ page, context, baseUrl }) {
 
   await page.goto(`${baseUrl}/${SEASON}/${WEEK}/swings`);
   await page.evaluate(
-    ([key, theme]) => localStorage.setItem(key, theme),
-    [THEME_KEY, THEME],
+    ([themeKey, theme, nameKey, name]) => {
+      localStorage.setItem(themeKey, theme);
+      localStorage.setItem(nameKey, name);
+    },
+    [THEME_KEY, THEME, PLAYER_NAME_KEY, MY_NAME],
   );
   await page.goto(`${baseUrl}/${SEASON}/${WEEK}/swings`);
   await page.getByText("KC @ DEN").waitFor({ timeout: 10000 });
 
   if (HOVER) {
     await page
-      .getByRole("button", { name: "Game Status for P1 KC @ DEN" })
+      .getByRole("button", { name: /^Game Status for P1 KC @ DEN/ })
       .hover();
   }
 }
