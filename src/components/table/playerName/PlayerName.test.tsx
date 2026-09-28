@@ -117,6 +117,14 @@ describe("PlayerName", () => {
     expect(screen.getByTestId("SkullOutlinedIcon")).toBeInTheDocument();
   });
 
+  it("tells a screen reader that the player wearing the trophy won the week", () => {
+    mockIsWeekWon.mockReturnValue(true);
+    mountCell(playerScore({ name: "Alice" }));
+
+    expect(cell()).toHaveTextContent("Won the week");
+    expect(cell()).not.toHaveTextContent("Still in contention");
+  });
+
   it("draws no trophy under a wipe the deciding knockout left", () => {
     // The week reads as won the moment this knockout lands, and the player it
     // knocked out is not the one left standing.

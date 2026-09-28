@@ -1,5 +1,5 @@
 import { ReactNode, memo } from "react";
-import { useScoreChanges } from "../../../context/AppDataContext";
+import { useIsWeekWon, useScoreChanges } from "../../../context/AppDataContext";
 import { PlayerScore } from "../../../types/RakMadnessScores";
 import getClasses from "../../../utils/getClasses";
 import { useShowPlayerAnalysis } from "../../../context/PlayerAnalysisContext";
@@ -20,6 +20,8 @@ function PlayerName({
   const showPlayerAnalysis = useShowPlayerAnalysis();
   const { players: playerChanges } = useScoreChanges();
   const showStatus = useShowPlayerStatus();
+  // Keep in step with `PlayerStatusIcon`, which draws the trophy off this hook.
+  const isWeekWon = useIsWeekWon();
   // A knockout is the one change this cell flashes, so the flash is a way of
   // saying where the player stands and goes wherever the rest of it does. The
   // value is where the player stood before it, which is what the wipe draws.
@@ -76,7 +78,11 @@ function PlayerName({
         >
           {name}
           <span className="table__sr-only">
-            {player.status.isKnockedOut ? "Knocked out" : "Still in contention"}
+            {player.status.isKnockedOut
+              ? "Knocked out"
+              : isWeekWon
+                ? "Won the week"
+                : "Still in contention"}
           </span>
           {previousKnockedOut != null && (
             // Holds the row as it stood, so the wipe uncovers the new icon from
