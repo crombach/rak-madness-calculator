@@ -211,6 +211,11 @@ $section-min: calc(
   list-style: none;
 }
 
+// Without this a long name's min-content widens the item past its track.
+.swing-games__players > li {
+  min-width: 0;
+}
+
 .swing-games__player {
   @include ruled-block($rule-alive);
   @include focus-ring;
@@ -224,7 +229,7 @@ $section-min: calc(
   @include player-name-face;
   font-size: var(--rak-text-cells);
   text-align: start;
-  overflow-wrap: anywhere;
+  @include truncate-line;
   cursor: pointer;
   transition: background-color var(--rak-duration-fast) var(--rak-ease-standard);
 
