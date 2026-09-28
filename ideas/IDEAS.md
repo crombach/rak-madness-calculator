@@ -3,6 +3,11 @@
 These are features worth building next. Each one reuses logic or components the
 app already has. They are listed from the least work to the most.
 
+## Navbar menu
+
+Add a hamburger menu to the navbar for features that are not a view of one week.
+Later features add an item to it. [`nav-menu.md`](nav-menu.md) holds the plan.
+
 ## Head-to-head compare
 
 Let a reader pick two players and show only the games where their picks differ.

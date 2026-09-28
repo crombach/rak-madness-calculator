@@ -2,7 +2,8 @@
 
 The season leaderboard is on hold. Scoring a week costs more CPU than a Cloudflare
 Pages Function gets on the free plan. Choose where the scoring runs before you
-build anything else here. The design below holds whichever option you pick.
+build anything else here. The design below holds whichever option you pick. The page also depends on the
+navbar menu in [`nav-menu.md`](nav-menu.md), which has to ship first.
 
 ## What it shows
 
@@ -73,17 +74,12 @@ type WeekSummary = {
 - `.table__live-dot` moves from `picks/PicksTable.scss` to `Table.scss`, because two
   tables use it.
 
-### Route and navigation
+### Route
 
 - The route is `/:season/leaderboard`, with a `leaderboardPath(season)` helper in
   `src/components/results/resultsPath.ts`. React Router ranks the static segment
   above `/:season/:week`.
-- A hamburger menu opens the page. `src/components/navbar/NavMenu.tsx` is a Base UI
-  `Menu` behind a `MenuIcon` button. Base UI 1.8 ships `Menu`, but nothing in `src/`
-  uses it yet. Copy the Material Symbols Sharp "menu" glyph into `Icon.tsx` for the
-  icon.
-- Both `ResultsFrame` and the leaderboard page mount `NavMenu` beside
-  `ScoresNavbar`.
+- Add a "Season leaderboard" item to the navbar menu, which opens the page.
 
 ## CPU cost of one week
 
