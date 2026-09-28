@@ -1,16 +1,41 @@
+@use "sass:math";
 @use "../../styles/breakpoints" as *;
 @use "../../styles/focus" as *;
+@use "../../styles/ink" as *;
 @use "../../styles/label" as *;
+@use "../../styles/picks" as *;
 @use "../../styles/skeleton" as *;
+@use "../../styles/text" as *;
 
+// The narrowest a name box goes, which is what sets how many share a row.
+$name-box-min: 7.5rem;
+
+// The narrowest game that still fits `BASE_COLUMNS` name boxes: two boxes and
+// the gap between them, the side's padding, and the frame. 276px, which a
+// browser confirms: the names drop to one column at 274px, and the band holds a
+// matchup as long as `P16 UMASS @ STAN` on one line down to 224px.
+$section-min: calc(
+  2 * #{$name-box-min} + var(--rak-space-2) + 2 * var(--rak-space-3) + 2 *
+    var(--rak-border-width)
+);
+
+// Two columns of games where two fit, one otherwise, in table order across
+// each row. The width `PageLayout.scss` gives its content is the only cap.
 .swing-games {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(max(#{$section-min}, (100% - var(--rak-space-4)) / 2), 1fr)
+  );
+  align-items: start;
+  // `flex: 1` makes the grid taller than its rows, and without this the rows
+  // stretch to fill it, which widens the gap between games past `gap`.
+  align-content: start;
   gap: var(--rak-space-4);
   flex: 1;
   // `100cqi` is the scrolling box `PageLayout.scss` declares the container on,
   // so a phone gets the whole screen and never a sideways scroll.
-  width: min(100cqi, 32rem);
+  width: 100cqi;
   padding: var(--rak-space-4);
   background-color: var(--rak-surface);
   color: var(--rak-text);
@@ -20,114 +45,232 @@
   }
 }
 
+// Framed the way the tables are, so a game reads as a panel of the device.
 .swing-games__group {
   display: flex;
   flex-direction: column;
-  gap: var(--rak-space-2);
-}
-
-.swing-games__title {
-  margin: 0;
-}
-
-// The band a game's heading stands on in the table, which opens the same dialog.
-.swing-games__game {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--rak-space-2);
-  width: 100%;
-  min-height: var(--rak-touch-target);
-  padding: var(--rak-space-2) var(--rak-space-3);
-  border: 0;
+  overflow: hidden;
+  border: var(--rak-border-width) solid var(--rak-panel-border);
   border-radius: var(--rak-radius-sm);
+}
+
+// The bar a game's heading stands on in the table, holding the two targets
+// below. One fill for both, so neither button's own hover or press reads as
+// the whole band lighting up.
+.swing-games__title {
+  display: flex;
+  align-items: stretch;
+  margin: 0;
   background-color: var(--rak-band-header);
   box-shadow: var(--rak-shadow-band-header);
   color: var(--rak-on-solid);
+}
+
+// Both band targets' own hover and press fill and inset focus ring, off the
+// soft `Button.scss` variant. Inset, since the panel's own `overflow` would
+// clip a ring drawn outside.
+@mixin band-target {
+  display: flex;
+  align-items: center;
+  min-height: var(--rak-touch-target);
+  padding: var(--rak-space-2) var(--rak-space-3);
+  border: 0;
+  background-color: transparent;
+  color: inherit;
   font: inherit;
-  font-size: var(--rak-text-md);
-  text-align: start;
   cursor: pointer;
   transition: background-color var(--rak-duration-fast) var(--rak-ease-standard);
 
-  @include micro-label;
   @include focus-ring;
+  &:focus-visible {
+    outline-offset: calc(-1 * #{$focus-ring-reach});
+  }
 
   @include can-hover {
     &:hover {
-      background-color: color-mix(
-        in srgb,
-        var(--rak-band-header) var(--rak-hover-strength),
-        black
-      );
+      background-color: var(--rak-state-hover);
     }
   }
-
   &:active {
-    background-color: color-mix(
-      in srgb,
-      var(--rak-band-header) var(--rak-press-strength),
-      black
-    );
+    background-color: var(--rak-state-press);
   }
+}
+
+// Left: the mark and the game's own name, sized to its content. Opens Game
+// Status, the way the picks table's own column heading does.
+.swing-games__game {
+  @include band-target;
+  @include micro-label;
+
+  flex: none;
+  font-size: var(--rak-text-sm);
+  text-align: start;
+}
+
+// Right: the count and the chevron, filling whatever the game button does
+// not use, so a tap on the rest of the bar still folds or opens it.
+.swing-games__toggle {
+  @include band-target;
+
+  flex: 1;
+  justify-content: flex-end;
+  gap: var(--rak-space-2);
+}
+
+.swing-games__chevron {
+  display: flex;
+  transition: transform var(--rak-duration-medium) var(--rak-ease-standard);
+
+  .swing-games__toggle[data-panel-open] & {
+    transform: rotate(180deg);
+  }
+
+  @include reduced-motion {
+    transition: none;
+  }
+}
+
+// Base UI measures the panel into `--accordion-panel-height` as it opens and
+// closes, and hands back `auto` once it is open.
+.swing-games__panel {
+  height: var(--accordion-panel-height);
+  overflow: hidden;
+  border-block-start: var(--rak-border-width) solid
+    var(--rak-table-header-divider);
+  transition: height var(--rak-duration-medium) var(--rak-ease-standard);
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    height: 0;
+  }
+
+  @include reduced-motion {
+    transition: none;
+  }
+}
+
+// The mark and the name on one line, each centered on the other, as a column
+// heading in the picks table sets them.
+.swing-games__game-name {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  white-space: nowrap;
+}
+
+.swing-games__count {
+  flex: none;
+  white-space: nowrap;
+}
+
+.swing-games__game-label {
+  @include pick-type;
+  @include pick-label;
+
+  letter-spacing: normal;
 }
 
 .swing-games__side {
   display: flex;
   flex-direction: column;
-  gap: var(--rak-space-1);
+  gap: var(--rak-space-2);
+  padding: var(--rak-space-3);
+
+  & + & {
+    border-block-start: var(--rak-border-width-hairline) solid
+      var(--rak-fill-muted);
+  }
+}
+
+// Sized so its capitals stand as tall as the pick's, which is set in the other face.
+.swing-games__needs {
+  @include micro-label;
+
+  margin: 0;
+  color: var(--rak-text);
+  font-size: calc(
+    var(--rak-text-sm) * #{math.div($cap-share-mono, $cap-share-body)}
+  );
 }
 
 .swing-games__pick {
-  margin: 0;
-  font-family: var(--rak-font-mono);
-  font-size: var(--rak-text-sm);
-  font-weight: var(--rak-weight-semibold);
-}
+  @include pick-face;
 
-.swing-games__out {
-  margin: 0;
-  color: var(--rak-text-secondary);
-  font-size: var(--rak-text-sm);
+  color: var(--rak-text);
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .swing-games__players {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(#{$name-box-min}, 1fr));
   gap: var(--rak-space-2);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.swing-games__link {
-  align-self: flex-start;
-  text-decoration: none;
+.swing-games__player {
+  @include ruled-block($rule-alive);
+  @include focus-ring;
+
+  width: 100%;
+  min-height: var(--rak-touch-target);
+  padding: var(--rak-space-2) var(--rak-space-3);
+  border-block: 0;
+  border-inline-end: 0;
+  color: var(--rak-text);
+  @include player-name-face;
+  font-size: var(--rak-text-cells);
+  text-align: start;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  transition: background-color var(--rak-duration-fast) var(--rak-ease-standard);
+
+  @include can-hover {
+    &:hover {
+      background-color: var(--rak-fill-muted);
+    }
+  }
+
+  &:active {
+    background-color: color-mix(
+      in srgb,
+      var(--rak-fill-muted) var(--rak-press-strength),
+      var(--rak-text)
+    );
+  }
+
+  // In the blue the tables rule the reader's own row in.
+  &.--mine {
+    @include my-player-name;
+
+    border-inline-start-color: var(--rak-my-row-accent);
+  }
 }
 
-.swing-games__skeleton-game {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rak-space-2);
+// The band and its rule as the loaded page draws them, so nothing moves on arrival.
+.swing-games__skeleton-band {
+  display: block;
+  height: var(--rak-touch-target);
+  border-block-end: var(--rak-border-width) solid
+    var(--rak-table-header-divider);
+  background-color: var(--rak-band-header);
 }
 
 .swing-games__skeleton-bar {
   @include skeleton-surface;
 
   display: block;
-  height: 0.8rem;
-
-  &.--title {
-    width: 100%;
-    height: var(--rak-touch-target);
-  }
 
   &.--pick {
-    width: 5rem;
+    width: 6rem;
+    height: 1lh;
+    font-size: var(--rak-text-xs);
   }
 
-  &.--players {
-    width: 14rem;
-    height: 1.75rem;
+  &.--player {
+    height: var(--rak-touch-target);
   }
 }

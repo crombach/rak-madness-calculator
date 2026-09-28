@@ -24,7 +24,6 @@ describe("getSwingGames", () => {
           sides: [{ team: "KC", pick: "KC", players: ["Alice", "Bob"] }],
         },
       ],
-      quietCount: 0,
     });
   });
 
@@ -80,7 +79,7 @@ describe("getSwingGames", () => {
       41,
     );
 
-    expect(getSwingGames(scores)).toEqual({ games: [], quietCount: 0 });
+    expect(getSwingGames(scores)).toEqual({ games: [] });
   });
 
   it("answers nothing for a week the knockouts leave to one player", () => {
@@ -94,7 +93,7 @@ describe("getSwingGames", () => {
       }),
     ]);
 
-    expect(getSwingGames(scores)).toEqual({ games: [], quietCount: 0 });
+    expect(getSwingGames(scores)).toEqual({ games: [] });
   });
 
   it("puts a spread written with and without a space on one side", () => {
@@ -110,7 +109,7 @@ describe("getSwingGames", () => {
     ]);
   });
 
-  it("counts the open games nobody must win", () => {
+  it("leaves out the open games nobody must win", () => {
     // P2 is picked one way by all, and P3 is Carol's alone to lose.
     const scores = week([
       player({
@@ -125,20 +124,45 @@ describe("getSwingGames", () => {
       }),
     ]);
 
-    const result = getSwingGames(scores);
-    expect(result.games.map((game) => game.label)).toEqual(["P1"]);
-    expect(result.quietCount).toBe(2);
+    expect(getSwingGames(scores).games.map((game) => game.label)).toEqual([
+      "P1",
+    ]);
   });
 
-  it("puts the game knocking out the most players first", () => {
+  it("keeps the games in column order, even where a later one knocks out more", () => {
     const scores = week([
-      player({ name: "Carol", total: 5, pro: [pick("DEN"), pick("SF")] }),
-      player({ name: "Dan", total: 5, pro: [pick("DEN"), pick("LAR")] }),
-      player({ name: "Alice", total: 4, pro: [pick("KC"), pick("SF")] }),
-      player({ name: "Bob", total: 4, pro: [pick("KC"), pick("SF")] }),
+      player({
+        name: "Carol",
+        total: 5,
+        college: [pick("OSU")],
+        pro: [pick("DEN"), pick("SF")],
+      }),
+      player({
+        name: "Dan",
+        total: 5,
+        college: [pick("OSU")],
+        pro: [pick("DEN"), pick("LAR")],
+      }),
+      player({
+        name: "Alice",
+        total: 4,
+        college: [pick("OSU")],
+        pro: [pick("KC"), pick("SF")],
+      }),
+      player({
+        name: "Bob",
+        total: 4,
+        college: [pick("OSU")],
+        pro: [pick("KC"), pick("SF")],
+      }),
     ]);
 
     expect(getSwingGames(scores).games).toEqual([
+      {
+        label: "P1",
+        name: "P1",
+        sides: [{ team: "KC", pick: "KC", players: ["Alice", "Bob"] }],
+      },
       {
         label: "P2",
         name: "P2",
@@ -146,11 +170,6 @@ describe("getSwingGames", () => {
           { team: "SF", pick: "SF", players: ["Carol", "Alice", "Bob"] },
           { team: "LAR", pick: "LAR", players: ["Dan"] },
         ],
-      },
-      {
-        label: "P1",
-        name: "P1",
-        sides: [{ team: "KC", pick: "KC", players: ["Alice", "Bob"] }],
       },
     ]);
   });

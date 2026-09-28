@@ -22,17 +22,11 @@ export type SwingGame = {
 };
 
 export type SwingGames = {
-  /** Most players first, ties in week order. */
+  /** In column order, college then pro, the way the tables lay them out. */
   games: Array<SwingGame>;
-  /** Open games no player must win. */
-  quietCount: number;
 };
 
-const NO_SWINGS: SwingGames = { games: [], quietCount: 0 };
-
-function playerCount(game: SwingGame): number {
-  return game.sides.reduce((count, side) => count + side.players.length, 0);
-}
+const NO_SWINGS: SwingGames = { games: [] };
 
 /**
  * Each open game, with the players it knocks out whichever way it falls.
@@ -88,7 +82,6 @@ export default function getSwingGames(scores: RakMadnessScores): SwingGames {
       },
     ];
   });
-  games.sort((a, b) => playerCount(b) - playerCount(a));
 
-  return { games, quietCount: open.length - games.length };
+  return { games };
 }

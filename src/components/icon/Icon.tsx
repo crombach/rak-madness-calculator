@@ -52,6 +52,14 @@ export function UnfoldMoreIcon() {
   );
 }
 
+export function ExpandMoreIcon() {
+  return (
+    <Icon name="ExpandMoreIcon">
+      <path d="M480-345 240-585l43-43 197 197 197-197 43 43-240 240Z" />
+    </Icon>
+  );
+}
+
 export function InfoIcon() {
   return (
     <Icon name="InfoIcon">

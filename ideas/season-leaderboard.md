@@ -2,8 +2,7 @@
 
 The season leaderboard is on hold. Scoring a week costs more CPU than a Cloudflare
 Pages Function gets on the free plan. Choose where the scoring runs before you
-build anything else here. The design below holds whichever option you pick. The page also depends on the
-navbar menu in [`nav-menu.md`](nav-menu.md), which has to ship first.
+build anything else here. The design below holds whichever option you pick.
 
 ## What it shows
 

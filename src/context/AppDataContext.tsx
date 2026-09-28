@@ -12,6 +12,8 @@ import useLeagueWeeks from "../hooks/useLeagueWeeks";
 import usePicksSeasons from "../hooks/usePicksSeasons";
 import usePlayerScores from "../hooks/usePlayerScores";
 import { WeekInfo } from "../types/League";
+import { RakMadnessScores } from "../types/RakMadnessScores";
+import getSwingGames, { SwingGames } from "../utils/scoring/getSwingGames";
 import isWeekSettled, { isWeekWon } from "../utils/scoring/isWeekSettled";
 import { NO_SCORE_CHANGES, ScoreChanges } from "../utils/scoring/scoreChanges";
 
@@ -209,4 +211,21 @@ export function useIsWeekWon(): boolean {
 
 export function useScoreChanges(): ScoreChanges {
   return useContext(ScoreChangesContext);
+}
+
+/** One answer per set of scores, however many callers ask for it. */
+const swingGamesByScores = new WeakMap<RakMadnessScores, SwingGames>();
+
+/** The week's swing games, or undefined while its scores load. */
+export function useSwingGames(): SwingGames | undefined {
+  const { scores } = useAppData();
+  return useMemo(() => {
+    if (scores == null) return undefined;
+    let swings = swingGamesByScores.get(scores);
+    if (swings == null) {
+      swings = getSwingGames(scores);
+      swingGamesByScores.set(scores, swings);
+    }
+    return swings;
+  }, [scores]);
 }

@@ -28,7 +28,12 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 - `repeatedNames`: the names more than one row was entered under
 - `scoreChanges`: what a refresh changed
 - `getPlayerAnalysis`: what a player must do, plus `getSettledAnalysis`,
-  the answers a week already holds, which the dialog asks before it waits
+  the answers a week already holds, which the dialog asks before it waits,
+  and `getMustWin`, the must-win games proven at n+1 verdicts, no search needed
+- `getSwingGames`: those must-win games by game instead of by player, each side
+  keyed by team, for the swing games page
 - `leagueResultFixtures`: test game builders, and `weekOf`, one league's week
+- `scoringTestFixtures`: player and week builders, shared by `getPlayerAnalysis`'s
+  and `getSwingGames`'s tests
 - `benchFixtures`: the 80x22 worst week the benchmarks measure, every game
   picked
