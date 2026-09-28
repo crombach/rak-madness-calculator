@@ -50,10 +50,11 @@ $breakpoint-wide: 601px;
 
 /**
  * Everything short of `wide-screen`, for `matchMedia` rather than a stylesheet.
- * `index.scss` exports it. Written as `max-width` so a test's no-to-everything
- * `matchMedia` lands on the wide screen, as it does for every other query.
+ * `index.scss` exports it. A `<` range meets `wide-screen` exactly, where
+ * `max-width: 600px` would leave fractional widths matching neither. Still a
+ * positive query, so a test's no-to-everything `matchMedia` lands on the wide screen.
  */
-$below-wide-query: "(max-width: #{$breakpoint-wide - 1px})";
+$below-wide-query: "(width < #{$breakpoint-wide})";
 
 /**
  * A phone, and nothing else. The one `max-width` mixin in this file, because it is
