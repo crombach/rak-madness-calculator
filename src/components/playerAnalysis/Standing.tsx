@@ -7,7 +7,7 @@ import weekShape, { WeekShape } from "../../utils/scoring/weekShape";
 // owns and styles.
 import "./AnalysisSummary.scss";
 import getClasses from "../../utils/getClasses";
-import { hasOutcome } from "../../utils/scoring/isWinnerDecided";
+import { hasOutcome } from "../../utils/scoring/isWeekSettled";
 
 /**
  * Everyone the tiers leave tied at the top, which is everyone who won the week.

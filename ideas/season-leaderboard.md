@@ -58,7 +58,7 @@ type WeekSummary = {
 - `isLive` stays true until every game in `scores.games` is `GameStatus.FINAL`.
   That is the rule `isWeekOver` in `src/hooks/useLiveGame.ts` uses. Move it to a
   util so both callers share it.
-- `isWinner` is set once `isWinnerDecided` passes. It marks every row that
+- `isWinner` is set once `isWeekSettled` passes. It marks every row that
   `compareOnMerit` in `src/utils/scoring/comparePlayerScores.ts` ties with row 0.
 - A stored summary is stale when its `picksEtag` differs from the sheet's R2 etag,
   or when its `version` differs from a `SUMMARY_VERSION` constant. Raise that

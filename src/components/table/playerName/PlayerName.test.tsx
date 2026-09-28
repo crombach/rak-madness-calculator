@@ -2,7 +2,7 @@ import { Mock } from "vitest";
 import { render, screen } from "@testing-library/react";
 import {
   useIsWeekWon,
-  useIsWinnerDecided,
+  useIsWeekSettled,
   useScoreChanges,
 } from "../../../context/AppDataContext";
 import {
@@ -16,12 +16,12 @@ import PlayerName from "./PlayerName";
 
 vi.mock("../../../context/AppDataContext", () => ({
   useIsWeekWon: vi.fn(),
-  useIsWinnerDecided: vi.fn(),
+  useIsWeekSettled: vi.fn(),
   useScoreChanges: vi.fn(),
 }));
 
 const mockIsWeekWon = useIsWeekWon as Mock;
-const mockIsWinnerDecided = useIsWinnerDecided as Mock;
+const mockIsWeekSettled = useIsWeekSettled as Mock;
 const mockScoreChanges = useScoreChanges as Mock;
 
 const knockedOut = playerScore({
@@ -60,7 +60,7 @@ function cell(): HTMLElement {
 beforeEach(() => {
   localStorage.clear();
   mockIsWeekWon.mockReturnValue(false);
-  mockIsWinnerDecided.mockReturnValue(false);
+  mockIsWeekSettled.mockReturnValue(false);
   mockScoreChanges.mockReturnValue(NO_SCORE_CHANGES);
 });
 
@@ -87,7 +87,7 @@ describe("PlayerName", () => {
 
   it("tells a reader who turned it off how a decided week went", () => {
     localStorage.setItem(LIVE_ANALYSIS_KEY, "off");
-    mockIsWinnerDecided.mockReturnValue(true);
+    mockIsWeekSettled.mockReturnValue(true);
     mountCell();
 
     expect(screen.getByRole("button", { name: /Bob/ })).toBeInTheDocument();

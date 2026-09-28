@@ -12,7 +12,7 @@ import useLeagueWeeks from "../hooks/useLeagueWeeks";
 import usePicksSeasons from "../hooks/usePicksSeasons";
 import usePlayerScores from "../hooks/usePlayerScores";
 import { WeekInfo } from "../types/League";
-import isWinnerDecided, { isWeekWon } from "../utils/scoring/isWinnerDecided";
+import isWeekSettled, { isWeekWon } from "../utils/scoring/isWeekSettled";
 import { NO_SCORE_CHANGES, ScoreChanges } from "../utils/scoring/scoreChanges";
 
 type AppData = ReturnType<typeof useLeagueWeeks> &
@@ -42,7 +42,7 @@ type AppData = ReturnType<typeof useLeagueWeeks> &
 const AppDataContext = createContext<AppData | undefined>(undefined);
 
 /**
- * How the week on screen stands. `isOver` is every game settled, so whoever is
+ * How the week on screen stands. `isSettled` is every game settled, so whoever is
  * left standing has won. `isWon` is a winner known, games left or not, so the one
  * left standing wears the trophy.
  *
@@ -52,9 +52,9 @@ const AppDataContext = createContext<AppData | undefined>(undefined);
  * split. Both false with no provider above, so a table can still be rendered on its
  * own with scores handed straight to it.
  */
-type WeekOutcome = { isOver: boolean; isWon: boolean };
+type WeekOutcome = { isSettled: boolean; isWon: boolean };
 
-const NO_OUTCOME: WeekOutcome = { isOver: false, isWon: false };
+const NO_OUTCOME: WeekOutcome = { isSettled: false, isWon: false };
 
 const WeekOutcomeContext = createContext<WeekOutcome>(NO_OUTCOME);
 
@@ -134,7 +134,7 @@ export function AppDataContextProvider({
     () =>
       scores == null
         ? NO_OUTCOME
-        : { isOver: isWinnerDecided(scores), isWon: isWeekWon(scores) },
+        : { isSettled: isWeekSettled(scores), isWon: isWeekWon(scores) },
     [scores],
   );
 
@@ -199,8 +199,8 @@ export function useAppData(): AppData {
   return value;
 }
 
-export function useIsWinnerDecided(): boolean {
-  return useContext(WeekOutcomeContext).isOver;
+export function useIsWeekSettled(): boolean {
+  return useContext(WeekOutcomeContext).isSettled;
 }
 
 export function useIsWeekWon(): boolean {

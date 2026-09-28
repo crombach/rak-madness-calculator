@@ -4,7 +4,7 @@ import {
   RakMadnessScores,
   Status,
 } from "../../types/RakMadnessScores";
-import isWinnerDecided, { isWeekWon } from "./isWinnerDecided";
+import isWeekSettled, { isWeekWon } from "./isWeekSettled";
 
 function pickResult(status: Status): PickResult {
   return {
@@ -37,16 +37,16 @@ function week(
   return { tiebreaker, scores: players };
 }
 
-describe("isWinnerDecided", () => {
+describe("isWeekSettled", () => {
   it("calls a week decided once every pick is scored", () => {
-    expect(isWinnerDecided(week([player("Alice", ["yes", "no"])], 41))).toBe(
+    expect(isWeekSettled(week([player("Alice", ["yes", "no"])], 41))).toBe(
       true,
     );
   });
 
   it("holds off while a game is still to finish", () => {
     expect(
-      isWinnerDecided(
+      isWeekSettled(
         week(
           [
             player("Alice", ["yes", "incomplete"]),
@@ -60,7 +60,7 @@ describe("isWinnerDecided", () => {
 
   it("holds off when a game could not be scored for anyone", () => {
     expect(
-      isWinnerDecided(
+      isWeekSettled(
         week(
           [
             player("Alice", ["yes", "unscoreable"]),
@@ -74,7 +74,7 @@ describe("isWinnerDecided", () => {
 
   it("calls a week decided when one player alone left a pick blank", () => {
     expect(
-      isWinnerDecided(
+      isWeekSettled(
         week(
           [
             player("Alice", ["yes", "no"]),
@@ -87,7 +87,7 @@ describe("isWinnerDecided", () => {
   });
 
   it("holds off until the Monday night tiebreaker is settled", () => {
-    expect(isWinnerDecided(week([player("Alice", ["yes"])]))).toBe(false);
+    expect(isWeekSettled(week([player("Alice", ["yes"])]))).toBe(false);
   });
 });
 

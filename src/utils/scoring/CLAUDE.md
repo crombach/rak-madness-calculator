@@ -18,7 +18,7 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 - `scorePlayers`: per-player totals, sorted
 - `comparePlayerScores`: rank order, on merit, over a `Merit` the search
   fills from numbers
-- `isWinnerDecided`: whether knockouts settled it, `isWeekWon`, whether it
+- `isWeekSettled`: whether every game is in, `isWeekWon`, whether it
   has a winner with games left or not, and `standingPlayers`, who can still win it
 - `weekShape`: open games, holes, and whether the week ran out. One walk per
   set of rows

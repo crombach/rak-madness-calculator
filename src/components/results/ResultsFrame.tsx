@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { useNavigate, useParams } from "react-router";
-import { useIsWinnerDecided } from "../../context/AppDataContext";
+import { useIsWeekSettled } from "../../context/AppDataContext";
 import { errorToast, useToastActions } from "../../context/ToastContext";
 import { GameStatusContextProvider } from "../../context/GameStatusContext";
 import { PlayerAnalysisContextProvider } from "../../context/PlayerAnalysisContext";
@@ -96,7 +96,7 @@ export default function ResultsFrame({
   const hasWeek = Boolean(seasonParam && weekParam);
   // Once every game is final there is nothing left to fetch, so the refresh button
   // and the divider beside it go rather than sit there doing nothing.
-  const isWinnerDecided = useIsWinnerDecided();
+  const isWeekSettled = useIsWeekSettled();
   const [opened, setOpened] = useState<Opened>();
   // Set once both dialogs are fetched, which mounts them closed. Each one reads
   // the week as it mounts, and `PlayerAnalysisDialog` walks every pick of every
@@ -179,9 +179,7 @@ export default function ResultsFrame({
       scrollable={isReady}
       // This matches the refresh button beside it exactly. Both gate on the
       // same live week, and only once there is a table to pull on.
-      pull={
-        isReady && !isWinnerDecided ? { onRefresh, isRefreshing } : undefined
-      }
+      pull={isReady && !isWeekSettled ? { onRefresh, isRefreshing } : undefined}
       navbarLeft={<LogoButton onClick={() => navigate("/")} />}
       navbarRight={
         // Rendered while the week loads, so the navbar's shape won't shift under
@@ -189,7 +187,7 @@ export default function ResultsFrame({
         <ScoresNavbar
           view={view}
           disabled={!isReady}
-          isWeekLive={!isWinnerDecided}
+          isWeekLive={!isWeekSettled}
           onViewChange={onViewChange}
           onRefresh={onRefresh}
           isRefreshing={isRefreshing}

@@ -15,7 +15,7 @@ import {
   Merit,
   meritOf,
 } from "./comparePlayerScores";
-import isWinnerDecided, { standingPlayers } from "./isWinnerDecided";
+import isWeekSettled, { standingPlayers } from "./isWeekSettled";
 import remainingGames, {
   pickDifference,
   RemainingGame,
@@ -705,7 +705,7 @@ function settledAnalysis(
 
   // Nothing left to play means the knockouts settled it, and whoever they
   // left standing won, decided here since the search's tier order may differ.
-  if (isWinnerDecided(scores) || rivals.length === 0) {
+  if (isWeekSettled(scores) || rivals.length === 0) {
     return {
       playerIndex,
       player,
