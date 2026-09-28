@@ -221,7 +221,6 @@ describe("getPickResults, statuses outside the enum", () => {
       home: { ...bufBeatKcBy10.home, score: 0 },
       away: { ...bufBeatKcBy10.away, score: 0 },
       winner: { team: null, homeAway: null, by: 0 },
-      loser: { team: null, homeAway: null, by: 0 },
       totalScore: 0,
     };
     const results = getPickResults(["BUF", "KC"], byTeam([canceled]));

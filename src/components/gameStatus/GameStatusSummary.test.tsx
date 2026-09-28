@@ -53,11 +53,6 @@ function result(over: Partial<LeagueResult> = {}): LeagueResult {
       homeAway: HomeAway.HOME,
       by: 10,
     },
-    loser: {
-      team: { name: "Kansas City Chiefs", abbreviation: "KC" },
-      homeAway: HomeAway.AWAY,
-      by: 10,
-    },
     totalScore: 50,
     ...over,
   };
@@ -200,7 +195,6 @@ describe("GameStatusSummary, what the pool made of a finished game", () => {
     const drawn = result({
       away: { ...result().away, score: 30 },
       winner: { team: null, homeAway: null, by: 0 },
-      loser: { team: null, homeAway: null, by: 0 },
     });
     render(<GameStatusSummary game={game(drawn)} result={drawn} />);
     expect(document.querySelector(".game-status__outcome")).toHaveTextContent(
@@ -402,7 +396,6 @@ describe("GameStatusSummary, which side took the point", () => {
     const drawn = {
       away: { ...result().away, score: 30 },
       winner: { team: null, homeAway: null, by: 0 },
-      loser: { team: null, homeAway: null, by: 0 },
     };
     const { scored, missed } = marked(undefined, drawn);
     expect(scored).toEqual(["KC", "BUF"]);
@@ -485,7 +478,6 @@ describe("GameStatusSummary, a game still being played", () => {
     clock: "8:42",
     possession: { homeAway: HomeAway.AWAY, downDistanceText: "2nd & 7" },
     winner: { team: null, homeAway: null, by: 10 },
-    loser: { team: null, homeAway: null, by: 10 },
   });
 
   const renderLive = () =>
@@ -599,7 +591,6 @@ describe("GameStatusSummary, a game yet to kick off", () => {
         linescores: [],
       },
       winner: { team: null, homeAway: null, by: 0 },
-      loser: { team: null, homeAway: null, by: 0 },
     });
     render(<GameStatusSummary game={game(upcoming)} result={upcoming} />);
     expect(screen.getByText("Pregame")).toBeInTheDocument();
