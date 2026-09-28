@@ -3,12 +3,6 @@
 These are features worth building next. Each one reuses logic or components the
 app already has. They are listed from the least work to the most.
 
-## Settings on the results pages
-
-Readers can open `SettingsDialog` only from the home page `Footer`. Add a button
-to `ScoresNavbar` that opens the same dialog. Then a reader can change the theme
-or set their own name in the middle of a game.
-
 ## Head-to-head compare
 
 Let a reader pick two players and show only the games where their picks differ.
