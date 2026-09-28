@@ -3,6 +3,11 @@
 These are features worth building next. Each one reuses logic or components the
 app already has. They are listed from the least work to the most.
 
+## Navbar menu
+
+Add a hamburger menu to the navbar for features that are not a view of one week.
+Later features add an item to it. [`nav-menu.md`](nav-menu.md) holds the plan.
+
 ## Head-to-head compare
 
 Let a reader pick two players and show only the games where their picks differ.
@@ -34,7 +39,7 @@ a full week before you ship it.
 
 ## Season leaderboard
 
-Total each player's weekly wins across the season. `functions/api/picks/index.ts`
-already lists every stored week. Run `getPlayerScores` on each one and add up the
-winners. This is the most work here, because it fetches ESPN results for every
-week of the season.
+Show one table for the whole season, with a row per player and a column per week.
+Each cell holds the player's points for that week, and a last column adds them up.
+This is the most work here, because it scores every week of the season.
+[`season-leaderboard.md`](season-leaderboard.md) holds the plan and what blocks it.
