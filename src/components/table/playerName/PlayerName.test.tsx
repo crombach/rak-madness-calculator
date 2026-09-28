@@ -1,7 +1,8 @@
 import { Mock } from "vitest";
 import { render, screen } from "@testing-library/react";
 import {
-  useIsWinnerDecided,
+  useIsWeekWon,
+  useIsWeekSettled,
   useScoreChanges,
 } from "../../../context/AppDataContext";
 import {
@@ -14,11 +15,13 @@ import { playerScore } from "../../../weekFixtures";
 import PlayerName from "./PlayerName";
 
 vi.mock("../../../context/AppDataContext", () => ({
-  useIsWinnerDecided: vi.fn(),
+  useIsWeekWon: vi.fn(),
+  useIsWeekSettled: vi.fn(),
   useScoreChanges: vi.fn(),
 }));
 
-const mockIsWinnerDecided = useIsWinnerDecided as Mock;
+const mockIsWeekWon = useIsWeekWon as Mock;
+const mockIsWeekSettled = useIsWeekSettled as Mock;
 const mockScoreChanges = useScoreChanges as Mock;
 
 const knockedOut = playerScore({
@@ -34,14 +37,14 @@ const knockoutChange = {
   picks: new Map(),
 };
 
-function mountCell(player = knockedOut) {
+function mountCell(player = knockedOut, hasNameConflict?: boolean) {
   return render(
     <SettingsContextProvider>
       <PlayerAnalysisContextProvider showPlayerAnalysis={vi.fn()}>
         <table>
           <tbody>
             <tr>
-              <PlayerName player={player} />
+              <PlayerName player={player} hasNameConflict={hasNameConflict} />
             </tr>
           </tbody>
         </table>
@@ -56,7 +59,8 @@ function cell(): HTMLElement {
 
 beforeEach(() => {
   localStorage.clear();
-  mockIsWinnerDecided.mockReturnValue(false);
+  mockIsWeekWon.mockReturnValue(false);
+  mockIsWeekSettled.mockReturnValue(false);
   mockScoreChanges.mockReturnValue(NO_SCORE_CHANGES);
 });
 
@@ -83,7 +87,7 @@ describe("PlayerName", () => {
 
   it("tells a reader who turned it off how a decided week went", () => {
     localStorage.setItem(LIVE_ANALYSIS_KEY, "off");
-    mockIsWinnerDecided.mockReturnValue(true);
+    mockIsWeekSettled.mockReturnValue(true);
     mountCell();
 
     expect(screen.getByRole("button", { name: /Bob/ })).toBeInTheDocument();
@@ -113,10 +117,25 @@ describe("PlayerName", () => {
     expect(screen.getByTestId("SkullOutlinedIcon")).toBeInTheDocument();
   });
 
+  it("tells a screen reader that the player wearing the trophy won the week", () => {
+    mockIsWeekWon.mockReturnValue(true);
+    mountCell(playerScore({ name: "Alice" }));
+
+    expect(cell()).toHaveTextContent("Won the week");
+    expect(cell()).not.toHaveTextContent("Still in contention");
+  });
+
+  it("tells a screen reader no win for a row under a shared name", () => {
+    mockIsWeekWon.mockReturnValue(true);
+    mountCell(playerScore({ name: "Alice" }), true);
+
+    expect(cell()).not.toHaveTextContent("Won the week");
+  });
+
   it("draws no trophy under a wipe the deciding knockout left", () => {
-    // The week reads as over the moment this knockout lands, and the player it
+    // The week reads as won the moment this knockout lands, and the player it
     // knocked out is not the one left standing.
-    mockIsWinnerDecided.mockReturnValue(true);
+    mockIsWeekWon.mockReturnValue(true);
     mockScoreChanges.mockReturnValue(knockoutChange);
     mountCell();
 

@@ -11,7 +11,7 @@ week worth showing.
 - `ScoreboardRoute` and `PicksRoute`: one table each, from context.
 - `ResultsFrame`: the page and wireframe both `ResultsLayout` and
   `CurrentWeekRedirect` render into. Holds both dialogs, lazily, and the table
-  providers. Its `useIsWinnerDecided` arms `ScoresNavbar`'s `isWeekLive` and
+  providers. Its `useIsWeekSettled` arms `ScoresNavbar`'s `isWeekLive` and
   `PageLayout`'s `pull` together.
 - `DialogLoadBoundary`: catches a dialog chunk a deploy has replaced.
 - `ResultsFrame.scss`: the column the table and the wireframe share, and the

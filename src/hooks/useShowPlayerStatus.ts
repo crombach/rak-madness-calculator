@@ -1,4 +1,4 @@
-import { useIsWinnerDecided } from "../context/AppDataContext";
+import { useIsWeekSettled } from "../context/AppDataContext";
 import { useSettings } from "../context/SettingsContext";
 
 /**
@@ -11,7 +11,7 @@ import { useSettings } from "../context/SettingsContext";
  * behind it cannot disagree about which of the two it is.
  */
 export default function useShowPlayerStatus(): boolean {
-  const isWinnerDecided = useIsWinnerDecided();
+  const isWeekSettled = useIsWeekSettled();
   const { liveAnalysis } = useSettings();
-  return isWinnerDecided || liveAnalysis;
+  return isWeekSettled || liveAnalysis;
 }

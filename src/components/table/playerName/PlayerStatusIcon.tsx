@@ -1,4 +1,4 @@
-import { useIsWinnerDecided } from "../../../context/AppDataContext";
+import { useIsWeekWon } from "../../../context/AppDataContext";
 import getClasses from "../../../utils/getClasses";
 import {
   EmojiEventsOutlinedIcon,
@@ -12,7 +12,8 @@ import "./PlayerStatusIcon.scss";
  * Where a player stands, in one icon. Shared by the tables' name cells and the
  * player analysis search, so the same player is marked the same way in both.
  *
- * Still standing at the end of the week is what winning the week is.
+ * A player still standing at the end of the week wins it. So does one left
+ * standing alone before then.
  *
  * A name two rows of the workbook share takes the warning a game nobody can score
  * wears, since neither row can be told from the other and no standing read off that
@@ -25,20 +26,20 @@ import "./PlayerStatusIcon.scss";
 export default function PlayerStatusIcon({
   isKnockedOut,
   hasNameConflict,
-  isWinnerDecided,
+  isWeekWon,
 }: {
   isKnockedOut: boolean;
   /** Whether another row of the week was entered under this same name. */
   hasNameConflict?: boolean;
   /**
-   * Whether the week is over, for a caller drawing a moment other than now. The
-   * wipe over a player just knocked out draws where they stood before, and the
-   * week was still running then.
+   * Whether the week has its winner, for a caller drawing a moment other than now.
+   * The wipe over a player just knocked out draws where they stood before, and
+   * nobody had won the week then.
    */
-  isWinnerDecided?: boolean;
+  isWeekWon?: boolean;
 }) {
-  const isWinnerDecidedNow = useIsWinnerDecided();
-  const showTrophy = isWinnerDecided ?? isWinnerDecidedNow;
+  const isWeekWonNow = useIsWeekWon();
+  const showTrophy = isWeekWon ?? isWeekWonNow;
 
   return (
     <span

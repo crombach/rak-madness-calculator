@@ -111,7 +111,12 @@ describe("Standing", () => {
       <Standing
         scores={scores}
         playerName="Rak"
-        result={{ kind: "clinched", playerName: "Rak" }}
+        result={{
+          kind: "clinched",
+          playerName: "Rak",
+          sharedWith: [],
+          canBeTied: false,
+        }}
       />,
     );
 
@@ -126,7 +131,12 @@ describe("Standing", () => {
       <Standing
         scores={tied}
         playerName="Rak"
-        result={{ kind: "clinched", playerName: "Rak" }}
+        result={{
+          kind: "clinched",
+          playerName: "Rak",
+          sharedWith: [],
+          canBeTied: false,
+        }}
       />,
     );
 
@@ -138,7 +148,12 @@ describe("Standing", () => {
       <Standing
         scores={scores}
         playerName="Rak"
-        result={{ kind: "clinched", playerName: "Alice" }}
+        result={{
+          kind: "clinched",
+          playerName: "Alice",
+          sharedWith: [],
+          canBeTied: false,
+        }}
       />,
     );
 

@@ -7,7 +7,7 @@ import CurrentWeekRedirect from "./CurrentWeekRedirect";
 
 vi.mock("../../context/AppDataContext", () => ({
   useAppData: vi.fn(),
-  useIsWinnerDecided: vi.fn(() => false),
+  useIsWeekSettled: vi.fn(() => false),
 }));
 
 const CURRENT_WEEK = 5;

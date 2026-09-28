@@ -40,6 +40,44 @@ export function pickDifference(
   return theirs === mine ? "none" : "opposed";
 }
 
+export type PairDifferences = {
+  differentCollegePicks: number;
+  differentProPicks: number;
+  differentProPicksWithSpreads: number;
+};
+
+/**
+ * How many of the games still to be played these two players have picked
+ * differently, split by the tiebreaker tier each one can move.
+ *
+ * A game the rival left blank counts, because the active player can take a point
+ * there that the rival cannot.
+ */
+export function countDifferences(
+  games: Array<RemainingGame>,
+  activeIndex: number,
+  rivalIndex: number,
+): PairDifferences {
+  const differences = {
+    differentCollegePicks: 0,
+    differentProPicks: 0,
+    differentProPicksWithSpreads: 0,
+  };
+  games.forEach((game) => {
+    if (pickDifference(game, activeIndex, rivalIndex) === "none") return;
+    const activeCell = game.cells[activeIndex];
+    if (game.league === "college") {
+      differences.differentCollegePicks += 1;
+      return;
+    }
+    differences.differentProPicks += 1;
+    if (activeCell.hasSpread) {
+      differences.differentProPicksWithSpreads += 1;
+    }
+  });
+  return differences;
+}
+
 /**
  * The games still to be played, read a column at a time.
  *

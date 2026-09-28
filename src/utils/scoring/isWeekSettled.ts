@@ -4,6 +4,7 @@ import {
   Status,
 } from "../../types/RakMadnessScores";
 import { LEAGUES } from "./gameColumns";
+import repeatedNames from "./repeatedNames";
 
 /** Whether the pick can be scored either way, which is what ends a game for it. */
 export function hasOutcome(status: Status): boolean {
@@ -11,8 +12,8 @@ export function hasOutcome(status: Status): boolean {
 }
 
 /**
- * Whether the week has a winner. Every game is settled, and the Monday night
- * total that decides the tiebreaker is in.
+ * Whether every game of the week is settled, and the Monday night total that
+ * decides the tiebreaker is in.
  *
  * Read a column at a time rather than a row at a time, because a row cannot tell
  * the two kinds of unscoreable pick apart. A game the workbook described two ways,
@@ -23,7 +24,7 @@ export function hasOutcome(status: Status): boolean {
  * Whoever the knockouts left standing once the week is settled has won it, so
  * nothing here looks at a score.
  */
-export default function isWinnerDecided(scores: RakMadnessScores): boolean {
+export default function isWeekSettled(scores: RakMadnessScores): boolean {
   if (scores.tiebreaker == null) {
     return false;
   }
@@ -40,4 +41,30 @@ export default function isWinnerDecided(scores: RakMadnessScores): boolean {
       ),
     ),
   );
+}
+
+/**
+ * Every row still able to take the week, with its index.
+ *
+ * A row under a name two rows share is left out for the same reason
+ * `applyKnockouts` leaves it out: the workbook is wrong about who that row is, so
+ * it takes the week off nobody.
+ */
+export function standingPlayers(
+  players: Array<PlayerScore>,
+): Array<{ player: PlayerScore; index: number }> {
+  const repeated = repeatedNames(players);
+  return players
+    .map((player, index) => ({ player, index }))
+    .filter(
+      ({ player }) => !player.status.isKnockedOut && !repeated.has(player.name),
+    );
+}
+
+/**
+ * Whether the week has a winner, or the knockouts have left only one player who
+ * can still be it.
+ */
+export function isWeekWon(scores: RakMadnessScores): boolean {
+  return isWeekSettled(scores) || standingPlayers(scores.scores).length === 1;
 }

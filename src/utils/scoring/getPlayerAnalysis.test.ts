@@ -128,6 +128,8 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
       playerName: "Alice",
+      sharedWith: [],
+      canBeTied: false,
     });
   });
 
@@ -143,6 +145,8 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
       playerName: "Alice",
+      sharedWith: [],
+      canBeTied: false,
     });
   });
 
@@ -160,6 +164,8 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
       playerName: "Alice",
+      sharedWith: [],
+      canBeTied: false,
     });
   });
 
@@ -176,10 +182,68 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
       playerName: "Alice",
+      sharedWith: ["Bob"],
+      canBeTied: true,
     });
     expect(getPlayerAnalysis(scores, "Bob")).toEqual({
       kind: "clinched",
       playerName: "Bob",
+      sharedWith: ["Alice"],
+      canBeTied: true,
+    });
+  });
+
+  it("clinches a tie with a rival no remaining game can separate", () => {
+    // Level now, the same pick on the one game left, and the same Monday night
+    // guess, so nothing still to happen can split them.
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 5,
+        pro: [pick("KC -3")],
+        tiebreakerPick: 45,
+      }),
+      player({
+        name: "Bob",
+        total: 5,
+        pro: [pick("KC -3")],
+        tiebreakerPick: 45,
+      }),
+      player({
+        name: "Carol",
+        total: 0,
+        pro: [pick("DEN +3")],
+        isKnockedOut: true,
+      }),
+    ]);
+
+    expect(getPlayerAnalysis(scores, "Alice")).toEqual({
+      kind: "clinched",
+      playerName: "Alice",
+      sharedWith: ["Bob"],
+      canBeTied: true,
+    });
+  });
+
+  it("clinches at least a tie over a rival who can still draw level", () => {
+    // Bob is a point back and picked the one game left, with no spread, which
+    // Alice left blank. Winning it draws him level on every tier, and nothing
+    // can put him ahead.
+    const scores = week([
+      player({ name: "Alice", total: 5, pro: [pick("")], tiebreakerPick: 45 }),
+      player({
+        name: "Bob",
+        total: 4,
+        pro: [pick("KC")],
+        tiebreakerPick: 45,
+      }),
+    ]);
+
+    expect(getPlayerAnalysis(scores, "Alice")).toEqual({
+      kind: "clinched",
+      playerName: "Alice",
+      sharedWith: [],
+      canBeTied: true,
     });
   });
 
@@ -239,6 +303,8 @@ describe("getSettledAnalysis, the answers that need no search", () => {
     expect(getSettledAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
       playerName: "Alice",
+      sharedWith: [],
+      canBeTied: false,
     });
   });
 
@@ -256,6 +322,8 @@ describe("getSettledAnalysis, the answers that need no search", () => {
     expect(getSettledAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
       playerName: "Alice",
+      sharedWith: [],
+      canBeTied: false,
     });
   });
 
@@ -901,6 +969,8 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
     expect(getPlayerAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
       playerName: "Alice",
+      sharedWith: [],
+      canBeTied: false,
     });
   });
 

@@ -12,6 +12,9 @@ import AnalysisShares from "./AnalysisShares";
 import "./AnalysisSummary.scss";
 
 type PathsResult = Extract<PlayerAnalysis, { kind: "paths" }>;
+type ClinchedResult = Extract<PlayerAnalysis, { kind: "clinched" }>;
+
+const NAME_LIST = new Intl.ListFormat("en", { type: "conjunction" });
 
 /**
  * The games both blocks call must-win, which is the games every way to win the week
@@ -128,6 +131,25 @@ function Lead({ result }: { result: PathsResult }) {
   );
 }
 
+function clinchedLine(
+  { playerName, sharedWith, canBeTied }: ClinchedResult,
+  week: string,
+  isEveryGameSettled?: boolean,
+): string {
+  const others = NAME_LIST.format(sharedWith);
+  if (isEveryGameSettled) {
+    return sharedWith.length > 0
+      ? `${playerName} has tied for ${week} with ${others}.`
+      : `${playerName} has won ${week}.`;
+  }
+  if (sharedWith.length > 0) {
+    return `${playerName} has clinched a tie for ${week} with ${others}.`;
+  }
+  return canBeTied
+    ? `${playerName} has clinched at least a tie for ${week}.`
+    : `${playerName} has clinched ${week}.`;
+}
+
 /** What the player has to do, or why there is nothing left to do about it. */
 export default function AnalysisBody({
   result,
@@ -152,15 +174,9 @@ export default function AnalysisBody({
 
   if (result.kind === "clinched") {
     // The standing calls a clinched player the winner, not the week, so this names
-    // it. Only an open week needs it below, since a finished one can't be undone.
-    return (
-      <Message
-        lines={[
-          `${result.playerName} has won ${weekNumber != null ? `week ${weekNumber}` : "the week"}.`,
-          isEveryGameSettled ? undefined : "No other player can surpass them.",
-        ]}
-      />
-    );
+    // it.
+    const week = weekNumber != null ? `week ${weekNumber}` : "the week";
+    return <Message lines={[clinchedLine(result, week, isEveryGameSettled)]} />;
   }
 
   if (result.kind === "headline") {

@@ -4,7 +4,7 @@ import {
   RakMadnessScores,
   Status,
 } from "../../types/RakMadnessScores";
-import isWinnerDecided from "./isWinnerDecided";
+import isWeekSettled, { isWeekWon } from "./isWeekSettled";
 
 function pickResult(status: Status): PickResult {
   return {
@@ -26,6 +26,10 @@ function player(name: string, statuses: Array<Status>): PlayerScore {
   };
 }
 
+function knockedOut(score: PlayerScore): PlayerScore {
+  return { ...score, status: { ...score.status, isKnockedOut: true } };
+}
+
 function week(
   players: Array<PlayerScore>,
   tiebreaker?: number,
@@ -33,16 +37,16 @@ function week(
   return { tiebreaker, scores: players };
 }
 
-describe("isWinnerDecided", () => {
+describe("isWeekSettled", () => {
   it("calls a week decided once every pick is scored", () => {
-    expect(isWinnerDecided(week([player("Alice", ["yes", "no"])], 41))).toBe(
+    expect(isWeekSettled(week([player("Alice", ["yes", "no"])], 41))).toBe(
       true,
     );
   });
 
   it("holds off while a game is still to finish", () => {
     expect(
-      isWinnerDecided(
+      isWeekSettled(
         week(
           [
             player("Alice", ["yes", "incomplete"]),
@@ -56,7 +60,7 @@ describe("isWinnerDecided", () => {
 
   it("holds off when a game could not be scored for anyone", () => {
     expect(
-      isWinnerDecided(
+      isWeekSettled(
         week(
           [
             player("Alice", ["yes", "unscoreable"]),
@@ -70,7 +74,7 @@ describe("isWinnerDecided", () => {
 
   it("calls a week decided when one player alone left a pick blank", () => {
     expect(
-      isWinnerDecided(
+      isWeekSettled(
         week(
           [
             player("Alice", ["yes", "no"]),
@@ -83,6 +87,46 @@ describe("isWinnerDecided", () => {
   });
 
   it("holds off until the Monday night tiebreaker is settled", () => {
-    expect(isWinnerDecided(week([player("Alice", ["yes"])]))).toBe(false);
+    expect(isWeekSettled(week([player("Alice", ["yes"])]))).toBe(false);
+  });
+});
+
+describe("isWeekWon", () => {
+  it("calls a running week won once the knockouts leave one player standing", () => {
+    expect(
+      isWeekWon(
+        week([
+          player("Alice", ["yes", "incomplete"]),
+          knockedOut(player("Bob", ["no", "incomplete"])),
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  it("holds off while two players are still standing", () => {
+    expect(
+      isWeekWon(
+        week([
+          player("Alice", ["yes", "incomplete"]),
+          player("Bob", ["no", "incomplete"]),
+        ]),
+      ),
+    ).toBe(false);
+  });
+
+  it("does not count a row under a shared name as a rival", () => {
+    expect(
+      isWeekWon(
+        week([
+          player("Alice", ["yes", "incomplete"]),
+          player("Bob", ["no", "incomplete"]),
+          player("Bob", ["no", "incomplete"]),
+        ]),
+      ),
+    ).toBe(true);
+  });
+
+  it("calls a decided week won", () => {
+    expect(isWeekWon(week([player("Alice", ["yes", "no"])], 41))).toBe(true);
   });
 });
