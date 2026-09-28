@@ -7,6 +7,8 @@ import {
 const SEASON = 2024;
 const WEEK = 5;
 const THEME_KEY = "rak-madness:settings:theme";
+// Swing Games shows only to a reader who opted in to experimental features.
+const EXPERIMENTAL_FEATURES_KEY = "rak-madness:settings:experimentalFeatures";
 
 /** `light` or `dark`. */
 const THEME = process.env.NAV_THEME ?? "light";
@@ -57,8 +59,11 @@ export default async function run({ page, context, baseUrl }) {
   const url = `${baseUrl}/${SEASON}/${WEEK}/scoreboard`;
   await page.goto(url);
   await page.evaluate(
-    ([key, theme]) => localStorage.setItem(key, theme),
-    [THEME_KEY, THEME],
+    ([key, theme, flagKey]) => {
+      localStorage.setItem(key, theme);
+      localStorage.setItem(flagKey, "on");
+    },
+    [THEME_KEY, THEME, EXPERIMENTAL_FEATURES_KEY],
   );
   await page.goto(url);
 
@@ -68,6 +73,10 @@ export default async function run({ page, context, baseUrl }) {
 
   const item = page.getByText("Swing Games").last();
   await item.waitFor();
+  // The drawer slides in, so a shot taken on sight catches it part way.
+  await page.waitForFunction(
+    "document.getAnimations().every((a) => a.playState !== 'running')",
+  );
 
   if (MODE === "popup" && STATE === "disabled") {
     await item.hover();

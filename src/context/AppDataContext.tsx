@@ -13,9 +13,13 @@ import usePicksSeasons from "../hooks/usePicksSeasons";
 import usePlayerScores from "../hooks/usePlayerScores";
 import { WeekInfo } from "../types/League";
 import { RakMadnessScores } from "../types/RakMadnessScores";
-import getSwingGames, { SwingGames } from "../utils/scoring/getSwingGames";
+import getSwingGames, {
+  NO_SWINGS,
+  SwingGames,
+} from "../utils/scoring/getSwingGames";
 import isWeekSettled, { isWeekWon } from "../utils/scoring/isWeekSettled";
 import { NO_SCORE_CHANGES, ScoreChanges } from "../utils/scoring/scoreChanges";
+import { useSettings } from "./SettingsContext";
 
 type AppData = ReturnType<typeof useLeagueWeeks> &
   Omit<ReturnType<typeof usePlayerScores>, "scoreChanges"> &
@@ -216,16 +220,22 @@ export function useScoreChanges(): ScoreChanges {
 /** One answer per set of scores, however many callers ask for it. */
 const swingGamesByScores = new WeakMap<RakMadnessScores, SwingGames>();
 
-/** The week's swing games, or undefined while its scores load. */
+/**
+ * The week's swing games, or undefined while its scores load. Skips the work and
+ * answers empty, the same as a decided week, while the reader has not opted into
+ * experimental features.
+ */
 export function useSwingGames(): SwingGames | undefined {
   const { scores } = useAppData();
+  const { experimentalFeatures } = useSettings();
   return useMemo(() => {
     if (scores == null) return undefined;
+    if (!experimentalFeatures) return NO_SWINGS;
     let swings = swingGamesByScores.get(scores);
     if (swings == null) {
       swings = getSwingGames(scores);
       swingGamesByScores.set(scores, swings);
     }
     return swings;
-  }, [scores]);
+  }, [scores, experimentalFeatures]);
 }

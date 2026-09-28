@@ -7,6 +7,10 @@ import {
   useIsWeekWon,
   useSwingGames,
 } from "../../context/AppDataContext";
+import {
+  EXPERIMENTAL_FEATURES_KEY,
+  SettingsContextProvider,
+} from "../../context/SettingsContext";
 import { WeekInfo } from "../../types/League";
 import { SwingGame } from "../../utils/scoring/getSwingGames";
 import { ResultsPage } from "../results/resultsPath";
@@ -63,12 +67,14 @@ function mount({
   const user = userEvent.setup();
   render(
     <MemoryRouter initialEntries={[at]}>
-      <NavMenu
-        season={SEASON}
-        week={hasWeek ? WEEK : undefined}
-        page={page}
-        disabled={disabled}
-      />
+      <SettingsContextProvider>
+        <NavMenu
+          season={SEASON}
+          week={hasWeek ? WEEK : undefined}
+          page={page}
+          disabled={disabled}
+        />
+      </SettingsContextProvider>
       <Routes>
         <Route path="*" element={<Landed />} />
       </Routes>
@@ -83,6 +89,8 @@ function trigger() {
 
 describe("NavMenu", () => {
   beforeEach(() => {
+    // Swing Games gates on this opt-in too, beside `isWeekWon`.
+    localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
     mockIsWeekWon.mockReturnValue(false);
     mockSwingGames.mockReturnValue({ games: [A_SWING_GAME] });
     mockUseAppData.mockReturnValue({
@@ -164,6 +172,16 @@ describe("NavMenu", () => {
 
     it("drops Swing Games once the week has a winner", async () => {
       mockIsWeekWon.mockReturnValue(true);
+      const user = mount();
+      await user.click(trigger());
+
+      const items = await screen.findAllByRole("menuitem");
+
+      expect(items.map((item) => item.textContent)).toEqual(["Home"]);
+    });
+
+    it("drops Swing Games without experimental features on", async () => {
+      localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
       const user = mount();
       await user.click(trigger());
 
@@ -305,6 +323,17 @@ describe("NavMenu", () => {
 
     it("drops Swing Games once the week has a winner", async () => {
       mockIsWeekWon.mockReturnValue(true);
+      const { drawer } = await openDrawer();
+
+      expect(
+        within(drawer)
+          .getAllByRole("link")
+          .map((link) => link.textContent),
+      ).toEqual(["Home"]);
+    });
+
+    it("drops Swing Games without experimental features on", async () => {
+      localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
       const { drawer } = await openDrawer();
 
       expect(

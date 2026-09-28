@@ -8,6 +8,7 @@ import {
   useIsWeekWon,
   useSwingGames,
 } from "../../context/AppDataContext";
+import { useSettings } from "../../context/SettingsContext";
 import cssMediaQuery from "../../hooks/cssMediaQuery";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import { buttonClasses } from "../button/Button";
@@ -23,6 +24,7 @@ type Week = number | string | undefined;
 type NavContext = {
   isWeekWon: boolean;
   swingGames: ReturnType<typeof useSwingGames>;
+  experimentalFeatures: boolean;
 };
 
 type NavItem = {
@@ -41,7 +43,8 @@ const ITEMS: Array<NavItem> = [
     label: "Swing Games",
     icon: <SwapVertIcon />,
     path: (season, week) => resultsPath(season, week, "Swing Games"),
-    hidden: ({ isWeekWon }) => isWeekWon,
+    hidden: ({ isWeekWon, experimentalFeatures }) =>
+      isWeekWon || !experimentalFeatures,
     disabledReason: ({ swingGames }) =>
       swingGames == null || swingGames.games.length === 0
         ? "No game knocks anyone out"
@@ -78,7 +81,8 @@ export default function NavMenu({
   const { pathname } = useLocation();
   const isWeekWon = useIsWeekWon();
   const swingGames = useSwingGames();
-  const context: NavContext = { isWeekWon, swingGames };
+  const { experimentalFeatures } = useSettings();
+  const context: NavContext = { isWeekWon, swingGames, experimentalFeatures };
   const links = ITEMS.filter((item) => !item.hidden?.(context)).map((item) => {
     const path = item.path(season, week);
     return {

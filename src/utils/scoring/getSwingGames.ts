@@ -26,7 +26,7 @@ export type SwingGames = {
   games: Array<SwingGame>;
 };
 
-const NO_SWINGS: SwingGames = { games: [] };
+export const NO_SWINGS: SwingGames = { games: [] };
 
 /**
  * Each open game, with the players it knocks out whichever way it falls.

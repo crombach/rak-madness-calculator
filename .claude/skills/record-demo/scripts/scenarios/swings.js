@@ -14,6 +14,8 @@ const THEME = process.env.SWINGS_THEME ?? "light";
 const HOVER = process.env.SWINGS_HOVER === "1";
 
 const THEME_KEY = "rak-madness:settings:theme";
+// Swing Games shows only to a reader who opted in to experimental features.
+const EXPERIMENTAL_FEATURES_KEY = "rak-madness:settings:experimentalFeatures";
 const PLAYER_NAME_KEY = "rak-madness:settings:playerName";
 
 /** The reader, a KC backer, so their name leads P1's crowded side. */
@@ -66,11 +68,12 @@ export default async function run({ page, context, baseUrl }) {
 
   await page.goto(`${baseUrl}/${SEASON}/${WEEK}/swings`);
   await page.evaluate(
-    ([themeKey, theme, nameKey, name]) => {
+    ([themeKey, theme, nameKey, name, flagKey]) => {
       localStorage.setItem(themeKey, theme);
       localStorage.setItem(nameKey, name);
+      localStorage.setItem(flagKey, "on");
     },
-    [THEME_KEY, THEME, PLAYER_NAME_KEY, MY_NAME],
+    [THEME_KEY, THEME, PLAYER_NAME_KEY, MY_NAME, EXPERIMENTAL_FEATURES_KEY],
   );
   await page.goto(`${baseUrl}/${SEASON}/${WEEK}/swings`);
   await page.getByText("KC @ DEN").waitFor({ timeout: 10000 });

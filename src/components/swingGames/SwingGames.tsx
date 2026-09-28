@@ -142,6 +142,7 @@ export default function SwingGames({
   week?: string;
 }) {
   const swings = useSwingGames();
+  const { experimentalFeatures } = useSettings();
   const statuses = useMemo(() => statusByLabel(scores?.games), [scores]);
   // The folded ones rather than the open ones, so a game a refresh brings in
   // starts open.
@@ -149,8 +150,9 @@ export default function SwingGames({
 
   if (swings == null) return null;
 
-  // A won week, or one no single game decides, has nothing to show here.
-  if (swings.games.length === 0) {
+  // A won week, one no single game decides, or a reader who has not opted into
+  // experimental features, has nothing to show here.
+  if (!experimentalFeatures || swings.games.length === 0) {
     return <Navigate replace to={resultsPath(season, week, "Scoreboard")} />;
   }
 
