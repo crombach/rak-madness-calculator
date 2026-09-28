@@ -715,10 +715,10 @@ function settledAnalysis(
 
 /**
  * A clinch, with the rivals it is shared with. A rival the player can never be
- * separated from is level on every tier now, and stays level on each: the same
- * team on every game left, and no Monday night guess the total can split. Rows
- * disagreeing on a game's spread leave it unscoreable, so the same team carries
- * the same spread.
+ * separated from is level on every tier now, and stays level on each. They
+ * picked the same team on every game left, and the Monday night total cannot
+ * split their guesses. Rows disagreeing on a game's spread leave it unscoreable,
+ * so the same team carries the same spread.
  */
 function clinched(
   scores: RakMadnessScores,

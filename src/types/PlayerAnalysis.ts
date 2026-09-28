@@ -131,8 +131,8 @@ export type PlayerAnalysis =
   /** `explanation` is the reason `applyKnockouts` already wrote. */
   | { kind: "knockedOut"; playerName: string; explanation?: string }
   /**
-   * No result left can take the week off them. `sharedWith` names the rivals no
-   * result left can separate from them either, who win the week with them.
+   * No result left can take the week off them. `sharedWith` names the rivals who
+   * win the week with them, since no result left can separate the two.
    */
   | { kind: "clinched"; playerName: string; sharedWith: Array<string> }
   /**

@@ -48,8 +48,7 @@ export default function isWinnerDecided(scores: RakMadnessScores): boolean {
  *
  * A row under a name two rows share is left out for the same reason
  * `applyKnockouts` leaves it out: the workbook is wrong about who that row is, so
- * it takes the week off nobody. Without this the analysis would name a threat the
- * tables say knocks nobody out.
+ * it takes the week off nobody.
  */
 export function standingPlayers(
   players: Array<PlayerScore>,
