@@ -35,6 +35,10 @@ updates:
       # this range by hand.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # typescript-eslint caps `typescript` at `<6.1.0`, so a major here fails
+      # `npm ci` with ERESOLVE. Lift this once its peer range admits 7.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
     groups:
       # One advisory can reach several packages at once. Today's reached
       # js-yaml and, through wrangler and miniflare, sharp.

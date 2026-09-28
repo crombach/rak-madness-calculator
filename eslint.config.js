@@ -1,3 +1,4 @@
+import { fixupConfigRules } from "@eslint/compat";
 import js from "@eslint/js";
 import prettier from "eslint-config-prettier";
 import importPlugin from "eslint-plugin-import";
@@ -12,12 +13,16 @@ export default tseslint.config(
   { ignores: ["build/", "coverage/", ".wrangler/"] },
   js.configs.recommended,
   tseslint.configs.recommended,
-  importPlugin.flatConfigs.recommended,
-  importPlugin.flatConfigs.typescript,
-  react.configs.flat.recommended,
-  react.configs.flat["jsx-runtime"],
+  // These three still call context methods ESLint 10 removed, and their peer
+  // ranges stop at ESLint 9. The `overrides` in package.json lift that range.
+  fixupConfigRules([
+    importPlugin.flatConfigs.recommended,
+    importPlugin.flatConfigs.typescript,
+    react.configs.flat.recommended,
+    react.configs.flat["jsx-runtime"],
+    jsxA11y.flatConfigs.recommended,
+  ]),
   reactHooks.configs.flat["recommended-latest"],
-  jsxA11y.flatConfigs.recommended,
   {
     settings: { react: { version: "detect" } },
     rules: {
