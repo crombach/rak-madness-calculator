@@ -4,10 +4,7 @@ import {
   makeGame,
   registerAppMocks,
 } from "../lib/mocks.js";
-
-const SEASON = 2024;
-const WEEK = 5;
-const THEME_KEY = "rak-madness:settings:theme";
+import { SEASON, WEEK, THEME_KEY } from "../lib/constants.js";
 // How far down the table to crop, which is the header plus a few rows. The dot
 // is what the shot is about, and a full-height table shrinks it in the frame.
 const CROP_HEIGHT = 230;

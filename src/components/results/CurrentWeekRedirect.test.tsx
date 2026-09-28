@@ -8,6 +8,8 @@ import CurrentWeekRedirect from "./CurrentWeekRedirect";
 vi.mock("../../context/AppDataContext", () => ({
   useAppData: vi.fn(),
   useIsWeekSettled: vi.fn(() => false),
+  useIsWeekWon: vi.fn(() => false),
+  useSwingGames: vi.fn(() => undefined),
 }));
 
 const CURRENT_WEEK = 5;

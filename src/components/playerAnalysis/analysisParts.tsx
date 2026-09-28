@@ -9,7 +9,7 @@ export function Section({
   conjoined,
   children,
 }: {
-  title: string;
+  title: ReactNode;
   conjoined?: boolean;
   // Absent where the title says the whole of what the block asks for.
   children?: ReactNode;

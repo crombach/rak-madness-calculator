@@ -1,4 +1,5 @@
 import { RefObject, useCallback, useEffect, useRef, useState } from "react";
+import cssMediaQuery from "./cssMediaQuery";
 import useMediaQuery from "./useMediaQuery";
 
 /** How far the content has moved, for the stylesheet to translate the box by. */
@@ -71,14 +72,6 @@ export function pullOffset(distance: number): number {
 /** The refresh a pull offers, or nothing where a pull refreshes nothing. */
 export type Pull = { onRefresh: () => void; isRefreshing: boolean };
 
-/** The query `phone-touch` guards, which `index.scss` exports for this to read. */
-function phoneTouchQuery(): string {
-  return getComputedStyle(document.documentElement)
-    .getPropertyValue("--rak-phone-touch")
-    .trim()
-    .replace(/^"|"$/g, "");
-}
-
 /**
  * Pull down from the top of the scrolling box to refresh what is in it.
  *
@@ -101,7 +94,7 @@ export default function usePullToRefresh({
   /** Left out by a page with nothing to refetch, which disarms the gesture. */
   pull?: Pull;
 }): boolean {
-  const [query] = useState(phoneTouchQuery);
+  const [query] = useState(() => cssMediaQuery("--rak-phone-touch"));
   const isPhone = useMediaQuery(query);
   const isArmed = isPhone && pull != null;
 

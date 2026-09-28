@@ -2,8 +2,7 @@
 
 The season leaderboard is on hold. Scoring a week costs more CPU than a Cloudflare
 Pages Function gets on the free plan. Choose where the scoring runs before you
-build anything else here. The design below holds whichever option you pick. The page also depends on the
-navbar menu in [`nav-menu.md`](nav-menu.md), which has to ship first.
+build anything else here. The design below holds whichever option you pick.
 
 ## What it shows
 
@@ -71,8 +70,8 @@ type WeekSummary = {
   spelling. Rows sort by total, then by name, as `comparePlayerScores` breaks ties.
 - `src/components/table/season/SeasonTable.tsx` builds on `TableShell` and
   `RankCell`, with the sticky `PLAYER_COL_CLASS` column.
-- `.table__live-dot` moves from `picks/PicksTable.scss` to `Table.scss`, because two
-  tables use it.
+- A live week's header reuses `HEADING_MARK` from `picks/headingMark.tsx`, which
+  any table can import.
 
 ### Route
 

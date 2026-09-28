@@ -90,7 +90,9 @@ describe("the app, results views", () => {
     expect(getPlayerScoresMock).toHaveBeenCalledTimes(1);
 
     // A week with a game still to play is what puts Refresh on screen at all.
-    expect(document.querySelector(".scores-nav__divider")).toBeInTheDocument();
+    expect(
+      document.querySelector(".scores-nav__live .navbar__divider"),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Refresh" }));
 
     await waitFor(() => {

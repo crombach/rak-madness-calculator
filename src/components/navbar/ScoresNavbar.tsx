@@ -18,7 +18,7 @@ function ViewButton({
   icon,
   label,
   currentView,
-  noViewYet,
+  noWeekYet,
   disabled,
   onViewChange,
 }: {
@@ -26,13 +26,15 @@ function ViewButton({
   icon: ReactNode;
   label: string;
   currentView: ScoresView | null;
-  noViewYet: boolean;
+  noWeekYet: boolean;
   disabled: boolean;
   onViewChange: (view: ScoresView) => void;
 }) {
   return (
     <Button
-      disabled={noViewYet}
+      // A loading results route keeps its view highlighted, so only `aria-disabled`
+      // marks it. The home page, with no week yet, grays out for real instead.
+      disabled={noWeekYet}
       ariaDisabled={disabled}
       compact
       selected={currentView === view}
@@ -54,15 +56,18 @@ export default function ScoresNavbar({
   onRefresh,
   isRefreshing,
   disabled = false,
+  noWeekYet = false,
   isWeekLive,
 }: {
-  /** `null` while no view is open yet, so neither button reads as selected. */
+  /** `null` where neither view is open, so neither button reads as selected. */
   view: ScoresView | null;
   onViewChange: (view: ScoresView) => void;
   onRefresh: () => void;
   isRefreshing: boolean;
   /** Set while a week is still loading, so the navbar keeps its shape. */
   disabled?: boolean;
+  /** Set where there is no week to switch to at all, so both views gray out. */
+  noWeekYet?: boolean;
   /** Cleared once the week is over, when rescoring cannot change anything. */
   isWeekLive: boolean;
 }) {
@@ -75,13 +80,6 @@ export default function ScoresNavbar({
     const timer = setTimeout(() => setLiveMounted(false), COLLAPSE_DURATION_MS);
     return () => clearTimeout(timer);
   }, [isWeekLive, isLiveMounted]);
-
-  // A results route always names a view, even while it loads, so that button
-  // keeps looking selected through the wait. Only `aria-disabled` marks it,
-  // never a real `disabled` that would grayscale its highlight. The home page
-  // has no view yet to show as selected, so there is nothing that look would
-  // protect, and it grays out for real instead.
-  const noViewYet = disabled && view == null;
 
   return (
     // The two views are the only way through the results, so they are navigation
@@ -114,7 +112,7 @@ export default function ScoresNavbar({
           >
             <UpdateIcon />
           </Button>
-          <div className="scores-nav__divider" />
+          <div className="navbar__divider" />
         </div>
       )}
       <ViewButton
@@ -122,7 +120,7 @@ export default function ScoresNavbar({
         icon={<LeaderboardIcon />}
         label="Scoreboard"
         currentView={view}
-        noViewYet={noViewYet}
+        noWeekYet={noWeekYet}
         disabled={disabled}
         onViewChange={onViewChange}
       />
@@ -131,7 +129,7 @@ export default function ScoresNavbar({
         icon={<FactCheckIcon />}
         label="Picks"
         currentView={view}
-        noViewYet={noViewYet}
+        noWeekYet={noWeekYet}
         disabled={disabled}
         onViewChange={onViewChange}
       />

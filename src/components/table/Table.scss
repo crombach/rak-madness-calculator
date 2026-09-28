@@ -52,9 +52,9 @@
   // page, a table with more columns than fit would have every one of them squeezed,
   // and the width of a column would be back to depending on how many there are.
   width: max-content;
-  // A phone's size, which a roomier screen puts back up at the foot of this file.
-  // The caption over the table reads the same token, so the two stay one head.
-  font-size: var(--rak-text-table);
+  // A phone's size, which a roomier screen puts back up. The caption over the table
+  // reads `--rak-text-table`, the phone's size, so the two stay one head there.
+  font-size: var(--rak-text-cells);
   // The columns, in the table's own font, so they hold the same number of characters
   // at either size. Wide enough for what a cell of that kind usually holds: a rank
   // and a score are two digits, a pick is a team and its spread, and a name runs to
@@ -444,7 +444,6 @@
   .table {
     --rak-table-edge: var(--rak-table-border);
     --rak-table-header-edge: var(--rak-table-header-border);
-    font-size: var(--rak-text-md);
     --rak-table-row-height: 32px;
     // About twenty-four characters of a name here, against seventeen on a phone.
     // The larger text alone would have bought only a wider letter, not more of

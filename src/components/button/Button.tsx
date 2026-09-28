@@ -6,6 +6,50 @@ import "./Button.scss";
 
 export type ButtonColor = "primary" | "success" | "danger" | "info" | "warning";
 
+/**
+ * The className `Button` renders with, kept callable on its own for a caller that
+ * has to render a different element in the app's one button shape, such as
+ * `Menu.Trigger`.
+ */
+export function buttonClasses({
+  color = "primary",
+  variant = "solid",
+  size = "md",
+  iconOnly = false,
+  compact = false,
+  selected,
+  busy = false,
+  className = "",
+}: {
+  color?: ButtonColor;
+  variant?: "solid" | "soft";
+  size?: "md" | "sm";
+  iconOnly?: boolean;
+  compact?: boolean;
+  selected?: boolean;
+  busy?: boolean;
+  className?: string;
+} = {}): string {
+  return getClasses(
+    "button",
+    {
+      [`--${variant}`]: true,
+      [`--${color}`]: true,
+      "--sm": size === "sm",
+      "--icon": iconOnly,
+      "--compact": compact,
+      // Set whenever `selected` is passed at all, true or false, not just when
+      // held. `--selected` alone cannot carry this: it disappears the moment
+      // the route deselects the button, which is exactly when the release
+      // delay in `Button.scss`'s `--selectable` rule still needs to apply.
+      "--selectable": selected !== undefined,
+      "--selected": !!selected,
+      "--busy": busy,
+    },
+    className,
+  );
+}
+
 export default function Button({
   children,
   onClick,
@@ -47,24 +91,16 @@ export default function Button({
   /** Set where the button opens and closes something below it. */
   ariaExpanded?: boolean;
 }) {
-  const classes = getClasses(
-    "button",
-    {
-      [`--${variant}`]: true,
-      [`--${color}`]: true,
-      "--sm": size === "sm",
-      "--icon": iconOnly,
-      "--compact": compact,
-      // Set whenever `selected` is passed at all, true or false, not just when
-      // held. `--selected` alone cannot carry this: it disappears the moment
-      // the route deselects the button, which is exactly when the release
-      // delay in `Button.scss`'s `--selectable` rule still needs to apply.
-      "--selectable": selected !== undefined,
-      "--selected": !!selected,
-      "--busy": busy,
-    },
+  const classes = buttonClasses({
+    color,
+    variant,
+    size,
+    iconOnly,
+    compact,
+    selected,
+    busy,
     className,
-  );
+  });
   return (
     <BaseButton
       type="button"

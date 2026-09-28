@@ -52,6 +52,14 @@ export function UnfoldMoreIcon() {
   );
 }
 
+export function ExpandMoreIcon() {
+  return (
+    <Icon name="ExpandMoreIcon">
+      <path d="M480-345 240-585l43-43 197 197 197-197 43 43-240 240Z" />
+    </Icon>
+  );
+}
+
 export function InfoIcon() {
   return (
     <Icon name="InfoIcon">
@@ -242,6 +250,30 @@ export function SettingsIcon() {
   return (
     <Icon name="SettingsIcon">
       <path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm112-260q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Z" />
+    </Icon>
+  );
+}
+
+export function MenuIcon() {
+  return (
+    <Icon name="MenuIcon">
+      <path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z" />
+    </Icon>
+  );
+}
+
+export function HomeIcon() {
+  return (
+    <Icon name="HomeIcon">
+      <path d="M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z" />
+    </Icon>
+  );
+}
+
+export function SwapVertIcon() {
+  return (
+    <Icon name="SwapVertIcon">
+      <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z" />
     </Icon>
   );
 }

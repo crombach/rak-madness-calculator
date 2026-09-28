@@ -23,8 +23,9 @@ node .claude/skills/record-demo/scripts/record.js \
 
 Drop `--mp4` to keep the raw `.webm`. Add `--base-url` for a non-default dev
 server port, `--viewport WxH` for a different size (default `430x900`, this
-app's own phone-first default), and `--touch` for a scenario driving a touch
-gesture, which also turns off every `can-hover` rule.
+app's own phone-first default), `--touch` for a scenario driving a touch
+gesture, which also turns off every `can-hover` rule, and
+`--device-scale-factor <n>` for a phone screenshot's own pixel density.
 
 ## Take a screenshot instead
 
@@ -93,6 +94,9 @@ Copy an existing one under `scenarios/`. A scenario is a default-exported
    serves for `/api/picks/:season/:week`. `makeGame(...)` builds one ESPN
    scoreboard event for `events()` to return.
 2. Navigates and drives `page` with normal Playwright calls.
+
+Import `SEASON`, `WEEK` and the settings storage keys from `lib/constants.js`.
+Never redefine one in a scenario.
 
 `lib/mocks.js` mocks exactly the requests `functions/api/picks/**`,
 `src/utils/getLeagueInfo.ts`, and `src/utils/getLeagueResults.ts` make. Keep

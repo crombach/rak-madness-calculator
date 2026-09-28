@@ -1,65 +1,11 @@
 import { PlayerAnalysis } from "../../types/PlayerAnalysis";
-import {
-  PickResult,
-  PlayerScore,
-  RakMadnessScores,
-  Status,
-} from "../../types/RakMadnessScores";
+import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import getPlayerAnalysis, {
+  getMustWin,
   getSettledAnalysis,
   MAX_SEARCHED_GAMES,
 } from "./getPlayerAnalysis";
-
-/** A game still to be played unless a status says otherwise. */
-function pick(text: string, status: Status = "incomplete"): PickResult {
-  return { pick: text, status, explanation: { header: "", message: "" } };
-}
-
-type PlayerOptions = {
-  name: string;
-  college?: Array<PickResult>;
-  pro?: Array<PickResult>;
-  total?: number;
-  collegeScore?: number;
-  proAgainstTheSpread?: number;
-  tiebreakerPick?: number;
-  distance?: number;
-  isKnockedOut?: boolean;
-};
-
-function player({
-  name,
-  college = [],
-  pro = [],
-  total = 0,
-  collegeScore = 0,
-  proAgainstTheSpread = 0,
-  tiebreakerPick,
-  distance,
-  isKnockedOut = false,
-}: PlayerOptions): PlayerScore {
-  return {
-    id: name,
-    name,
-    score: {
-      total,
-      college: collegeScore,
-      pro: total - collegeScore,
-      proAgainstTheSpread,
-    },
-    tiebreaker: { pick: tiebreakerPick, distance },
-    college,
-    pro,
-    status: { hasNoPicks: false, isKnockedOut },
-  };
-}
-
-function week(
-  players: Array<PlayerScore>,
-  tiebreaker?: number,
-): RakMadnessScores {
-  return { tiebreaker, scores: players };
-}
+import { pick, player, week } from "./scoringTestFixtures";
 
 /** Narrows to the routes result, so a case can read the fields it is about. */
 function paths(result: PlayerAnalysis | undefined) {
@@ -1156,5 +1102,66 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
     const result = paths(getPlayerAnalysis(scores, "Alice"));
     expect(result.pool?.choose).toBe(8);
     expect(result.pool?.games).toHaveLength(15);
+  });
+});
+
+describe("getMustWin", () => {
+  it("names the team a player needs on each must-win game", () => {
+    const scores = week([
+      player({ name: "Alice", total: 5, pro: [pick("KC -3")] }),
+      player({ name: "Bob", total: 5, pro: [pick("DEN +3")] }),
+    ]);
+
+    expect(getMustWin(scores, "Alice")).toEqual([
+      { label: "P1", pick: "KC -3", team: "KC" },
+    ]);
+  });
+
+  it("answers nothing for a player the knockouts leave standing alone", () => {
+    const scores = week([
+      player({ name: "Alice", total: 5, pro: [pick("KC -3")] }),
+      player({
+        name: "Bob",
+        total: 0,
+        pro: [pick("DEN +3")],
+        isKnockedOut: true,
+      }),
+    ]);
+
+    expect(getMustWin(scores, "Alice")).toEqual([]);
+    expect(getMustWin(scores, "Bob")).toEqual([]);
+  });
+
+  it("answers nothing for either side of a clinch the search finds", () => {
+    // Bob is not yet marked out, but the one game left cannot close the gap.
+    const scores = week([
+      player({ name: "Alice", total: 6, pro: [pick("DEN")] }),
+      player({ name: "Bob", total: 4, pro: [pick("KC")] }),
+    ]);
+
+    expect(getPlayerAnalysis(scores, "Alice")?.kind).toBe("clinched");
+    expect(getPlayerAnalysis(scores, "Bob")?.kind).toBe("knockedOut");
+    expect(getMustWin(scores, "Alice")).toEqual([]);
+    expect(getMustWin(scores, "Bob")).toEqual([]);
+  });
+
+  it("answers nothing for players who have clinched a tie", () => {
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 5,
+        pro: [pick("KC -3")],
+        tiebreakerPick: 45,
+      }),
+      player({
+        name: "Bob",
+        total: 5,
+        pro: [pick("KC -3")],
+        tiebreakerPick: 45,
+      }),
+    ]);
+
+    expect(getMustWin(scores, "Alice")).toEqual([]);
+    expect(getMustWin(scores, "Bob")).toEqual([]);
   });
 });

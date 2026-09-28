@@ -3,9 +3,7 @@ import {
   makeGame,
   registerAppMocks,
 } from "../lib/mocks.js";
-
-const SEASON = 2024;
-const WEEK = 5;
+import { SEASON, WEEK } from "../lib/constants.js";
 
 // Far enough past `PULL_TRIGGER_PX` in `src/hooks/usePullToRefresh.ts` that the
 // resistance past it is on screen too.

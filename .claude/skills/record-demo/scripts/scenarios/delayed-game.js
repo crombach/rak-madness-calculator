@@ -4,10 +4,7 @@ import {
   makeGame,
   registerAppMocks,
 } from "../lib/mocks.js";
-
-const SEASON = 2024;
-const WEEK = 5;
-const THEME_KEY = "rak-madness:settings:theme";
+import { SEASON, WEEK, THEME_KEY } from "../lib/constants.js";
 
 /** Where to write the shots. `--out` is a throwaway for this scenario. */
 const SHOT_DIR = process.env.DELAYED_SHOT_DIR ?? "/tmp/shots";

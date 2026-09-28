@@ -9,6 +9,7 @@ import Button from "../button/Button";
 import Footer from "../footer/Footer";
 import LabeledSelect from "./LabeledSelect";
 import LogoButton, { APP_NAME } from "../navbar/LogoButton";
+import NavMenu from "../navbar/NavMenu";
 import ScoresNavbar from "../navbar/ScoresNavbar";
 import PageLayout from "../pageLayout/PageLayout";
 import resultsPath from "../results/resultsPath";
@@ -66,16 +67,24 @@ export default function HomePage() {
         // the navbar looks the same before its own routes exist as it does on
         // them. No live refresh: there is no week open yet to poll a game
         // against.
-        <ScoresNavbar
-          view={null}
-          disabled={hasNoScoresYet}
-          isWeekLive={false}
-          onViewChange={(view) =>
-            navigate(resultsPath(loadedSeason, selectedWeek?.value, view))
-          }
-          onRefresh={doNothing}
-          isRefreshing={false}
-        />
+        <>
+          <ScoresNavbar
+            view={null}
+            disabled={hasNoScoresYet}
+            noWeekYet={hasNoScoresYet}
+            isWeekLive={false}
+            onViewChange={(view) =>
+              navigate(resultsPath(loadedSeason, selectedWeek?.value, view))
+            }
+            onRefresh={doNothing}
+            isRefreshing={false}
+          />
+          <NavMenu
+            season={loadedSeason}
+            week={selectedWeek?.value}
+            disabled={hasNoScoresYet}
+          />
+        </>
       }
     >
       {/*

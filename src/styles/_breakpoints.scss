@@ -49,8 +49,16 @@ $breakpoint-wide: 601px;
 }
 
 /**
- * A phone, and nothing else. The one `max-width` in this file, because it is the
- * one rule that has to stop at a phone rather than start there.
+ * Everything short of `wide-screen`, for `matchMedia` rather than a stylesheet.
+ * `index.scss` exports it. A `<` range meets `wide-screen` exactly, where
+ * `max-width: 600px` would leave fractional widths matching neither. Still a
+ * positive query, so a test's no-to-everything `matchMedia` lands on the wide screen.
+ */
+$below-wide-query: "(width < #{$breakpoint-wide})";
+
+/**
+ * A phone, and nothing else. The one `max-width` mixin in this file, because it is
+ * the one rule that has to stop at a phone rather than start there.
  *
  * Width alone would take in a desktop window dragged narrow, where the gesture
  * this guards cannot be performed at all. The pointer is what tells the two

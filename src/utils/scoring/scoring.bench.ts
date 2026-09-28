@@ -10,6 +10,7 @@ import {
 } from "./benchFixtures";
 import getPlayerAnalysis, { MAX_SEARCHED_GAMES } from "./getPlayerAnalysis";
 import { getPlayerScores } from "./getPlayerScores";
+import getSwingGames from "./getSwingGames";
 import getTiebreakerScore from "./getTiebreakerScore";
 import parsePicksWorkbook from "./parsePicksWorkbook";
 import { indexResults } from "./resultsIndex";
@@ -126,3 +127,34 @@ test("getPlayerAnalysis", async ({ bench }) => {
     }),
   );
 });
+
+test("getSwingGames", async ({ bench }) => {
+  await bench.compare(
+    bench("two games open", () => {
+      getSwingGames(sundayNight.scores);
+    }),
+    bench("at the search limit", () => {
+      getSwingGames(atSearchLimit.scores);
+    }),
+    bench("above the search limit", () => {
+      getSwingGames(kickoff.scores);
+    }),
+    bench("settled", () => {
+      getSwingGames(settled.scores);
+    }),
+  );
+});
+
+// Its own test, since one run takes over a second and would starve the table above
+// of samples.
+test(
+  "getPlayerAnalysis for every player, at the search limit",
+  { timeout: 300_000 },
+  async ({ bench }) => {
+    await bench("every player", () => {
+      for (const { name } of atSearchLimit.scores.scores) {
+        getPlayerAnalysis(atSearchLimit.scores, name);
+      }
+    }).run();
+  },
+);

@@ -3,17 +3,13 @@ import {
   makeGame,
   registerAppMocks,
 } from "../lib/mocks.js";
-
-const SEASON = 2024;
-const WEEK = 5;
+import { SEASON, WEEK, THEME_KEY } from "../lib/constants.js";
 
 /** Which shape of answer to show. One of `PHASES`. */
 const PHASE = process.env.ANALYSIS_PHASE ?? "headline";
 
 /** Which theme to render in, since the blue an `And` is set in has one of each. */
 const THEME = process.env.ANALYSIS_THEME ?? "light";
-
-const THEME_KEY = "rak-madness:settings:theme";
 
 /**
  * Four college then sixteen pro, the order a sheet's columns run in.

@@ -90,3 +90,10 @@
     --navbar-gap: var(--rak-space-3);
   }
 }
+
+// A rule between two groups of keys, wherever the bar splits one from the next.
+.navbar__divider {
+  width: var(--rak-border-width);
+  height: var(--rak-icon-md);
+  background-color: var(--rak-on-solid);
+}

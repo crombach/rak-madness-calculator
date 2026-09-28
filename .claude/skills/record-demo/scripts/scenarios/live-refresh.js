@@ -6,9 +6,7 @@ import {
   makeGame,
   registerAppMocks,
 } from "../lib/mocks.js";
-
-const SEASON = 2024;
-const WEEK = 5;
+import { SEASON, WEEK } from "../lib/constants.js";
 
 /** Where the app names the interval this scenario has to wait out. */
 const POLL_SOURCE = path.resolve(

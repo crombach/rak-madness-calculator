@@ -15,6 +15,7 @@ import path from "node:path";
  *   screenshot?: boolean,
  *   viewport?: { width: number, height: number },
  *   touch?: boolean,
+ *   deviceScaleFactor?: number,
  *   mp4?: boolean,
  * }} options
  */
@@ -23,6 +24,7 @@ export async function launchDemo({
   screenshot = false,
   viewport = { width: 430, height: 900 },
   touch = false,
+  deviceScaleFactor,
   mp4 = false,
 }) {
   const browser = await chromium.launch({ headless: true });
@@ -37,6 +39,7 @@ export async function launchDemo({
     // `pointer: fine`, so a scenario driving a touch gets no phone-only rules.
     hasTouch: touch,
     isMobile: touch,
+    deviceScaleFactor,
     recordVideo: videoDir ? { dir: videoDir, size: viewport } : undefined,
   });
   const page = await context.newPage();

@@ -3,9 +3,7 @@ import {
   makeGame,
   registerAppMocks,
 } from "../lib/mocks.js";
-
-const SEASON = 2024;
-const WEEK = 5;
+import { SEASON, WEEK } from "../lib/constants.js";
 
 /**
  * Three players over three pro games, built so that P1 going final knocks Bob

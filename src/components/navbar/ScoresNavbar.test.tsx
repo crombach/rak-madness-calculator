@@ -63,9 +63,7 @@ describe("ScoresNavbar", () => {
     });
 
     expect(liveWrapper()).not.toBeInTheDocument();
-    expect(
-      document.querySelector(".scores-nav__divider"),
-    ).not.toBeInTheDocument();
+    expect(document.querySelector(".navbar__divider")).not.toBeInTheDocument();
   });
 
   it("never renders them for a week that arrives decided", () => {

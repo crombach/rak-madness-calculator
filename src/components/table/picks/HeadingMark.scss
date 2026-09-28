@@ -1,0 +1,28 @@
+@use "../../../styles/ink" as *;
+
+// Sized off the heading's own text rather than in pixels, so each mark holds its
+// weight beside the label at any text size.
+
+// The dot marking a game being played.
+.table__live-dot {
+  flex: 0 0 auto;
+  @include live-dot;
+}
+
+// The pause marking a game that has stopped, in the dot's own red. A game
+// stopped in the fourth quarter is the same thing to a reader as one being
+// played: a game still to settle.
+.table__delay-icon {
+  // Taller than the dot beside it, because two narrow bars carry less ink than
+  // a circle and read as the lighter mark at the same height.
+  --rak-delay-icon-size: 0.7em;
+
+  flex: 0 0 auto;
+  display: flex;
+
+  svg {
+    @include ink-height(var(--rak-delay-icon-size), $ink-share-pause);
+
+    fill: var(--rak-live-dot);
+  }
+}

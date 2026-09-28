@@ -259,7 +259,11 @@ export function useSettings(): Settings {
  * value against something a reader typed from memory.
  */
 export function useIsMyPlayer(name: string): boolean {
-  const { playerName } = useSettings();
+  return isMyPlayer(name, useSettings().playerName);
+}
+
+/** `useIsMyPlayer` against a name already read, for a caller matching many. */
+export function isMyPlayer(name: string, playerName: string): boolean {
   const mine = playerName.trim().toLowerCase();
   return mine !== "" && name.trim().toLowerCase() === mine;
 }

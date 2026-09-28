@@ -14,6 +14,11 @@ $ink-share-pause: 0.583;
 // class, so one share covers all three and splits them.
 $ink-share-player: 0.79;
 
+// How tall a capital stands against the font size, `OS/2.sCapHeight / unitsPerEm` read
+// off the shipped files with fontTools. The same at every weight each family ships.
+$cap-share-body: 0.7; // Chakra Petch
+$cap-share-mono: 0.698; // IBM Plex Mono
+
 /**
  * A glyph's box, set so the ink inside it stands as tall as `$ink`.
  *
@@ -25,4 +30,16 @@ $ink-share-player: 0.79;
   font-size: inherit;
   width: calc(#{$ink} / #{$share});
   height: calc(#{$ink} / #{$share});
+}
+
+/**
+ * The dot marking a game live, sized to the cap height beside it. Shared by the
+ * picks table's heading mark and the game status dialog's own mark, so the one
+ * dot reads as the one size in both.
+ */
+@mixin live-dot {
+  width: var(--rak-caps-ink);
+  height: var(--rak-caps-ink);
+  border-radius: 50%;
+  background-color: var(--rak-live-dot);
 }

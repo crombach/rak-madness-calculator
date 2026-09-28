@@ -1,6 +1,7 @@
 @use "../../styles/breakpoints" as *;
 @use "../../styles/label" as *;
 @use "../../styles/lcd" as *;
+@use "../../styles/picks" as *;
 
 // Which side a player had to pick to score the point, and which one cost them it,
 // in the two hues the picks table fills a cell with. The 400 step, which is the one
@@ -79,17 +80,13 @@
   text-align: center;
 }
 
-// The line itself, in the face the picks table sets every number in. `None` too. It
-// answers the same question, and a value that changes face with its own value reads
-// as two different fields. Set in the gray the records under the two names carry,
-// which is the same gray their labels do, so the face is what tells the answer from
-// the question rather than a second color on one line.
+// The line itself, set the way a pick names its team: `pick-face`, full ink. `None`
+// too, so a value that changes face with its own value never reads as two different
+// fields.
 .game-status__spread-value {
-  color: var(--rak-text-secondary);
-  font-family: var(--rak-font-mono);
-  // Off the label's own weight, which is the other half of telling the answer from
-  // the question. The label is what is bold here, and the line it gives is read.
-  font-weight: normal;
+  @include pick-face;
+
+  color: var(--rak-text);
 }
 
 // What is the same about the game however it is going. It starts at a fixed time and

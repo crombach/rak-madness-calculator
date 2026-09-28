@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { MockedFunction } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
@@ -105,10 +106,20 @@ export const openWeekScores: RakMadnessScores = {
 };
 
 /** Mirrors index.tsx, with the entry URL as a parameter. */
-export function mountApp(path = "/") {
+/**
+ * `earlier` are history entries behind `path`, and `beside` renders inside the
+ * router, for a test that drives navigation the app has no control for.
+ */
+export function mountApp(
+  path = "/",
+  {
+    earlier = [],
+    beside,
+  }: { earlier?: Array<string>; beside?: ReactNode } = {},
+) {
   const user = userEvent.setup();
   render(
-    <MemoryRouter initialEntries={[path]}>
+    <MemoryRouter initialEntries={[...earlier, path]}>
       <SettingsContextProvider>
         <ToastContextProvider>
           <AppDataContextProvider>
@@ -117,6 +128,7 @@ export function mountApp(path = "/") {
           <Toaster />
         </ToastContextProvider>
       </SettingsContextProvider>
+      {beside}
     </MemoryRouter>,
   );
   return user;
