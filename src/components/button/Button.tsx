@@ -39,7 +39,7 @@ export function buttonClasses({
       "--icon": iconOnly,
       "--compact": compact,
       // Set whenever `selected` is passed at all, true or false, not just when
-      // held. `--selectable` alone cannot carry this: it disappears the moment
+      // held. `--selected` alone cannot carry this: it disappears the moment
       // the route deselects the button, which is exactly when the release
       // delay in `Button.scss`'s `--selectable` rule still needs to apply.
       "--selectable": selected !== undefined,

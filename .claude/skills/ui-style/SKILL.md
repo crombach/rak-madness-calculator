@@ -43,7 +43,7 @@ new style for something the app already renders elsewhere.
   navbar name, `lcd-field` only for a text input or select well. Never for a pick,
   a label, or a heading.
 - Color reaches 4.5:1 for text, 3:1 for shapes carrying meaning, in both themes.
-  Check each token's dark-theme value separately, not just the light one.
+  Check each token's dark-theme value separately.
 
 ## Checking work
 

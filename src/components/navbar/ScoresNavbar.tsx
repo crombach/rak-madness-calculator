@@ -32,9 +32,8 @@ function ViewButton({
 }) {
   return (
     <Button
-      // A results route keeps its view looking selected while it loads, so only
-      // `aria-disabled` marks it there, never a real `disabled` that would
-      // grayscale its highlight. The home page grays out for real instead.
+      // A loading results route keeps its view highlighted, so only `aria-disabled`
+      // marks it. The home page, with no week yet, grays out for real instead.
       disabled={noWeekYet}
       ariaDisabled={disabled}
       compact
