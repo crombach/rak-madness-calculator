@@ -17,7 +17,7 @@ import {
 } from "./comparePlayerScores";
 import isWeekSettled, { standingPlayers } from "./isWeekSettled";
 import remainingGames, {
-  pickDifference,
+  countDifferences,
   RemainingGame,
 } from "./remainingGames";
 
@@ -765,16 +765,15 @@ function drawsLevel(
   if (mondayNightSplit(player, rival, isMondayNightSettled) != null) {
     return false;
   }
+  const {
+    differentCollegePicks,
+    differentProPicks,
+    differentProPicksWithSpreads,
+  } = countDifferences(games, rivalIndex, playerIndex);
   const merit = meritOf(rival);
-  games.forEach((game) => {
-    if (pickDifference(game, rivalIndex, playerIndex) === "none") return;
-    merit.total += 1;
-    if (game.league === "college") {
-      merit.college += 1;
-    } else if (game.cells[rivalIndex].hasSpread) {
-      merit.proAgainstTheSpread += 1;
-    }
-  });
+  merit.total += differentCollegePicks + differentProPicks;
+  merit.college += differentCollegePicks;
+  merit.proAgainstTheSpread += differentProPicksWithSpreads;
   return compareOnMerit(meritOf(player), merit) === 0;
 }
 
