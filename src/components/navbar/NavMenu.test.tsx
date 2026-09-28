@@ -2,27 +2,19 @@ import { Mock } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router";
-import {
-  useAppData,
-  useIsWeekWon,
-  useSwingGames,
-} from "../../context/AppDataContext";
+import { useIsWeekWon, useSwingGames } from "../../context/AppDataContext";
 import {
   EXPERIMENTAL_FEATURES_KEY,
   SettingsContextProvider,
 } from "../../context/SettingsContext";
-import { WeekInfo } from "../../types/League";
 import { SwingGame } from "../../utils/scoring/getSwingGames";
-import { ResultsPage } from "../results/resultsPath";
 import NavMenu from "./NavMenu";
 
 vi.mock("../../context/AppDataContext", () => ({
-  useAppData: vi.fn(),
   useIsWeekWon: vi.fn(),
   useSwingGames: vi.fn(),
 }));
 
-const mockUseAppData = useAppData as Mock;
 const mockIsWeekWon = useIsWeekWon as Mock;
 const mockSwingGames = useSwingGames as Mock;
 const A_SWING_GAME = {} as SwingGame;
@@ -30,23 +22,6 @@ const A_SWING_GAME = {} as SwingGame;
 const SEASON = 2024;
 const WEEK = 3;
 const SWINGS_PATH = `/${SEASON}/${WEEK}/swings`;
-
-const AN_END_DATE = new Date("2024-09-10");
-const WEEK_INFO: WeekInfo = {
-  value: WEEK,
-  label: `Week ${WEEK}`,
-  startDate: AN_END_DATE,
-  endDate: AN_END_DATE,
-};
-const OTHER_WEEK_INFO: WeekInfo = {
-  value: WEEK + 1,
-  label: `Week ${WEEK + 1}`,
-  startDate: AN_END_DATE,
-  endDate: AN_END_DATE,
-};
-
-const mockSetSelectedSeason = vi.fn();
-const mockSetSelectedWeek = vi.fn();
 
 /** Names the URL a click landed on, from the router's own history. */
 function Landed() {
@@ -56,12 +31,10 @@ function Landed() {
 function mount({
   disabled = false,
   hasWeek = true,
-  page,
   at = "/",
 }: {
   disabled?: boolean;
   hasWeek?: boolean;
-  page?: ResultsPage;
   at?: string;
 } = {}) {
   const user = userEvent.setup();
@@ -71,7 +44,6 @@ function mount({
         <NavMenu
           season={SEASON}
           week={hasWeek ? WEEK : undefined}
-          page={page}
           disabled={disabled}
         />
       </SettingsContextProvider>
@@ -93,16 +65,6 @@ describe("NavMenu", () => {
     localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
     mockIsWeekWon.mockReturnValue(false);
     mockSwingGames.mockReturnValue({ games: [A_SWING_GAME] });
-    mockUseAppData.mockReturnValue({
-      selectableSeasons: [SEASON],
-      requestedSeason: SEASON,
-      loadedSeason: SEASON,
-      setSelectedSeason: mockSetSelectedSeason,
-      selectableWeeks: [WEEK_INFO, OTHER_WEEK_INFO],
-      selectedWeek: WEEK_INFO,
-      setSelectedWeek: mockSetSelectedWeek,
-      isWeeksLoading: false,
-    });
   });
 
   it('names its trigger "Menu"', () => {
@@ -180,14 +142,13 @@ describe("NavMenu", () => {
       expect(items.map((item) => item.textContent)).toEqual(["Home"]);
     });
 
-    it("drops Swing Games without experimental features on", async () => {
+    it("shows no menu with experimental features off", () => {
       localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
-      const user = mount();
-      await user.click(trigger());
+      mount();
 
-      const items = await screen.findAllByRole("menuitem");
-
-      expect(items.map((item) => item.textContent)).toEqual(["Home"]);
+      expect(
+        screen.queryByRole("button", { name: "Menu" }),
+      ).not.toBeInTheDocument();
     });
 
     it("disables Swing Games while scores load", async () => {
@@ -304,20 +265,15 @@ describe("NavMenu", () => {
       };
     }
 
-    it("opens a drawer holding the season and week pickers, Home and Swing Games", async () => {
+    it("opens a drawer holding Home and Swing Games, with no season or week combobox", async () => {
       const { drawer } = await openDrawer();
 
-      expect(
-        within(drawer).getByRole("combobox", { name: "Season" }),
-      ).toHaveTextContent(`${SEASON} Season`);
-      expect(
-        within(drawer).getByRole("combobox", { name: "Week" }),
-      ).toHaveTextContent(WEEK_INFO.label);
       expect(
         within(drawer)
           .getAllByRole("link")
           .map((link) => link.textContent),
       ).toEqual(["Home", "Swing Games"]);
+      expect(within(drawer).queryAllByRole("combobox")).toHaveLength(0);
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });
 
@@ -332,15 +288,13 @@ describe("NavMenu", () => {
       ).toEqual(["Home"]);
     });
 
-    it("drops Swing Games without experimental features on", async () => {
+    it("shows no menu with experimental features off", () => {
       localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
-      const { drawer } = await openDrawer();
+      mount();
 
       expect(
-        within(drawer)
-          .getAllByRole("link")
-          .map((link) => link.textContent),
-      ).toEqual(["Home"]);
+        screen.queryByRole("button", { name: "Menu" }),
+      ).not.toBeInTheDocument();
     });
 
     it("disables Swing Games while scores load", async () => {
@@ -382,35 +336,6 @@ describe("NavMenu", () => {
       expect(
         within(drawer).getByRole("link", { name: "Swing Games" }),
       ).toBeVisible();
-    });
-
-    it("picks a week, navigates to it on the current page, and closes", async () => {
-      const { user, drawer } = await openDrawer({ page: "Picks" });
-
-      await user.click(within(drawer).getByRole("combobox", { name: "Week" }));
-      await user.click(
-        await screen.findByRole("option", { name: OTHER_WEEK_INFO.label }),
-      );
-
-      expect(mockSetSelectedWeek).toHaveBeenCalledWith(OTHER_WEEK_INFO);
-      expect(await screen.findByTestId("landed")).toHaveTextContent(
-        `/${SEASON}/${OTHER_WEEK_INFO.value}/picks`,
-      );
-      await waitFor(() =>
-        expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
-      );
-    });
-
-    it("only sets the week, without navigating, where there is no page to keep", async () => {
-      const { user, drawer } = await openDrawer();
-
-      await user.click(within(drawer).getByRole("combobox", { name: "Week" }));
-      await user.click(
-        await screen.findByRole("option", { name: OTHER_WEEK_INFO.label }),
-      );
-
-      expect(mockSetSelectedWeek).toHaveBeenCalledWith(OTHER_WEEK_INFO);
-      expect(await screen.findByTestId("landed")).toHaveTextContent("/");
     });
 
     it("marks the page it is on as current", async () => {

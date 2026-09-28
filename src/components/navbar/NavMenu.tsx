@@ -2,20 +2,14 @@ import { Drawer } from "@base-ui/react/drawer";
 import { Menu } from "@base-ui/react/menu";
 import { Tooltip } from "@base-ui/react/tooltip";
 import { ReactNode, useId, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router";
-import {
-  useAppData,
-  useIsWeekWon,
-  useSwingGames,
-} from "../../context/AppDataContext";
+import { Link, useLocation } from "react-router";
+import { useIsWeekWon, useSwingGames } from "../../context/AppDataContext";
 import { useSettings } from "../../context/SettingsContext";
 import cssMediaQuery from "../../hooks/cssMediaQuery";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import { buttonClasses } from "../button/Button";
-import LabeledSelect, { seasonLabel } from "../home/LabeledSelect";
 import { CloseIcon, HomeIcon, MenuIcon, SwapVertIcon } from "../icon/Icon";
-import resultsPath, { ResultsPage } from "../results/resultsPath";
-import { WeekInfo } from "../../types/League";
+import resultsPath from "../results/resultsPath";
 import "./NavMenu.scss";
 
 type Week = number | string | undefined;
@@ -24,7 +18,6 @@ type Week = number | string | undefined;
 type NavContext = {
   isWeekWon: boolean;
   swingGames: ReturnType<typeof useSwingGames>;
-  experimentalFeatures: boolean;
 };
 
 type NavItem = {
@@ -43,8 +36,7 @@ const ITEMS: Array<NavItem> = [
     label: "Swing Games",
     icon: <SwapVertIcon />,
     path: (season, week) => resultsPath(season, week, "Swing Games"),
-    hidden: ({ isWeekWon, experimentalFeatures }) =>
-      isWeekWon || !experimentalFeatures,
+    hidden: ({ isWeekWon }) => isWeekWon,
     disabledReason: ({ swingGames }) =>
       swingGames == null || swingGames.games.length === 0
         ? "No game knocks anyone out"
@@ -64,16 +56,10 @@ const TOOLTIP_DELAY_MS = 200;
 export default function NavMenu({
   season,
   week,
-  page,
   disabled = false,
 }: {
   season: Week;
   week: Week;
-  /**
-   * The results page a week picked in the drawer navigates to. Left out on the
-   * home page, where picking a week only sets it, the same as its own select.
-   */
-  page?: ResultsPage;
   disabled?: boolean;
 }) {
   const [query] = useState(() => cssMediaQuery("--rak-below-wide"));
@@ -82,7 +68,9 @@ export default function NavMenu({
   const isWeekWon = useIsWeekWon();
   const swingGames = useSwingGames();
   const { experimentalFeatures } = useSettings();
-  const context: NavContext = { isWeekWon, swingGames, experimentalFeatures };
+  if (!experimentalFeatures) return null;
+
+  const context: NavContext = { isWeekWon, swingGames };
   const links = ITEMS.filter((item) => !item.hidden?.(context)).map((item) => {
     const path = item.path(season, week);
     return {
@@ -97,7 +85,7 @@ export default function NavMenu({
     <>
       <div className="navbar__divider" />
       {isNarrow ? (
-        <NavDrawer page={page} links={links} disabled={disabled} />
+        <NavDrawer links={links} disabled={disabled} />
       ) : (
         <NavPopup links={links} disabled={disabled} />
       )}
@@ -223,36 +211,13 @@ function DisabledNavItem({
 }
 
 function NavDrawer({
-  page,
   links,
   disabled,
 }: {
-  page?: ResultsPage;
   links: Array<NavLink>;
   disabled: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  const {
-    selectableSeasons,
-    requestedSeason,
-    loadedSeason,
-    setSelectedSeason,
-    selectableWeeks,
-    selectedWeek,
-    setSelectedWeek,
-    isWeeksLoading,
-  } = useAppData();
-
-  // Same event the home page's own week select fires. Navigating besides is
-  // this control's own addition, since a results page has a URL to keep in step.
-  function chooseWeek(chosen: WeekInfo | null) {
-    setSelectedWeek(chosen ?? undefined);
-    if (chosen != null && page != null) {
-      navigate(resultsPath(loadedSeason, chosen.value, page));
-    }
-    setOpen(false);
-  }
 
   return (
     <Drawer.Root open={open} onOpenChange={setOpen} swipeDirection="right">
@@ -276,38 +241,7 @@ function NavDrawer({
                 <CloseIcon />
               </Drawer.Close>
             </header>
-            <div className="nav-drawer__pickers">
-              <LabeledSelect<number>
-                ariaLabel="Season"
-                className="nav-drawer__picker select__trigger"
-                positionerClassName="nav-drawer__picker-positioner select__positioner"
-                value={requestedSeason ?? loadedSeason ?? null}
-                onValueChange={(chosen) =>
-                  chosen != null && setSelectedSeason(chosen)
-                }
-                disabled={isWeeksLoading}
-                placeholder="Select a season..."
-                renderValue={seasonLabel}
-                items={selectableSeasons}
-                itemKey={(chosen) => chosen}
-                itemLabel={seasonLabel}
-              />
-              <LabeledSelect<WeekInfo>
-                ariaLabel="Week"
-                className="nav-drawer__picker select__trigger"
-                positionerClassName="nav-drawer__picker-positioner select__positioner"
-                value={selectedWeek ?? null}
-                onValueChange={chooseWeek}
-                disabled={isWeeksLoading}
-                placeholder="Select a week..."
-                renderValue={(chosen) => chosen.label}
-                items={selectableWeeks}
-                itemKey={(chosen) => chosen.value}
-                itemLabel={(chosen) => chosen.label}
-              />
-            </div>
             <nav aria-label="Pages">
-              <hr className="nav-drawer__divider" />
               <ul className="nav-drawer__list">
                 {links.map(
                   ({ label, icon, path, isCurrent, disabledReason }) => (

@@ -1,5 +1,6 @@
 import { MockedFunction } from "vitest";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { EXPERIMENTAL_FEATURES_KEY } from "./context/SettingsContext";
 import { League, LeagueInfo } from "./types/League";
 
 vi.mock("./utils/getLeagueInfo");
@@ -335,6 +336,8 @@ describe("the app, automatic picks fetch", () => {
   });
 
   it("scores nothing and offers nothing when no picks were fetched", async () => {
+    // The Menu button only renders with this on.
+    localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
     await mountLoadedApp();
     await waitFor(() => {
       expect(screen.getByText("Missing Picks")).toBeInTheDocument();

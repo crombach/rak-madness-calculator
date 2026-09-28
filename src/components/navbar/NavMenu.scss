@@ -202,44 +202,16 @@
   color: var(--rak-text-tertiary);
 }
 
-.nav-drawer__pickers {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rak-space-2);
-}
-
-.nav-drawer__picker {
-  width: 100%;
-  min-height: var(--rak-touch-target);
-}
-
-// Above the drawer's own stack (`--rak-z-dialog`), since this popup opens
-// from a control inside it and `--rak-z-overlay` alone sits well under that.
-.nav-drawer__picker-positioner {
-  z-index: calc(var(--rak-z-dialog) + 2);
-}
-
 .nav-drawer__list {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-// The rule between rows and the one over the list, off the same
-// `--rak-on-solid` token `Navbar.scss`'s own divider reads.
-.nav-drawer__divider,
+// The rule between rows, off the same `--rak-on-solid` token `Navbar.scss`'s
+// own divider reads.
 .nav-drawer__list li + li {
   border-top: var(--rak-border-width-hairline) solid var(--rak-on-solid);
-}
-
-.nav-drawer__divider {
-  // Flush above the list, so only the first row's own padding sets the gap
-  // to its label, the same as the padding either side of a row's own border
-  // does. The popup's `gap` alone spaces it from the pickers above.
-  margin: 0;
-  border-right: none;
-  border-bottom: none;
-  border-left: none;
 }
 
 .nav-drawer__item {

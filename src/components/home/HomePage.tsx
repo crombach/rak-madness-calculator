@@ -7,13 +7,16 @@ import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import Button from "../button/Button";
 import Footer from "../footer/Footer";
-import LabeledSelect, { seasonLabel } from "./LabeledSelect";
+import LabeledSelect from "./LabeledSelect";
 import LogoButton, { APP_NAME } from "../navbar/LogoButton";
 import NavMenu from "../navbar/NavMenu";
 import ScoresNavbar from "../navbar/ScoresNavbar";
 import PageLayout from "../pageLayout/PageLayout";
 import resultsPath from "../results/resultsPath";
 import "./HomePage.scss";
+
+/** Title case, to read like the week labels ESPN sends. */
+const seasonLabel = (season: number) => `${season} Season`;
 
 export default function HomePage() {
   const navigate = useNavigate();
