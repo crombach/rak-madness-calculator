@@ -95,6 +95,9 @@ Copy an existing one under `scenarios/`. A scenario is a default-exported
    scoreboard event for `events()` to return.
 2. Navigates and drives `page` with normal Playwright calls.
 
+Import `SEASON`, `WEEK` and the settings storage keys from `lib/constants.js`.
+Never redefine one in a scenario.
+
 `lib/mocks.js` mocks exactly the requests `functions/api/picks/**`,
 `src/utils/getLeagueInfo.ts`, and `src/utils/getLeagueResults.ts` make. Keep
 it in step with those if their URLs or query params change.

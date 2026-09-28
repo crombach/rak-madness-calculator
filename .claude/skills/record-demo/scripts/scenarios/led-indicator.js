@@ -4,11 +4,7 @@ import {
   makeGame,
   registerAppMocks,
 } from "../lib/mocks.js";
-
-const SEASON = 2024;
-const WEEK = 5;
-const THEME_KEY = "rak-madness:settings:theme";
-const PLAYER_NAME_KEY = "rak-madness:settings:playerName";
+import { SEASON, WEEK, THEME_KEY, PLAYER_NAME_KEY } from "../lib/constants.js";
 // One of the names in ROWS below, so the scoreboard has a row to rule.
 const MY_NAME = "Carol";
 

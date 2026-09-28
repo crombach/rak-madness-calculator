@@ -3,11 +3,12 @@ import {
   makeGame,
   registerAppMocks,
 } from "../lib/mocks.js";
-
-const SEASON = 2024;
-const WEEK = 5;
-const THEME_KEY = "rak-madness:settings:theme";
-const SETTINGS_SEEN_KEY = "rak-madness:settings:settingsSeenAt";
+import {
+  SEASON,
+  WEEK,
+  THEME_KEY,
+  SETTINGS_SEEN_KEY,
+} from "../lib/constants.js";
 
 const ROWS = [
   { Name: "Alice", P1: "KC", P2: "SF", P3: "MIA" },

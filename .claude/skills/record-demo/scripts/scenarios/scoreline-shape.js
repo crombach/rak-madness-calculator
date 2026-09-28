@@ -3,17 +3,13 @@ import {
   makeGame,
   registerAppMocks,
 } from "../lib/mocks.js";
-
-const SEASON = 2024;
-const WEEK = 5;
+import { SEASON, WEEK, THEME_KEY } from "../lib/constants.js";
 
 /** Where to write the shots. `--out` is a throwaway for this scenario. */
 const SHOT_DIR = process.env.SCORELINE_SHOT_DIR ?? "/tmp/shots";
 
 /** Which theme to render in, since the readout's plate has one of each. */
 const THEME = process.env.SCORELINE_THEME ?? "dark";
-
-const THEME_KEY = "rak-madness:settings:theme";
 
 const ROWS = [
   { Name: "Alice", P1: "KC", P2: "SF", P3: "BAL", P4: "NE" },

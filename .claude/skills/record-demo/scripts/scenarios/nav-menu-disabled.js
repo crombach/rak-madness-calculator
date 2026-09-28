@@ -3,12 +3,12 @@ import {
   makeGame,
   registerAppMocks,
 } from "../lib/mocks.js";
-
-const SEASON = 2024;
-const WEEK = 5;
-const THEME_KEY = "rak-madness:settings:theme";
-// Swing Games shows only to a reader who opted in to experimental features.
-const EXPERIMENTAL_FEATURES_KEY = "rak-madness:settings:experimentalFeatures";
+import {
+  SEASON,
+  WEEK,
+  THEME_KEY,
+  EXPERIMENTAL_FEATURES_KEY,
+} from "../lib/constants.js";
 
 /** `light` or `dark`. */
 const THEME = process.env.NAV_THEME ?? "light";

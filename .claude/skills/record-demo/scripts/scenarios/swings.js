@@ -3,20 +3,19 @@ import {
   makeGame,
   registerAppMocks,
 } from "../lib/mocks.js";
-
-const SEASON = 2024;
-const WEEK = 5;
+import {
+  SEASON,
+  WEEK,
+  THEME_KEY,
+  EXPERIMENTAL_FEATURES_KEY,
+  PLAYER_NAME_KEY,
+} from "../lib/constants.js";
 
 /** `light` or `dark`. */
 const THEME = process.env.SWINGS_THEME ?? "light";
 
 /** Set to hover the first game's game button before the final screenshot. */
 const HOVER = process.env.SWINGS_HOVER === "1";
-
-const THEME_KEY = "rak-madness:settings:theme";
-// Swing Games shows only to a reader who opted in to experimental features.
-const EXPERIMENTAL_FEATURES_KEY = "rak-madness:settings:experimentalFeatures";
-const PLAYER_NAME_KEY = "rak-madness:settings:playerName";
 
 /** The reader, a KC backer, so their name leads P1's crowded side. */
 const MY_NAME = "Dee";
