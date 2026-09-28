@@ -478,6 +478,9 @@
   justify-self: center;
   min-width: 0;
   margin: 0;
+  color: var(--rak-text);
+  font-size: var(--rak-text-sm);
+  font-weight: var(--rak-weight-semibold);
   text-align: center;
 }
 
@@ -487,27 +490,16 @@
   grid-row: 1;
   // Both sides of the row take their baseline from the same place, or neither does.
   align-self: baseline;
-  color: var(--rak-text);
-  font-size: var(--rak-text-sm);
-  font-weight: var(--rak-weight-semibold);
 }
 
-// Set with the clock in the same column, in its color as well as its size, which is
-// the other half of where the game is up to. A down and distance runs to
-// `2nd & 7 at ATL 34`, and the middle column is only as wide as its widest line, so
-// every character here is width taken off the names beside it. `useScorelineFit` is
-// what gives those names the abbreviation where this line leaves them too little.
+// Set like the clock in the same column, which is the other half of where the game is
+// up to. A down and distance runs to `2nd & 7 at ATL 34`, and the middle column is
+// only as wide as its widest line, so every character here is width taken off the
+// names beside it. `useScorelineFit` is what gives those names the abbreviation where
+// this line leaves them too little.
 .game-status__down,
 .game-status__outcome {
   grid-row: 3;
-  color: var(--rak-text);
-  font-size: var(--rak-text-sm);
-}
-
-// Weighted like the clock over the scores, since once the game is over the two are
-// the pair of lines that say how it went.
-.game-status__outcome {
-  font-weight: var(--rak-weight-semibold);
 }
 
 .game-status__missing {
