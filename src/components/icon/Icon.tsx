@@ -254,6 +254,22 @@ export function MenuIcon() {
   );
 }
 
+export function HomeIcon() {
+  return (
+    <Icon name="HomeIcon">
+      <path d="M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z" />
+    </Icon>
+  );
+}
+
+export function SwapVertIcon() {
+  return (
+    <Icon name="SwapVertIcon">
+      <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z" />
+    </Icon>
+  );
+}
+
 export function GitHubIcon() {
   return (
     <Icon name="GitHubIcon" viewBox="0 0 24 24">

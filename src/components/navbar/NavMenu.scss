@@ -1,3 +1,7 @@
+@use "../../styles/breakpoints" as *;
+@use "../../styles/focus" as *;
+@use "../../styles/label" as *;
+@use "../../styles/lcd" as *;
 @use "../../styles/listbox" as *;
 
 .nav-menu__positioner {
@@ -14,7 +18,172 @@
 .nav-menu__item {
   @include listbox-item;
 
+  gap: var(--rak-space-2);
   // Each item is a link, which would otherwise draw in the browser's blue.
   color: inherit;
   text-decoration: none;
+
+  &[aria-current="page"] {
+    background-color: var(--rak-selected-fill);
+    font-weight: var(--rak-weight-semibold);
+  }
+}
+
+// The drawer below `wide-screen`, timed and eased like `DialogShell.scss`'s sheet.
+
+.nav-drawer__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--rak-z-dialog);
+  background-color: var(--rak-scrim);
+  opacity: calc(1 - var(--drawer-swipe-progress, 0));
+  transition: opacity var(--rak-duration-medium) var(--rak-ease-standard);
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    opacity: 0;
+  }
+
+  &[data-swiping] {
+    transition-duration: 0ms;
+  }
+}
+
+.nav-drawer__viewport {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--rak-z-dialog) + 1);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.nav-drawer__popup {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-4);
+  width: min(80vw, 320px);
+  height: 100%;
+  padding: calc(var(--rak-space-4) + env(safe-area-inset-top))
+    calc(var(--rak-space-4) + env(safe-area-inset-right))
+    calc(var(--rak-space-4) + env(safe-area-inset-bottom)) var(--rak-space-4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  // The one edge the drawer meets the page on, as the sheet's top edge is.
+  border-left: var(--rak-border-width-hairline) solid var(--rak-dialog-edge);
+  border-radius: var(--rak-radius-lg) 0 0 var(--rak-radius-lg);
+  background-color: var(--rak-surface-raised);
+  box-shadow: var(--rak-shadow-dialog);
+  color: var(--rak-text-secondary);
+  transform: translateX(var(--drawer-swipe-movement-x, 0px));
+  transition: transform var(--rak-duration-medium) var(--rak-ease-standard);
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    transform: translateX(100%);
+  }
+
+  &[data-swiping] {
+    transition-duration: 0ms;
+    user-select: none;
+  }
+
+  // A fade in place, since the slide is the movement being asked away.
+  @include reduced-motion {
+    transition-property: opacity;
+
+    &[data-starting-style],
+    &[data-ending-style] {
+      opacity: 0;
+      transform: none;
+    }
+  }
+}
+
+.nav-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-drawer__title {
+  @include micro-label;
+
+  margin: 0;
+  font-size: var(--rak-text-xs);
+  color: var(--rak-text-tertiary);
+}
+
+.nav-drawer__week {
+  @include lcd-glass;
+
+  margin: 0;
+  padding: var(--rak-space-2) var(--rak-space-3);
+  color: var(--rak-glass-ink);
+  font-size: var(--rak-text-md);
+  font-weight: var(--rak-weight-bold);
+  letter-spacing: var(--rak-label-tracking);
+  text-transform: uppercase;
+}
+
+.nav-drawer__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  // `--rak-divider` has no dark value, and glares on the dark drawer.
+  li + li {
+    border-top: var(--rak-border-width-hairline) solid var(--rak-fill-muted);
+  }
+}
+
+.nav-drawer__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--rak-space-3);
+  min-height: var(--rak-touch-target);
+  padding: var(--rak-space-1) var(--rak-space-3);
+  border-radius: var(--rak-radius-xs);
+  color: inherit;
+  font-size: var(--rak-text-md);
+  text-decoration: none;
+
+  @include focus-ring;
+
+  &:active {
+    background-color: var(--rak-fill-subtle);
+  }
+
+  @include can-hover {
+    &:hover {
+      background-color: var(--rak-fill-subtle);
+    }
+  }
+
+  // The lamp a chosen key wears along its lower edge, stood on end.
+  &::before {
+    content: "";
+    position: absolute;
+    top: var(--rak-space-2);
+    bottom: var(--rak-space-2);
+    left: 0;
+    width: var(--rak-border-width);
+    border-radius: 0 var(--rak-border-width) var(--rak-border-width) 0;
+  }
+
+  &[aria-current="page"] {
+    background-color: var(--rak-selected-fill);
+    color: var(--rak-text);
+    font-weight: var(--rak-weight-semibold);
+
+    &::before {
+      background-color: var(--rak-led-on);
+      box-shadow: var(--rak-led-socket), var(--rak-led-glow);
+    }
+  }
 }
