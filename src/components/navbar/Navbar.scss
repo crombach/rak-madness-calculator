@@ -1,4 +1,5 @@
 @use "../../styles/breakpoints" as *;
+@use "../../styles/layout" as *;
 
 .navbar {
   width: 100%;
@@ -43,7 +44,7 @@
 
 .navbar__content {
   min-height: 3.75rem;
-  width: min(1024px, 100%);
+  width: min($content-width, 100%);
   flex-direction: row;
   align-items: center;
   justify-content: space-between;

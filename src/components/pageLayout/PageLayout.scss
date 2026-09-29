@@ -1,5 +1,6 @@
 @use "../../styles/breakpoints" as *;
 @use "../../styles/a11y" as *;
+@use "../../styles/layout" as *;
 
 .page {
   position: relative;
@@ -28,7 +29,7 @@
 
 .page__content {
   flex: 1;
-  width: min(1024px, 100%);
+  width: min($content-width, 100%);
   max-width: 100%;
   // The one thing in the app that has to be as wide as what is on screen rather
   // than as wide as the box it sits in is the caption over the table, and this is

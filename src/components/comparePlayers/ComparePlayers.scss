@@ -1,5 +1,6 @@
 @use "../../styles/breakpoints" as *;
 @use "../../styles/label" as *;
+@use "../../styles/layout" as *;
 
 // Pinned to the screen's left edge while a wide table pans under it.
 .compare-players {
@@ -131,9 +132,17 @@
 
 // A frame hugging a table of a few games stands a narrow strip in a wide case.
 // The controls hold it open, and the table stretches to meet them.
+//
+// The controls line up with the navbar's keys, so switching the game scope
+// leaves them where they were while the table under them narrows. Held at the
+// navbar's width, the frame is centered on the same column the navbar is. The
+// padding is the navbar's, plus whatever of this box lies outside that column.
 @include roomy-screen {
   .compare-players {
-    min-width: min(60rem, 100cqi);
+    min-width: min($content-width, 100cqi);
+    padding-inline: calc(
+      max(0px, (min(100cqi, 100%) - $content-width) / 2) + var(--rak-space-3)
+    );
   }
 
   .compare-players ~ .table {

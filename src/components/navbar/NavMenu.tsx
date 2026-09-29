@@ -15,7 +15,7 @@ import getClasses from "../../utils/getClasses";
 import { buttonClasses } from "../button/Button";
 import {
   CloseIcon,
-  CompareArrowsIcon,
+  GroupIcon,
   HomeIcon,
   MenuIcon,
   ScoreboardIcon,
@@ -65,7 +65,7 @@ const PAGES: Array<NavItem> = [
   },
   {
     label: RESULTS_PAGE.comparePlayers,
-    icon: <CompareArrowsIcon />,
+    icon: <GroupIcon />,
     path: (season, week) =>
       resultsPath(season, week, RESULTS_PAGE.comparePlayers),
     disabled: ({ playerCount }) => playerCount == null || playerCount < 2,
