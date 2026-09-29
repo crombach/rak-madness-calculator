@@ -55,6 +55,10 @@ describe("countdownText", () => {
   it("says the game is about to start once its kickoff has passed", () => {
     expect(countdownText(inMinutes(-3), NOW)).toBe("Kicking off");
   });
+
+  it("says nothing for a kickoff with no time in it", () => {
+    expect(countdownText(new Date(Number.NaN), NOW)).toBeUndefined();
+  });
 });
 
 const FINAL = finalGame({

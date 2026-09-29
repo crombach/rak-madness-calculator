@@ -146,6 +146,31 @@ describe("GameStatusSummary, the game it is given", () => {
     }
   });
 
+  it("counts down from now on a game moved to, not from when the summary mounted", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(KICKOFF.getTime() - 40 * 60_000));
+    try {
+      const live = result({ status: GameStatus.LIVE });
+      const { rerender } = render(<GameStatusSummary game={game(live)} />);
+
+      vi.setSystemTime(new Date(KICKOFF.getTime() - 10 * 60_000));
+      const pregame = result({ id: "402", status: GameStatus.UPCOMING });
+      rerender(<GameStatusSummary game={game(pregame)} />);
+      expect(screen.getByText("Kickoff in 10m")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("says nothing under the scores for a kickoff ESPN sent nothing to parse", () => {
+    const pregame = result({
+      status: GameStatus.UPCOMING,
+      date: new Date(Number.NaN),
+    });
+    render(<GameStatusSummary game={game(pregame)} />);
+    expect(screen.queryByText(/Kickoff/)).toBeNull();
+  });
+
   it("says so where ESPN listed no game for the column", () => {
     render(<GameStatusSummary game={game()} />);
     expect(screen.getByText(/No game was found for P1/)).toHaveTextContent(

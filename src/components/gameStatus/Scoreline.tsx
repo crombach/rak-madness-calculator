@@ -100,8 +100,9 @@ function Note({
   const isPregame = result.status === GameStatus.UPCOMING;
   const now = useMinuteClock(isPregame);
   if (isPregame) {
-    return (
-      <p className="game-status__down">{countdownText(result.date, now)}</p>
+    const countdown = countdownText(result.date, now);
+    return countdown == null ? null : (
+      <p className="game-status__down">{countdown}</p>
     );
   }
   if (result.status === GameStatus.FINAL) {
@@ -218,7 +219,8 @@ export default function Scoreline({
           outcome={outcomeOf(result.home)}
         />
       </div>
-      <Note result={result} spread={spread} />
+      {/* Keyed so a game moved to counts down from now, not from its mount. */}
+      <Note key={result.id} result={result} spread={spread} />
     </div>
   );
 }

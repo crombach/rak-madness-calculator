@@ -114,10 +114,12 @@ export function calendarDaysUntil(date: Date, now: Date): number {
 /**
  * How long until kickoff, for under a game's scores before it starts. Hours and
  * minutes on the day, rounded up to the minute so a kickoff seconds away is never
- * said as now. Tomorrow by name, and the days alone past it.
+ * said as now. Tomorrow by name, and the days alone past it. Nothing for a kickoff
+ * ESPN gave nothing to parse.
  */
-export function countdownText(kickoff: Date, now: Date): string {
+export function countdownText(kickoff: Date, now: Date): string | undefined {
   const left = kickoff.getTime() - now.getTime();
+  if (Number.isNaN(left)) return undefined;
   if (left <= 0) return KICKING_OFF;
   const days = calendarDaysUntil(kickoff, now);
   if (days === 1) return `${KICKOFF} tomorrow`;
