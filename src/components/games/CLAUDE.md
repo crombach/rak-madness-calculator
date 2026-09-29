@@ -3,11 +3,9 @@
 The `/:season/:week/all-games` route: every game of the week, one scoreboard
 each. `/games` and `/live` redirect here.
 
-- `GamesPage`: what `App.tsx` mounts. The route at once when its chunk is in,
-  else `GamesSkeleton` until it is.
-- `loadGamesRoute`: that chunk, fetched ahead by `ResultsFrame`.
-- `GamesRoute`: redirects to the scoreboard without the experimental opt-in,
-  else renders `Games`. A settled week stays.
+- `GamesPage`: `lazyPreloadable` over `GamesRoute`, mounted by `App.tsx`.
+  `ResultsFrame` preloads it.
+- `GamesRoute`: `Games` behind `ExperimentalGate`. A settled week stays.
 - `Games`: `useLiveWeek` polls every open league, a busy bar under the caption
   while a live one is fetched. Sections Live, Today, Tomorrow, Upcoming, then
   Completed in table order. An empty section is left out.

@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { isMyPlayer, useSettings } from "../../context/SettingsContext";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import differingGames, { sameGames } from "../../utils/scoring/differingGames";
-import { playerOptions } from "../playerAnalysis/PlayerAnalysisDialog";
+import { playerOptions } from "../playerAnalysis/playerOptions";
 import { RESULTS_PAGE } from "../results/resultsPath";
 import PicksTable from "../table/picks/PicksTable";
 import SkeletonTable from "../table/SkeletonTable";
@@ -16,7 +16,7 @@ import {
   writeGameScope,
 } from "./comparedPlayers";
 import ComparePlayersDialog, { Slot } from "./ComparePlayersDialog";
-import { ChooseButton, GamesToggle } from "./ComparePlayersSkeleton";
+import { ChooseButton, GamesToggle } from "./ComparePlayersControls";
 // For `analysis__standing`, which this page shares with the analysis dialog.
 import "../playerAnalysis/AnalysisSummary.scss";
 import "./ComparePlayers.scss";

@@ -2,7 +2,7 @@ import { RefObject, useRef, useState } from "react";
 import Button from "../button/Button";
 import DialogShell from "../dialog/DialogShell";
 import { AddIcon, DeleteIcon } from "../icon/Icon";
-import { PlayerOption } from "../playerAnalysis/PlayerAnalysisDialog";
+import { PlayerOption } from "../playerAnalysis/playerOptions";
 import PlayerCombobox from "../playerAnalysis/PlayerCombobox";
 import { MIN_PICKERS, pickerLabel } from "./comparedPlayers";
 // For the section and label rules, which this dialog shares with Settings.

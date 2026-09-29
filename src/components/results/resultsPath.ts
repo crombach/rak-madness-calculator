@@ -13,13 +13,56 @@ export type ResultsPage = (typeof RESULTS_PAGE)[keyof typeof RESULTS_PAGE];
 export type ScoresView =
   typeof RESULTS_PAGE.scoreboard | typeof RESULTS_PAGE.picks;
 
-const SEGMENTS: Record<ResultsPage, string> = {
-  [RESULTS_PAGE.scoreboard]: "scoreboard",
-  [RESULTS_PAGE.picks]: "picks",
-  [RESULTS_PAGE.swingGames]: "swings",
-  [RESULTS_PAGE.games]: "all-games",
-  [RESULTS_PAGE.comparePlayers]: "compare",
+type PageInfo = {
+  /** The URL segment after the week. */
+  segment: string;
+  /** Shown as a table the navbar's view switch picks between. */
+  isTable: boolean;
+  /** Reached from the menu alone, so leaving it pushes history rather than replaces. */
+  isMenuOnly: boolean;
 };
+
+/** Every results page, by its `RESULTS_PAGE` label. */
+export const PAGES: Record<ResultsPage, PageInfo> = {
+  [RESULTS_PAGE.scoreboard]: {
+    segment: "scoreboard",
+    isTable: true,
+    isMenuOnly: false,
+  },
+  [RESULTS_PAGE.picks]: {
+    segment: "picks",
+    isTable: true,
+    isMenuOnly: false,
+  },
+  [RESULTS_PAGE.swingGames]: {
+    segment: "swings",
+    isTable: false,
+    isMenuOnly: true,
+  },
+  [RESULTS_PAGE.games]: {
+    segment: "all-games",
+    isTable: false,
+    isMenuOnly: true,
+  },
+  [RESULTS_PAGE.comparePlayers]: {
+    segment: "compare",
+    isTable: false,
+    isMenuOnly: true,
+  },
+};
+
+/** The page a URL segment names. An unknown segment reads as the scoreboard. */
+export function pageForSegment(segment: string | undefined): ResultsPage {
+  const found = (Object.keys(PAGES) as Array<ResultsPage>).find(
+    (page) => PAGES[page].segment === segment,
+  );
+  return found ?? RESULTS_PAGE.scoreboard;
+}
+
+/** Whether a page is one of the two tables the view switch picks between. */
+export function isScoresView(page: ResultsPage): page is ScoresView {
+  return PAGES[page].isTable;
+}
 
 /** How a week reads as text, as in "2026 Season · Week 3". */
 export function weekName(
@@ -36,5 +79,5 @@ export default function resultsPath(
   week: number | string | undefined,
   page: ResultsPage,
 ): string {
-  return `/${season}/${week}/${SEGMENTS[page]}`;
+  return `/${season}/${week}/${PAGES[page].segment}`;
 }

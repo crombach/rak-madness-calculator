@@ -6,7 +6,8 @@ import {
   RakMadnessScores,
 } from "../../types/RakMadnessScores";
 import { playerScore } from "../../weekFixtures";
-import PlayerAnalysisDialog, { playerOptions } from "./PlayerAnalysisDialog";
+import PlayerAnalysisDialog from "./PlayerAnalysisDialog";
+import { playerOptions } from "./playerOptions";
 
 function proPick(pick: string): PickResult {
   return {

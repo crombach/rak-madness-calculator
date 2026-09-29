@@ -1,6 +1,5 @@
 import { Accordion } from "@base-ui/react/accordion";
 import { useMemo, useRef, useState } from "react";
-import { Navigate } from "react-router";
 import { useSwingGames } from "../../context/AppDataContext";
 import { useShowGameStatus } from "../../context/GameStatusContext";
 import { useShowPlayerAnalysis } from "../../context/PlayerAnalysisContext";
@@ -11,7 +10,7 @@ import { SwingGame, SwingSide } from "../../utils/scoring/getSwingGames";
 import Button from "../button/Button";
 import { ExpandMoreIcon } from "../icon/Icon";
 import plural, { verbFor } from "../../utils/plural";
-import resultsPath, { RESULTS_PAGE } from "../results/resultsPath";
+import ExperimentalGate from "../results/ExperimentalGate";
 import { HEADING_MARK, statusByLabel } from "../table/picks/headingMark";
 // For `analysis__more` and `analysis__standing`, which this page shares with the
 // analysis dialog.
@@ -132,17 +131,8 @@ function Game({ game, status }: { game: SwingGame; status?: GameStatus }) {
 }
 
 /** Each open game, with who it knocks out whichever way it falls. */
-export default function SwingGames({
-  scores,
-  season,
-  week,
-}: {
-  scores?: RakMadnessScores;
-  season?: string;
-  week?: string;
-}) {
+export default function SwingGames({ scores }: { scores?: RakMadnessScores }) {
   const swings = useSwingGames();
-  const { experimentalFeatures } = useSettings();
   const statuses = useMemo(() => statusByLabel(scores?.games), [scores]);
   // The folded ones rather than the open ones, so a game a refresh brings in
   // starts open.
@@ -150,30 +140,26 @@ export default function SwingGames({
 
   if (swings == null) return null;
 
-  // A won week, one no single game decides, or a reader who has not opted into
-  // experimental features, has nothing to show here.
-  if (!experimentalFeatures || swings.games.length === 0) {
-    return (
-      <Navigate
-        replace
-        to={resultsPath(season, week, RESULTS_PAGE.scoreboard)}
-      />
-    );
-  }
-
   const labels = swings.games.map((game) => game.label);
   return (
-    <Accordion.Root
-      className="swing-games"
-      multiple
-      value={labels.filter((label) => !closed.has(label))}
-      onValueChange={(open: Array<string>) =>
-        setClosed(new Set(labels.filter((label) => !open.includes(label))))
-      }
-    >
-      {swings.games.map((game) => (
-        <Game key={game.label} game={game} status={statuses.get(game.label)} />
-      ))}
-    </Accordion.Root>
+    // A won week, or one no single game decides, has nothing to show here.
+    <ExperimentalGate closed={swings.games.length === 0}>
+      <Accordion.Root
+        className="swing-games"
+        multiple
+        value={labels.filter((label) => !closed.has(label))}
+        onValueChange={(open: Array<string>) =>
+          setClosed(new Set(labels.filter((label) => !open.includes(label))))
+        }
+      >
+        {swings.games.map((game) => (
+          <Game
+            key={game.label}
+            game={game}
+            status={statuses.get(game.label)}
+          />
+        ))}
+      </Accordion.Root>
+    </ExperimentalGate>
   );
 }

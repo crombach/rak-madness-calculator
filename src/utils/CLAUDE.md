@@ -18,6 +18,7 @@
 - `rangeWithPrefix`: labeled index arrays (C1, C2…)
 - `matching`: case-folded substring search, shared by both dialogs' item lists
 - `readFileToBuffer`: an upload's bytes
+- `lazyPreloadable`: a lazy route that can be fetched ahead, and skips its fallback once in
 - `warmImage`: an image into the browser's cache, once, where prefetch does not reach
 
 ## Subdirectories

@@ -1,4 +1,3 @@
-import { Suspense, lazy } from "react";
 import { Navigate, Route, Routes } from "react-router";
 import HomePage from "./components/home/HomePage";
 import CurrentWeekRedirect from "./components/results/CurrentWeekRedirect";
@@ -6,18 +5,21 @@ import { RESULTS_PAGE } from "./components/results/resultsPath";
 import PicksRoute from "./components/results/PicksRoute";
 import ResultsLayout from "./components/results/ResultsLayout";
 import ScoreboardRoute from "./components/results/ScoreboardRoute";
-import GamesPage from "./components/games/GamesPage";
+import { GamesPage } from "./components/games/GamesPage";
 import SwingGamesSkeleton from "./components/swingGames/SwingGamesSkeleton";
 import ComparePlayersSkeleton from "./components/comparePlayers/ComparePlayersSkeleton";
+import lazyPreloadable from "./utils/lazyPreloadable";
 
 // Lazy for the must-win search it reaches, which `ResultsFrame` keeps out of the
 // chunk every route waits on.
-const SwingGamesRoute = lazy(
+const { Page: SwingGamesPage } = lazyPreloadable(
   () => import("./components/swingGames/SwingGamesRoute"),
+  <SwingGamesSkeleton />,
 );
 // Lazy for Base UI's combobox, which `ResultsFrame` keeps out of that chunk too.
-const ComparePlayersRoute = lazy(
+const { Page: ComparePlayersPage } = lazyPreloadable(
   () => import("./components/comparePlayers/ComparePlayersRoute"),
+  <ComparePlayersSkeleton />,
 );
 
 export default function App() {
@@ -37,25 +39,11 @@ export default function App() {
         <Route index element={<Navigate to="scoreboard" replace />} />
         <Route path="scoreboard" element={<ScoreboardRoute />} />
         <Route path="picks" element={<PicksRoute />} />
-        <Route
-          path="swings"
-          element={
-            <Suspense fallback={<SwingGamesSkeleton />}>
-              <SwingGamesRoute />
-            </Suspense>
-          }
-        />
+        <Route path="swings" element={<SwingGamesPage />} />
         <Route path="all-games" element={<GamesPage />} />
         <Route path="games" element={<Navigate to="../all-games" replace />} />
         <Route path="live" element={<Navigate to="../all-games" replace />} />
-        <Route
-          path="compare"
-          element={
-            <Suspense fallback={<ComparePlayersSkeleton />}>
-              <ComparePlayersRoute />
-            </Suspense>
-          }
-        />
+        <Route path="compare" element={<ComparePlayersPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
