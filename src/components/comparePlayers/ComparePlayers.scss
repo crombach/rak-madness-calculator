@@ -134,9 +134,9 @@
 // The controls hold it open, and the table stretches to meet them.
 //
 // The controls line up with the navbar's keys, so switching the game scope
-// leaves them where they were while the table under them narrows. Held at the
-// navbar's width, the frame is centered on the same column the navbar is. The
-// padding is the navbar's, plus whatever of this box lies outside that column.
+// leaves them in place while the table narrows. The frame is at least as wide
+// as the navbar and centers on the same column. Its padding is the navbar's,
+// plus the gap between that column and the edge of this box.
 @include roomy-screen {
   .compare-players {
     min-width: min($content-width, 100cqi);

@@ -341,7 +341,7 @@ describe("the compare players route", () => {
     ).not.toHaveFocus();
   });
 
-  it("drops empty pickers when the dialog closes", async () => {
+  it("drops empty pickers when the dialog opens again", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
     await user.click(screen.getByRole("button", { name: "Add Player" }));
@@ -359,7 +359,7 @@ describe("the compare players route", () => {
     expect(screen.getAllByRole("combobox")).toHaveLength(2);
   });
 
-  it("keeps two pickers when the dialog closes with fewer chosen", async () => {
+  it("keeps two pickers when the dialog opens again with fewer chosen", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
     await user.click(screen.getByRole("button", { name: "Add Player" }));

@@ -35,7 +35,7 @@ function newSlot(id?: string): Slot {
   return { key: slotCount++, id };
 }
 
-/** The pickers without the empty ones, keeping the first few it takes to stay at `MIN_PICKERS`. */
+/** Drops the empty pickers, except the first empty ones it needs to keep `MIN_PICKERS`. */
 function withoutEmptySlots(slots: Array<Slot>): Array<Slot> {
   let spare = MIN_PICKERS - slots.filter(({ id }) => id != null).length;
   return slots.filter(({ id }) => id != null || spare-- > 0);
