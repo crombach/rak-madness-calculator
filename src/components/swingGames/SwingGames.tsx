@@ -70,7 +70,7 @@ function Side({ side }: { side: SwingSide }) {
           ariaExpanded={isExpanded}
           onClick={() => setIsExpanded(!isExpanded)}
         >
-          {isExpanded ? "Show fewer" : "Show more"}
+          {isExpanded ? "Show Fewer" : "Show More"}
         </Button>
       )}
     </div>

@@ -569,7 +569,7 @@ describe("AnalysisSummary", () => {
 
     expect(document.querySelectorAll(".analysis__route")).toHaveLength(3);
     expect(
-      screen.getByRole("button", { name: "Show more" }),
+      screen.getByRole("button", { name: "Show More" }),
     ).toBeInTheDocument();
   });
 
@@ -580,7 +580,7 @@ describe("AnalysisSummary", () => {
 
     expect(document.querySelectorAll(".analysis__route")).toHaveLength(6);
     expect(
-      screen.getByRole("button", { name: "Show fewer" }),
+      screen.getByRole("button", { name: "Show Fewer" }),
     ).toBeInTheDocument();
   });
 
@@ -604,10 +604,10 @@ describe("AnalysisSummary", () => {
     render(<AnalysisSummary result={result} />);
 
     expect(shareRows()).toHaveLength(5);
-    await userEvent.click(screen.getByRole("button", { name: "Show more" }));
+    await userEvent.click(screen.getByRole("button", { name: "Show More" }));
     expect(shareRows()).toHaveLength(8);
 
-    await userEvent.click(screen.getByRole("button", { name: "Show fewer" }));
+    await userEvent.click(screen.getByRole("button", { name: "Show Fewer" }));
     expect(shareRows()).toHaveLength(5);
   });
 
@@ -617,7 +617,7 @@ describe("AnalysisSummary", () => {
 
     expect(
       document.querySelector(".analysis__shares")?.nextElementSibling,
-    ).toBe(screen.getByRole("button", { name: "Show more" }));
+    ).toBe(screen.getByRole("button", { name: "Show More" }));
   });
 
   it("leaves the button off where every game is already open", () => {

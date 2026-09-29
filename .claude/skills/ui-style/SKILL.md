@@ -22,7 +22,7 @@ new style for something the app already renders elsewhere.
 | Left rule blocks                                | `ruled-block($rule)`: `$rule-required` (red, must-win), `$rule-option` (gold, routes and pools), `$rule-alive` (blue, players still in contention)                                                                         | `src/styles/_picks.scss`                             |
 | Small tracked capitals                          | `micro-label`                                                                                                                                                                                                              | `src/styles/_label.scss`                             |
 | Counts ("13 players", "3 games remaining")      | `.analysis__standing` rule. Use `plural` and `verbFor` from `src/utils/plural.ts`. Never an inline singular/plural switch                                                                                                  | `src/components/playerAnalysis/AnalysisSummary.scss` |
-| Fold toggles                                    | Text "Show more" / "Show fewer", `.analysis__more` class. Fold at whole rows                                                                                                                                               | `src/components/playerAnalysis/AnalysisSummary.scss` |
+| Fold toggles                                    | Text "Show More" / "Show Fewer", `.analysis__more` class. Fold at whole rows                                                                                                                                               | `src/components/playerAnalysis/AnalysisSummary.scss` |
 | Bands and section headers                       | `--rak-band-header` fill, `--rak-on-solid` ink                                                                                                                                                                             | `src/index.scss`                                     |
 
 ## States and chrome
@@ -34,6 +34,10 @@ new style for something the app already renders elsewhere.
   it, at every width. Also its `aria-describedby`. No tooltips.
 - A disabled item gives no reason while scores or picks load, or once the week
   is settled. Otherwise it says why, such as "Needs two players".
+- Button text in title case: "Choose Players", "Show More". Not an icon button's
+  `aria-label`, which no one sees.
+- Button text in title case: "Choose Players", "Show More". Not an icon button's
+  `aria-label`, which no one sees.
 - One line of separate facts splits them with `·`. The items of one list split
   with a comma. Never a `·` inside a list.
 - A loading placeholder for a view one component draws is that component on
