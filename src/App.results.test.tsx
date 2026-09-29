@@ -149,6 +149,16 @@ describe("the app, a week that fails to load", () => {
     expect(await screen.findByText("MNF Points Pick")).toBeInTheDocument();
     expect(getPlayerScoresMock).toHaveBeenCalledTimes(2);
   });
+
+  it("offers the home page beside the retry", async () => {
+    fetchMock.mockImplementation(async () => spreadsheetResponse());
+    getPlayerScoresMock.mockRejectedValueOnce(new Error("ESPN is down"));
+    const user = mountApp(`/${SEASON}/${CURRENT_WEEK}/scoreboard`);
+
+    await user.click(await screen.findByRole("button", { name: "Home" }));
+
+    expect(await screen.findByText("View Results")).toBeInTheDocument();
+  });
 });
 
 describe("the app, export", () => {

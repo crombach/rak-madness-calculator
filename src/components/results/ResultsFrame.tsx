@@ -7,7 +7,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { useIsWeekSettled } from "../../context/AppDataContext";
 import { errorToast, useToastActions } from "../../context/ToastContext";
 import { GameStatusContextProvider } from "../../context/GameStatusContext";
@@ -115,6 +115,7 @@ export default function ResultsFrame({
   // Absent on the redirect routes, which render this frame before they know which
   // week they are headed for.
   const { season: seasonParam, week: weekParam } = useParams();
+  const navigate = useNavigate();
   const hasWeek = Boolean(seasonParam && weekParam);
   const scoresView: ScoresView | null = isScoresView(view) ? view : null;
   // Once every game is final there is nothing left to fetch, so the refresh button
@@ -254,9 +255,14 @@ export default function ResultsFrame({
                 <EmptyState>
                   {`The scores for week ${weekParam} could not be loaded.`}
                 </EmptyState>
-                <Button onClick={onRefresh} busy={isRefreshing}>
-                  Retry
-                </Button>
+                <div className="results-failure__actions">
+                  <Button onClick={onRefresh} busy={isRefreshing}>
+                    Retry
+                  </Button>
+                  <Button variant="soft" onClick={() => navigate("/")}>
+                    Home
+                  </Button>
+                </div>
               </div>
             ) : (
               SKELETONS[view]

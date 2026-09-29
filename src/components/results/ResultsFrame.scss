@@ -46,6 +46,11 @@
   align-items: center;
 }
 
+.results-failure__actions {
+  display: flex;
+  gap: var(--rak-space-2);
+}
+
 /**
  * Which week the table below is. Inside the frame rather than above it, so it
  * scrolls away with the first rows and stands on a phone's screen no longer than
