@@ -1,0 +1,5 @@
+@use "../../styles/a11y" as *;
+
+.skeleton__status {
+  @include visually-hidden;
+}

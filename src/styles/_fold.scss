@@ -1,0 +1,12 @@
+// Mixins only, so this emits no CSS of its own however many files pull it in.
+
+/**
+ * The Show More / Show Fewer button under a folded list. A soft button takes the
+ * color around it, so the gold is set here rather than by the color prop, which only
+ * paints a solid fill.
+ */
+@mixin fold-toggle {
+  align-self: flex-start;
+  color: var(--rak-gold-700);
+  font-weight: var(--rak-weight-bold);
+}

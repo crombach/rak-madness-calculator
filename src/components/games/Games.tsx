@@ -7,6 +7,7 @@ import { LeagueResult } from "../../types/LeagueResult";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
+import EmptyState from "../pageLayout/EmptyState";
 import kickoffDay from "./kickoffDay";
 import GameCard from "./GameCard";
 import { COMPLETED_TITLE, DAYS, LIVE_TITLE } from "./sectionTitles";
@@ -116,9 +117,7 @@ export default function Games({
         />
       )}
       {scores != null && sections.length === 0 && (
-        <p className="game-status__missing" role="status">
-          {NO_GAMES}
-        </p>
+        <EmptyState>{NO_GAMES}</EmptyState>
       )}
       {scores != null &&
         sections.map(({ title, games }) => (

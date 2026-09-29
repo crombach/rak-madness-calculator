@@ -3,6 +3,7 @@ import { isMyPlayer, useSettings } from "../../context/SettingsContext";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import differingGames, { sameGames } from "../../utils/scoring/differingGames";
 import { playerOptions } from "../playerAnalysis/playerOptions";
+import EmptyState from "../pageLayout/EmptyState";
 import { RESULTS_PAGE } from "../results/resultsPath";
 import PicksTable from "../table/picks/PicksTable";
 import SkeletonTable from "../table/SkeletonTable";
@@ -17,8 +18,6 @@ import {
 } from "./comparedPlayers";
 import ComparePlayersDialog, { Slot } from "./ComparePlayersDialog";
 import { ChooseButton, GamesToggle } from "./ComparePlayersControls";
-// For `analysis__standing`, which this page shares with the analysis dialog.
-import "../playerAnalysis/AnalysisSummary.scss";
 import "./ComparePlayers.scss";
 
 const NAMES = new Intl.ListFormat("en", { type: "conjunction" });
@@ -137,11 +136,11 @@ export default function ComparePlayers({
             disabled={!isReady}
           />
         </div>
-        <div role="status" className="compare-players__standing">
-          {scope !== "all" && games?.size === 0 && (
-            <p className="analysis__standing">{EMPTY_MESSAGES[scope]}</p>
-          )}
-        </div>
+        <EmptyState className="compare-players__standing">
+          {scope !== "all" && games?.size === 0
+            ? EMPTY_MESSAGES[scope]
+            : undefined}
+        </EmptyState>
       </div>
       {!isReady && (
         <SkeletonTable view={RESULTS_PAGE.comparePlayers} loading={false} />

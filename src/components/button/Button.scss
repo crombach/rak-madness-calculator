@@ -1,5 +1,6 @@
 @use "../../styles/breakpoints" as *;
 @use "../../styles/focus" as *;
+@use "../../styles/interactive" as *;
 @use "../../styles/skeleton" as *;
 
 // A key at rest and a key sunk under a finger. The top face travels by the
@@ -40,8 +41,8 @@
 // primary ramp's own chrome, but these fills each stay their own fixed color in
 // both modes, so their ink has to stay fixed too.
 @mixin fixed-white-ink {
-  color: #fff;
-  --rak-focus-ring: #fff;
+  color: var(--rak-ink-fixed-light);
+  --rak-focus-ring: var(--rak-ink-fixed-light);
 }
 
 .button {
@@ -89,7 +90,7 @@
   }
 
   &.--sm {
-    min-height: 2.25rem;
+    min-height: var(--rak-control-sm);
     padding: var(--rak-space-1) var(--rak-space-2);
     border-radius: var(--rak-radius-xs);
   }
@@ -299,14 +300,7 @@
     background-color: transparent;
     color: inherit;
 
-    @include can-hover {
-      &:hover {
-        background-color: var(--rak-state-hover);
-      }
-    }
-    &:active {
-      background-color: var(--rak-state-press);
-    }
+    @include interactive-fill(var(--rak-state-hover), var(--rak-state-press));
   }
 
   // The button's own work is running. The label stays, because the user pressed

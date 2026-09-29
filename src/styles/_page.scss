@@ -1,0 +1,21 @@
+// Mixins only, so this emits no CSS of its own however many files pull it in.
+
+/**
+ * The body of a results page that is not a table: a padded column on the page's
+ * surface, as wide as the scrolling box `PageLayout.scss` declares the container on.
+ * `100cqi` gives a phone the whole screen and never a sideways scroll.
+ */
+@mixin page-body {
+  width: 100cqi;
+  padding: var(--rak-space-4);
+  background-color: var(--rak-surface);
+  color: var(--rak-text);
+  gap: var(--rak-space-4);
+}
+
+/** A game's card, framed the way the tables are, so it reads as a panel of the device. */
+@mixin game-card-frame {
+  overflow: hidden;
+  border: var(--rak-border-width) solid var(--rak-panel-border);
+  border-radius: var(--rak-radius-sm);
+}

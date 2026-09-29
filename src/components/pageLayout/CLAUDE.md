@@ -8,3 +8,6 @@ It also holds the note covering a phone turned on its side, on every page. A
 week's table cannot be read across the 500px of height `phone-landscape` allows
 for, so the app asks for the phone back the way round instead, under a
 `ScreenRotation` icon saying the same thing in a shape.
+
+`EmptyState`, a `<p role="status">` for a page with nothing to list, and
+`SkeletonStatus`, the hidden "Loading … results" every wireframe stands beside.

@@ -62,18 +62,14 @@
   // body squeezed out this is what keeps the rule under the search off the
   // keyboard's top edge.
   --rak-dialog-floor: calc(
-    20px + var(--rak-keyboard-inset, 0px) +
+    var(--rak-dialog-pad) + var(--rak-keyboard-inset, 0px) +
       max(0px, env(safe-area-inset-bottom) - var(--rak-keyboard-inset, 0px)) +
       min(var(--rak-keyboard-inset, 0px), var(--rak-space-3))
   );
 
-  padding-top: 20px;
+  padding-top: var(--rak-dialog-pad);
   padding-bottom: 0;
-  // 2px tighter than the top padding. Room enough for a game dialog's crest to
-  // carry its dark-mode rim light without the sheet's own edge cutting it off.
-  // `wide-screen` below restores the full 20px, since a centered window has room
-  // to spare on the sides a phone's sheet does not.
-  padding-inline: 18px;
+  padding-inline: var(--rak-dialog-pad);
   border-radius: var(--rak-radius-lg) var(--rak-radius-lg) 0 0;
   // The one edge the sheet meets the page on. Its other three run off the sides
   // and the bottom of the screen, where a line would read as an artifact rather
@@ -132,7 +128,7 @@
   // brought clear of an open keyboard. `.dialog__popup` names the value.
   padding-bottom: var(--rak-dialog-floor);
   // Everything under here scrolls. Only the search above it holds still.
-  border-top: var(--rak-border-width-hairline) solid var(--rak-divider);
+  border-top: var(--rak-border-width-hairline) solid var(--rak-divider-strong);
   overflow-y: auto;
   // The room a scrollbar needs, held whether or not there is one, so an answer
   // long enough to scroll does not narrow the one that was on screen before it.
@@ -168,14 +164,17 @@
     left: 50%;
     right: auto;
     bottom: auto;
-    width: min(var(--rak-scoreboard-width), calc(100vw - 32px));
-    max-height: min(680px, calc(var(--rak-viewport-height, 100dvh) - 64px));
+    width: min(
+      var(--rak-scoreboard-width),
+      calc(100vw - 2 * var(--rak-space-4))
+    );
+    max-height: min(
+      var(--rak-dialog-max-height),
+      calc(var(--rak-viewport-height, 100dvh) - 4 * var(--rak-space-4))
+    );
     // No keyboard to stand over and no home indicator to clear. A centered
     // window is off both edges already. The body still carries it.
-    --rak-dialog-floor: 20px;
-    // Back to the top padding. A centered window has room on its sides a
-    // phone's sheet does not, so it never needed the mobile-only 18px above.
-    padding-inline: 20px;
+    --rak-dialog-floor: var(--rak-dialog-pad);
     border-radius: var(--rak-radius-lg);
     // All four, since a centered window meets the page on every side.
     border: var(--rak-border-width-hairline) solid var(--rak-dialog-edge);

@@ -1,20 +1,18 @@
 @use "../../styles/breakpoints" as *;
 @use "../../styles/label" as *;
 @use "../../styles/layout" as *;
+@use "../../styles/page" as *;
 
 // Pinned to the screen's left edge while a wide table pans under it.
 .compare-players {
+  @include page-body;
+
   position: sticky;
   left: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--rak-space-2);
   width: min(100cqi, 100%);
-  padding: var(--rak-space-4);
-  // The dialog's surface, which the keys read against more clearly than the band.
-  background-color: var(--rak-surface-raised);
-  color: var(--rak-text);
 }
 
 // Choose Players over the game scope, each the full width, until there is room to
@@ -62,12 +60,8 @@
   background-color: var(--rak-on-solid);
 }
 
-// `.settings__label`, which names the same kind of choice in the settings dialog.
 .compare-players__games-label {
-  @include micro-label;
-
-  font-size: var(--rak-text-sm);
-  color: var(--rak-text-secondary);
+  @include section-title(sm);
 }
 
 // Even halves, so which one is chosen is the only thing telling them apart.
@@ -106,21 +100,19 @@
   // Square around the 24px icon on the 36px face. `aspect-ratio` cannot read a
   // stretched height.
   &.--icon {
-    padding-inline: 6px;
+    padding-inline: var(--rak-space-1-5);
   }
 }
 
-// A 36px face on its edge spans a combobox, as the remove keys do.
+// A `--rak-control-sm` face on its edge spans a combobox, as the remove keys do.
 .compare-players__add {
   align-self: stretch;
-  min-height: 2.25rem;
+  min-height: var(--rak-control-sm);
   padding-block: 0;
 }
 
 .compare-players__standing {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rak-space-2);
+  align-self: stretch;
 
   // Out of the flow while it has nothing to say, so the gap above it opens only
   // with its text and the table sits where the wireframe's did. Still in the
@@ -150,8 +142,12 @@
   }
 }
 
+.compare-players__dialog {
+  @include dialog-column;
+}
+
 // Add Player is an action on the list, not a row of it, so a block's gap parts
-// them. Against both classes, to outweigh the settings section's own.
-.settings__section.compare-players__section {
-  gap: var(--rak-space-4);
+// them.
+.compare-players__section {
+  @include stacked(var(--rak-space-4));
 }

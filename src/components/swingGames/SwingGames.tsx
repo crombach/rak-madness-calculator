@@ -12,9 +12,6 @@ import { ExpandMoreIcon } from "../icon/Icon";
 import plural, { verbFor } from "../../utils/plural";
 import ExperimentalGate from "../results/ExperimentalGate";
 import { HEADING_MARK, statusByLabel } from "../table/picks/headingMark";
-// For `analysis__more` and `analysis__standing`, which this page shares with the
-// analysis dialog.
-import "../playerAnalysis/AnalysisSummary.scss";
 import useGridColumns from "./useGridColumns";
 import "./SwingGames.scss";
 
@@ -63,7 +60,7 @@ function Side({ side }: { side: SwingSide }) {
       </ul>
       {folded > 0 && (
         <Button
-          className="analysis__more"
+          className="swing-games__more"
           variant="soft"
           size="sm"
           ariaExpanded={isExpanded}
@@ -112,9 +109,7 @@ function Game({ game, status }: { game: SwingGame; status?: GameStatus }) {
           className="swing-games__toggle"
           aria-label={`${gameName}, ${players}`}
         >
-          <span className="analysis__standing swing-games__count">
-            {players}
-          </span>
+          <span className="swing-games__count">{players}</span>
           <span className="swing-games__chevron">
             <ExpandMoreIcon />
           </span>

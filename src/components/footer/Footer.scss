@@ -1,3 +1,5 @@
+@use "../../styles/breakpoints" as *;
+
 // The quietest ink the app has that still clears 4.5:1 on the surface these links
 // stand on.
 .footer,
@@ -49,7 +51,7 @@
 //
 // The last term is the navbar, at its tallest. 539px is the last height that
 // cannot fit that, so it is the last height with no links.
-@media (max-height: 539px) {
+@include short-screen {
   .footer {
     display: none;
   }

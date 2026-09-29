@@ -1,30 +1,20 @@
 @use "../../styles/focus" as *;
 @use "../../styles/label" as *;
+@use "../../styles/layout" as *;
 @use "../../styles/lcd" as *;
 
 // The dialog body owns the padding around this and the width it stands in, so this
-// is the column, the air between its sections, and the room a focus ring needs.
-// That last is here rather than on the body: the body's own progress bar spans the
-// rule above it, and padding there would hold the bar off both ends of it.
+// is the column and the air between its sections.
 .settings {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rak-space-6);
-  padding-inline: $focus-ring-reach;
+  @include dialog-column;
 }
 
 .settings__section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rak-space-2);
+  @include stacked(var(--rak-space-2));
 }
 
 .settings__label {
-  @include micro-label;
-
-  margin: 0;
-  font-size: var(--rak-text-sm);
-  color: var(--rak-text-secondary);
+  @include section-title(sm);
 }
 
 .settings__choices {

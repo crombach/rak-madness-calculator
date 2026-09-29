@@ -1,5 +1,25 @@
+@use "focus" as *;
+
 /**
  * The column the navbar's keys and every page's content stand in, centered in
  * a wider window.
  */
 $content-width: 1024px;
+
+/** Flex column plus its own gap, the shape most blocks share. */
+@mixin stacked($gap) {
+  display: flex;
+  flex-direction: column;
+  gap: $gap;
+}
+
+/**
+ * The column a dialog's sections stand in, with the room a focus ring needs. That
+ * room is here rather than on the dialog body, whose progress bar spans the rule
+ * above it and would be held off both ends by padding there.
+ */
+@mixin dialog-column {
+  @include stacked(var(--rak-space-6));
+
+  padding-inline: $focus-ring-reach;
+}

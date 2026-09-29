@@ -1,11 +1,12 @@
 import { Select } from "@base-ui/react/select";
 import { UnfoldMoreIcon } from "../icon/Icon";
+import "./LabeledSelect.scss";
 
 /**
  * The season and week pickers' shared shape. A Base UI select styled by
  * `home__week-input`/`select__*`, so both read from one place instead of
- * drifting apart one field at a time. Those rules live in HomePage.scss,
- * its only caller's sheet.
+ * drifting apart one field at a time. The `select__*` rules live in
+ * `LabeledSelect.scss`.
  */
 export default function LabeledSelect<T>({
   ariaLabel,

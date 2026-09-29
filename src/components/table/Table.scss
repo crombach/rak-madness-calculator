@@ -1,4 +1,5 @@
 @use "../../styles/breakpoints" as *;
+@use "../../styles/interactive" as *;
 @use "../../styles/a11y" as *;
 @use "../../styles/label" as *;
 
@@ -7,8 +8,18 @@
 // the same arithmetic but puts the cell on a rendering surface of its own. A
 // finger landing on a cell is the moment before a fling, so on a phone that
 // surface is built and torn down exactly as the scroll starts.
-@mixin cell-darkened($strength) {
-  background-color: color-mix(in srgb, var(--rak-cell-fill) $strength, black);
+@function cell-darkened($strength) {
+  @return color-mix(in srgb, var(--rak-cell-fill) $strength, black);
+}
+
+// The hover and press fills of a tappable cell. A column lit by the hovered
+// heading takes the hover fill too.
+@mixin cell-interactive-fill {
+  @include interactive-fill(
+    cell-darkened(var(--rak-hover-strength)),
+    cell-darkened(var(--rak-press-strength)),
+    ".--column-hover"
+  );
 }
 
 // A refresh changing a cell's status draws the color it held before over the
@@ -78,9 +89,9 @@
   // table nobody has the numbers for yet, so it reaches them here, either through
   // the selectors below that it shares or by name in `SkeletonTable.scss`. Either
   // way none of them is written down twice.
-  --rak-table-cell-padding-x: 6px;
-  --rak-table-cell-padding-y: 2px;
-  --rak-table-header-padding-x: 8px;
+  --rak-table-cell-padding-x: var(--rak-space-1-5);
+  --rak-table-cell-padding-y: var(--rak-space-half);
+  --rak-table-header-padding-x: var(--rak-space-2);
   // What is left of the player column for the name itself, once the status icon
   // beside it, the gap between them, and the cell's own padding and edges have
   // taken theirs. `PlayerName.scss` cuts the name off here rather than at a count
@@ -185,23 +196,14 @@
         // The band is what a press mixes from here, standing in for the fill a
         // row cell names for itself.
         --rak-cell-fill: var(--rak-band-header);
-        transition: background-color 150ms;
+        transition: background-color var(--rak-duration-fast);
 
         .table__cell-button {
           padding: var(--rak-table-cell-padding-y)
             var(--rak-table-header-padding-x);
         }
 
-        @include can-hover {
-          &:hover,
-          &.--column-hover {
-            @include cell-darkened(var(--rak-hover-strength));
-          }
-        }
-
-        &:active {
-          @include cell-darkened(var(--rak-press-strength));
-        }
+        @include cell-interactive-fill;
       }
     }
   }
@@ -303,19 +305,10 @@
       // its hit area.
       padding: 0;
       cursor: pointer;
-      transition: background-color 150ms;
+      transition: background-color var(--rak-duration-fast);
 
       // Both steps are named in `index.scss`, beside the stripe they clear.
-      @include can-hover {
-        &:hover,
-        &.--column-hover {
-          @include cell-darkened(var(--rak-hover-strength));
-        }
-      }
-
-      &:active {
-        @include cell-darkened(var(--rak-press-strength));
-      }
+      @include cell-interactive-fill;
     }
 
     .table__player-col {

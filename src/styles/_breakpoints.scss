@@ -27,6 +27,12 @@ $breakpoint-labeled-navbar: 561px;
  */
 $breakpoint-wide: 601px;
 
+/**
+ * Below this the home page's stack of controls no longer clears the footer's
+ * links. Worked out in `Footer.scss`.
+ */
+$breakpoint-short: 540px;
+
 /** Room enough for the tables and the navbar to loosen up. */
 @mixin roomy-screen {
   @media (min-width: $breakpoint-roomy) {
@@ -118,6 +124,17 @@ $phone-touch-query: "(max-width: #{$breakpoint-roomy - 1px}) and (hover: none) a
  */
 @mixin reduced-motion {
   @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+/**
+ * Too short for the footer's links to stand clear of the home page's last button.
+ * The one `max-height` mixin: what it guards has to stop at a height rather than
+ * start there. `$breakpoint-short` less 1px is the last height with no links.
+ */
+@mixin short-screen {
+  @media (max-height: #{$breakpoint-short - 1px}) {
     @content;
   }
 }

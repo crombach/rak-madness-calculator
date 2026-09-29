@@ -80,7 +80,9 @@
   --rak-label-tracking: 0.06em;
 
   // Space, on a 4px grid.
+  --rak-space-half: 2px;
   --rak-space-1: 4px;
+  --rak-space-1-5: 6px;
   --rak-space-2: 8px;
   --rak-space-3: 12px;
   --rak-space-4: 16px;
@@ -101,6 +103,14 @@
 
   // The floor for anything a finger has to hit.
   --rak-touch-target: 44px;
+  // A key held to less than a finger's floor, and the tall field and button the
+  // home page stands its column in. Both clear the 24px WCAG 2.2 AA asks.
+  --rak-control-sm: 2.25rem;
+  --rak-control-lg: 3.5rem;
+  --rak-navbar-height: 3.75rem;
+  // A dialog's side padding, and the room its window keeps to the screen's edge.
+  --rak-dialog-pad: 20px;
+  --rak-dialog-max-height: 680px;
 
   // The widest a Game Status scoreboard is drawn, in the dialog or on a page.
   --rak-scoreboard-width: 640px;
@@ -361,7 +371,11 @@
   // A control's own boundary, which has to be told from the surface behind it.
   --rak-border: #808080;
   // A rule between two things that are already apart, which does not.
-  --rak-divider: #d6d6d6;
+  --rak-divider-strong: #d6d6d6;
+  // A hairline between rows of one block, one step off the fill behind it.
+  --rak-divider-soft: var(--rak-fill-muted);
+  // Ink on a fill that stays one color in both modes, unlike `--rak-on-solid`.
+  --rak-ink-fixed-light: #fff;
   // The edge of a panel pressed into the device: a table cell, a popup opening
   // off a socket. Its own token rather than a direct read of `--rak-primary-800`,
   // since that ramp step is the readout/header chrome, light here and dark in
@@ -433,12 +447,6 @@
   --rak-text: #1a1a1a;
   --rak-text-secondary: #373737;
   --rak-text-tertiary: #5d5d5d;
-  // The label over a block in the player analysis, one step off the tertiary ink
-  // the rest of that dialog's quiet text takes. A label is scanned rather than
-  // read, so it carries further than the tertiary ink lets it at this size.
-  // 8.86:1 on the dialog's own ground and 7.99:1 on the fill a table header sits
-  // on, against 6.58:1 and 5.93:1 for the ink it replaces.
-  --rak-analysis-label: #4a4a4a;
   // Foreground on a solid fill. Not a background: `--rak-surface` is the page.
   // Dark here, since the fills it pairs with (the primary ramp above) are
   // light in this mode. Dark mode inverts this to white below, against that
@@ -765,9 +773,6 @@ html {
   --rak-text: #f6f6f6;
   --rak-text-secondary: #d1d1d1;
   --rak-text-tertiary: #a1a1a1;
-  // 8.22:1 on the dialog's own ground and 7.85:1 on a table header's fill, which
-  // is the lift the light value takes there.
-  --rak-analysis-label: #b5b5b5;
 
   --rak-disabled-bg: #262626;
   --rak-disabled-text: #939393;
