@@ -174,9 +174,9 @@ export function AppDataContextProvider({
     refresh,
     rescore,
   } = playerScores;
-  // The scores on screen can still be the last week's while the URL's week loads.
   // Until scoring has tried the URL's week, the outcome is this browser's record
-  // of it, so a settled week opens without the refresh controls.
+  // of it, so a settled week opens without the refresh controls. The scores on
+  // screen can still be the last week's until then.
   const { season: routeSeason, weekNumber: routeWeekNumber } = route;
   const isRouteAttempted =
     attemptedFor?.season === routeSeason &&
