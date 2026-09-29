@@ -145,7 +145,8 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: var(--rak-space-4);
+  // Tight, since the first row's own padding already sets it off from the header.
+  gap: 0;
   width: min(80vw, 320px);
   height: 100%;
   padding: calc(var(--rak-space-4) + env(safe-area-inset-top))
@@ -218,7 +219,7 @@
   @include nav-menu-row;
 
   // A finger needs more room than a pointer, so phone rows sit further apart.
-  padding-block: var(--rak-space-3);
+  padding-block: var(--rak-space-4);
 
   border-radius: var(--rak-radius-xs);
 
