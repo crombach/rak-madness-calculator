@@ -75,13 +75,13 @@ const PICKS_COLUMNS: Array<Column> = [
  */
 const COMPARE_COLUMNS: Array<Column> = [
   ...RANK_AND_PLAYER,
-  { header: "MNF Points Pick" },
-  { header: "MNF Points Distance" },
   ...leagueColumns(2, "C"),
   { header: "College Score" },
   ...leagueColumns(4, "P"),
   { header: "Pro Score" },
   { header: "Pro Score ATS" },
+  { header: "MNF Points Pick" },
+  { header: "MNF Points Distance" },
   TOTAL_SCORE,
 ];
 

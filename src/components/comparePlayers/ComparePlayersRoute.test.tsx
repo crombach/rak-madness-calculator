@@ -126,13 +126,13 @@ describe("the compare players route", () => {
     ).toEqual([
       "Rank",
       "Player",
-      "MNF Points Pick",
-      "MNF Points Distance",
       "C2",
       "College Score",
       "P1",
       "Pro Score",
       "Pro Score ATS",
+      "MNF Points Pick",
+      "MNF Points Distance",
       "Total Score",
     ]);
   });
@@ -218,8 +218,8 @@ describe("the compare players route", () => {
     await choose(user, "Player 2", "Carol");
     await closeDialog(user);
 
-    await user.click(screen.getByRole("button", { name: "All" }));
-    expect(screen.getByRole("button", { name: "All" })).toHaveAttribute(
+    await user.click(screen.getByRole("button", { name: "All Picks" }));
+    expect(screen.getByRole("button", { name: "All Picks" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
@@ -342,7 +342,7 @@ describe("the compare players route", () => {
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Carol");
     await closeDialog(user);
-    await user.click(screen.getByRole("button", { name: "All" }));
+    await user.click(screen.getByRole("button", { name: "All Picks" }));
 
     expect(localStorage.getItem(SHOWS_ALL_KEY)).toBe("all");
   });
@@ -358,7 +358,7 @@ describe("the compare players route", () => {
     expect(
       await screen.findByRole("table", { name: "Picks of Alice and Carol" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "All" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "All Picks" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );

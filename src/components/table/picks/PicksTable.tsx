@@ -211,12 +211,6 @@ function PicksTable({
           <th className={PLAYER_COL_CLASS} scope="col">
             Player
           </th>
-          {showsTiebreakers && (
-            <>
-              <th scope="col">MNF Points Pick</th>
-              <th scope="col">MNF Points Distance</th>
-            </>
-          )}
           {leagueHeaders({
             labels: shownCollege,
             statusByLabel: statuses,
@@ -229,7 +223,13 @@ function PicksTable({
             onClick: showGameStatus,
           })}
           <th scope="col">Pro Score</th>
-          {showsTiebreakers && <th scope="col">Pro Score ATS</th>}
+          {showsTiebreakers && (
+            <>
+              <th scope="col">Pro Score ATS</th>
+              <th scope="col">MNF Points Pick</th>
+              <th scope="col">MNF Points Distance</th>
+            </>
+          )}
           <th scope="col">Total Score</th>
         </>
       }
@@ -243,12 +243,6 @@ function PicksTable({
               player={player}
               hasNameConflict={repeated.has(player.name)}
             />
-            {showsTiebreakers && (
-              <>
-                <td>{player.tiebreaker.pick ?? "N/A"}</td>
-                <td>{player.tiebreaker.distance ?? "N/A"}</td>
-              </>
-            )}
             <PickCells
               playerId={player.id}
               picks={player.college}
@@ -267,7 +261,13 @@ function PicksTable({
               onClick={showGameStatus}
             />
             <td>{player.score.pro}</td>
-            {showsTiebreakers && <td>{player.score.proAgainstTheSpread}</td>}
+            {showsTiebreakers && (
+              <>
+                <td>{player.score.proAgainstTheSpread}</td>
+                <td>{player.tiebreaker.pick ?? "N/A"}</td>
+                <td>{player.tiebreaker.distance ?? "N/A"}</td>
+              </>
+            )}
             <td>
               <b>{player.score.total}</b>
             </td>

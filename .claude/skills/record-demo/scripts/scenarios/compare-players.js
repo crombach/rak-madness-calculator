@@ -111,7 +111,7 @@ export default async function run({ page, context, baseUrl }) {
   await page.getByRole("button", { name: "Close" }).click();
   await page.getByRole("dialog").waitFor({ state: "detached" });
   if (SHOW_ALL) {
-    await page.getByRole("button", { name: "All" }).click();
+    await page.getByRole("button", { name: "All Picks" }).click();
     // The lamp fades over to the new choice.
     await page.waitForTimeout(500);
   }

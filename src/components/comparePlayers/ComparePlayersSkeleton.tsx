@@ -35,8 +35,8 @@ export function ChooseButton({
 
 /** The table's two scopes, by whether it shows every game. */
 const GAME_SCOPES = [
-  { showsAll: false, label: "Different" },
-  { showsAll: true, label: "All" },
+  { showsAll: false, label: "Different Picks" },
+  { showsAll: true, label: "All Picks" },
 ] as const;
 
 /** Picks whether the table shows every game or only those picked differently. */

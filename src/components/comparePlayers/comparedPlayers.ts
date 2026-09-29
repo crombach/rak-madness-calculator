@@ -31,7 +31,7 @@ export function writeComparedPlayers(names: Array<string>): void {
 const SHOWS_ALL_SETTING = "compareShowsAll";
 const SHOWS_ALL = "all";
 
-/** The exact key the Different/All choice is saved under, for a test to seed. */
+/** The exact key the Different Picks or All Picks choice is saved under, for a test to seed. */
 export const SHOWS_ALL_KEY = PREFIX + SHOWS_ALL_SETTING;
 
 /** Whether the table last showed every game. */
