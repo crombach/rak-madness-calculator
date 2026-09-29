@@ -15,19 +15,11 @@ import GameStatusSummary from "./GameStatusSummary";
 import "./GameStatusDialog.scss";
 
 /**
- * A query is matched against the column the game is. Then it is matched against
- * the game itself.
- *
- * Wider than the input reads once a game is chosen, which is the game alone. The
- * column is how a reader who came from a cell knows which game they clicked, so it
- * is worth typing even where it is not worth keeping on screen.
+ * The column and the matchup together. The input reads it back once a game is
+ * chosen, and a query is matched against it, so the input's own text always finds
+ * its game.
  */
 export function gameSearchText(game: WeekGame): string {
-  return `${game.label}  ${game.name}`;
-}
-
-/** The column and the matchup together, read back into the input once chosen. */
-function gameLabelText(game: WeekGame): string {
   return `${game.label} ${game.name}`;
 }
 
@@ -170,7 +162,7 @@ export default function GameStatusDialog({
   useArrival(named, (label) => {
     setChosen(label);
     const found = games.find((it) => it.label === label);
-    setQuery(found != null ? gameLabelText(found) : label);
+    setQuery(found != null ? gameSearchText(found) : label);
   });
 
   const { shown } = useLiveGame({
@@ -209,7 +201,7 @@ export default function GameStatusDialog({
           onQueryChange={setQuery}
           // The column and the game both, so the reader who came from a cell can
           // tell this is the game they clicked once it fills the input.
-          itemToStringLabel={gameLabelText}
+          itemToStringLabel={gameSearchText}
           itemKey={(option) => option.label}
           // The chosen game's mark uses the freshest status, not the week's, so going
           // final stops pulsing. The week's stands until the first answer lands.

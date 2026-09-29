@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
   PLAYER_NAME_KEY,
@@ -180,6 +180,16 @@ describe("GameStatusDialog", () => {
       document.querySelector(".game-status__team-name.--picked"),
     ).toHaveTextContent("KC");
     localStorage.clear();
+  });
+
+  it("offers the chosen game when the list opens from the keyboard", async () => {
+    render(dialog("P1", true, scores, () => Promise.resolve(undefined)));
+    const input = screen.getByRole("combobox", { name: "Game" });
+    act(() => input.focus());
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    expect(
+      await screen.findByRole("option", { name: /KC @ BUF/ }),
+    ).toBeInTheDocument();
   });
 
   it("says how many players picked each side", async () => {
