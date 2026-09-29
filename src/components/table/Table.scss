@@ -269,7 +269,11 @@
   // which is the flash. A positioned cell already draws over the static ones beside
   // it, and the header sets a `z-index` of its own to stay over this on the way
   // past.
-  .table__player-col {
+  .table__player-col,
+  // A filler row's cell under that column, which holds no name and so no class,
+  // sticks with it, so the column's edge runs unbroken to the table's foot.
+  // Every table puts the player column second, after the rank.
+  .table__filler-row > td:nth-child(2) {
     position: sticky;
     left: 0;
   }
