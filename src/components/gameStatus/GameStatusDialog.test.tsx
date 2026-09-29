@@ -1,5 +1,9 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import {
+  PLAYER_NAME_KEY,
+  SettingsContextProvider,
+} from "../../context/SettingsContext";
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
@@ -12,6 +16,7 @@ import {
   weekOf,
 } from "../../utils/scoring/leagueResultFixtures";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
+import { pick, player } from "../../utils/scoring/scoringTestFixtures";
 import { POLL_MS } from "../../hooks/useLiveWeek";
 import matching from "../../utils/matching";
 import { gameSearchText } from "./GameStatusDialog";
@@ -157,6 +162,26 @@ describe("the games a query offers", () => {
  * each game reads like is covered against `GameStatusSummary` instead.
  */
 describe("GameStatusDialog", () => {
+  it("says the reader's own pick in place of the spread", async () => {
+    localStorage.setItem(PLAYER_NAME_KEY, "alice");
+    const withMe: RakMadnessScores = {
+      scores: [player({ name: "Alice", pro: [pick("KC -3")] })],
+      games,
+    };
+    render(
+      <SettingsContextProvider>
+        {dialog("P1", true, withMe, () => Promise.resolve(undefined))}
+      </SettingsContextProvider>,
+    );
+    expect(await screen.findByText(/Your Pick/)).toHaveTextContent(
+      "Your Pick: KC -3",
+    );
+    expect(
+      document.querySelector(".game-status__team-name.--picked"),
+    ).toHaveTextContent("KC");
+    localStorage.clear();
+  });
+
   it("polls the open game's league, keeps it up to date, and stops when it is final", async () => {
     vi.useFakeTimers();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });

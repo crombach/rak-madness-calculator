@@ -6,7 +6,7 @@ import { LeagueResult } from "../../types/LeagueResult";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
-import GameStatusSummary from "../gameStatus/GameStatusSummary";
+import GameStatusSummary, { SpreadLine } from "../gameStatus/GameStatusSummary";
 import { HEADING_MARK } from "../table/picks/headingMark";
 import "./LiveGames.scss";
 
@@ -31,12 +31,19 @@ function LiveGame({
   const myPick = useMyPick(scores, game);
   return (
     <li className="live-games__game">
-      <h2 className="live-games__heading">
-        {heading?.mark}
-        <span className="live-games__sr-only">{heading?.word}</span>
-        <span className="live-games__label">{game.label}</span>
-        <span className="live-games__name">{game.name}</span>
-      </h2>
+      <div className="live-games__header">
+        <h2 className="live-games__heading">
+          {heading?.mark}
+          <span className="live-games__sr-only">{heading?.word}</span>
+          <span className="live-games__label">{game.label}</span>
+          <span className="live-games__name">{game.name}</span>
+        </h2>
+        <SpreadLine
+          spread={game.spread}
+          myPick={myPick}
+          className="live-games__pick"
+        />
+      </div>
       <GameStatusSummary game={game} result={result} myPick={myPick} brief />
     </li>
   );

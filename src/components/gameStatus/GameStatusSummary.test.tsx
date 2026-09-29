@@ -143,7 +143,7 @@ describe("GameStatusSummary, the game it is given", () => {
 describe("GameStatusSummary, the pool's line on the game", () => {
   // The label and the line are two elements, since the line alone is set in the
   // table's face, so the sentence is read off the paragraph holding both.
-  const spreadLine = () => screen.getByText(/Rak Madness Spread/);
+  const spreadLine = () => screen.getByText(/Spread/);
 
   it("names the favored side and what it gives", () => {
     render(
@@ -152,13 +152,13 @@ describe("GameStatusSummary, the pool's line on the game", () => {
         result={result()}
       />,
     );
-    expect(spreadLine()).toHaveTextContent("Rak Madness Spread: BUF -3");
+    expect(spreadLine()).toHaveTextContent("Spread: BUF -3");
   });
 
   it("says so where the picks put no line on the game", () => {
     render(<GameStatusSummary game={game(result())} result={result()} />);
     // Said either way, so a game with no line is not one the dialog forgot about.
-    expect(spreadLine()).toHaveTextContent("Rak Madness Spread: NONE");
+    expect(spreadLine()).toHaveTextContent("Spread: NONE");
   });
 
   it("says the reader's own pick in the line's place, and marks the side it names", () => {
@@ -170,7 +170,7 @@ describe("GameStatusSummary, the pool's line on the game", () => {
       />,
     );
     expect(screen.getByText(/Your Pick/)).toHaveTextContent("Your Pick: kc +3");
-    expect(screen.queryByText(/Rak Madness Spread/)).toBeNull();
+    expect(screen.queryByText(/Spread/)).toBeNull();
     const picked = document.querySelector(".game-status__team-name.--picked");
     expect(picked).toHaveTextContent("KC");
     expect(picked).toHaveTextContent("Your pick");
@@ -179,10 +179,10 @@ describe("GameStatusSummary, the pool's line on the game", () => {
 });
 
 describe("GameStatusSummary, brief", () => {
-  it("leaves out the records and the strip under the scoreline", () => {
+  it("keeps the records and leaves out the spread line and the strip under the scoreline", () => {
     render(<GameStatusSummary game={game(result())} result={result()} brief />);
-    expect(screen.getByText("Buffalo Bills")).toBeInTheDocument();
-    expect(screen.queryByText("4-1")).toBeNull();
+    expect(screen.getByText("4-1")).toBeInTheDocument();
+    expect(screen.queryByText(/Spread/)).toBeNull();
     expect(screen.queryByRole("link", { name: "Gamecast" })).toBeNull();
     expect(document.querySelector(".game-status__meta")).toBeNull();
   });

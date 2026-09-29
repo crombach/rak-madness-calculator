@@ -36,6 +36,20 @@
   }
 }
 
+// The pick keeps to the heading's line, at its end. A pair too wide for one line
+// puts the pick on a line of its own, still at the end.
+.live-games__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rak-space-2);
+}
+
+.live-games__pick {
+  margin-inline-start: auto;
+  text-align: end;
+}
+
 .live-games__heading {
   display: flex;
   align-items: center;

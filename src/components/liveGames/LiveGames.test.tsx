@@ -20,8 +20,15 @@ import { LeagueResults } from "../../utils/scoring/leagueResults";
 import { pick, player } from "../../utils/scoring/scoringTestFixtures";
 import LiveGames from "./LiveGames";
 
+const proLiveGame = liveGame({
+  home: "BUF",
+  away: "KC",
+  homeScore: 7,
+  awayScore: 3,
+});
 const proLive: LeagueResult = {
-  ...liveGame({ home: "BUF", away: "KC", homeScore: 7, awayScore: 3 }),
+  ...proLiveGame,
+  home: { ...proLiveGame.home, record: "4-1" },
   id: "401",
   period: 3,
   clock: "8:42",
@@ -87,8 +94,9 @@ describe("LiveGames", () => {
     ).toEqual(["LiveP1KC @ BUF", "DelayedP3DAL @ PHI"]);
   });
 
-  it("shows each as a scoreboard alone, without a record or the strip under it", () => {
+  it("shows each as a scoreboard with its records, without the strip under it", () => {
     mount(scores);
+    expect(screen.getByText("4-1")).toHaveClass("game-status__record");
     expect(screen.queryByRole("link", { name: "Gamecast" })).toBeNull();
     expect(document.querySelector(".game-status__meta")).toBeNull();
   });
@@ -97,9 +105,10 @@ describe("LiveGames", () => {
     localStorage.setItem(PLAYER_NAME_KEY, "alice");
     mount(scores);
     const [first] = cards();
-    expect(within(first).getByText(/Your Pick/)).toHaveTextContent(
-      "Your Pick: KC -3",
-    );
+    const myPick = within(first).getByText(/Your Pick/);
+    expect(myPick).toHaveTextContent("Your Pick: KC -3");
+    expect(myPick.parentElement).toHaveClass("live-games__header");
+    expect(within(first).getAllByText(/Your Pick/)).toHaveLength(1);
     expect(
       first.querySelector(".game-status__team-name.--picked"),
     ).toHaveTextContent("KC");
@@ -107,7 +116,11 @@ describe("LiveGames", () => {
 
   it("says the pool's line with no name set", () => {
     mount(scores);
-    expect(screen.getAllByText(/Rak Madness Spread/)).toHaveLength(2);
+    const [first] = cards();
+    expect(within(first).getByText(/Spread/)).toHaveTextContent(/^Spread: /);
+    expect(within(first).getByText(/Spread/).parentElement).toHaveClass(
+      "live-games__header",
+    );
     expect(screen.queryByText(/Your Pick/)).toBeNull();
   });
 

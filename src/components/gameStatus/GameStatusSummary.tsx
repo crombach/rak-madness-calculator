@@ -28,7 +28,7 @@ const SIDE_LABEL: Record<"hosted" | "neutral", Record<HomeAway, string>> = {
 };
 
 /** The pool's own line on the game, which is not always a bookmaker's. */
-const SPREAD_LABEL = "Rak Madness Spread";
+const SPREAD_LABEL = "Spread";
 
 /** Said in the line's place where the reader has a pick on the game. */
 const MY_PICK_LABEL = "Your Pick";
@@ -82,7 +82,6 @@ function Side({
   logo,
   outcome,
   isPicked,
-  brief,
 }: {
   side: GameSide;
   homeAway: HomeAway;
@@ -93,8 +92,6 @@ function Side({
   outcome?: SideOutcome;
   /** The side the reader's own pick names. */
   isPicked: boolean;
-  /** Leaves out the record. */
-  brief: boolean;
 }) {
   return (
     <div className={`game-status__side --${homeAway}`}>
@@ -126,11 +123,32 @@ function Side({
             <span className="game-status__sr-only">{PICKED_SIDE_LABEL}</span>
           )}
         </span>
-        {!brief && side.record != null && (
+        {side.record != null && (
           <span className="game-status__record">{side.record}</span>
         )}
       </div>
     </div>
+  );
+}
+
+/** The reader's own pick on the game where they have one, else the pool's line. */
+export function SpreadLine({
+  spread,
+  myPick,
+  className,
+}: {
+  spread?: GameSpread;
+  myPick?: string;
+  className?: string;
+}) {
+  return (
+    <p className={getClasses("game-status__spread", className)}>
+      {myPick != null ? MY_PICK_LABEL : SPREAD_LABEL}:{" "}
+      <span className="game-status__spread-value">
+        {myPick ??
+          (spread != null ? `${spread.team} ${spread.points}` : NO_SPREAD)}
+      </span>
+    </p>
   );
 }
 
@@ -159,7 +177,7 @@ function Game({
   result: LeagueResult;
   spread?: GameSpread;
   myPick?: string;
-  /** Leaves out the records and the strip under the scoreline. */
+  /** Leaves out the strip under the scoreline, and the spread line. */
   brief: boolean;
   /** What a side wears beside its name, or nothing where the marks are dropped. */
   logo?: (side: GameSide) => ReactNode;
@@ -203,17 +221,10 @@ function Game({
     logo: fit < MARKS_OFF ? logo?.(side) : undefined,
     outcome: outcomeOf(side),
     isPicked: side.team.abbreviation.toUpperCase() === pickedTeam,
-    brief,
   });
   return (
     <>
-      <p className="game-status__spread">
-        {myPick != null ? MY_PICK_LABEL : SPREAD_LABEL}:{" "}
-        <span className="game-status__spread-value">
-          {myPick ??
-            (spread != null ? `${spread.team} ${spread.points}` : NO_SPREAD)}
-        </span>
-      </p>
+      {!brief && <SpreadLine spread={spread} myPick={myPick} />}
       <div
         className={getClasses("game-status__scoreline", {
           "--short-names": fit >= SHORT_NAMES,
@@ -256,7 +267,8 @@ export default function GameStatusSummary({
   result?: LeagueResult;
   /** The reader's own pick on the game, which then stands in for the pool's line. */
   myPick?: string;
-  /** A scoreboard alone: no records, and no kickoff, place or Gamecast link. */
+  /** A scoreboard alone: no kickoff, place or Gamecast link. The caller draws the
+   *  `SpreadLine`. */
   brief?: boolean;
 }) {
   // Which game's marks failed to load, rather than a flag, so moving to another
