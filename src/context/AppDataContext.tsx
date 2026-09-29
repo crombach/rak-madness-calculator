@@ -16,6 +16,7 @@ import { WeekInfo } from "../types/League";
 import { prefetchStoredPicks } from "../utils/loadStoredPicks";
 import { RakMadnessScores } from "../types/RakMadnessScores";
 import { NO_SWINGS, SwingGames } from "../utils/scoring/swingGameTypes";
+import cachedImport from "../utils/cachedImport";
 import isWeekSettled, { isWeekWon } from "../utils/scoring/isWeekSettled";
 import { NO_SCORE_CHANGES, ScoreChanges } from "../utils/scoring/scoreChanges";
 import { useSettings } from "./SettingsContext";
@@ -290,11 +291,9 @@ const swingGamesByScores = new WeakMap<RakMadnessScores, SwingGames>();
  * Loaded on first use. `getSwingGames` pulls in all of `getPlayerAnalysis`, which
  * the routes would otherwise carry in the chunk every one of them waits on.
  */
-let getSwingGamesPromise: Promise<
-  typeof import("../utils/scoring/getSwingGames")
->;
-const loadGetSwingGames = () =>
-  (getSwingGamesPromise ??= import("../utils/scoring/getSwingGames"));
+const loadGetSwingGames = cachedImport(
+  () => import("../utils/scoring/getSwingGames"),
+);
 
 /**
  * The week's swing games, or undefined while its scores or the code that reads
@@ -308,8 +307,10 @@ export function useSwingGames(): SwingGames | undefined {
     useState<(scores: RakMadnessScores) => SwingGames>();
   const isNeeded = scores != null && experimentalFeatures;
 
+  // Asks again on each new set of scores until the code arrives, so one failed
+  // download costs one poll rather than the page.
   useEffect(() => {
-    if (!isNeeded) return;
+    if (!isNeeded || getSwingGames != null) return;
     let isCurrent = true;
     loadGetSwingGames().then(
       (module) => {
@@ -320,7 +321,7 @@ export function useSwingGames(): SwingGames | undefined {
     return () => {
       isCurrent = false;
     };
-  }, [isNeeded]);
+  }, [isNeeded, scores, getSwingGames]);
 
   return useMemo(() => {
     if (scores == null) return undefined;

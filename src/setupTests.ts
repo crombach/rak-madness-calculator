@@ -60,7 +60,7 @@ export function stubMatchMedia(matches: boolean) {
       listeners.delete(listener);
     },
   };
-  window.matchMedia = (() => list) as unknown as typeof window.matchMedia;
+  vi.stubGlobal("matchMedia", () => list);
   return {
     listeners,
     answer(next: boolean) {
