@@ -165,8 +165,6 @@ describe("NavMenu", () => {
 
       expect(item).toHaveAttribute("data-disabled");
       expect(item).not.toHaveAccessibleDescription();
-      await user.hover(item);
-      expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
     });
 
     it("disables Swing Games once no open game can knock anyone out", async () => {
@@ -181,15 +179,14 @@ describe("NavMenu", () => {
       expect(item).toHaveAttribute("data-disabled");
     });
 
-    it("keeps the disabled reason out of sight in the popup", async () => {
+    it("shows the disabled reason under the item's name in the popup", async () => {
       mockSwingGames.mockReturnValue({ games: [] });
       const user = mount();
       await user.click(trigger());
       await screen.findByRole("menuitem", { name: /Swing Games/ });
 
-      expect(screen.getByText("No game knocks anyone out")).toHaveClass(
-        "nav-menu__sr-only",
-      );
+      expect(screen.getByText("No game knocks anyone out")).toBeVisible();
+      expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
     });
 
     it("names the disabled reason as the item's accessible description", async () => {
@@ -204,37 +201,7 @@ describe("NavMenu", () => {
       expect(item).toHaveAccessibleDescription("No game knocks anyone out");
     });
 
-    it("shows the disabled reason in a tooltip on hover", async () => {
-      mockSwingGames.mockReturnValue({ games: [] });
-      const user = mount();
-      await user.click(trigger());
-      const item = await screen.findByRole("menuitem", {
-        name: /Swing Games/,
-      });
-
-      await user.hover(item);
-
-      expect(await screen.findByRole("tooltip")).toHaveTextContent(
-        "No game knocks anyone out",
-      );
-    });
-
-    it("shows the disabled reason in a tooltip on a tap", async () => {
-      mockSwingGames.mockReturnValue({ games: [] });
-      const user = mount();
-      await user.click(trigger());
-      const item = await screen.findByRole("menuitem", {
-        name: /Swing Games/,
-      });
-
-      await user.pointer({ keys: "[TouchA]", target: item });
-
-      expect(await screen.findByRole("tooltip")).toHaveTextContent(
-        "No game knocks anyone out",
-      );
-    });
-
-    it("shows the disabled reason in a tooltip on keyboard focus", async () => {
+    it("reaches the disabled item by keyboard", async () => {
       mockSwingGames.mockReturnValue({ games: [] });
       const user = mount();
       await user.click(trigger());
@@ -246,9 +213,6 @@ describe("NavMenu", () => {
       await user.keyboard("{ArrowDown}");
 
       await waitFor(() => expect(item).toHaveFocus());
-      expect(await screen.findByRole("tooltip")).toHaveTextContent(
-        "No game knocks anyone out",
-      );
     });
 
     it("leaves Swing Games enabled with a game open", async () => {

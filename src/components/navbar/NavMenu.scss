@@ -93,24 +93,9 @@
   }
 }
 
-// Text a screen reader reads instead of seeing: a popup item's disabled reason,
-// and the drawer's own name.
+// The drawer's own name, read by a screen reader instead of shown.
 .nav-menu__sr-only {
   @include visually-hidden;
-}
-
-.nav-menu__tooltip-positioner {
-  z-index: var(--rak-z-overlay);
-}
-
-.nav-menu__tooltip {
-  max-width: 12rem;
-  padding: var(--rak-space-1) var(--rak-space-2);
-  border-radius: var(--rak-radius-xs);
-  background-color: var(--rak-nav-key-active);
-  box-shadow: var(--rak-shadow-band-navbar);
-  color: var(--rak-nav-ink);
-  font-size: var(--rak-text-xs);
 }
 
 // The drawer below `wide-screen`, timed and eased like `DialogShell.scss`'s sheet.
@@ -226,15 +211,15 @@
   @include focus-ring;
 }
 
-// A grid, so the icon centers on the name alone and the reason sits under the
-// name, left-aligned with it.
-.nav-drawer__item--with-reason {
+// A disabled item with a reason, in the popup or the drawer. A grid, so the icon
+// centers on the name alone and the reason sits under the name, aligned with it.
+.nav-menu__with-reason {
   display: grid;
   grid-template-columns: auto 1fr;
   row-gap: 0;
 }
 
-.nav-drawer__reason {
+.nav-menu__reason {
   grid-column: 2;
   font-size: var(--rak-text-xs);
 }
