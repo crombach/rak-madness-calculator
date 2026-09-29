@@ -18,14 +18,16 @@ function PlayerPicker({
   value,
   onValueChange,
   onRemove,
+  canRemove,
   focusOnMount,
 }: {
   label: string;
   options: Array<PlayerOption>;
   value?: PlayerOption;
   onValueChange: (chosen: PlayerOption) => void;
-  /** Absent while the page holds no more pickers than it opens with. */
-  onRemove?: () => void;
+  onRemove: () => void;
+  /** Whether the page holds more pickers than it opens with. */
+  canRemove: boolean;
   focusOnMount?: boolean;
 }) {
   const [query, setQuery] = useState(value?.name ?? "");
@@ -40,16 +42,15 @@ function PlayerPicker({
         onQueryChange={setQuery}
         focusOnMount={focusOnMount}
       />
-      {onRemove != null && (
-        <Button
-          className="compare-players__remove"
-          iconOnly
-          ariaLabel={`Remove ${label}`}
-          onClick={onRemove}
-        >
-          <DeleteIcon />
-        </Button>
-      )}
+      <Button
+        className="compare-players__remove"
+        iconOnly
+        ariaLabel={`Remove ${label}`}
+        disabled={!canRemove}
+        onClick={onRemove}
+      >
+        <DeleteIcon />
+      </Button>
     </li>
   );
 }
@@ -100,11 +101,8 @@ export default function ComparePlayersDialog({
                   value={listed.find((option) => option.id === slot.id)}
                   onValueChange={(option) => onChoose(slot.key, option.id)}
                   focusOnMount={slot.key === addedKey}
-                  onRemove={
-                    slots.length > MIN_PICKERS
-                      ? () => onRemove(slot.key)
-                      : undefined
-                  }
+                  onRemove={() => onRemove(slot.key)}
+                  canRemove={slots.length > MIN_PICKERS}
                 />
               );
             })}

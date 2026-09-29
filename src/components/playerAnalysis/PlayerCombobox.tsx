@@ -1,4 +1,3 @@
-import { ReactNode } from "react";
 import getClasses from "../../utils/getClasses";
 import matching from "../../utils/matching";
 import DialogCombobox from "../dialog/DialogCombobox";
@@ -14,7 +13,6 @@ export default function PlayerCombobox({
   onValueChange,
   query,
   onQueryChange,
-  adornment,
   focusOnMount,
 }: {
   ariaLabel: string;
@@ -23,7 +21,6 @@ export default function PlayerCombobox({
   onValueChange: (chosen: PlayerOption) => void;
   query: string;
   onQueryChange: (query: string) => void;
-  adornment?: ReactNode;
   focusOnMount?: boolean;
 }) {
   return (
@@ -47,7 +44,22 @@ export default function PlayerCombobox({
           "--name-conflict": option.hasNameConflict,
         })
       }
-      adornment={adornment}
+      // The player named in the input is marked the way the tables do.
+      adornment={
+        value != null && (
+          <span
+            className={getClasses("player-analysis__input-status", {
+              "--knocked-out": value.isKnockedOut,
+              "--name-conflict": value.hasNameConflict,
+            })}
+          >
+            <PlayerStatusIcon
+              isKnockedOut={value.isKnockedOut}
+              hasNameConflict={value.hasNameConflict}
+            />
+          </span>
+        )
+      }
       focusOnMount={focusOnMount}
       // An entry carries the status icon the tables give the same player, in
       // the hue they fill that player's cell with.

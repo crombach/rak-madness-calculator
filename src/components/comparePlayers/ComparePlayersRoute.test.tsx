@@ -293,9 +293,9 @@ describe("the compare players route", () => {
     expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveValue(
       "Bob",
     );
-    expect(
-      screen.queryByRole("button", { name: /Remove/ }),
-    ).not.toBeInTheDocument();
+    for (const remove of screen.getAllByRole("button", { name: /Remove/ })) {
+      expect(remove).toBeDisabled();
+    }
   });
 
   it("focuses the picker Add Player makes", async () => {

@@ -2,14 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import useArrival from "../../hooks/useArrival";
 import { PlayerAnalysis } from "../../types/PlayerAnalysis";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
-import getClasses from "../../utils/getClasses";
 import repeatedNames from "../../utils/scoring/repeatedNames";
 import weekShape from "../../utils/scoring/weekShape";
 import getPlayerAnalysis, {
   getSettledAnalysis,
 } from "../../utils/scoring/getPlayerAnalysis";
 import DialogShell from "../dialog/DialogShell";
-import PlayerStatusIcon from "../table/playerName/PlayerStatusIcon";
 import AnalysisSummary from "./AnalysisSummary";
 import PlayerCombobox from "./PlayerCombobox";
 import "./PlayerAnalysisDialog.scss";
@@ -132,23 +130,6 @@ export default function PlayerAnalysisDialog({
           onValueChange={setPlayer}
           query={query}
           onQueryChange={setQuery}
-          // The player named in the input is marked the way the tables do, so the
-          // search shows where they stand before the answer below finishes.
-          adornment={
-            player != null && (
-              <span
-                className={getClasses("player-analysis__input-status", {
-                  "--knocked-out": player.isKnockedOut,
-                  "--name-conflict": player.hasNameConflict,
-                })}
-              >
-                <PlayerStatusIcon
-                  isKnockedOut={player.isKnockedOut}
-                  hasNameConflict={player.hasNameConflict}
-                />
-              </span>
-            )
-          }
         />
       }
     >

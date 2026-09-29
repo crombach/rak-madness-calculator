@@ -82,7 +82,7 @@
   list-style: none;
 }
 
-// The combobox, and the remove button beside it once there are more than two.
+// The combobox, and the remove button beside it.
 .compare-players__field {
   display: flex;
   gap: var(--rak-space-2);
@@ -123,12 +123,6 @@
   &:empty {
     position: absolute;
   }
-}
-
-// An edge between the table and the controls' surface above it, which the header
-// band would otherwise meet with nothing between.
-.compare-players ~ .table .table__header th {
-  border-top: var(--rak-table-border);
 }
 
 // A frame hugging a table of a few games stands a narrow strip in a wide case.
