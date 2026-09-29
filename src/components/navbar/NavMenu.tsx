@@ -148,9 +148,9 @@ type NavLink = Omit<NavItem, "path" | "disabled" | "disabledReason"> & {
 /**
  * A menu's open state, held open until the page a link leads to is on screen.
  *
- * The router swaps pages in a transition, which commits after the click. A menu
- * closed on the click slid away over the old page first, which read as a flash.
- * Closed in the render that swaps the page, the two land in one commit.
+ * The router swaps pages in a transition, which commits after the click. So the
+ * menu closes in the render that swaps the page, never on the click, or it slides
+ * away over the page being left.
  */
 function useOpenUntilNavigated(): [boolean, (open: boolean) => void] {
   const [open, setOpen] = useState(false);
