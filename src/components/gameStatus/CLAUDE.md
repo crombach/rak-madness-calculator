@@ -5,10 +5,10 @@ How a game in the week is going, opened from a pick cell.
 - `GameStatusDialog`: `DialogShell` over a `DialogCombobox` of `scores.games`, in picks
   table order, which the query matches. `useLiveGame` polls its league.
 - `GameMark`: the pill saying where a game stands, on the search and each card.
-- `GameStatusSummary`: `SpreadLine`, both sides, `pickSplit`, kickoff, town,
-  Gamecast link.
+- `GameStatusSummary`: the picks line, each side's `pickSplit` count and line,
+  both sides, kickoff, town, Gamecast link. Rings and underlines the reader's side.
 - `Scoreline`: the two scores, the state over, the down or outcome under.
-  `outcomeClasses` colors a side, its score, the pick and the pool line alike.
+  `outcomeClasses` colors a side, its score and its team on the picks line alike.
 - `gameStatusText`: the strings both read.
 - `useScorelineFit`: takes the names, then the marks, off a narrow one.
 - `GameStatusSummary.scss`: both sides in one grid, the dash in a track between two

@@ -131,13 +131,13 @@ $two-columns-from: 2 * 516px + 3 * 16px;
 // band keeps its fill, and each block under it becomes a fill with its text hidden.
 .games.--loading .games__game {
   .games__header > *,
-  .game-status__lead > *,
+  .game-status__picks > *,
   .game-status__scoreline > *,
   .game-status__meta > * {
     visibility: hidden;
   }
 
-  .game-status__lead,
+  .game-status__picks,
   .game-status__scoreline,
   .game-status__meta {
     @include skeleton-surface;
@@ -146,7 +146,7 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   }
 
   // As wide as its own line, so the fill never wraps what it covers.
-  .game-status__lead {
+  .game-status__picks {
     align-self: center;
   }
 

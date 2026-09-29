@@ -162,7 +162,7 @@ describe("the games a query offers", () => {
  * each game reads like is covered against `GameStatusSummary` instead.
  */
 describe("GameStatusDialog", () => {
-  it("says the reader's own pick in place of the spread", async () => {
+  it("marks the side the reader picked", async () => {
     localStorage.setItem(PLAYER_NAME_KEY, "alice");
     const withMe: RakMadnessScores = {
       scores: [player({ name: "Alice", pro: [pick("KC -3")] })],
@@ -173,9 +173,11 @@ describe("GameStatusDialog", () => {
         {dialog("P1", true, withMe, () => Promise.resolve(undefined))}
       </SettingsContextProvider>,
     );
-    expect(await screen.findByText(/Your Pick/)).toHaveTextContent(
-      "Your Pick: KC -3",
-    );
+    expect(
+      await screen.findByText(/^KC/, {
+        selector: ".game-status__picks-side.--picked .game-status__picks-team",
+      }),
+    ).toBeInTheDocument();
     expect(
       document.querySelector(".game-status__team-name.--picked"),
     ).toHaveTextContent("KC");
@@ -217,38 +219,10 @@ describe("GameStatusDialog", () => {
       games,
     };
     render(dialog("P1", true, pool, () => Promise.resolve(undefined)));
-    await screen.findByText("KC", { selector: ".game-status__split-team" });
-    const [away, home] = document.querySelectorAll(
-      ".game-status__split > span",
-    );
-    expect(away).toHaveTextContent("2 picked KC");
-    expect(home).toHaveTextContent("1 picked BUF");
-  });
-
-  it("sets the pool's counts on the pick's line, a phone's too", async () => {
-    const wide = window.matchMedia;
-    window.matchMedia = ((media: string) => ({
-      ...wide(media),
-      matches: true,
-    })) as typeof window.matchMedia;
-    try {
-      const pool: RakMadnessScores = {
-        scores: [player({ name: "Alice", pro: [pick("KC -3")] })],
-        games,
-      };
-      render(dialog("P1", true, pool, () => Promise.resolve(undefined)));
-      const split = await screen.findByText(/^Pool:/, {
-        selector: ".game-status__split",
-      });
-      expect(split.closest(".game-status__lead")).not.toBeNull();
-      // A comma between the sides, since a dot is what ends the pick before it.
-      expect(split).toHaveTextContent("Pool: 1 picked KC, 0 picked BUF");
-      expect(split.querySelector(".game-status__sr-only")).toHaveTextContent(
-        "picked",
-      );
-    } finally {
-      window.matchMedia = wide;
-    }
+    await screen.findByText(/^KC/, { selector: ".game-status__picks-team" });
+    const [away, home] = document.querySelectorAll(".game-status__picks-side");
+    expect(away).toHaveTextContent(/^2 picked KC/);
+    expect(home).toHaveTextContent(/^1 picked BUF/);
   });
 
   it("polls the open game's league, keeps it up to date, and stops when it is final", async () => {

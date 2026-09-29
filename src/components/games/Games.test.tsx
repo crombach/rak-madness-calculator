@@ -141,14 +141,13 @@ describe("Games", () => {
     }
   });
 
-  it("says the reader's own pick in place of the pool's line, and marks the side", () => {
+  it("marks the side the reader picked", () => {
     localStorage.setItem(PLAYER_NAME_KEY, "alice");
     mount(scores);
     const [first] = cards();
-    const myPick = within(first).getByText(/Your Pick/);
-    expect(myPick).toHaveTextContent("Your Pick: KC -3");
-    expect(myPick.parentElement).toHaveClass("game-status__lead");
-    expect(within(first).getAllByText(/Your Pick/)).toHaveLength(1);
+    expect(
+      first.querySelector(".game-status__picks-side.--picked"),
+    ).toHaveTextContent("KC");
     expect(
       first.querySelector(".game-status__team-name.--picked"),
     ).toHaveTextContent("KC");
@@ -157,19 +156,16 @@ describe("Games", () => {
   it("says how many players picked each side", () => {
     mount(scores);
     const [first] = cards();
-    const [away, home] = first.querySelectorAll(".game-status__split > span");
-    expect(away).toHaveTextContent("1 picked KC");
-    expect(home).toHaveTextContent("0 picked BUF");
+    const [away, home] = first.querySelectorAll(".game-status__picks-side");
+    expect(away).toHaveTextContent(/^1 picked KC/);
+    expect(home).toHaveTextContent(/^0 picked BUF/);
   });
 
-  it("says the pool's line with no name set", () => {
+  it("marks no side with no name set", () => {
     mount(scores);
     const [first] = cards();
-    expect(within(first).getByText(/Spread/)).toHaveTextContent(/^Spread: /);
-    expect(within(first).getByText(/Spread/).parentElement).toHaveClass(
-      "game-status__lead",
-    );
-    expect(screen.queryByText(/Your Pick/)).toBeNull();
+    expect(within(first).getByText(/^Picks:/)).toBeInTheDocument();
+    expect(first.querySelector(".--picked")).toBeNull();
   });
 
   it("sorts the games not started yet into today, tomorrow and upcoming, each as a card by kickoff", () => {

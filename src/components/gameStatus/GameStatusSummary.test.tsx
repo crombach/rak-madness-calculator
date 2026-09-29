@@ -180,28 +180,25 @@ describe("GameStatusSummary, the game it is given", () => {
   });
 });
 
-describe("GameStatusSummary, the pool's line on the game", () => {
-  // The label and the line are two elements, since the line alone is set in the
-  // table's face, so the sentence is read off the paragraph holding both.
-  const spreadLine = () => screen.getByText(/Spread/);
+describe("GameStatusSummary, the picks line", () => {
+  const picksLine = () => screen.getByText(/^Picks:/);
 
-  it("names the favored side and what it gives", () => {
+  it("gives each side the line it plays to", () => {
     render(
       <GameStatusSummary
-        game={game(result(), { team: "BUF", points: -3 })}
+        game={game(result(), { team: "BUF", points: -3.5 })}
         result={result()}
       />,
     );
-    expect(spreadLine()).toHaveTextContent("Spread: BUF -3");
+    expect(picksLine()).toHaveTextContent("Picks: KC +3.5, BUF -3.5");
   });
 
-  it("says so where the picks put no line on the game", () => {
+  it("names the sides alone where the picks put no line on the game", () => {
     render(<GameStatusSummary game={game(result())} result={result()} />);
-    // Said either way, so a game with no line is not one the dialog forgot about.
-    expect(spreadLine()).toHaveTextContent("Spread: NONE");
+    expect(picksLine()).toHaveTextContent("Picks: KC, BUF");
   });
 
-  it("says the reader's own pick in the line's place, and marks the side it names", () => {
+  it("marks the side the reader picked, on the line and in the scoreline", () => {
     render(
       <GameStatusSummary
         game={game(result(), { team: "BUF", points: -3 })}
@@ -209,12 +206,19 @@ describe("GameStatusSummary, the pool's line on the game", () => {
         myPick="kc +3"
       />,
     );
-    expect(screen.getByText(/Your Pick/)).toHaveTextContent("Your Pick: kc +3");
-    expect(screen.queryByText(/Spread/)).toBeNull();
-    const picked = document.querySelector(".game-status__team-name.--picked");
-    expect(picked).toHaveTextContent("KC");
-    expect(picked).toHaveTextContent("Your pick");
-    expect(document.querySelectorAll(".--picked")).toHaveLength(1);
+    const onLine = document.querySelector(".game-status__picks-side.--picked");
+    expect(onLine).toHaveTextContent("KC +3, Your pick");
+    const inScoreline = document.querySelector(
+      ".game-status__team-name.--picked",
+    );
+    expect(inScoreline).toHaveTextContent("KC");
+    expect(inScoreline).toHaveTextContent("Your pick");
+    expect(document.querySelectorAll(".--picked")).toHaveLength(2);
+  });
+
+  it("marks no side for a reader with no pick", () => {
+    render(<GameStatusSummary game={game(result())} result={result()} />);
+    expect(document.querySelector(".--picked")).toBeNull();
   });
 });
 
@@ -390,8 +394,10 @@ describe("GameStatusSummary, how the reader's pick and the pool's sides did", ()
         players={[]}
       />,
     );
-    const pick = document.querySelector(".game-status__spread-value");
-    const pool = [...document.querySelectorAll(".game-status__split-team")];
+    const pick = document.querySelector(
+      ".game-status__picks-side.--picked .game-status__picks-team",
+    );
+    const pool = [...document.querySelectorAll(".game-status__picks-team")];
     const outcome = (el: Element | null) =>
       el?.classList.contains("--scored")
         ? "scored"
