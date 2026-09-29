@@ -12,7 +12,7 @@ import {
   weekOf,
 } from "../../utils/scoring/leagueResultFixtures";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
-import { POLL_MS } from "../../hooks/useLiveGame";
+import { POLL_MS } from "../../hooks/useLiveWeek";
 import matching from "../../utils/matching";
 import { gameSearchText } from "./GameStatusDialog";
 import { dialog } from "./gameStatusDialogTestSupport";

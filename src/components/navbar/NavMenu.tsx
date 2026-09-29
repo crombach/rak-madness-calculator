@@ -2,13 +2,23 @@ import { Drawer } from "@base-ui/react/drawer";
 import { Menu } from "@base-ui/react/menu";
 import { ReactNode, useId, useState } from "react";
 import { Link, useLocation } from "react-router";
-import { useIsWeekWon, useSwingGames } from "../../context/AppDataContext";
+import {
+  useAppData,
+  useIsWeekWon,
+  useSwingGames,
+} from "../../context/AppDataContext";
 import { useSettings } from "../../context/SettingsContext";
 import cssMediaQuery from "../../hooks/cssMediaQuery";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import getClasses from "../../utils/getClasses";
 import { buttonClasses } from "../button/Button";
-import { CloseIcon, HomeIcon, MenuIcon, SwapVertIcon } from "../icon/Icon";
+import {
+  CloseIcon,
+  HomeIcon,
+  MenuIcon,
+  ScoreboardIcon,
+  SwapVertIcon,
+} from "../icon/Icon";
 import resultsPath, { RESULTS_PAGE, weekName } from "../results/resultsPath";
 import "./NavMenu.scss";
 
@@ -18,6 +28,8 @@ type Week = number | string | undefined;
 type NavContext = {
   isWeekWon: boolean;
   swingGames: ReturnType<typeof useSwingGames>;
+  /** How many players the week has, or undefined while its scores load. */
+  playerCount?: number;
 };
 
 type NavItem = {
@@ -44,6 +56,13 @@ const ITEMS: Array<NavItem> = [
       return undefined;
     },
   },
+  {
+    label: RESULTS_PAGE.liveGames,
+    icon: <ScoreboardIcon />,
+    path: (season, week) => resultsPath(season, week, RESULTS_PAGE.liveGames),
+    disabledReason: ({ playerCount }) =>
+      playerCount == null ? "Scores still loading" : undefined,
+  },
 ];
 
 const TRIGGER_CLASSES = buttonClasses({ compact: true, iconOnly: true });
@@ -66,10 +85,11 @@ export default function NavMenu({
   const { pathname } = useLocation();
   const isWeekWon = useIsWeekWon();
   const swingGames = useSwingGames();
+  const playerCount = useAppData().scores?.scores.length;
   const { experimentalFeatures } = useSettings();
   if (!experimentalFeatures) return null;
 
-  const context: NavContext = { isWeekWon, swingGames };
+  const context: NavContext = { isWeekWon, swingGames, playerCount };
   const links = ITEMS.map((item) => {
     const path = item.path(season, week);
     return {

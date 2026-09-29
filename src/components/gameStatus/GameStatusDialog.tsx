@@ -1,6 +1,7 @@
 import { ReactNode, useMemo, useState } from "react";
 import useArrival from "../../hooks/useArrival";
 import useLiveGame from "../../hooks/useLiveGame";
+import useMyPick from "../../hooks/useMyPick";
 import { GameStatus } from "../../types/ESPN";
 import { League } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
@@ -172,6 +173,7 @@ export default function GameStatusDialog({
     games: scores?.games,
     onPoll,
   });
+  const myPick = useMyPick(scores, game);
 
   // A game the week already has final is never fetched, so a fetch running on
   // behalf of the week's other columns draws nothing over it.
@@ -223,7 +225,7 @@ export default function GameStatusDialog({
         />
       }
     >
-      <GameStatusSummary game={game} result={shown} />
+      <GameStatusSummary game={game} result={shown} myPick={myPick} />
     </DialogShell>
   );
 }

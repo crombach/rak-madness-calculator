@@ -1,3 +1,4 @@
+@use "../../styles/a11y" as *;
 @use "../../styles/breakpoints" as *;
 @use "../../styles/label" as *;
 @use "../../styles/lcd" as *;
@@ -281,6 +282,16 @@
   line-height: var(--rak-line-height-tight);
 
   @include outcome;
+
+  // The reader's own pick, in the accent their own row carries in the tables.
+  &.--picked {
+    text-decoration: underline var(--rak-border-width) var(--rak-my-row-accent);
+    text-underline-offset: var(--rak-space-1);
+  }
+}
+
+.game-status__sr-only {
+  @include visually-hidden;
 }
 
 // A phone gets the abbreviation, a name of three words wrapping to three lines in

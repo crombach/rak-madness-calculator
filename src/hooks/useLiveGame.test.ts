@@ -8,7 +8,8 @@ import {
   weekOf,
 } from "../utils/scoring/leagueResultFixtures";
 import { LeagueResults } from "../utils/scoring/leagueResults";
-import useLiveGame, { kickoffAt, POLL_MS } from "./useLiveGame";
+import useLiveGame from "./useLiveGame";
+import { kickoffAt, POLL_MS } from "./useLiveWeek";
 
 const NOW = new Date("2024-10-06T12:00:00Z");
 const HOUR_MS = 60 * 60 * 1000;

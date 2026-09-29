@@ -95,7 +95,9 @@ export default function ResultsFrame({
   const { season: seasonParam, week: weekParam } = useParams();
   const hasWeek = Boolean(seasonParam && weekParam);
   const scoresView: ScoresView | null =
-    view === RESULTS_PAGE.swingGames ? null : view;
+    view === RESULTS_PAGE.swingGames || view === RESULTS_PAGE.liveGames
+      ? null
+      : view;
   // Once every game is final there is nothing left to fetch, so the refresh button
   // and the divider beside it go rather than sit there doing nothing.
   const isWeekSettled = useIsWeekSettled();

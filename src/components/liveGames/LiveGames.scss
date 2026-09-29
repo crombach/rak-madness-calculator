@@ -1,0 +1,58 @@
+@use "../../styles/a11y" as *;
+@use "../../styles/picks" as *;
+
+// `100cqi` is the scrolling box `PageLayout.scss` declares the container on, so a
+// phone gets the whole screen and never a sideways scroll.
+.live-games {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100cqi;
+  padding: var(--rak-space-4);
+  background-color: var(--rak-surface);
+  color: var(--rak-text);
+}
+
+.live-games__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.live-games__game {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+  padding-block: var(--rak-space-4);
+
+  &:first-child {
+    padding-block-start: 0;
+  }
+
+  & + & {
+    border-top: var(--rak-border-width-hairline) solid var(--rak-panel-border);
+  }
+}
+
+.live-games__heading {
+  display: flex;
+  align-items: center;
+  gap: var(--rak-space-2);
+  margin: 0;
+  font-size: var(--rak-text-sm);
+  font-weight: normal;
+}
+
+.live-games__label {
+  @include pick-label;
+}
+
+.live-games__name {
+  color: var(--rak-text-secondary);
+}
+
+.live-games__sr-only {
+  @include visually-hidden;
+}

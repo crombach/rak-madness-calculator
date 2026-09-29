@@ -2,7 +2,11 @@ import { Mock } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router";
-import { useIsWeekWon, useSwingGames } from "../../context/AppDataContext";
+import {
+  useAppData,
+  useIsWeekWon,
+  useSwingGames,
+} from "../../context/AppDataContext";
 import {
   EXPERIMENTAL_FEATURES_KEY,
   SettingsContextProvider,
@@ -11,10 +15,12 @@ import { SwingGame } from "../../utils/scoring/getSwingGames";
 import NavMenu from "./NavMenu";
 
 vi.mock("../../context/AppDataContext", () => ({
+  useAppData: vi.fn(),
   useIsWeekWon: vi.fn(),
   useSwingGames: vi.fn(),
 }));
 
+const mockAppData = useAppData as Mock;
 const mockIsWeekWon = useIsWeekWon as Mock;
 const mockSwingGames = useSwingGames as Mock;
 const A_SWING_GAME = {} as SwingGame;
@@ -22,6 +28,7 @@ const A_SWING_GAME = {} as SwingGame;
 const SEASON = 2024;
 const WEEK = 3;
 const SWINGS_PATH = `/${SEASON}/${WEEK}/swings`;
+const LIVE_PATH = `/${SEASON}/${WEEK}/live`;
 
 /** Names the URL a click landed on, from the router's own history. */
 function Landed() {
@@ -63,6 +70,7 @@ describe("NavMenu", () => {
   beforeEach(() => {
     // Swing Games gates on this opt-in too, beside `isWeekWon`.
     localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
+    mockAppData.mockReturnValue({ scores: { scores: [] } });
     mockIsWeekWon.mockReturnValue(false);
     mockSwingGames.mockReturnValue({ games: [A_SWING_GAME] });
   });
@@ -74,7 +82,7 @@ describe("NavMenu", () => {
   });
 
   describe("at wide-screen", () => {
-    it("lists Home and Swing Games", async () => {
+    it("lists Home, Swing Games, and Live Games", async () => {
       const user = mount();
       await user.click(trigger());
 
@@ -83,6 +91,7 @@ describe("NavMenu", () => {
       expect(items.map((item) => item.textContent)).toEqual([
         "Home",
         "Swing Games",
+        "Live Games",
       ]);
     });
 
@@ -130,6 +139,29 @@ describe("NavMenu", () => {
         SWINGS_PATH,
       );
       expect(screen.queryByRole("menuitem")).not.toBeInTheDocument();
+    });
+
+    it("goes to the live games page on a click", async () => {
+      const user = mount();
+      await user.click(trigger());
+      await user.click(
+        await screen.findByRole("menuitem", { name: "Live Games" }),
+      );
+
+      expect(await screen.findByTestId("landed")).toHaveTextContent(LIVE_PATH);
+    });
+
+    it("disables Live Games while scores load", async () => {
+      mockAppData.mockReturnValue({ scores: undefined });
+      const user = mount();
+      await user.click(trigger());
+
+      const item = await screen.findByRole("menuitem", {
+        name: /Live Games/,
+      });
+
+      expect(item).toHaveAttribute("data-disabled");
+      expect(item).toHaveAccessibleDescription("Scores still loading");
     });
 
     it("disables Swing Games once the week has a winner", async () => {
@@ -257,7 +289,7 @@ describe("NavMenu", () => {
         within(drawer)
           .getAllByRole("link")
           .map((link) => link.textContent),
-      ).toEqual(["Home", "Swing Games"]);
+      ).toEqual(["Home", "Swing Games", "Live Games"]);
       expect(within(drawer).queryAllByRole("combobox")).toHaveLength(0);
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });

@@ -160,6 +160,32 @@ describe("GameStatusSummary, the pool's line on the game", () => {
     // Said either way, so a game with no line is not one the dialog forgot about.
     expect(spreadLine()).toHaveTextContent("Rak Madness Spread: NONE");
   });
+
+  it("says the reader's own pick in the line's place, and marks the side it names", () => {
+    render(
+      <GameStatusSummary
+        game={game(result(), { team: "BUF", points: -3 })}
+        result={result()}
+        myPick="kc +3"
+      />,
+    );
+    expect(screen.getByText(/Your Pick/)).toHaveTextContent("Your Pick: kc +3");
+    expect(screen.queryByText(/Rak Madness Spread/)).toBeNull();
+    const picked = document.querySelector(".game-status__team-name.--picked");
+    expect(picked).toHaveTextContent("KC");
+    expect(picked).toHaveTextContent("Your pick");
+    expect(document.querySelectorAll(".--picked")).toHaveLength(1);
+  });
+});
+
+describe("GameStatusSummary, brief", () => {
+  it("leaves out the records and the strip under the scoreline", () => {
+    render(<GameStatusSummary game={game(result())} result={result()} brief />);
+    expect(screen.getByText("Buffalo Bills")).toBeInTheDocument();
+    expect(screen.queryByText("4-1")).toBeNull();
+    expect(screen.queryByRole("link", { name: "Gamecast" })).toBeNull();
+    expect(document.querySelector(".game-status__meta")).toBeNull();
+  });
 });
 
 describe("GameStatusSummary, what the pool made of a finished game", () => {

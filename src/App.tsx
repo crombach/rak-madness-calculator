@@ -13,6 +13,10 @@ import SwingGamesSkeleton from "./components/swingGames/SwingGamesSkeleton";
 const SwingGamesRoute = lazy(
   () => import("./components/swingGames/SwingGamesRoute"),
 );
+// Lazy for the scoreline, which `ResultsFrame` keeps out of that chunk too.
+const LiveGamesRoute = lazy(
+  () => import("./components/liveGames/LiveGamesRoute"),
+);
 
 export default function App() {
   return (
@@ -36,6 +40,14 @@ export default function App() {
           element={
             <Suspense fallback={<SwingGamesSkeleton />}>
               <SwingGamesRoute />
+            </Suspense>
+          }
+        />
+        <Route
+          path="live"
+          element={
+            <Suspense fallback={null}>
+              <LiveGamesRoute />
             </Suspense>
           }
         />

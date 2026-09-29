@@ -21,11 +21,14 @@ export default function ResultsLayout() {
   // The route decides which view is showing, not component state.
   const isPicks = useMatch("/:season/:week/picks") != null;
   const isSwings = useMatch("/:season/:week/swings") != null;
+  const isLive = useMatch("/:season/:week/live") != null;
   const view: ResultsPage = isSwings
     ? RESULTS_PAGE.swingGames
-    : isPicks
-      ? RESULTS_PAGE.picks
-      : RESULTS_PAGE.scoreboard;
+    : isLive
+      ? RESULTS_PAGE.liveGames
+      : isPicks
+        ? RESULTS_PAGE.picks
+        : RESULTS_PAGE.scoreboard;
 
   return (
     <ResultsFrame
@@ -35,7 +38,7 @@ export default function ResultsLayout() {
       // replace would leave two entries for the page before it.
       onViewChange={(next) =>
         navigate(resultsPath(seasonParam, weekParam, next), {
-          replace: !isSwings,
+          replace: !isSwings && !isLive,
         })
       }
       onRefresh={refresh}

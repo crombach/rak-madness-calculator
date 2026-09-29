@@ -3,6 +3,7 @@ import { GameStatus, HomeAway } from "../../types/ESPN";
 import { GameSide, LeagueResult } from "../../types/LeagueResult";
 import { GameSpread, WeekGame } from "../../types/WeekGame";
 import getClasses from "../../utils/getClasses";
+import parsePick from "../../utils/scoring/parsePick";
 import { gamecastUrl, kickoffParts, scoringTeam } from "./gameStatusText";
 import Scoreline, { outcomeClasses, SideOutcome } from "./Scoreline";
 import useScorelineFit, { MARKS_OFF, SHORT_NAMES } from "./useScorelineFit";
@@ -28,6 +29,12 @@ const SIDE_LABEL: Record<"hosted" | "neutral", Record<HomeAway, string>> = {
 
 /** The pool's own line on the game, which is not always a bookmaker's. */
 const SPREAD_LABEL = "Rak Madness Spread";
+
+/** Said in the line's place where the reader has a pick on the game. */
+const MY_PICK_LABEL = "Your Pick";
+
+/** Read out beside the side the reader picked, for the underline marking it. */
+const PICKED_SIDE_LABEL = "Your pick";
 
 /** Said in its place for a game the picks put no line on. */
 const NO_SPREAD = "NONE";
@@ -74,6 +81,8 @@ function Side({
   isNeutralSite,
   logo,
   outcome,
+  isPicked,
+  brief,
 }: {
   side: GameSide;
   homeAway: HomeAway;
@@ -82,6 +91,10 @@ function Side({
   /** Left out where either side has no mark to draw, so neither draws one. */
   logo?: ReactNode;
   outcome?: SideOutcome;
+  /** The side the reader's own pick names. */
+  isPicked: boolean;
+  /** Leaves out the record. */
+  brief: boolean;
 }) {
   return (
     <div className={`game-status__side --${homeAway}`}>
@@ -94,6 +107,7 @@ function Side({
           className={getClasses(
             "game-status__team-name",
             outcomeClasses(outcome),
+            { "--picked": isPicked },
           )}
         >
           {/* The abbreviation on a phone and the name once there is width for it.
@@ -108,8 +122,11 @@ function Side({
           <span className="game-status__name-short">
             {side.team.abbreviation}
           </span>
+          {isPicked && (
+            <span className="game-status__sr-only">{PICKED_SIDE_LABEL}</span>
+          )}
         </span>
-        {side.record != null && (
+        {!brief && side.record != null && (
           <span className="game-status__record">{side.record}</span>
         )}
       </div>
@@ -136,9 +153,14 @@ function Game({
   spread,
   logo,
   gamecastHref,
+  myPick,
+  brief,
 }: {
   result: LeagueResult;
   spread?: GameSpread;
+  myPick?: string;
+  /** Leaves out the records and the strip under the scoreline. */
+  brief: boolean;
   /** What a side wears beside its name, or nothing where the marks are dropped. */
   logo?: (side: GameSide) => ReactNode;
   /** ESPN's page for the game. */
@@ -173,12 +195,23 @@ function Game({
     if (scored == null) return "scored";
     return side.team.abbreviation === scored ? "scored" : "missed";
   };
+  const pickedTeam =
+    myPick != null ? parsePick(myPick).teamAbbreviation : undefined;
+  const sideProps = (side: GameSide) => ({
+    side,
+    isNeutralSite: result.isNeutralSite,
+    logo: fit < MARKS_OFF ? logo?.(side) : undefined,
+    outcome: outcomeOf(side),
+    isPicked: side.team.abbreviation.toUpperCase() === pickedTeam,
+    brief,
+  });
   return (
     <>
       <p className="game-status__spread">
-        {SPREAD_LABEL}:{" "}
+        {myPick != null ? MY_PICK_LABEL : SPREAD_LABEL}:{" "}
         <span className="game-status__spread-value">
-          {spread != null ? `${spread.team} ${spread.points}` : NO_SPREAD}
+          {myPick ??
+            (spread != null ? `${spread.team} ${spread.points}` : NO_SPREAD)}
         </span>
       </p>
       <div
@@ -187,28 +220,18 @@ function Game({
         })}
         ref={scoreline}
       >
-        <Side
-          side={result.away}
-          homeAway={HomeAway.AWAY}
-          isNeutralSite={result.isNeutralSite}
-          logo={fit < MARKS_OFF ? logo?.(result.away) : undefined}
-          outcome={outcomeOf(result.away)}
-        />
+        <Side homeAway={HomeAway.AWAY} {...sideProps(result.away)} />
         <Scoreline result={result} spread={spread} outcomeOf={outcomeOf} />
-        <Side
-          side={result.home}
-          homeAway={HomeAway.HOME}
-          isNeutralSite={result.isNeutralSite}
-          logo={fit < MARKS_OFF ? logo?.(result.home) : undefined}
-          outcome={outcomeOf(result.home)}
-        />
+        <Side homeAway={HomeAway.HOME} {...sideProps(result.home)} />
       </div>
       {/* Under the scoreline rather than over it. The game is what the dialog was
           opened for, and when and where it is played is the footnote. */}
-      <div className="game-status__meta">
-        <MetaGroup parts={kickoffParts(result.date)} />
-        <MetaGroup parts={placeParts} />
-      </div>
+      {!brief && (
+        <div className="game-status__meta">
+          <MetaGroup parts={kickoffParts(result.date)} />
+          <MetaGroup parts={placeParts} />
+        </div>
+      )}
     </>
   );
 }
@@ -225,10 +248,16 @@ function Game({
 export default function GameStatusSummary({
   game,
   result,
+  myPick,
+  brief = false,
 }: {
   game?: WeekGame;
   /** The game as last fetched, where a fresher one than the week's has arrived. */
   result?: LeagueResult;
+  /** The reader's own pick on the game, which then stands in for the pool's line. */
+  myPick?: string;
+  /** A scoreboard alone: no records, and no kickoff, place or Gamecast link. */
+  brief?: boolean;
 }) {
   // Which game's marks failed to load, rather than a flag, so moving to another
   // game asks about its marks instead of inheriting a verdict on the last one's.
@@ -257,6 +286,8 @@ export default function GameStatusSummary({
         result={shown}
         spread={game.spread}
         gamecastHref={gamecastUrl(game.league, shown.id)}
+        myPick={myPick}
+        brief={brief}
         logo={
           logos
             ? (side) => (
