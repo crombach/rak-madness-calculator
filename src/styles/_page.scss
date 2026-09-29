@@ -31,7 +31,7 @@
   color: var(--rak-on-solid);
   font-size: var(--rak-text-sm);
 
-  .game-status__mark {
+  > .game-status__mark {
     margin-inline-start: auto;
   }
 }

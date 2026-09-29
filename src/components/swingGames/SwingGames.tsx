@@ -9,7 +9,7 @@ import { WeekGame } from "../../types/WeekGame";
 import { SwingGame, SwingSide } from "../../utils/scoring/getSwingGames";
 import Button from "../button/Button";
 import GameMark, { gameMarkLabel } from "../gameStatus/GameMark";
-import { ExpandMoreIcon } from "../icon/Icon";
+import { ExpandMoreIcon, GroupIcon } from "../icon/Icon";
 import plural, { verbFor } from "../../utils/plural";
 import ExperimentalGate from "../results/ExperimentalGate";
 import useGridColumns from "./useGridColumns";
@@ -75,10 +75,11 @@ function Side({ side }: { side: SwingSide }) {
 
 function Game({ game, weekGame }: { game: SwingGame; weekGame?: WeekGame }) {
   const showGameStatus = useShowGameStatus();
-  const players = plural(
-    game.sides.reduce((count, side) => count + side.players.length, 0),
-    "player",
+  const count = game.sides.reduce(
+    (total, side) => total + side.players.length,
+    0,
   );
+  const players = plural(count, "player");
   const gameName = `${game.label} ${game.name}`;
   const status = weekGame?.result?.status;
 
@@ -105,12 +106,16 @@ function Game({ game, weekGame }: { game: SwingGame; weekGame?: WeekGame }) {
           <span className="swing-games__game-label">{game.label}</span>{" "}
           <span className="swing-games__game-matchup">{game.name}</span>
         </button>
-        {/* The mark sits at the band's end, as it does on All Games. Inside the
-            toggle, so a tap beside it still folds the game. */}
+        {/* The count and the mark sit at the band's end, the mark where All Games
+            has it. Inside the toggle, so a tap beside them still folds the game. */}
         <Accordion.Trigger
           className="swing-games__toggle"
           aria-label={`${gameName}, ${players}`}
         >
+          <span className="swing-games__count">
+            <GroupIcon />
+            {count}
+          </span>
           {weekGame && <GameMark game={weekGame} status={status} />}
           <span className="swing-games__chevron">
             <ExpandMoreIcon />
@@ -119,7 +124,6 @@ function Game({ game, weekGame }: { game: SwingGame; weekGame?: WeekGame }) {
       </Accordion.Header>
       {/* Mounted while folded, so a side shown in full stays so. */}
       <Accordion.Panel keepMounted className="swing-games__panel">
-        <p className="swing-games__count">{players} at stake</p>
         {game.sides.map((side) => (
           <Side key={side.team} side={side} />
         ))}
