@@ -322,13 +322,14 @@ describe("NavMenu", () => {
       ).toHaveAttribute("aria-disabled", "true");
     });
 
-    it("keeps the disabled reason out of sight in the drawer", async () => {
+    it("shows the disabled reason under the item's name in the drawer", async () => {
       mockSwingGames.mockReturnValue({ games: [] });
       const { drawer } = await openDrawer();
 
-      expect(within(drawer).getByText("No game knocks anyone out")).toHaveClass(
-        "nav-menu__sr-only",
-      );
+      expect(
+        within(drawer).getByText("No game knocks anyone out"),
+      ).toBeVisible();
+      expect(within(drawer).queryByRole("tooltip")).not.toBeInTheDocument();
     });
 
     it("names the disabled reason as the item's accessible description", async () => {
@@ -336,29 +337,8 @@ describe("NavMenu", () => {
       const { drawer } = await openDrawer();
 
       expect(
-        within(drawer).getByText(/Swing Games/),
+        within(drawer).getByRole("link", { name: "Swing Games" }),
       ).toHaveAccessibleDescription("No game knocks anyone out");
-    });
-
-    it("shows the disabled reason in a tooltip on a tap, until a tap elsewhere", async () => {
-      mockSwingGames.mockReturnValue({ games: [] });
-      const { user, drawer } = await openDrawer();
-
-      await user.pointer({
-        keys: "[TouchA]",
-        target: within(drawer).getByRole("link", { name: "Swing Games" }),
-      });
-      expect(await screen.findByRole("tooltip")).toHaveTextContent(
-        "No game knocks anyone out",
-      );
-
-      await user.pointer({
-        keys: "[TouchA]",
-        target: within(drawer).getByRole("heading", { name: "Menu" }),
-      });
-      await waitFor(() =>
-        expect(screen.queryByRole("tooltip")).not.toBeInTheDocument(),
-      );
     });
 
     it("leaves Swing Games enabled with a game open", async () => {

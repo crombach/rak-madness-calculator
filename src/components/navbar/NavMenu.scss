@@ -93,19 +93,14 @@
   }
 }
 
-// Text a screen reader reads instead of seeing: a disabled item's reason, and
-// the drawer's own name.
+// Text a screen reader reads instead of seeing: a popup item's disabled reason,
+// and the drawer's own name.
 .nav-menu__sr-only {
   @include visually-hidden;
 }
 
 .nav-menu__tooltip-positioner {
   z-index: var(--rak-z-overlay);
-}
-
-// Inside the drawer, so above the dialog layer it sits in.
-.nav-menu__tooltip-positioner--drawer {
-  z-index: calc(var(--rak-z-dialog) + 1);
 }
 
 .nav-menu__tooltip {
@@ -203,7 +198,7 @@
   @include micro-label;
 
   margin: 0;
-  font-size: var(--rak-text-xs);
+  font-size: var(--rak-text-sm);
   color: var(--rak-text-tertiary);
 }
 
@@ -228,4 +223,13 @@
   border-radius: var(--rak-radius-xs);
 
   @include focus-ring;
+}
+
+.nav-drawer__text {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-drawer__reason {
+  font-size: var(--rak-text-sm);
 }

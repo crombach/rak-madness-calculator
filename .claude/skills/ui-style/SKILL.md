@@ -28,9 +28,9 @@ new style for something the app already renders elsewhere.
 - Disabled items keep their normal background. Fade text and icon only. No hover or
   press fill. `cursor: not-allowed` inside `can-hover`. Ink `--rak-disabled-text`, or on
   the navbar fill, `--rak-nav-ink` at 70%.
-- Give a disabled item's reason as a tooltip on hover, focus, and tap: `side="left"`
-  on wide screens, `side="bottom"` `align="end"` in the phone drawer. Also its
-  `aria-describedby`.
+- Give a disabled item's reason as a tooltip on wide screens (`side="left"`), on
+  hover, focus, and tap. On phones, a smaller line under the item's name, aligned
+  with it. Either way, also its `aria-describedby`.
 - Hover only inside `can-hover`. Every interactive element gets `focus-ring` and a
   minimum `--rak-touch-target`.
 - Dividers use `--rak-on-solid`, as `.navbar__divider` does. Inside a popup list,
