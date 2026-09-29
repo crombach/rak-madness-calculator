@@ -1,4 +1,4 @@
-import { Mock, MockedFunction } from "vitest";
+import { Mock, MockedFunction, vi } from "vitest";
 import {
   ESPN_STATE,
   EspnCompetitor,
@@ -8,6 +8,7 @@ import {
 } from "../types/ESPN";
 import { League, WeekInfo } from "../types/League";
 import { getLeagueResults } from "./getLeagueResults";
+import { stubFetch } from "../appTestFixtures";
 
 vi.mock("./getLeagueInfo");
 
@@ -101,7 +102,7 @@ function mockFetch(events: Array<EspnEvent>) {
   const fetchMock = vi
     .fn()
     .mockResolvedValue({ ok: true, json: async () => ({ events }) });
-  global.fetch = fetchMock as unknown as typeof fetch;
+  stubFetch(fetchMock);
   return fetchMock;
 }
 
@@ -567,9 +568,12 @@ describe("getLeagueResults, what it does not ask twice", () => {
 
 describe("getLeagueResults, a scoreboard request ESPN could not answer", () => {
   it("throws rather than reads events off an error response", async () => {
-    global.fetch = vi
-      .fn()
-      .mockResolvedValue({ ok: false, status: 503 }) as unknown as typeof fetch;
+    stubFetch(
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 503,
+      }) as unknown as typeof fetch,
+    );
 
     await expect(getLeagueResults(League.PRO, WEEK, [BUF_KC])).rejects.toThrow(
       "503",
@@ -577,10 +581,12 @@ describe("getLeagueResults, a scoreboard request ESPN could not answer", () => {
   });
 
   it("throws rather than treat a body with no events array as an empty week", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({}),
-    }) as unknown as typeof fetch;
+    stubFetch(
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({}),
+      }) as unknown as typeof fetch,
+    );
 
     await expect(getLeagueResults(League.PRO, WEEK, [BUF_KC])).rejects.toThrow(
       /events/,
@@ -588,9 +594,12 @@ describe("getLeagueResults, a scoreboard request ESPN could not answer", () => {
   });
 
   it("throws for a college group the same way", async () => {
-    global.fetch = vi
-      .fn()
-      .mockResolvedValue({ ok: false, status: 500 }) as unknown as typeof fetch;
+    stubFetch(
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+      }) as unknown as typeof fetch,
+    );
 
     await expect(
       getLeagueResults(League.COLLEGE, WEEK, [new Set(["OSU", "MICH"])]),

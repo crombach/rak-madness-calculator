@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { MockedFunction } from "vitest";
+import { MockedFunction, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
@@ -186,6 +186,17 @@ export function routedFetch(
   ) as unknown as MockedFunction<typeof fetch>;
 }
 
+/** Stubs fetch globally using `vi.stubGlobal()` for automatic cleanup. */
+export function stubFetch(
+  impl?: (input: RequestInfo | URL) => Response | Promise<Response>,
+): MockedFunction<typeof fetch> {
+  const fetchMock = vi.fn(impl ?? (() => notFoundResponse())) as MockedFunction<
+    typeof fetch
+  >;
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
+
 /** Resets mock state before a case. Each test file calls this in its own `beforeEach`. */
 export function setUpAppTest(): MockedFunction<typeof fetch> {
   vi.clearAllMocks();
@@ -196,10 +207,7 @@ export function setUpAppTest(): MockedFunction<typeof fetch> {
   getPlayerScoresMock.mockResolvedValue(scores);
   readFileToBufferMock.mockResolvedValue(new ArrayBuffer(8));
   buildSpreadsheetBufferMock.mockResolvedValue(new ArrayBuffer(8));
-  const fetchMock = vi
-    .fn()
-    .mockResolvedValue(notFoundResponse()) as MockedFunction<typeof fetch>;
-  global.fetch = fetchMock;
+  const fetchMock = stubFetch();
   window.URL.createObjectURL = vi.fn(() => "blob:fake");
   vi.spyOn(console, "warn").mockImplementation(() => undefined);
   vi.spyOn(console, "error").mockImplementation(() => undefined);

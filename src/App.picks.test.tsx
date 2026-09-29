@@ -24,6 +24,7 @@ import {
   spreadsheetResponse,
   routedFetch,
   setUpAppTest,
+  stubFetch,
   week,
 } from "./appTestFixtures";
 
@@ -63,9 +64,11 @@ describe("the app, first load", () => {
   });
 
   it("opens on the newest week with picks, not the week ESPN has reached", async () => {
-    global.fetch = routedFetch(notFoundResponse, [SEASON, SEASON - 1], {
-      [SEASON]: [1],
-    });
+    stubFetch(
+      routedFetch(notFoundResponse, [SEASON, SEASON - 1], {
+        [SEASON]: [1],
+      }),
+    );
     await mountLoadedApp();
     expect(screen.getByRole("combobox", { name: "Week" })).toHaveTextContent(
       "Week 1",
@@ -73,9 +76,11 @@ describe("the app, first load", () => {
   });
 
   it("still offers the weeks past the newest one with picks", async () => {
-    global.fetch = routedFetch(notFoundResponse, [SEASON, SEASON - 1], {
-      [SEASON]: [1],
-    });
+    stubFetch(
+      routedFetch(notFoundResponse, [SEASON, SEASON - 1], {
+        [SEASON]: [1],
+      }),
+    );
     const user = await mountLoadedApp();
     await user.click(screen.getByRole("combobox", { name: "Week" }));
     const options = (await screen.findAllByRole("option")).map(
@@ -87,9 +92,11 @@ describe("the app, first load", () => {
   it("skips a week with picks the pro calendar has no entry for", async () => {
     // A playoff week, filed under the season it belongs to and absent from the
     // regular-season calendar the picker is built from.
-    global.fetch = routedFetch(notFoundResponse, [SEASON, SEASON - 1], {
-      [SEASON]: [19, 1],
-    });
+    stubFetch(
+      routedFetch(notFoundResponse, [SEASON, SEASON - 1], {
+        [SEASON]: [19, 1],
+      }),
+    );
     await mountLoadedApp();
     expect(screen.getByRole("combobox", { name: "Week" })).toHaveTextContent(
       "Week 1",
@@ -98,14 +105,14 @@ describe("the app, first load", () => {
 
   it("ignores a cached season list in the shape this app no longer sends", async () => {
     // A deploy is served the previous body out of a cache that has not expired.
-    global.fetch = vi.fn(() =>
+    stubFetch(() =>
       Promise.resolve(
         new Response(JSON.stringify({ seasons: [SEASON, SEASON - 1] }), {
           status: 200,
           headers: { "content-type": "application/json" },
         }),
       ),
-    ) as unknown as typeof fetch;
+    );
     const user = await mountLoadedApp();
 
     await user.click(screen.getByRole("combobox", { name: "Season" }));
@@ -127,7 +134,7 @@ describe("the app, first load", () => {
   });
 
   it("offers the seasons that have picks, and opens on the current one", async () => {
-    global.fetch = routedFetch(notFoundResponse);
+    stubFetch(routedFetch(notFoundResponse));
     const user = await mountLoadedApp();
     expect(screen.getByRole("combobox", { name: "Season" })).toHaveTextContent(
       `${SEASON} Season`,
@@ -145,7 +152,7 @@ describe("the app, first load", () => {
       ...leagueInfo,
       season: season ?? SEASON,
     }));
-    global.fetch = routedFetch(notFoundResponse, [SEASON - 1, SEASON - 2]);
+    stubFetch(routedFetch(notFoundResponse, [SEASON - 1, SEASON - 2]));
     await mountLoadedApp();
 
     expect(screen.getByRole("combobox", { name: "Season" })).toHaveTextContent(
@@ -163,7 +170,7 @@ describe("the app, first load", () => {
       ...leagueInfo,
       season: season ?? SEASON,
     }));
-    global.fetch = routedFetch(notFoundResponse, [SEASON - 1, SEASON - 2]);
+    stubFetch(routedFetch(notFoundResponse, [SEASON - 1, SEASON - 2]));
     const user = await mountLoadedApp();
 
     await user.click(screen.getByRole("combobox", { name: "Season" }));
@@ -186,7 +193,7 @@ describe("the app, first load", () => {
         ? { ...leagueInfo, season: SEASON + 1, activeWeek: undefined }
         : { ...leagueInfo, season },
     );
-    global.fetch = routedFetch(notFoundResponse, [SEASON, SEASON - 1]);
+    stubFetch(routedFetch(notFoundResponse, [SEASON, SEASON - 1]));
     const user = await mountLoadedApp();
 
     await user.click(screen.getByRole("combobox", { name: "Season" }));
@@ -222,7 +229,7 @@ describe("the app, first load", () => {
   });
 
   it("asks ESPN for the season the user picked", async () => {
-    global.fetch = routedFetch(notFoundResponse);
+    stubFetch(routedFetch(notFoundResponse));
     const user = await mountLoadedApp();
 
     await user.click(screen.getByRole("combobox", { name: "Season" }));
@@ -254,7 +261,7 @@ describe("the app, first load", () => {
       ...leagueInfo,
       season: season ?? SEASON,
     }));
-    global.fetch = routedFetch(spreadsheetResponse, [SEASON, SEASON - 1]);
+    stubFetch(routedFetch(spreadsheetResponse, [SEASON, SEASON - 1]));
     // Arrive on week 1, so the week the URL asked for is not the current one.
     const user = mountApp(`/${SEASON}/1/scoreboard`);
     await screen.findByText("MNF Points Pick");

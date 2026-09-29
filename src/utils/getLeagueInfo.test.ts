@@ -1,6 +1,7 @@
-import { Mock } from "vitest";
+import { Mock, vi } from "vitest";
 import { League, SeasonType } from "../types/League";
 import { SEASON } from "../weekFixtures";
+import { stubFetch } from "../appTestFixtures";
 import getLeagueInfo, {
   clearLeagueInfoAnswers,
   getRegularSeasonWeekCount,
@@ -87,7 +88,7 @@ function mockFetch(body: unknown, ok = true, status = 200) {
     status,
     json: async () => body,
   });
-  global.fetch = fetchMock as unknown as typeof fetch;
+  stubFetch(fetchMock);
   return fetchMock;
 }
 
