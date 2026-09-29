@@ -32,8 +32,8 @@ new style for something the app already renders elsewhere.
   the navbar fill, `--rak-nav-ink` at 70%.
 - Give a disabled item's reason as a smaller line under its name, aligned with
   it, at every width. Also its `aria-describedby`. No tooltips.
-- Once the week is settled, a disabled item gives no reason. Before then, it
-  says why, such as "Scores still loading".
+- A disabled item gives no reason while scores or picks load, or once the week
+  is settled. Otherwise it says why, such as "Needs two players".
 - One line of separate facts splits them with `·`. The items of one list split
   with a comma. Never a `·` inside a list.
 - A loading placeholder for a view one component draws is that component on

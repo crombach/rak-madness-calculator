@@ -69,20 +69,17 @@ const PAGES: Array<NavItem> = [
     path: (season, week) =>
       resultsPath(season, week, RESULTS_PAGE.comparePlayers),
     disabled: ({ playerCount }) => playerCount == null || playerCount < 2,
-    disabledReason: ({ isWeekSettled, playerCount }) => {
-      if (isWeekSettled) return undefined;
-      if (playerCount == null) return "Scores still loading";
-      if (playerCount < 2) return "Needs two players";
-      return undefined;
-    },
+    disabledReason: ({ isWeekSettled, playerCount }) =>
+      !isWeekSettled && playerCount != null && playerCount < 2
+        ? "Needs two players"
+        : undefined,
   },
   {
     label: RESULTS_PAGE.liveGames,
     icon: <ScoreboardIcon />,
     path: (season, week) => resultsPath(season, week, RESULTS_PAGE.liveGames),
-    disabled: ({ isWeekSettled }) => isWeekSettled,
-    disabledReason: ({ playerCount }) =>
-      playerCount == null ? "Scores still loading" : undefined,
+    disabled: ({ isWeekSettled, playerCount }) =>
+      isWeekSettled || playerCount == null,
   },
 ];
 

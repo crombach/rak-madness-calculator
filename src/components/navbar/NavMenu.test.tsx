@@ -162,7 +162,7 @@ describe("NavMenu", () => {
     });
 
     it.each([
-      ["while scores load", undefined, false, "Scores still loading"],
+      ["with no reason while scores load", undefined, false, ""],
       [
         "with fewer than two players",
         { scores: [{}] },
@@ -194,7 +194,7 @@ describe("NavMenu", () => {
       expect(await screen.findByTestId("landed")).toHaveTextContent(LIVE_PATH);
     });
 
-    it("disables Live Games while scores load", async () => {
+    it("disables Live Games while scores load, with no reason", async () => {
       mockAppData.mockReturnValue({ scores: undefined });
       const user = mount();
       await user.click(trigger());
@@ -204,7 +204,7 @@ describe("NavMenu", () => {
       });
 
       expect(item).toHaveAttribute("data-disabled");
-      expect(item).toHaveAccessibleDescription("Scores still loading");
+      expect(item).toHaveAccessibleDescription("");
     });
 
     it("disables the pages a complete week has no use for, with no reason", async () => {
