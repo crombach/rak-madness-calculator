@@ -162,14 +162,23 @@ function useWraps<T extends HTMLElement>(): [RefObject<T | null>, boolean] {
 function SpreadLine({
   spread,
   myPick,
+  outcome,
 }: {
   spread?: GameSpread;
   myPick?: string;
+  /** How the reader's pick did. Nothing before the game is over, or for a pick
+   *  naming neither side. */
+  outcome?: SideOutcome;
 }) {
   return (
     <p className="game-status__spread">
       {myPick != null ? MY_PICK_LABEL : SPREAD_LABEL}:{" "}
-      <span className="game-status__spread-value">
+      <span
+        className={getClasses(
+          "game-status__spread-value",
+          outcomeClasses(outcome),
+        )}
+      >
         {myPick ??
           (spread != null ? `${spread.team} ${spread.points}` : NO_SPREAD)}
       </span>
@@ -240,18 +249,28 @@ function Game({
   };
   const pickedTeam =
     myPick != null ? parsePick(myPick).teamAbbreviation : undefined;
+  const isPicked = (side: GameSide) =>
+    side.team.abbreviation.toUpperCase() === pickedTeam;
+  const pickedSide = [result.away, result.home].find(isPicked);
   const sideProps = (side: GameSide) => ({
     side,
     isNeutralSite: result.isNeutralSite,
     logo: fit < MARKS_OFF ? logo?.(side) : undefined,
     outcome: outcomeOf(side),
-    isPicked: side.team.abbreviation.toUpperCase() === pickedTeam,
+    isPicked: isPicked(side),
   });
   const sideCount = (count: number, side: GameSide) => (
     <span>
       {count}
       <span className="game-status__sr-only"> picked</span>{" "}
-      <span className="game-status__split-team">{side.team.abbreviation}</span>
+      <span
+        className={getClasses(
+          "game-status__split-team",
+          outcomeClasses(outcomeOf(side)),
+        )}
+      >
+        {side.team.abbreviation}
+      </span>
     </span>
   );
   const splitLine = split != null && (
@@ -266,7 +285,11 @@ function Game({
         className={getClasses("game-status__lead", { "--wrapped": wrapped })}
         ref={lead}
       >
-        <SpreadLine spread={spread} myPick={myPick} />
+        <SpreadLine
+          spread={spread}
+          myPick={myPick}
+          outcome={pickedSide != null ? outcomeOf(pickedSide) : undefined}
+        />
         {splitLine}
       </div>
       <div

@@ -83,6 +83,9 @@ instead of recording the whole run.
   ends both games, for the empty state. `LIVE_DIALOG=1` ends on Game Status
   for P1. `LIVE_DAYS=1` pins the clock and spreads three games over today,
   tomorrow and later, for each section and countdown.
+- `scenarios/pick-result.js` — Game Status on a finished game, the reader's pick
+  and the pool line colored by how each side did. `$PICK_RESULT` is `right` or
+  `wrong`, `$PICK_THEME` is `light` or `dark`.
 - `scenarios/scoreline-shape.js` — the Game Status readout on a live game level at
   nothing, then the list its marks are read off. `$SCORELINE_THEME` is `light` or
   `dark`, `$SCORELINE_SHOT_DIR` takes the crop and the full page, so `--out` is a
