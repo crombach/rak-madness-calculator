@@ -225,7 +225,12 @@ export default function GameStatusDialog({
         />
       }
     >
-      <GameStatusSummary game={game} result={shown} myPick={myPick} />
+      <GameStatusSummary
+        game={game}
+        result={shown}
+        myPick={myPick}
+        players={scores?.scores}
+      />
     </DialogShell>
   );
 }

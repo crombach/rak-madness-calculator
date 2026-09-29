@@ -1,9 +1,11 @@
 import { ReactNode, useState } from "react";
 import { GameStatus, HomeAway } from "../../types/ESPN";
 import { GameSide, LeagueResult } from "../../types/LeagueResult";
+import { PlayerScore } from "../../types/RakMadnessScores";
 import { GameSpread, WeekGame } from "../../types/WeekGame";
 import getClasses from "../../utils/getClasses";
 import parsePick from "../../utils/scoring/parsePick";
+import pickSplit, { PickSplit } from "../../utils/scoring/pickSplit";
 import { gamecastUrl, kickoffParts, scoringTeam } from "./gameStatusText";
 import Scoreline, { outcomeClasses, SideOutcome } from "./Scoreline";
 import useScorelineFit, { MARKS_OFF, SHORT_NAMES } from "./useScorelineFit";
@@ -35,6 +37,8 @@ const MY_PICK_LABEL = "Your Pick";
 
 /** Read out beside the side the reader picked, for the underline marking it. */
 const PICKED_SIDE_LABEL = "Your pick";
+
+const SPLIT_SEPARATOR = " · ";
 
 /** Said in its place for a game the picks put no line on. */
 const NO_SPREAD = "NONE";
@@ -172,11 +176,13 @@ function Game({
   logo,
   gamecastHref,
   myPick,
+  split,
   brief,
 }: {
   result: LeagueResult;
   spread?: GameSpread;
   myPick?: string;
+  split?: PickSplit;
   /** Leaves out the strip under the scoreline, and the spread line. */
   brief: boolean;
   /** What a side wears beside its name, or nothing where the marks are dropped. */
@@ -235,6 +241,13 @@ function Game({
         <Scoreline result={result} spread={spread} outcomeOf={outcomeOf} />
         <Side homeAway={HomeAway.HOME} {...sideProps(result.home)} />
       </div>
+      {split != null && (
+        <p className="game-status__split">
+          {`${split.away} picked ${result.away.team.abbreviation}`}
+          {SPLIT_SEPARATOR}
+          {`${split.home} picked ${result.home.team.abbreviation}`}
+        </p>
+      )}
       {/* Under the scoreline rather than over it. The game is what the dialog was
           opened for, and when and where it is played is the footnote. */}
       {!brief && (
@@ -260,6 +273,7 @@ export default function GameStatusSummary({
   game,
   result,
   myPick,
+  players,
   brief = false,
 }: {
   game?: WeekGame;
@@ -267,6 +281,8 @@ export default function GameStatusSummary({
   result?: LeagueResult;
   /** The reader's own pick on the game, which then stands in for the pool's line. */
   myPick?: string;
+  /** Everyone in the pool, for how many picked each side. */
+  players?: ReadonlyArray<PlayerScore>;
   /** A scoreboard alone: no kickoff, place or Gamecast link. The caller draws the
    *  `SpreadLine`. */
   brief?: boolean;
@@ -299,6 +315,7 @@ export default function GameStatusSummary({
         spread={game.spread}
         gamecastHref={gamecastUrl(game.league, shown.id)}
         myPick={myPick}
+        split={players != null ? pickSplit(players, game, shown) : undefined}
         brief={brief}
         logo={
           logos

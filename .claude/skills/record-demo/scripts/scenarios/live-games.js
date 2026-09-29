@@ -17,6 +17,9 @@ const THEME = process.env.LIVE_THEME ?? "light";
 /** `1` ends P1 and P3 too, so the page says nothing is live. */
 const NONE_LIVE = process.env.LIVE_NONE === "1";
 
+/** `1` ends on Game Status for P1, opened from the reader's own cell. */
+const OPEN_DIALOG = process.env.LIVE_DIALOG === "1";
+
 /** The reader, whose pick each scoreboard says. */
 const MY_NAME = "Dee";
 
@@ -64,4 +67,16 @@ export default async function run({ page, context, baseUrl }) {
   await (NONE_LIVE ? page.getByRole("status") : page.getByRole("listitem"))
     .first()
     .waitFor({ timeout: 10000 });
+
+  if (OPEN_DIALOG) {
+    await page.goto(`${baseUrl}/${SEASON}/${WEEK}/picks`);
+    await page
+      .locator("tbody tr", { hasText: MY_NAME })
+      .locator("td.table__pick button")
+      .first()
+      .click();
+    await page.getByText("Game Status").waitFor({ timeout: 5000 });
+    // The sheet slides up after it mounts.
+    await page.waitForTimeout(1000);
+  }
 }

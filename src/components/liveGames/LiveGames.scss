@@ -1,4 +1,5 @@
 @use "../../styles/a11y" as *;
+@use "../../styles/label" as *;
 @use "../../styles/picks" as *;
 
 // `100cqi` is the scrolling box `PageLayout.scss` declares the container on, so a
@@ -6,6 +7,8 @@
 .live-games {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: var(--rak-space-4);
   flex: 1;
   width: 100cqi;
   padding: var(--rak-space-4);
@@ -13,49 +16,71 @@
   color: var(--rak-text);
 }
 
-$divider: var(--rak-border-width-hairline);
-$column-max: calc(var(--rak-scoreboard-width) + 2 * var(--rak-space-4));
-// Two columns of 512px, each game's padding included, so no scoreboard in them
-// is narrower than 480px. The `32px` is the page padding, twice `--rak-space-4`.
-$two-columns-from: 2 * 512px + 1px + 32px;
+// A card as wide as the dialog, its padding and frame included.
+$card-max: calc(
+  var(--rak-scoreboard-width) + 2 * var(--rak-space-4) + 2 *
+    var(--rak-border-width)
+);
+// Two cards of 516px, so no scoreboard in them is narrower than 480px, a 16px gap,
+// and the page padding either side, all three `--rak-space-4`.
+$two-columns-from: 2 * 516px + 3 * 16px;
 
-// Each game's shadow fills the one-pixel gap as the divider, so an empty cell
-// draws none. Pulled out over the page's padding, which clips the shadows on the
-// outer edge and puts each game's own padding at the page gutter.
+.live-games__empty,
+.live-games__list,
+.live-games__next {
+  width: 100%;
+  max-width: $card-max;
+
+  @container (min-width: #{$two-columns-from}) {
+    max-width: calc(2 * #{$card-max} + var(--rak-space-4));
+  }
+}
+
 .live-games__list {
   display: grid;
   grid-template-columns: 1fr;
-  align-content: start;
-  align-self: center;
-  gap: $divider;
-  width: calc(100% + 2 * var(--rak-space-4));
-  max-width: $column-max;
-  margin-block: calc(-1 * var(--rak-space-4));
+  align-items: start;
+  gap: var(--rak-space-4);
+  margin: 0;
   padding: 0;
-  overflow: hidden;
   list-style: none;
 
   @container (min-width: #{$two-columns-from}) {
     grid-template-columns: 1fr 1fr;
-    max-width: calc(2 * #{$column-max} + #{$divider});
   }
 }
 
+// Framed and banded as a Swing Games panel is, so a game reads as a panel of the
+// device.
 .live-games__game {
   display: flex;
   flex-direction: column;
-  gap: var(--rak-space-2);
-  padding: var(--rak-space-4);
-  box-shadow: 0 0 0 $divider var(--rak-panel-border);
+  overflow: hidden;
+  border: var(--rak-border-width) solid var(--rak-panel-border);
+  border-radius: var(--rak-radius-sm);
+
+  .game-status {
+    padding: var(--rak-space-4);
+  }
 }
 
-// The pick keeps to the heading's line, at its end. A pair too wide for one line
-// puts the pick on a line of its own, still at the end.
+// The band. The pick keeps to the heading's line, at its end. A pair too wide for
+// one line puts the pick on a line of its own, still at the end.
 .live-games__header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--rak-space-2);
+  padding: var(--rak-space-2) var(--rak-space-3);
+  background-color: var(--rak-band-header);
+  box-shadow: var(--rak-shadow-band-header);
+  color: var(--rak-on-solid);
+
+  .live-games__name,
+  .live-games__pick,
+  .game-status__spread-value {
+    color: inherit;
+  }
 }
 
 .live-games__pick {
@@ -77,6 +102,45 @@ $two-columns-from: 2 * 512px + 1px + 32px;
 }
 
 .live-games__name {
+  color: var(--rak-text-secondary);
+}
+
+.live-games__next {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+}
+
+// Set as `.analysis__section-title` sets a section's name.
+.live-games__next-title {
+  @include micro-label;
+
+  margin: 0;
+  color: var(--rak-analysis-label);
+  font-size: var(--rak-text-xs);
+}
+
+.live-games__next-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.live-games__next-game {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rak-space-2);
+  padding-block: var(--rak-space-2);
+  font-size: var(--rak-text-sm);
+
+  & + & {
+    border-top: var(--rak-border-width-hairline) solid var(--rak-panel-border);
+  }
+}
+
+.live-games__kickoff {
+  margin-inline-start: auto;
   color: var(--rak-text-secondary);
 }
 

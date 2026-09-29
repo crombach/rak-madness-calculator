@@ -182,6 +182,21 @@ describe("GameStatusDialog", () => {
     localStorage.clear();
   });
 
+  it("says how many players picked each side", async () => {
+    const pool: RakMadnessScores = {
+      scores: [
+        player({ name: "Alice", pro: [pick("KC -3")] }),
+        player({ name: "Bob", pro: [pick("BUF +3")] }),
+        player({ name: "Cy", pro: [pick("KC")] }),
+      ],
+      games,
+    };
+    render(dialog("P1", true, pool, () => Promise.resolve(undefined)));
+    expect(await screen.findByText(/picked KC/)).toHaveTextContent(
+      "2 picked KC · 1 picked BUF",
+    );
+  });
+
   it("polls the open game's league, keeps it up to date, and stops when it is final", async () => {
     vi.useFakeTimers();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });

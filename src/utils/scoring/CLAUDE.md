@@ -14,6 +14,7 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
   rest kept, and `hasMoved`, whether a fetch costs a rescore
 - `gameColumns`: `LEAGUES`, `LEAGUE_PREFIX`, `gameLabels`
 - `pickFor`: one player's cell for a game, by its label
+- `pickSplit`: how many players picked each side of a game
 - `weekGames`: each column, game and line
 - `getTiebreakerScore`: the Monday night total
 - `scorePlayers`: per-player totals, sorted

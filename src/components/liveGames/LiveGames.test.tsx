@@ -82,7 +82,10 @@ function mount(
   );
 }
 
-const cards = () => screen.queryAllByRole("listitem");
+const cards = () =>
+  screen
+    .queryAllByRole("listitem")
+    .filter((item) => item.classList.contains("live-games__game"));
 
 beforeEach(() => localStorage.clear());
 
@@ -114,6 +117,14 @@ describe("LiveGames", () => {
     ).toHaveTextContent("KC");
   });
 
+  it("says how many players picked each side", () => {
+    mount(scores);
+    const [first] = cards();
+    expect(within(first).getByText(/picked KC/)).toHaveTextContent(
+      "1 picked KC · 0 picked BUF",
+    );
+  });
+
   it("says the pool's line with no name set", () => {
     mount(scores);
     const [first] = cards();
@@ -122,6 +133,27 @@ describe("LiveGames", () => {
       "live-games__header",
     );
     expect(screen.queryByText(/Your Pick/)).toBeNull();
+  });
+
+  it("lists the games not started yet under Up next, by kickoff", () => {
+    const later = {
+      ...upcomingGame({ home: "NE", away: "MIA" }),
+      id: "405",
+      date: new Date(proUpcoming.date.getTime() + 3_600_000),
+    };
+    mount({
+      ...scores,
+      games: [
+        ...(scores.games ?? []),
+        column("P4", League.PRO, later),
+      ].reverse(),
+    });
+    const next = screen.getByRole("region", { name: "Up next" });
+    expect(
+      within(next)
+        .getAllByRole("listitem")
+        .map((item) => item.firstChild?.textContent),
+    ).toEqual(["P2", "P4"]);
   });
 
   it("says so when nothing is being played", () => {

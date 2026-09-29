@@ -7,6 +7,7 @@ import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
 import GameStatusSummary, { SpreadLine } from "../gameStatus/GameStatusSummary";
+import { kickoffParts } from "../gameStatus/gameStatusText";
 import { HEADING_MARK } from "../table/picks/headingMark";
 import "./LiveGames.scss";
 
@@ -17,6 +18,10 @@ const LIVE_STATUSES: ReadonlySet<GameStatus> = new Set([
   GameStatus.LIVE,
   GameStatus.DELAYED,
 ]);
+
+const NEXT_TITLE = "Up next";
+const NEXT_ID = "live-games-next";
+const KICKOFF_SEPARATOR = " · ";
 
 function LiveGame({
   game,
@@ -44,7 +49,13 @@ function LiveGame({
           className="live-games__pick"
         />
       </div>
-      <GameStatusSummary game={game} result={result} myPick={myPick} brief />
+      <GameStatusSummary
+        game={game}
+        result={result}
+        myPick={myPick}
+        players={scores.scores}
+        brief
+      />
     </li>
   );
 }
@@ -65,16 +76,20 @@ export default function LiveGames({
     games: scores?.games,
     onPoll,
   });
-  const live = (scores?.games ?? []).flatMap((game) => {
-    if (game.result == null) return [];
-    const result = fetched?.get(game.result.id) ?? game.result;
-    return LIVE_STATUSES.has(result.status) ? [{ game, result }] : [];
-  });
+  const current = (scores?.games ?? []).flatMap((game) =>
+    game.result == null
+      ? []
+      : [{ game, result: fetched?.get(game.result.id) ?? game.result }],
+  );
+  const live = current.filter(({ result }) => LIVE_STATUSES.has(result.status));
+  const upcoming = current
+    .filter(({ result }) => result.status === GameStatus.UPCOMING)
+    .sort((a, b) => a.result.date.getTime() - b.result.date.getTime());
 
   return (
     <div className="live-games">
       {scores == null || live.length === 0 ? (
-        <p className="game-status__missing" role="status">
+        <p className="game-status__missing live-games__empty" role="status">
           No games are live right now
         </p>
       ) : (
@@ -88,6 +103,24 @@ export default function LiveGames({
             />
           ))}
         </ul>
+      )}
+      {upcoming.length > 0 && (
+        <section className="live-games__next" aria-labelledby={NEXT_ID}>
+          <h2 id={NEXT_ID} className="live-games__next-title">
+            {NEXT_TITLE}
+          </h2>
+          <ul className="live-games__next-list">
+            {upcoming.map(({ game, result }) => (
+              <li key={game.label} className="live-games__next-game">
+                <span className="live-games__label">{game.label}</span>
+                <span className="live-games__name">{game.name}</span>
+                <span className="live-games__kickoff">
+                  {kickoffParts(result.date).join(KICKOFF_SEPARATOR)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );

@@ -90,6 +90,16 @@
   color: var(--rak-text);
 }
 
+// A count, so it takes the rule `.analysis__standing` sets every count in.
+.game-status__split {
+  @include micro-label;
+
+  margin: 0;
+  color: var(--rak-analysis-label);
+  font-size: var(--rak-text-xs);
+  text-align: center;
+}
+
 // What is the same about the game however it is going. It starts at a fixed time and
 // is played at a fixed place. Under the scoreline, as a footnote to it.
 //
