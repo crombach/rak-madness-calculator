@@ -55,7 +55,7 @@ type WeekSummary = {
 ```
 
 - `isLive` stays true until every game in `scores.games` is `GameStatus.FINAL`.
-  That is the rule `isWeekOver` in `src/hooks/useLiveGame.ts` uses. Move it to a
+  That is the rule `isWeekOver` in `src/hooks/useLiveWeek.ts` uses. Move it to a
   util so both callers share it.
 - `isWinner` is set once `isWeekSettled` passes. It marks every row that
   `compareOnMerit` in `src/utils/scoring/comparePlayerScores.ts` ties with row 0.
