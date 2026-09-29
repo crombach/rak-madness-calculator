@@ -3,8 +3,6 @@ import { GameStatus, HomeAway } from "../../types/ESPN";
 import { GameSide, LeagueResult } from "../../types/LeagueResult";
 import { PlayerScore } from "../../types/RakMadnessScores";
 import { GameSpread, WeekGame } from "../../types/WeekGame";
-import cssMediaQuery from "../../hooks/cssMediaQuery";
-import useMediaQuery from "../../hooks/useMediaQuery";
 import getClasses from "../../utils/getClasses";
 import observeResize from "../../utils/observeResize";
 import parsePick from "../../utils/scoring/parsePick";
@@ -37,6 +35,7 @@ const SPREAD_LABEL = "Spread";
 
 /** Said in the line's place where the reader has a pick on the game. */
 const MY_PICK_LABEL = "Your Pick";
+const POOL_LABEL = "Pool";
 
 /** Read out beside the side the reader picked, to a screen reader alone. */
 const PICKED_SIDE_LABEL = "Your pick";
@@ -216,10 +215,8 @@ function Game({
 }) {
   const [scoreline, fit] = useScorelineFit(result.id);
   const [lead, wrapped] = useWraps<HTMLDivElement>();
-  // A phone's line is too short for both once a side has ten picks.
-  const [narrowQuery] = useState(() => cssMediaQuery("--rak-below-wide"));
-  const isNarrow = useMediaQuery(narrowQuery);
-  const splitInline = !brief && !isNarrow;
+  // The card's band already holds the pick, so its split sits under the scores.
+  const splitInline = !brief;
   // The link rides with the place, not the kickoff, so it holds the strip's end
   // when the halves stack. A game ESPN sent no address for still carries it.
   const placeParts = [
@@ -257,20 +254,17 @@ function Game({
     outcome: outcomeOf(side),
     isPicked: side.team.abbreviation.toUpperCase() === pickedTeam,
   });
+  const sideCount = (count: number, side: GameSide) => (
+    <span>
+      {count}
+      <span className="game-status__sr-only"> picked</span>{" "}
+      <span className="game-status__split-team">{side.team.abbreviation}</span>
+    </span>
+  );
   const splitLine = split != null && (
     <p className="game-status__split">
-      <span>
-        {`${split.away} picked `}
-        <span className="game-status__split-team">
-          {result.away.team.abbreviation}
-        </span>
-      </span>
-      <span>
-        {`${split.home} picked `}
-        <span className="game-status__split-team">
-          {result.home.team.abbreviation}
-        </span>
-      </span>
+      {POOL_LABEL}: {sideCount(split.away, result.away)}
+      {sideCount(split.home, result.home)}
     </p>
   );
   return (

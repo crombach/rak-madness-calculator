@@ -210,6 +210,30 @@ describe("GameStatusDialog", () => {
     expect(home).toHaveTextContent("1 picked BUF");
   });
 
+  it("sets the pool's counts on the pick's line, a phone's too", async () => {
+    const wide = window.matchMedia;
+    window.matchMedia = ((media: string) => ({
+      ...wide(media),
+      matches: true,
+    })) as typeof window.matchMedia;
+    try {
+      const pool: RakMadnessScores = {
+        scores: [player({ name: "Alice", pro: [pick("KC -3")] })],
+        games,
+      };
+      render(dialog("P1", true, pool, () => Promise.resolve(undefined)));
+      const split = await screen.findByText(/^Pool:/, {
+        selector: ".game-status__split",
+      });
+      expect(split.closest(".game-status__lead")).not.toBeNull();
+      expect(split.querySelector(".game-status__sr-only")).toHaveTextContent(
+        "picked",
+      );
+    } finally {
+      window.matchMedia = wide;
+    }
+  });
+
   it("polls the open game's league, keeps it up to date, and stops when it is final", async () => {
     vi.useFakeTimers();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
@@ -273,7 +297,9 @@ describe("GameStatusDialog", () => {
     expect(screen.getByText("BUF Team")).toBeInTheDocument();
 
     held.settle(proGame);
-    expect(await screen.findByText("0")).toBeInTheDocument();
+    expect(
+      await screen.findByText("0", { selector: ".game-status__points" }),
+    ).toBeInTheDocument();
     // A fetch of the other league draws nothing over this one, since it cannot
     // change the game on screen.
     rerender(dialog("P1", true, scores, onPoll, COLLEGE_IN_FLIGHT));
