@@ -1,5 +1,5 @@
 import { Dialog } from "@base-ui/react/dialog";
-import { PropsWithChildren, ReactNode } from "react";
+import { PropsWithChildren, ReactNode, RefObject } from "react";
 import useViewportInsets from "../../hooks/useViewportInsets";
 import Button from "../button/Button";
 import { CloseIcon } from "../icon/Icon";
@@ -25,6 +25,7 @@ export default function DialogShell({
   title,
   search,
   busy = false,
+  finalFocus,
   children,
 }: PropsWithChildren<{
   open: boolean;
@@ -43,6 +44,11 @@ export default function DialogShell({
    * such a game. Left off, the bar is the neutral one every other wait draws.
    */
   busy?: false | { label: string; tone?: "live" };
+  /**
+   * Where focus lands on close. Base UI returns it to whatever held it on open,
+   * which is nothing for a dialog the page opened itself.
+   */
+  finalFocus?: RefObject<HTMLElement | null>;
 }>) {
   // A search opens a keyboard over the screen's bottom, which the sheet sizes and
   // pads against. Only while the dialog is up, since no other page has an input.
@@ -52,7 +58,7 @@ export default function DialogShell({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Backdrop className="dialog__backdrop" />
-        <Dialog.Popup className={DIALOG_POPUP_CLASS}>
+        <Dialog.Popup className={DIALOG_POPUP_CLASS} finalFocus={finalFocus}>
           <header className="dialog__header">
             <Dialog.Title className="dialog__title">{title}</Dialog.Title>
             <Button

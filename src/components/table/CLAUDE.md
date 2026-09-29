@@ -9,7 +9,8 @@
   cell or game heading holds, and each column's width. Fixed, so a long value is
   cut short rather than widening it. `.table__cell-wipe` flashes a cell a refresh changed.
 - `SkeletonTable`: the wireframe shown while a week is worked out. Its columns are
-  the real ones' width, and its sixty-odd rows scroll as the table will.
+  the real ones' width. Scoreboard and Picks get sixty-odd rows that scroll as
+  the table will.
 
 ## Subdirectories
 

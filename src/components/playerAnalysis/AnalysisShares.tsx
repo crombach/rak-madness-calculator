@@ -169,7 +169,7 @@ export default function AnalysisShares({
           ariaExpanded={isExpanded}
           onClick={() => setIsExpanded(!isExpanded)}
         >
-          {isExpanded ? "Show fewer" : "Show more"}
+          {isExpanded ? "Show Fewer" : "Show More"}
         </Button>
       )}
       {/* A total is a condition on a route and these rows are not routes, so the

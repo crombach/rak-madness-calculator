@@ -1,5 +1,5 @@
 import { Combobox } from "@base-ui/react/combobox";
-import { ReactNode, useRef } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { UnfoldMoreIcon } from "../icon/Icon";
 import { DIALOG_POPUP_CLASS } from "./DialogShell";
 import "./DialogCombobox.scss";
@@ -28,6 +28,7 @@ export default function DialogCombobox<T>({
   adornment,
   renderValue,
   renderOption,
+  focusOnMount = false,
 }: {
   ariaLabel: string;
   placeholder: string;
@@ -53,8 +54,15 @@ export default function DialogCombobox<T>({
    */
   renderValue?: (item: T) => ReactNode;
   renderOption: (item: T) => ReactNode;
+  /** Focuses the input as it mounts. */
+  focusOnMount?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  // Read once, since the focus belongs to the mount alone.
+  const [shouldFocus] = useState(focusOnMount);
+  useEffect(() => {
+    if (shouldFocus) inputRef.current?.focus();
+  }, [shouldFocus]);
 
   /**
    * Whether the input still reads as the choice the adornment speaks for.

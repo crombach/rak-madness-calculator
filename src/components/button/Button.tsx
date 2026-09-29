@@ -1,5 +1,5 @@
 import { Button as BaseButton } from "@base-ui/react/button";
-import { ReactNode } from "react";
+import { ReactNode, Ref } from "react";
 import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import "./Button.scss";
@@ -65,6 +65,7 @@ export default function Button({
   className = "",
   ariaLabel,
   ariaExpanded,
+  ref,
 }: {
   children: ReactNode;
   onClick: () => void;
@@ -90,6 +91,7 @@ export default function Button({
   ariaLabel?: string;
   /** Set where the button opens and closes something below it. */
   ariaExpanded?: boolean;
+  ref?: Ref<HTMLButtonElement>;
 }) {
   const classes = buttonClasses({
     color,
@@ -103,6 +105,7 @@ export default function Button({
   });
   return (
     <BaseButton
+      ref={ref}
       type="button"
       aria-label={ariaLabel}
       aria-expanded={ariaExpanded}

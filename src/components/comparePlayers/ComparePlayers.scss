@@ -1,0 +1,148 @@
+@use "../../styles/breakpoints" as *;
+@use "../../styles/label" as *;
+
+// Pinned to the screen's left edge while a wide table pans under it.
+.compare-players {
+  position: sticky;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--rak-space-2);
+  width: min(100cqi, 100%);
+  padding: var(--rak-space-4);
+  // The dialog's surface, which the keys read against more clearly than the band.
+  background-color: var(--rak-surface-raised);
+  color: var(--rak-text);
+}
+
+// Choose Players over the game scope, each the full width, until there is room to
+// set them side by side as one toolbar, split the way the navbar splits its keys.
+.compare-players__controls {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: var(--rak-space-2);
+
+  @include wide-screen {
+    flex-direction: row;
+    align-self: flex-start;
+    align-items: center;
+    gap: var(--rak-space-4);
+  }
+}
+
+// The name over the keys on a phone, beside them on a wide screen.
+.compare-players__games {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+
+  @include wide-screen {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--rak-space-4);
+  }
+}
+
+// The phone stacks the groups, which parts them without a rule.
+.compare-players__divider {
+  display: none;
+
+  @include wide-screen {
+    display: block;
+  }
+}
+
+// `.navbar__divider`'s rule, in the ink it takes against this surface.
+.compare-players__divider {
+  width: var(--rak-border-width);
+  height: var(--rak-icon-md);
+  background-color: var(--rak-on-solid);
+}
+
+// `.settings__label`, which names the same kind of choice in the settings dialog.
+.compare-players__games-label {
+  @include micro-label;
+
+  font-size: var(--rak-text-sm);
+  color: var(--rak-text-secondary);
+}
+
+// Even halves, so which one is chosen is the only thing telling them apart.
+.compare-players__scopes {
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  gap: var(--rak-space-2);
+}
+
+.compare-players__pickers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// The combobox, and the remove button beside it.
+.compare-players__field {
+  display: flex;
+  gap: var(--rak-space-2);
+
+  > :first-child {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+// The remove key's face and the edge it stands on span the combobox exactly,
+// short of the touch target. WCAG 2.2 AA asks 24px.
+.compare-players__remove {
+  min-height: 0;
+  margin-bottom: var(--rak-key-lift);
+  // Square around the 24px icon on the 36px face. `aspect-ratio` cannot read a
+  // stretched height.
+  &.--icon {
+    padding-inline: 6px;
+  }
+}
+
+// A 36px face on its edge spans a combobox, as the remove keys do.
+.compare-players__add {
+  align-self: stretch;
+  min-height: 2.25rem;
+  padding-block: 0;
+}
+
+.compare-players__standing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+
+  // Out of the flow while it has nothing to say, so the gap above it opens only
+  // with its text and the table sits where the wireframe's did. Still in the
+  // accessibility tree, which a live region needs before its text arrives.
+  &:empty {
+    position: absolute;
+  }
+}
+
+// A frame hugging a table of a few games stands a narrow strip in a wide case.
+// The controls hold it open, and the table stretches to meet them.
+@include roomy-screen {
+  .compare-players {
+    min-width: min(60rem, 100cqi);
+  }
+
+  .compare-players ~ .table {
+    min-width: 100%;
+  }
+}
+
+// Add Player is an action on the list, not a row of it, so a block's gap parts
+// them. Against both classes, to outweigh the settings section's own.
+.settings__section.compare-players__section {
+  gap: var(--rak-space-4);
+}

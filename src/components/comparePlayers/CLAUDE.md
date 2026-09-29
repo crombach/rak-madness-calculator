@@ -1,0 +1,16 @@
+# comparePlayers
+
+The `/:season/:week/compare` route: two to ten players' picks in one table.
+
+- `ComparePlayersRoute`: redirects to the scoreboard without the experimental
+  opt-in, else renders `ComparePlayers`. Mounted lazily by `App.tsx`.
+- `ComparePlayers`: `PicksTable` with every tiebreaker, on every game or only
+  the `differingGames` or `sameGames`. With fewer than two players chosen, it
+  opens the dialog over a `SkeletonTable`.
+- `ComparePlayersDialog`: a `PlayerCombobox` per player, added and removed by
+  the reader.
+- `comparedPlayers`: the chosen names and the game scope in
+  `settingsStore`, names restored by name.
+- `ComparePlayersSkeleton`: the controls over a `SkeletonTable`, while the week
+  or the page chunk loads. Exports `ChooseButton` and `GamesToggle`, which it
+  draws too.

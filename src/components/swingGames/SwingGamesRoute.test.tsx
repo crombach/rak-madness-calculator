@@ -149,9 +149,9 @@ describe("the swing games route", () => {
     mountApp(SWINGS_PATH);
     await screen.findByText("KC at DEN");
 
-    const divider = screen.getByRole("button", {
-      name: "Menu",
-    }).previousElementSibling;
+    const divider = screen
+      .getByRole("button", { name: "Menu" })
+      .closest(".nav-menu__anchor")?.previousElementSibling;
     expect(divider).toHaveClass("navbar__divider");
     expect(divider?.previousElementSibling).toContainElement(
       screen.getByRole("button", { name: "Picks" }),
@@ -378,12 +378,12 @@ describe("the swing games route", () => {
         name: bandName("P1 KC at DEN", 10),
       });
 
-      await user.click(screen.getByRole("button", { name: "Show more" }));
+      await user.click(screen.getByRole("button", { name: "Show More" }));
       await user.click(band);
       await user.click(band);
 
       expect(
-        await screen.findByRole("button", { name: "Show fewer" }),
+        await screen.findByRole("button", { name: "Show Fewer" }),
       ).toBeInTheDocument();
     });
   });
@@ -397,7 +397,7 @@ describe("the swing games route", () => {
     expect(
       playerButtons(needsHeading(9, "KC -3")).map((it) => it.textContent),
     ).toEqual(KC_BACKERS.slice(0, 4));
-    const more = screen.getByRole("button", { name: "Show more" });
+    const more = screen.getByRole("button", { name: "Show More" });
     expect(more).toHaveAttribute("aria-expanded", "false");
 
     await user.click(more);
@@ -405,7 +405,7 @@ describe("the swing games route", () => {
     expect(
       playerButtons(needsHeading(9, "KC -3")).map((it) => it.textContent),
     ).toEqual(KC_BACKERS);
-    expect(screen.getByRole("button", { name: "Show fewer" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "Show Fewer" })).toHaveAttribute(
       "aria-expanded",
       "true",
     );

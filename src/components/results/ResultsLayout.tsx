@@ -22,23 +22,26 @@ export default function ResultsLayout() {
   const isPicks = useMatch("/:season/:week/picks") != null;
   const isSwings = useMatch("/:season/:week/swings") != null;
   const isLive = useMatch("/:season/:week/live") != null;
+  const isCompare = useMatch("/:season/:week/compare") != null;
   const view: ResultsPage = isSwings
     ? RESULTS_PAGE.swingGames
     : isLive
       ? RESULTS_PAGE.liveGames
-      : isPicks
-        ? RESULTS_PAGE.picks
-        : RESULTS_PAGE.scoreboard;
+      : isCompare
+        ? RESULTS_PAGE.comparePlayers
+        : isPicks
+          ? RESULTS_PAGE.picks
+          : RESULTS_PAGE.scoreboard;
 
   return (
     <ResultsFrame
       view={view}
       isReady={guard.status === "ready"}
-      // Leaving swings pushes, so Back returns to it. The menu pushed it, so a
-      // replace would leave two entries for the page before it.
+      // Leaving a menu page pushes, so Back returns to it. The menu pushed it, so
+      // a replace would leave two entries for the page before it.
       onViewChange={(next) =>
         navigate(resultsPath(seasonParam, weekParam, next), {
-          replace: !isSwings && !isLive,
+          replace: !isSwings && !isLive && !isCompare,
         })
       }
       onRefresh={refresh}

@@ -4,6 +4,10 @@
 @use "../../styles/label" as *;
 @use "../../styles/listbox" as *;
 
+.nav-menu__anchor {
+  display: flex;
+}
+
 .nav-menu__positioner {
   z-index: var(--rak-z-overlay);
 }
