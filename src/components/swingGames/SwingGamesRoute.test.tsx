@@ -58,7 +58,7 @@ function gameButtonName(game: string, status = "Not listed by ESPN") {
 function bandMark(gameButton: HTMLElement) {
   return gameButton
     .closest(".swing-games__title")
-    ?.querySelector(".game-status__mark");
+    ?.querySelector(".game-status__mark:not(.--count)");
 }
 
 /** A side's heading, as its lowercase text reads under the CSS caps. */
