@@ -4,6 +4,7 @@ import { userEvent } from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router";
 import {
   useAppData,
+  useIsWeekSettled,
   useIsWeekWon,
   useSwingGames,
 } from "../../context/AppDataContext";
@@ -16,11 +17,13 @@ import NavMenu from "./NavMenu";
 
 vi.mock("../../context/AppDataContext", () => ({
   useAppData: vi.fn(),
+  useIsWeekSettled: vi.fn(),
   useIsWeekWon: vi.fn(),
   useSwingGames: vi.fn(),
 }));
 
 const mockAppData = useAppData as Mock;
+const mockIsWeekSettled = useIsWeekSettled as Mock;
 const mockIsWeekWon = useIsWeekWon as Mock;
 const mockSwingGames = useSwingGames as Mock;
 const A_SWING_GAME = {} as SwingGame;
@@ -71,6 +74,7 @@ describe("NavMenu", () => {
     // Swing Games gates on this opt-in too, beside `isWeekWon`.
     localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
     mockAppData.mockReturnValue({ scores: { scores: [] } });
+    mockIsWeekSettled.mockReturnValue(false);
     mockIsWeekWon.mockReturnValue(false);
     mockSwingGames.mockReturnValue({ games: [A_SWING_GAME] });
   });
@@ -162,6 +166,19 @@ describe("NavMenu", () => {
 
       expect(item).toHaveAttribute("data-disabled");
       expect(item).toHaveAccessibleDescription("Scores still loading");
+    });
+
+    it("disables Live Games once every game is final", async () => {
+      mockIsWeekSettled.mockReturnValue(true);
+      const user = mount();
+      await user.click(trigger());
+
+      const item = await screen.findByRole("menuitem", {
+        name: /Live Games/,
+      });
+
+      expect(item).toHaveAttribute("data-disabled");
+      expect(item).toHaveAccessibleDescription("Every game is final");
     });
 
     it("disables Swing Games once the week has a winner", async () => {

@@ -4,6 +4,7 @@ import { ReactNode, useId, useState } from "react";
 import { Link, useLocation } from "react-router";
 import {
   useAppData,
+  useIsWeekSettled,
   useIsWeekWon,
   useSwingGames,
 } from "../../context/AppDataContext";
@@ -26,6 +27,7 @@ type Week = number | string | undefined;
 
 /** What an item's enabled rule can read. */
 type NavContext = {
+  isWeekSettled: boolean;
   isWeekWon: boolean;
   swingGames: ReturnType<typeof useSwingGames>;
   /** How many players the week has, or undefined while its scores load. */
@@ -61,8 +63,11 @@ const PAGES: Array<NavItem> = [
     label: RESULTS_PAGE.liveGames,
     icon: <ScoreboardIcon />,
     path: (season, week) => resultsPath(season, week, RESULTS_PAGE.liveGames),
-    disabledReason: ({ playerCount }) =>
-      playerCount == null ? "Scores still loading" : undefined,
+    disabledReason: ({ isWeekSettled, playerCount }) => {
+      if (playerCount == null) return "Scores still loading";
+      if (isWeekSettled) return "Every game is final";
+      return undefined;
+    },
   },
 ];
 
@@ -90,13 +95,19 @@ export default function NavMenu({
   const [query] = useState(() => cssMediaQuery("--rak-below-wide"));
   const isNarrow = useMediaQuery(query);
   const { pathname } = useLocation();
+  const isWeekSettled = useIsWeekSettled();
   const isWeekWon = useIsWeekWon();
   const swingGames = useSwingGames();
   const playerCount = useAppData().scores?.scores.length;
   const { experimentalFeatures } = useSettings();
   if (!experimentalFeatures) return null;
 
-  const context: NavContext = { isWeekWon, swingGames, playerCount };
+  const context: NavContext = {
+    isWeekSettled,
+    isWeekWon,
+    swingGames,
+    playerCount,
+  };
   const links = ITEMS.map((item) => {
     const path = item.path(season, week);
     return {
