@@ -6,7 +6,7 @@ import { RESULTS_PAGE } from "./components/results/resultsPath";
 import PicksRoute from "./components/results/PicksRoute";
 import ResultsLayout from "./components/results/ResultsLayout";
 import ScoreboardRoute from "./components/results/ScoreboardRoute";
-import LiveGamesPage from "./components/liveGames/LiveGamesPage";
+import GamesPage from "./components/games/GamesPage";
 import SwingGamesSkeleton from "./components/swingGames/SwingGamesSkeleton";
 import ComparePlayersSkeleton from "./components/comparePlayers/ComparePlayersSkeleton";
 
@@ -45,7 +45,8 @@ export default function App() {
             </Suspense>
           }
         />
-        <Route path="live" element={<LiveGamesPage />} />
+        <Route path="games" element={<GamesPage />} />
+        <Route path="live" element={<Navigate to="../games" replace />} />
         <Route
           path="compare"
           element={

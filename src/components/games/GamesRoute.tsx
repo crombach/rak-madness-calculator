@@ -1,16 +1,14 @@
 import { Navigate, useParams } from "react-router";
-import { useAppData, useIsWeekSettled } from "../../context/AppDataContext";
+import { useAppData } from "../../context/AppDataContext";
 import { useSettings } from "../../context/SettingsContext";
 import resultsPath, { RESULTS_PAGE } from "../results/resultsPath";
-import LiveGames from "./LiveGames";
+import Games from "./Games";
 
-export default function LiveGamesRoute() {
+export default function GamesRoute() {
   const { season, week } = useParams();
   const { scores, rescore, fetchingLeagues } = useAppData();
   const { experimentalFeatures } = useSettings();
-  // A settled week has nothing left to be played.
-  const isWeekSettled = useIsWeekSettled();
-  if (!experimentalFeatures || isWeekSettled) {
+  if (!experimentalFeatures) {
     return (
       <Navigate
         replace
@@ -19,10 +17,6 @@ export default function LiveGamesRoute() {
     );
   }
   return (
-    <LiveGames
-      scores={scores}
-      onPoll={rescore}
-      fetchingLeagues={fetchingLeagues}
-    />
+    <Games scores={scores} onPoll={rescore} fetchingLeagues={fetchingLeagues} />
   );
 }

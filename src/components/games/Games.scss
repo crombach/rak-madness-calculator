@@ -6,7 +6,7 @@
 
 // `100cqi` is the scrolling box `PageLayout.scss` declares the container on, so a
 // phone gets the whole screen and never a sideways scroll.
-.live-games {
+.games {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -17,14 +17,14 @@
   background-color: var(--rak-surface);
   color: var(--rak-text);
 
-  &.--loading .live-games__game {
+  &.--loading .games__game {
     @include skeleton-sheen;
   }
 }
 
 // Stuck to the top of the scroll area across its full width. The margins give
 // back the page's padding and the bar's own height, so nothing under it moves.
-.live-games__progress {
+.games__progress {
   @include progress-bar;
 
   position: sticky;
@@ -44,7 +44,7 @@ $card-max: calc(
 // and the page padding either side, all three `--rak-space-4`.
 $two-columns-from: 2 * 516px + 3 * 16px;
 
-.live-games__section {
+.games__section {
   width: 100%;
   max-width: $card-max;
 
@@ -53,7 +53,7 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   }
 }
 
-.live-games__list {
+.games__list {
   display: grid;
   grid-template-columns: 1fr;
   align-items: start;
@@ -67,7 +67,7 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   }
 }
 
-.live-games__game {
+.games__game {
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -81,7 +81,7 @@ $two-columns-from: 2 * 516px + 3 * 16px;
 
 // The band. The mark keeps to the heading's line, at its end, as it sits at the
 // end of the dialog's search.
-.live-games__header {
+.games__header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -91,7 +91,7 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   box-shadow: var(--rak-shadow-band-header);
   color: var(--rak-on-solid);
 
-  .live-games__name {
+  .games__name {
     color: var(--rak-on-solid);
   }
 
@@ -100,7 +100,7 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   }
 }
 
-.live-games__heading {
+.games__heading {
   display: flex;
   align-items: center;
   gap: var(--rak-space-2);
@@ -109,25 +109,25 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   font-weight: normal;
 }
 
-.live-games__label {
+.games__label {
   @include pick-type;
   @include pick-label;
 }
 
-.live-games__name {
+.games__name {
   @include pick-face;
 
   color: var(--rak-text-secondary);
 }
 
-.live-games__section {
+.games__section {
   display: flex;
   flex-direction: column;
   gap: var(--rak-space-2);
 }
 
 // Set as `.analysis__section-title` sets a section's name.
-.live-games__section-title {
+.games__section-title {
   @include micro-label;
 
   margin: 0;
@@ -137,8 +137,8 @@ $two-columns-from: 2 * 516px + 3 * 16px;
 
 // A real card drawn from a stand-in game, so it takes a loaded card's size. Its
 // band keeps its fill, and each block under it becomes a fill with its text hidden.
-.live-games.--loading .live-games__game {
-  .live-games__header > *,
+.games.--loading .games__game {
+  .games__header > *,
   .game-status__lead > *,
   .game-status__scoreline > *,
   .game-status__meta > * {

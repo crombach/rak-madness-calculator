@@ -33,7 +33,7 @@ const A_SWING_GAME = {} as SwingGame;
 const SEASON = 2024;
 const WEEK = 3;
 const SWINGS_PATH = `/${SEASON}/${WEEK}/swings`;
-const LIVE_PATH = `/${SEASON}/${WEEK}/live`;
+const GAMES_PATH = `/${SEASON}/${WEEK}/games`;
 const COMPARE_PATH = `/${SEASON}/${WEEK}/compare`;
 
 /** Names the URL a click landed on, from the router's own history. */
@@ -98,7 +98,7 @@ describe("NavMenu", () => {
       expect(items.map((item) => item.textContent)).toEqual([
         "Home",
         "Compare Players",
-        "Live Games",
+        "Games",
         "Swing Games",
       ]);
     });
@@ -184,24 +184,20 @@ describe("NavMenu", () => {
       expect(item).toHaveAccessibleDescription(reason);
     });
 
-    it("goes to the live games page on a click", async () => {
+    it("goes to the games page on a click", async () => {
       const user = mount();
       await user.click(trigger());
-      await user.click(
-        await screen.findByRole("menuitem", { name: "Live Games" }),
-      );
+      await user.click(await screen.findByRole("menuitem", { name: "Games" }));
 
-      expect(await screen.findByTestId("landed")).toHaveTextContent(LIVE_PATH);
+      expect(await screen.findByTestId("landed")).toHaveTextContent(GAMES_PATH);
     });
 
-    it("disables Live Games while scores load, with no reason", async () => {
+    it("disables Games while scores load, with no reason", async () => {
       mockAppData.mockReturnValue({ scores: undefined });
       const user = mount();
       await user.click(trigger());
 
-      const item = await screen.findByRole("menuitem", {
-        name: /Live Games/,
-      });
+      const item = await screen.findByRole("menuitem", { name: "Games" });
 
       expect(item).toHaveAttribute("data-disabled");
       expect(item).toHaveAccessibleDescription("");
@@ -214,11 +210,12 @@ describe("NavMenu", () => {
       const user = mount();
       await user.click(trigger());
 
-      for (const name of [/Live Games/, /Swing Games/]) {
-        const item = await screen.findByRole("menuitem", { name });
-        expect(item).toHaveAttribute("data-disabled");
-        expect(item).not.toHaveAccessibleDescription();
-      }
+      const item = await screen.findByRole("menuitem", { name: /Swing Games/ });
+      expect(item).toHaveAttribute("data-disabled");
+      expect(item).not.toHaveAccessibleDescription();
+      expect(
+        screen.getByRole("menuitem", { name: "Games" }),
+      ).not.toHaveAttribute("data-disabled");
     });
 
     it("disables Swing Games once the week has a winner, games still to play", async () => {
@@ -348,7 +345,7 @@ describe("NavMenu", () => {
         within(drawer)
           .getAllByRole("link")
           .map((link) => link.textContent),
-      ).toEqual(["Home", "Compare Players", "Live Games", "Swing Games"]);
+      ).toEqual(["Home", "Compare Players", "Games", "Swing Games"]);
       expect(within(drawer).queryAllByRole("combobox")).toHaveLength(0);
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });

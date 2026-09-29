@@ -16,7 +16,7 @@ import {
 import { EXPERIMENTAL_FEATURES_KEY } from "../../context/SettingsContext";
 import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
 
-const LIVE_PATH = `/${SEASON}/${CURRENT_WEEK}/live`;
+const GAMES_PATH = `/${SEASON}/${CURRENT_WEEK}/games`;
 
 beforeEach(() => {
   setUpAppTest().mockResolvedValue(spreadsheetResponse());
@@ -30,14 +30,14 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("the live games route", () => {
+describe("the games route", () => {
   it("names the page", async () => {
-    mountApp(LIVE_PATH);
+    mountApp(GAMES_PATH);
 
     expect(
       await screen.findByRole("heading", {
         level: 1,
-        name: `${SEASON} Week ${CURRENT_WEEK} Live Games`,
+        name: `${SEASON} Week ${CURRENT_WEEK} Games`,
       }),
     ).toBeInTheDocument();
   });
@@ -49,10 +49,10 @@ describe("the live games route", () => {
     ).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Menu" }));
-    await user.click(await screen.findByText("Live Games"));
+    await user.click(await screen.findByText("Games"));
     await screen.findByRole("heading", {
       level: 1,
-      name: `${SEASON} Week ${CURRENT_WEEK} Live Games`,
+      name: `${SEASON} Week ${CURRENT_WEEK} Games`,
     });
 
     // Faded out over `COLLAPSE_DURATION_MS` before it unmounts.
@@ -63,23 +63,34 @@ describe("the live games route", () => {
     );
   });
 
-  it("sends a reader to the scoreboard once every game is settled", async () => {
+  it("stays on the page once every game is settled", async () => {
     getPlayerScoresMock.mockResolvedValue(
       week([player({ name: "Alice", pro: [pick("KC -3", "yes")] })], 42),
     );
-    mountApp(LIVE_PATH);
+    mountApp(GAMES_PATH);
 
     expect(
       await screen.findByRole("heading", {
         level: 1,
-        name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
+        name: `${SEASON} Week ${CURRENT_WEEK} Games`,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("sends the old live path to the games page", async () => {
+    mountApp(`/${SEASON}/${CURRENT_WEEK}/live`);
+
+    expect(
+      await screen.findByRole("heading", {
+        level: 1,
+        name: `${SEASON} Week ${CURRENT_WEEK} Games`,
       }),
     ).toBeInTheDocument();
   });
 
   it("sends a reader without experimental features to the scoreboard", async () => {
     localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
-    mountApp(LIVE_PATH);
+    mountApp(GAMES_PATH);
 
     expect(
       await screen.findByRole("heading", {

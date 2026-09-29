@@ -3,10 +3,10 @@ import { League } from "../../types/League";
 import { GameSide, LeagueResult } from "../../types/LeagueResult";
 import { WeekGame } from "../../types/WeekGame";
 import rangeWithPrefix from "../../utils/rangeWithPrefix";
-import LiveGameCard from "./LiveGameCard";
-import "./LiveGames.scss";
+import GameCard from "./GameCard";
+import "./Games.scss";
 
-// Here rather than in `LiveGames`, so the skeleton never pulls in the page's chunk.
+// Here rather than in `Games`, so the skeleton never pulls in the page's chunk.
 export const LIVE_TITLE = "Live";
 
 const GAME_COUNT = 2;
@@ -49,15 +49,15 @@ const STAND_IN: WeekGame = {
   result: STAND_IN_RESULT,
 };
 
-/** A wireframe of the live games list, for while the week or the page loads. */
-export default function LiveGamesSkeleton() {
+/** A wireframe of the Live section, for while the week or the page loads. */
+export default function GamesSkeleton() {
   return (
-    <div className="live-games --loading" aria-hidden="true" inert>
-      <div className="live-games__section">
-        <span className="live-games__section-title">{LIVE_TITLE}</span>
-        <ul className="live-games__list">
+    <div className="games --loading" aria-hidden="true" inert>
+      <div className="games__section">
+        <span className="games__section-title">{LIVE_TITLE}</span>
+        <ul className="games__list">
           {rangeWithPrefix(GAME_COUNT, "G").map((key) => (
-            <LiveGameCard
+            <GameCard
               key={key}
               game={STAND_IN}
               result={STAND_IN_RESULT}

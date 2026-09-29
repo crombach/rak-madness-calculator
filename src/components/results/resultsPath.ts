@@ -3,7 +3,7 @@ export const RESULTS_PAGE = {
   scoreboard: "Scoreboard",
   picks: "Picks",
   swingGames: "Swing Games",
-  liveGames: "Live Games",
+  games: "Games",
   comparePlayers: "Compare Players",
 } as const;
 
@@ -17,7 +17,7 @@ const SEGMENTS: Record<ResultsPage, string> = {
   [RESULTS_PAGE.scoreboard]: "scoreboard",
   [RESULTS_PAGE.picks]: "picks",
   [RESULTS_PAGE.swingGames]: "swings",
-  [RESULTS_PAGE.liveGames]: "live",
+  [RESULTS_PAGE.games]: "games",
   [RESULTS_PAGE.comparePlayers]: "compare",
 };
 
