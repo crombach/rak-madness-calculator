@@ -102,6 +102,11 @@
   white-space: nowrap;
 }
 
+// In the teams' own ink, so each count reads with the team it counts.
+.game-status__split-count {
+  color: var(--rak-text);
+}
+
 .game-status__split-team {
   @include pick-face;
   @include outcome;
