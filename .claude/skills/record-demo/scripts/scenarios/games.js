@@ -112,9 +112,7 @@ export default async function run({ page, context, baseUrl }) {
     [THEME_KEY, THEME, PLAYER_NAME_KEY, MY_NAME, EXPERIMENTAL_FEATURES_KEY],
   );
   await page.goto(path);
-  await (NONE_LIVE ? page.getByRole("status") : page.getByRole("listitem"))
-    .first()
-    .waitFor({ timeout: 10000 });
+  await page.getByRole("listitem").first().waitFor({ timeout: 10000 });
 
   if (OPEN_DIALOG) {
     await page.goto(`${baseUrl}/${SEASON}/${WEEK}/picks`);

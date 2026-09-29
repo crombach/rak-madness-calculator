@@ -271,11 +271,13 @@ describe("Games", () => {
     expect(screen.queryByRole("region", { name: "Completed" })).toBeNull();
   });
 
-  it("says so when nothing is being played, and still lists the finished games", () => {
+  it("leaves out Live while nothing is being played", () => {
     mount({ ...scores, games: [column("C1", League.COLLEGE, collegeFinal)] });
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "No games are live right now",
-    );
+    expect(
+      screen
+        .getAllByRole("heading", { level: 2 })
+        .map((heading) => heading.textContent),
+    ).toEqual(["Completed"]);
     expect(labelsIn("Completed")).toEqual(["C1"]);
   });
 

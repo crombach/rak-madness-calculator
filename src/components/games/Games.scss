@@ -6,6 +6,12 @@
 
 // `100cqi` is the scrolling box `PageLayout.scss` declares the container on, so a
 // phone gets the whole screen and never a sideways scroll.
+// The wireframe runs past one screen so it fills a tall one. The page under it holds
+// still until the week lands, rather than offer a scroll through placeholders.
+.page__content:has(.games.--loading) {
+  overflow-y: hidden;
+}
+
 .games {
   display: flex;
   flex-direction: column;
@@ -126,13 +132,14 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   gap: var(--rak-space-2);
 }
 
-// Set as `.analysis__section-title` sets a section's name.
+// Set as `.analysis__section-title` sets a section's name, a step larger. Each one
+// heads a list of full cards rather than a few lines.
 .games__section-title {
   @include micro-label;
 
   margin: 0;
   color: var(--rak-analysis-label);
-  font-size: var(--rak-text-xs);
+  font-size: var(--rak-text-sm);
 }
 
 // A real card drawn from a stand-in game, so it takes a loaded card's size. Its

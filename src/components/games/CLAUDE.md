@@ -10,7 +10,7 @@ each. `/live` redirects here.
   else renders `Games`. A settled week stays.
 - `Games`: `useLiveWeek` polls every open league, a busy bar under the caption
   while a live one is fetched. Sections Live, Today, Tomorrow, Upcoming, then
-  Completed, latest kickoff first. An empty section other than Live is left out.
+  Completed, latest kickoff first. An empty section is left out.
 - `GameCard`: a `GameStatusSummary` banded with its label, name and `GameMark`.
 - `kickoffDay`: a kickoff's day in the reader's time zone.
 - `GamesSkeleton`: `GameCard` on a stand-in game, text hidden under fills.

@@ -63,7 +63,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 /**
  * Every game of the week, each as the Game Status dialog shows it. The ones being
  * played first, then those to come by the reader's own calendar day, then the
- * finished ones, latest kickoff first.
+ * finished ones, latest kickoff first. A section with no game is left out.
  */
 export default function Games({
   scores,
@@ -98,6 +98,17 @@ export default function Games({
     .filter(({ result }) => result.status === GameStatus.FINAL)
     .sort((a, b) => b.result.date.getTime() - a.result.date.getTime());
 
+  const sections = [
+    { title: LIVE_TITLE, games: live },
+    ...DAYS.map(({ title, day }) => ({
+      title,
+      games: upcoming.filter(
+        ({ result }) => kickoffDay(result.date, now) === day,
+      ),
+    })),
+    { title: COMPLETED_TITLE, games: completed },
+  ].filter(({ games }) => games.length > 0);
+
   const isFetching = live.some(({ game }) => fetchingLeagues?.has(game.league));
 
   return (
@@ -110,59 +121,21 @@ export default function Games({
           aria-label={FETCHING_LABEL}
         />
       )}
-      <Section title={LIVE_TITLE}>
-        {scores == null || live.length === 0 ? (
-          <p className="game-status__missing games__empty" role="status">
-            No games are live right now
-          </p>
-        ) : (
-          <ul className="games__list">
-            {live.map(({ game, result }) => (
-              <PoolGame
-                key={game.label}
-                game={game}
-                result={result}
-                scores={scores}
-              />
-            ))}
-          </ul>
-        )}
-      </Section>
       {scores != null &&
-        DAYS.map(({ day, title }) => {
-          const games = upcoming.filter(
-            ({ result }) => kickoffDay(result.date, now) === day,
-          );
-          if (games.length === 0) return null;
-          return (
-            <Section key={day} title={title}>
-              <ul className="games__list">
-                {games.map(({ game, result }) => (
-                  <PoolGame
-                    key={game.label}
-                    game={game}
-                    result={result}
-                    scores={scores}
-                  />
-                ))}
-              </ul>
-            </Section>
-          );
-        })}
-      {scores != null && completed.length > 0 && (
-        <Section title={COMPLETED_TITLE}>
-          <ul className="games__list">
-            {completed.map(({ game, result }) => (
-              <PoolGame
-                key={game.label}
-                game={game}
-                result={result}
-                scores={scores}
-              />
-            ))}
-          </ul>
-        </Section>
-      )}
+        sections.map(({ title, games }) => (
+          <Section key={title} title={title}>
+            <ul className="games__list">
+              {games.map(({ game, result }) => (
+                <PoolGame
+                  key={game.label}
+                  game={game}
+                  result={result}
+                  scores={scores}
+                />
+              ))}
+            </ul>
+          </Section>
+        ))}
     </div>
   );
 }

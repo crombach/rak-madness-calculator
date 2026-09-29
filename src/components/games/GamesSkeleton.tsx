@@ -9,7 +9,8 @@ import "./Games.scss";
 // Here rather than in `Games`, so the skeleton never pulls in the page's chunk.
 export const LIVE_TITLE = "Live";
 
-const GAME_COUNT = 2;
+// Enough to fill a tall screen at either column count.
+const GAME_COUNT = 8;
 
 function standInSide(abbreviation: string): GameSide {
   return {

@@ -80,7 +80,7 @@ instead of recording the whole run.
   once the mocked game goes final.
 - `scenarios/games.js` — Games with one live and one delayed game,
   the reader's pick on each. `$LIVE_THEME` is `light` or `dark`. `LIVE_NONE=1`
-  ends both games, for the empty state. `LIVE_DIALOG=1` ends on Game Status
+  ends both games, so Live is left out. `LIVE_DIALOG=1` ends on Game Status
   for P1. `LIVE_DAYS=1` pins the clock and spreads three games over today,
   tomorrow and later, for each section and countdown.
 - `scenarios/pick-result.js` — Game Status on a finished game, the reader's pick
