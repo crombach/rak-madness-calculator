@@ -145,6 +145,24 @@ type NavLink = Omit<NavItem, "path" | "disabled" | "disabledReason"> & {
   disabledReason?: string;
 };
 
+/**
+ * A menu's open state, held open until the page a link leads to is on screen.
+ *
+ * The router swaps pages in a transition, which commits after the click. A menu
+ * closed on the click slid away over the old page first, which read as a flash.
+ * Closed in the render that swaps the page, the two land in one commit.
+ */
+function useOpenUntilNavigated(): [boolean, (open: boolean) => void] {
+  const [open, setOpen] = useState(false);
+  const { key } = useLocation();
+  const [shownKey, setShownKey] = useState(key);
+  if (key !== shownKey) {
+    setShownKey(key);
+    setOpen(false);
+  }
+  return [open, setOpen];
+}
+
 function NavPopup({
   links,
   disabled,
@@ -152,8 +170,9 @@ function NavPopup({
   links: Array<NavLink>;
   disabled: boolean;
 }) {
+  const [open, setOpen] = useOpenUntilNavigated();
   return (
-    <Menu.Root>
+    <Menu.Root open={open} onOpenChange={setOpen}>
       <Menu.Trigger
         className={TRIGGER_CLASSES}
         aria-label="Menu"
@@ -181,7 +200,7 @@ function NavPopup({
                 ) : (
                   <Menu.LinkItem
                     key={label}
-                    closeOnClick
+                    closeOnClick={isCurrent}
                     className="nav-menu__item"
                     render={<Link to={path} />}
                     aria-current={isCurrent ? "page" : undefined}
@@ -271,7 +290,7 @@ function NavDrawer({
   /** The week the pages are for, shown atop the drawer. */
   title?: string;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useOpenUntilNavigated();
 
   return (
     <Drawer.Root open={open} onOpenChange={setOpen} swipeDirection="right">
@@ -324,7 +343,7 @@ function NavDrawer({
                           to={path}
                           className="nav-drawer__item"
                           aria-current={isCurrent ? "page" : undefined}
-                          onClick={() => setOpen(false)}
+                          onClick={() => isCurrent && setOpen(false)}
                         >
                           {icon}
                           {label}

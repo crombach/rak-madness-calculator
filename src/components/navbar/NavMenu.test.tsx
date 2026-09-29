@@ -400,6 +400,18 @@ describe("NavMenu", () => {
       );
     });
 
+    it("closes on a tap of the page it is on", async () => {
+      const { user, drawer } = await openDrawer({ at: SWINGS_PATH });
+
+      await user.click(
+        within(drawer).getByRole("link", { name: "Swing Games" }),
+      );
+
+      await waitFor(() =>
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+      );
+    });
+
     it("returns focus to the trigger on Escape", async () => {
       const { user } = await openDrawer();
 
