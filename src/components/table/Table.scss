@@ -305,9 +305,7 @@
       cursor: pointer;
       transition: background-color 150ms;
 
-      // Both steps are named in `index.scss`, beside the stripe they clear. A
-      // game cell also lights with the rest of its column, which `PicksTable`
-      // marks, since any cell of it opens the same game.
+      // Both steps are named in `index.scss`, beside the stripe they clear.
       @include can-hover {
         &:hover,
         &.--column-hover {

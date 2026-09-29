@@ -138,9 +138,9 @@ describe("NavMenu", () => {
       const user = mount({ pagesDisabled: true });
       await user.click(trigger());
 
-      await screen.findAllByRole("menuitem");
-
-      expect(document.querySelector(".nav-menu__reason")).toBeNull();
+      expect(
+        await screen.findByRole("menuitem", { name: "Swing Games" }),
+      ).not.toHaveAccessibleDescription();
     });
 
     it("opens the settings over the page and closes the menu", async () => {

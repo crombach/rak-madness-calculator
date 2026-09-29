@@ -2,8 +2,7 @@
 
 - `TableShell`: the frame both results tables share, the filler rows carrying a
   table to the bottom of the viewport, and the trailing row keeping the last real
-  row clear of a phone's rounded corners. Takes `caption`, `busy`, `ariaHidden`,
-  `standInRows`.
+  row clear of a phone's rounded corners.
 - `Table.scss`: the shared `.table` styles, sticky header and player column, touch
   feedback, striped rows, the trailing row, the `.table__cell-button` a clickable
   cell or game heading holds, and each column's width. Fixed, so a long value is

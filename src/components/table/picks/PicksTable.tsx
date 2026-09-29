@@ -196,9 +196,8 @@ function PicksTable({
   const { picks: pickChanges } = useScoreChanges();
   const [hoveredGame, setHoveredGame] = useState<string>();
 
-  // One handler for the whole table. Every cell of a game's column opens the
-  // same game, so the whole column answers to the pointer, not just the cell.
-  // A touch has no hover to show.
+  // Every cell of a game's column opens the same game, so the whole column
+  // answers to the pointer, not just the cell.
   function trackHover(event: PointerEvent<HTMLTableElement>) {
     if (event.pointerType === "touch") return;
     const cell = (event.target as Element).closest<HTMLElement>("[data-game]");
