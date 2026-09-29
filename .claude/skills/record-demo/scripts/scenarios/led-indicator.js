@@ -60,7 +60,7 @@ async function openIn(page, baseUrl, theme, route) {
     [THEME_KEY, theme, PLAYER_NAME_KEY, MY_NAME],
   );
   await page.goto(`${baseUrl}${route}`);
-  // A toast stands over the footer, and the settings button is under it.
+  // A toast stands over the home page's keys, which get cropped.
   await page.addStyleTag({ content: ".toaster { display: none !important; }" });
 }
 
@@ -93,8 +93,13 @@ export default async function run({ page, context, baseUrl }) {
     await crop(page, mine.first(), `my-row-${theme}`);
 
     await openIn(page, baseUrl, theme, "/");
-    await page.getByRole("button", { name: "Settings" }).click();
-    const choices = page.locator(".settings__choices");
+    await page.getByRole("button", { name: "Menu" }).click();
+    // A menu item in the wide popup, a plain button in the phone drawer.
+    await page
+      .getByRole("menuitem", { name: "Settings" })
+      .or(page.getByRole("button", { name: "Settings" }))
+      .click();
+    const choices = page.getByRole("group", { name: "Theme" });
     await choices.waitFor({ timeout: 20000 });
     await page.waitForTimeout(600);
     await crop(page, choices, `theme-${theme}`);
