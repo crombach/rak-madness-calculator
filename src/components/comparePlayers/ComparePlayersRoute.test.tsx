@@ -360,6 +360,18 @@ describe("the compare players route", () => {
     expect(localStorage.getItem(COMPARED_PLAYERS_KEY)).toBe(saved);
   });
 
+  it("keeps saved players when an empty picker is removed", async () => {
+    const saved = JSON.stringify(["Gone", "Alice", "Carol"]);
+    localStorage.setItem(COMPARED_PLAYERS_KEY, saved);
+    const user = mountApp(COMPARE_PATH);
+    await openDialog(user);
+    await user.click(await screen.findByRole("button", { name: "Add Player" }));
+
+    await user.click(screen.getByRole("button", { name: "Remove Player 3" }));
+
+    expect(localStorage.getItem(COMPARED_PLAYERS_KEY)).toBe(saved);
+  });
+
   it("opens on the saved players the week still has", async () => {
     localStorage.setItem(
       COMPARED_PLAYERS_KEY,

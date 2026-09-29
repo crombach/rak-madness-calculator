@@ -155,9 +155,13 @@ export default function ComparePlayers({
           setAddedKey(slot.key);
         }}
         addedKey={addedKey}
-        onRemove={(key) =>
-          changeSlots(slots.filter((slot) => slot.key !== key))
-        }
+        onRemove={(key) => {
+          const next = slots.filter((slot) => slot.key !== key);
+          // An empty picker holds no choice, so removing it changes none.
+          const wasEmpty = slots.find((slot) => slot.key === key)?.id == null;
+          if (wasEmpty) setSlots(next);
+          else changeSlots(next);
+        }}
       />
     </>
   );
