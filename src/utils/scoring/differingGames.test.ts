@@ -1,4 +1,4 @@
-import differingGames from "./differingGames";
+import differingGames, { sameGames } from "./differingGames";
 import { pick, player } from "./scoringTestFixtures";
 
 describe("differingGames", () => {
@@ -40,5 +40,15 @@ describe("differingGames", () => {
     const bob = player({ name: "Bob", pro: [pick("KC -3.5")] });
 
     expect(differingGames([alice, bob])).toEqual(new Set(["P1"]));
+  });
+});
+
+describe("sameGames", () => {
+  it("names only the games every player picked alike", () => {
+    const alice = player({ name: "Alice", pro: [pick("KC -3"), pick("BUF")] });
+    const bob = player({ name: "Bob", pro: [pick("KC -3"), pick("BUF")] });
+    const cal = player({ name: "Cal", pro: [pick("KC -3"), pick("NYJ")] });
+
+    expect(sameGames([alice, bob, cal])).toEqual(new Set(["P1"]));
   });
 });

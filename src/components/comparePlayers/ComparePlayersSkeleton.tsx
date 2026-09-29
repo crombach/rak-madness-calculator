@@ -2,7 +2,7 @@ import doNothing from "../../utils/doNothing";
 import Button from "../button/Button";
 import { RESULTS_PAGE } from "../results/resultsPath";
 import SkeletonTable from "../table/SkeletonTable";
-import { readShowsAll } from "./comparedPlayers";
+import { GAME_SCOPES, GameScope, readGameScope } from "./comparedPlayers";
 import "./ComparePlayers.scss";
 
 /** A wireframe of the page, for while the week or the page loads. */
@@ -12,7 +12,7 @@ export default function ComparePlayersSkeleton() {
       <div className="compare-players" aria-hidden="true" inert>
         <div className="compare-players__controls">
           <ChooseButton />
-          <GamesToggle showsAll={readShowsAll()} />
+          <GamesToggle scope={readGameScope()} />
         </div>
       </div>
       <SkeletonTable view={RESULTS_PAGE.comparePlayers} />
@@ -33,32 +33,32 @@ export function ChooseButton({
   );
 }
 
-/** The table's two scopes, by whether it shows every game. */
-const GAME_SCOPES = [
-  { showsAll: false, label: "Different Picks" },
-  { showsAll: true, label: "All Picks" },
-] as const;
+const SCOPE_LABELS: Record<GameScope, string> = {
+  all: "All",
+  different: "Different",
+  same: "Same",
+};
 
-/** Picks whether the table shows every game or only those picked differently. */
+/** Picks which games the table shows: every one, or those picked differently or alike. */
 export function GamesToggle({
-  showsAll = false,
+  scope,
   onChange = doNothing,
   disabled = false,
 }: {
-  showsAll?: boolean;
-  onChange?: (showsAll: boolean) => void;
+  scope: GameScope;
+  onChange?: (scope: GameScope) => void;
   disabled?: boolean;
 }) {
   return (
     <div className="compare-players__scopes" role="group" aria-label="Games">
-      {GAME_SCOPES.map(({ showsAll: value, label }) => (
+      {GAME_SCOPES.map((value) => (
         <Button
-          key={label}
+          key={value}
           disabled={disabled}
-          selected={showsAll === value}
+          selected={scope === value}
           onClick={() => onChange(value)}
         >
-          {label}
+          {SCOPE_LABELS[value]}
         </Button>
       ))}
     </div>

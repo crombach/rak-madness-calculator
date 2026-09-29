@@ -12,6 +12,18 @@ function isSamePick(a: string, b: string): boolean {
   );
 }
 
+/** The labels of the games every one of `players` picked alike, college first. */
+export function sameGames(players: ReadonlyArray<PlayerScore>): Set<string> {
+  const [first] = players;
+  if (first == null) return new Set();
+  const differing = differingGames(players);
+  return new Set(
+    LEAGUES.flatMap((league) => gameLabels(first, league)).filter(
+      (label) => !differing.has(label),
+    ),
+  );
+}
+
 /** The labels of the games any two of `players` picked differently, college first. */
 export default function differingGames(
   players: ReadonlyArray<PlayerScore>,

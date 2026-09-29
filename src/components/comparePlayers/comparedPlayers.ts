@@ -28,20 +28,25 @@ export function writeComparedPlayers(names: Array<string>): void {
   writeSetting(SETTING, names.length > 0 ? JSON.stringify(names) : "");
 }
 
-const SHOWS_ALL_SETTING = "compareShowsAll";
-const SHOWS_ALL = "all";
+/** Which games the table shows, in the order the toggle offers them. */
+export const GAME_SCOPES = ["all", "different", "same"] as const;
+export type GameScope = (typeof GAME_SCOPES)[number];
 
-/** The exact key the Different Picks or All Picks choice is saved under, for a test to seed. */
-export const SHOWS_ALL_KEY = PREFIX + SHOWS_ALL_SETTING;
+const DEFAULT_SCOPE: GameScope = "all";
+const SCOPE_SETTING = "compareGameScope";
 
-/** Whether the table last showed every game. */
-export function readShowsAll(): boolean {
-  return readSetting(SHOWS_ALL_SETTING) === SHOWS_ALL;
+/** The exact key the game scope is saved under, for a test to seed or read. */
+export const GAME_SCOPE_KEY = PREFIX + SCOPE_SETTING;
+
+/** The game scope last chosen, or All. */
+export function readGameScope(): GameScope {
+  const saved = readSetting(SCOPE_SETTING);
+  return GAME_SCOPES.find((scope) => scope === saved) ?? DEFAULT_SCOPE;
 }
 
-/** Saves the choice of every game, or forgets it for the default, Different. */
-export function writeShowsAll(showsAll: boolean): void {
-  writeSetting(SHOWS_ALL_SETTING, showsAll ? SHOWS_ALL : "");
+/** Saves the game scope, or forgets it for the default. */
+export function writeGameScope(scope: GameScope): void {
+  writeSetting(SCOPE_SETTING, scope === DEFAULT_SCOPE ? "" : scope);
 }
 
 /** A picker's label and accessible name, counted from 1. */

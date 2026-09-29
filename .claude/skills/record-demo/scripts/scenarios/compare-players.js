@@ -23,8 +23,8 @@ const ADD_THIRD = process.env.COMPARE_ADD === "1";
 /** Set to end with the dialog still open over the page. */
 const KEEP_DIALOG = process.env.COMPARE_DIALOG === "1";
 
-/** Set to end with the table on every game. */
-const SHOW_ALL = process.env.COMPARE_ALL === "1";
+/** The game scope to end on, by its toggle label. Unset keeps the default, All. */
+const GAMES = process.env.COMPARE_GAMES;
 
 /** The reader, preset in the Player picker. */
 const MY_NAME = "Dee";
@@ -112,8 +112,8 @@ export default async function run({ page, context, baseUrl }) {
   if (KEEP_DIALOG) return;
   await page.getByRole("button", { name: "Close" }).click();
   await page.getByRole("dialog").waitFor({ state: "detached" });
-  if (SHOW_ALL) {
-    await page.getByRole("button", { name: "All Picks" }).click();
+  if (GAMES != null) {
+    await page.getByRole("button", { name: GAMES }).click();
     // The lamp fades over to the new choice.
     await page.waitForTimeout(500);
   }

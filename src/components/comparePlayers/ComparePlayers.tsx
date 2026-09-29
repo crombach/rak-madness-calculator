@@ -1,18 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { isMyPlayer, useSettings } from "../../context/SettingsContext";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
-import differingGames from "../../utils/scoring/differingGames";
+import differingGames, { sameGames } from "../../utils/scoring/differingGames";
 import { playerOptions } from "../playerAnalysis/PlayerAnalysisDialog";
 import { RESULTS_PAGE } from "../results/resultsPath";
 import PicksTable from "../table/picks/PicksTable";
 import SkeletonTable from "../table/SkeletonTable";
 import {
   MAX_PICKERS,
+  GameScope,
   MIN_PICKERS,
   readComparedPlayers,
-  readShowsAll,
+  readGameScope,
   writeComparedPlayers,
-  writeShowsAll,
+  writeGameScope,
 } from "./comparedPlayers";
 import ComparePlayersDialog, { Slot } from "./ComparePlayersDialog";
 import { ChooseButton, GamesToggle } from "./ComparePlayersSkeleton";
@@ -21,6 +22,12 @@ import "../playerAnalysis/AnalysisSummary.scss";
 import "./ComparePlayers.scss";
 
 const NAMES = new Intl.ListFormat("en", { type: "conjunction" });
+
+/** What the page says in place of a table the scope leaves no games in. */
+const EMPTY_MESSAGES: Record<Exclude<GameScope, "all">, string> = {
+  different: "They picked every game the same",
+  same: "They picked every game differently",
+};
 
 let slotCount = 0;
 
@@ -53,7 +60,7 @@ function startingIds(
   ];
 }
 
-/** Two to ten players' picks in one table, on the games they split or all. */
+/** Two to ten players' picks in one table, on every game or those they split or share. */
 export default function ComparePlayers({
   scores,
 }: {
@@ -68,7 +75,7 @@ export default function ComparePlayers({
   const [isOpen, setIsOpen] = useState(
     () => slots.filter(({ id }) => id != null).length < MIN_PICKERS,
   );
-  const [showsAll, setShowsAll] = useState(readShowsAll);
+  const [scope, setScope] = useState(readGameScope);
   const [addedKey, setAddedKey] = useState<number>();
   const chosen = useMemo(
     () =>
@@ -83,40 +90,36 @@ export default function ComparePlayers({
   }, [chosen]);
 
   useEffect(() => {
-    writeShowsAll(showsAll);
-  }, [showsAll]);
+    writeGameScope(scope);
+  }, [scope]);
 
   const players = useMemo(
     () => new Set(chosen.map((player) => player.id)),
     [chosen],
   );
   // Undefined shows every game.
-  const games = useMemo(
-    () =>
-      chosen.length < MIN_PICKERS || showsAll
-        ? undefined
-        : differingGames(chosen),
-    [chosen, showsAll],
-  );
+  const games = useMemo(() => {
+    if (chosen.length < MIN_PICKERS || scope === "all") return undefined;
+    return scope === "different" ? differingGames(chosen) : sameGames(chosen);
+  }, [chosen, scope]);
   const names = NAMES.format(chosen.map((player) => player.name));
   const isReady = chosen.length >= MIN_PICKERS;
+  const captions: Record<GameScope, string> = {
+    all: `Picks of ${names}`,
+    different: `Picks where ${names} differ`,
+    same: `Picks where ${names} agree`,
+  };
 
   return (
     <>
       <div className="compare-players">
         <div className="compare-players__controls">
           <ChooseButton onClick={() => setIsOpen(true)} />
-          <GamesToggle
-            showsAll={showsAll}
-            onChange={setShowsAll}
-            disabled={!isReady}
-          />
+          <GamesToggle scope={scope} onChange={setScope} disabled={!isReady} />
         </div>
         <div role="status" className="compare-players__standing">
-          {games?.size === 0 && (
-            <p className="analysis__standing">
-              They picked every game the same
-            </p>
+          {scope !== "all" && games?.size === 0 && (
+            <p className="analysis__standing">{EMPTY_MESSAGES[scope]}</p>
           )}
         </div>
       </div>
@@ -126,9 +129,7 @@ export default function ComparePlayers({
       {isReady && (games == null || games.size > 0) && (
         <PicksTable
           scores={scores}
-          caption={
-            showsAll ? `Picks of ${names}` : `Picks where ${names} differ`
-          }
+          caption={captions[scope]}
           players={players}
           games={games}
           showsTiebreakers

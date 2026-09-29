@@ -18,7 +18,7 @@ import {
   PLAYER_NAME_KEY,
 } from "../../context/SettingsContext";
 import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
-import { COMPARED_PLAYERS_KEY, SHOWS_ALL_KEY } from "./comparedPlayers";
+import { COMPARED_PLAYERS_KEY, GAME_SCOPE_KEY } from "./comparedPlayers";
 
 const COMPARE_PATH = `/${SEASON}/${CURRENT_WEEK}/compare`;
 
@@ -63,6 +63,11 @@ async function openDialog(user: ReturnType<typeof mountApp>) {
 
 async function closeDialog(user: ReturnType<typeof mountApp>) {
   await user.click(screen.getByRole("button", { name: "Close" }));
+}
+
+/** Picks which games the table shows, from the toggle on the page. */
+async function showGames(user: ReturnType<typeof mountApp>, scope: string) {
+  await user.click(screen.getByRole("button", { name: scope }));
 }
 
 async function choose(
@@ -120,6 +125,7 @@ describe("the compare players route", () => {
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Carol");
     await closeDialog(user);
+    await showGames(user, "Different");
 
     const table = await screen.findByRole("table", {
       name: "Picks where Alice and Carol differ",
@@ -184,6 +190,7 @@ describe("the compare players route", () => {
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Bob");
     await closeDialog(user);
+    await showGames(user, "Different");
 
     expect(
       await screen.findByText("They picked every game the same"),
@@ -209,6 +216,7 @@ describe("the compare players route", () => {
     await choose(user, "Player 1", "Cal");
     await choose(user, "Player 2", "Dee");
     await closeDialog(user);
+    await showGames(user, "Different");
 
     const headers = within(await screen.findByRole("table"))
       .getAllByRole("columnheader")
@@ -217,14 +225,13 @@ describe("the compare players route", () => {
     expect(headers).not.toContain("P3");
   });
 
-  it("shows every game once the reader picks All", async () => {
+  it("shows every game by default", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Carol");
     await closeDialog(user);
 
-    await user.click(screen.getByRole("button", { name: "All Picks" }));
-    expect(screen.getByRole("button", { name: "All Picks" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "All" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
@@ -238,6 +245,24 @@ describe("the compare players route", () => {
     expect(headers).toEqual(expect.arrayContaining(["C1", "C2", "P1", "P2"]));
   });
 
+  it("shows only the games the players picked alike", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Carol");
+    await closeDialog(user);
+    await showGames(user, "Same");
+
+    const table = await screen.findByRole("table", {
+      name: "Picks where Alice and Carol agree",
+    });
+    const headers = within(table)
+      .getAllByRole("columnheader")
+      .map((header) => header.textContent);
+    expect(headers).toEqual(expect.arrayContaining(["C1", "P2"]));
+    expect(headers).not.toContain("C2");
+    expect(headers).not.toContain("P1");
+  });
+
   it("adds a third player to the table", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
@@ -248,7 +273,7 @@ describe("the compare players route", () => {
 
     expect(
       await screen.findByRole("table", {
-        name: "Picks where Alice, Carol, and Bob differ",
+        name: "Picks of Alice, Carol, and Bob",
       }),
     ).toBeInTheDocument();
   });
@@ -342,18 +367,18 @@ describe("the compare players route", () => {
     );
   });
 
-  it("saves the All choice", async () => {
+  it("saves the game scope", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Carol");
     await closeDialog(user);
-    await user.click(screen.getByRole("button", { name: "All Picks" }));
+    await showGames(user, "Different");
 
-    expect(localStorage.getItem(SHOWS_ALL_KEY)).toBe("all");
+    expect(localStorage.getItem(GAME_SCOPE_KEY)).toBe("different");
   });
 
-  it("opens on the saved All choice", async () => {
-    localStorage.setItem(SHOWS_ALL_KEY, "all");
+  it("opens on the saved game scope", async () => {
+    localStorage.setItem(GAME_SCOPE_KEY, "same");
     localStorage.setItem(
       COMPARED_PLAYERS_KEY,
       JSON.stringify(["Alice", "Carol"]),
@@ -361,9 +386,11 @@ describe("the compare players route", () => {
     mountApp(COMPARE_PATH);
 
     expect(
-      await screen.findByRole("table", { name: "Picks of Alice and Carol" }),
+      await screen.findByRole("table", {
+        name: "Picks where Alice and Carol agree",
+      }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "All Picks" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "Same" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
