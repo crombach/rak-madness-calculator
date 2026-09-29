@@ -11,19 +11,19 @@ new style for something the app already renders elsewhere.
 
 ## Information and its style
 
-| Information                                     | Rule                                                                                                                                                                       | Source                                               |
-| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| Game ID ("P3")                                  | `pick-label`: `--rak-text-tertiary`, bold                                                                                                                                  | `src/styles/_picks.scss`                             |
-| Pick with spread ("KC -3")                      | `pick-face`: IBM Plex Mono, `--rak-weight-semibold`, `--rak-text-sm`, in `--rak-text`. Never LCD                                                                           | `src/styles/_picks.scss`                             |
-| Matchup ("KC @ DEN")                            | `pick-face`, same as a pick. Game ID beside it adds `pick-type` to `pick-label`. A team abbreviation in a heading is never in the body face                                | `src/styles/_picks.scss`                             |
-| Player name                                     | `player-name-face`, at `--rak-text-cells`. The reader's own name adds `my-player-name` and `--rak-my-row-accent`. Truncate with `truncate-line`                            | `src/styles/_text.scss`                              |
-| Live and delayed game marks                     | `live-dot` (`src/styles/_ink.scss`) and `HEADING_MARK` (`src/components/table/picks/headingMark.tsx`). Mark sits left of the game ID. Its word goes in the accessible name | both files above                                     |
-| Where a game stands, as a pill (`LIVE`, `SOON`) | `GameMark`, at the end of the game's line. The Game Status search and every game card. Never a bare `live-dot` there                                                       | `src/components/gameStatus/GameMark.tsx`             |
-| Left rule blocks                                | `ruled-block($rule)`: `$rule-required` (red, must-win), `$rule-option` (gold, routes and pools), `$rule-alive` (blue, players still in contention)                         | `src/styles/_picks.scss`                             |
-| Small tracked capitals                          | `micro-label`                                                                                                                                                              | `src/styles/_label.scss`                             |
-| Counts ("13 players", "3 games remaining")      | `.analysis__standing` rule. Use `plural` and `verbFor` from `src/utils/plural.ts`. Never an inline singular/plural switch                                                  | `src/components/playerAnalysis/AnalysisSummary.scss` |
-| Fold toggles                                    | Text "Show more" / "Show fewer", `.analysis__more` class. Fold at whole rows                                                                                               | `src/components/playerAnalysis/AnalysisSummary.scss` |
-| Bands and section headers                       | `--rak-band-header` fill, `--rak-on-solid` ink                                                                                                                             | `src/index.scss`                                     |
+| Information                                     | Rule                                                                                                                                                                                                           | Source                                               |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Game ID ("P3")                                  | `pick-label`: `--rak-text-tertiary`, bold. In a combobox input, through `DialogCombobox`'s `renderValue`, since an input's own text takes no style                                                             | `src/styles/_picks.scss`                             |
+| Pick with spread ("KC -3")                      | `pick-face`: IBM Plex Mono, `--rak-weight-semibold`, `--rak-text-sm`, in `--rak-text`. Never LCD                                                                                                               | `src/styles/_picks.scss`                             |
+| Matchup ("KC @ DEN")                            | `pick-face`, same as a pick. Game ID beside it adds `pick-type` to `pick-label`. A team abbreviation anywhere, a count line such as "Pool: 1 KC" included, is `pick-face` in `--rak-text`, never the body face | `src/styles/_picks.scss`                             |
+| Player name                                     | `player-name-face`, at `--rak-text-cells`. The reader's own name adds `my-player-name` and `--rak-my-row-accent`. Truncate with `truncate-line`                                                                | `src/styles/_text.scss`                              |
+| Live and delayed game marks                     | `live-dot` (`src/styles/_ink.scss`) and `HEADING_MARK` (`src/components/table/picks/headingMark.tsx`). Mark sits left of the game ID. Its word goes in the accessible name                                     | both files above                                     |
+| Where a game stands, as a pill (`LIVE`, `SOON`) | `GameMark`, at the end of the game's line. The Game Status search and every game card. Never a bare `live-dot` there                                                                                           | `src/components/gameStatus/GameMark.tsx`             |
+| Left rule blocks                                | `ruled-block($rule)`: `$rule-required` (red, must-win), `$rule-option` (gold, routes and pools), `$rule-alive` (blue, players still in contention)                                                             | `src/styles/_picks.scss`                             |
+| Small tracked capitals                          | `micro-label`                                                                                                                                                                                                  | `src/styles/_label.scss`                             |
+| Counts ("13 players", "3 games remaining")      | `.analysis__standing` rule. Use `plural` and `verbFor` from `src/utils/plural.ts`. Never an inline singular/plural switch                                                                                      | `src/components/playerAnalysis/AnalysisSummary.scss` |
+| Fold toggles                                    | Text "Show more" / "Show fewer", `.analysis__more` class. Fold at whole rows                                                                                                                                   | `src/components/playerAnalysis/AnalysisSummary.scss` |
+| Bands and section headers                       | `--rak-band-header` fill, `--rak-on-solid` ink                                                                                                                                                                 | `src/index.scss`                                     |
 
 ## States and chrome
 
@@ -32,6 +32,14 @@ new style for something the app already renders elsewhere.
   the navbar fill, `--rak-nav-ink` at 70%.
 - Give a disabled item's reason as a smaller line under its name, aligned with
   it, at every width. Also its `aria-describedby`. No tooltips.
+- A reason only while the item could still come back, such as scores still
+  loading. An item that no longer applies, such as on a settled week, is disabled
+  with no reason.
+- One line of separate facts splits them with `·`. The items of one list split
+  with a comma. Never a `·` inside a list.
+- A loading placeholder is the real component on stand-in data, its text hidden
+  under `skeleton-surface` fills, so it takes the loaded size. Never bars drawn
+  by hand.
 - Hover only inside `can-hover`. Every interactive element gets `focus-ring` and a
   minimum `--rak-touch-target`.
 - Dividers use `--rak-on-solid`, as `.navbar__divider` does. Inside a popup list,
