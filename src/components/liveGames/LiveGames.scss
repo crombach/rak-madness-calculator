@@ -17,7 +17,7 @@
   background-color: var(--rak-surface);
   color: var(--rak-text);
 
-  &.--loading {
+  &.--loading .live-games__game {
     @include skeleton-sheen;
   }
 }
