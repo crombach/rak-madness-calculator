@@ -97,19 +97,15 @@
   font-size: var(--rak-text-sm);
   font-weight: var(--rak-weight-semibold);
   text-align: center;
-  // Its dot never ends or starts a line. The line holds both counts at 360px.
+  // The line holds both counts at 360px, so it never breaks between them.
   white-space: nowrap;
-
-  > span + span::before {
-    @include meta-dot;
-  }
 }
 
 .game-status__split-team {
   @include pick-face;
 }
 
-// A `meta-dot` and its margins, as wide as the one inside the split.
+// A `meta-dot` and its margins.
 $lead-dot: calc(2 * var(--rak-space-2) + 0.3em);
 
 // The spread line, then the split, on one line where both fit. The dot between

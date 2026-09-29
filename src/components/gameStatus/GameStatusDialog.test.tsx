@@ -226,6 +226,8 @@ describe("GameStatusDialog", () => {
         selector: ".game-status__split",
       });
       expect(split.closest(".game-status__lead")).not.toBeNull();
+      // A comma between the sides, since a dot is what ends the pick before it.
+      expect(split).toHaveTextContent("Pool: 1 picked KC, 0 picked BUF");
       expect(split.querySelector(".game-status__sr-only")).toHaveTextContent(
         "picked",
       );

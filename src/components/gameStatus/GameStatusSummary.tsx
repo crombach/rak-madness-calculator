@@ -263,7 +263,7 @@ function Game({
   );
   const splitLine = split != null && (
     <p className="game-status__split">
-      {POOL_LABEL}: {sideCount(split.away, result.away)}
+      {POOL_LABEL}: {sideCount(split.away, result.away)},{" "}
       {sideCount(split.home, result.home)}
     </p>
   );
