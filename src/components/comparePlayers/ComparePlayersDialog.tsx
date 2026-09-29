@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useState } from "react";
 import Button from "../button/Button";
 import DialogShell from "../dialog/DialogShell";
 import { AddIcon, DeleteIcon } from "../icon/Icon";
@@ -77,7 +77,6 @@ export default function ComparePlayersDialog({
   /** The picker "Add Player" made last, which takes the focus as it mounts. */
   addedKey?: number;
 }) {
-  const playersLabelId = useId();
   return (
     <DialogShell
       open={open}
@@ -86,12 +85,8 @@ export default function ComparePlayersDialog({
     >
       <div className="settings">
         <section className="settings__section">
-          <h3 className="settings__label" id={playersLabelId}>
-            Players
-          </h3>
           <ul
             className="compare-players__pickers"
-            aria-labelledby={playersLabelId}
           >
             {slots.map((slot, index) => {
               // Each list leaves out the players the other pickers hold.

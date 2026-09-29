@@ -9,7 +9,7 @@ export const COMPARED_PLAYERS_KEY = PREFIX + SETTING;
 export const MIN_PICKERS = 2;
 
 /** The most players the page compares at once. */
-export const MAX_PICKERS = 8;
+export const MAX_PICKERS = 10;
 
 /** The names last chosen, in picker order. Empty when none were saved. */
 export function readComparedPlayers(): Array<string> {
