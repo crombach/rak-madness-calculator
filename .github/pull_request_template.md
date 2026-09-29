@@ -16,7 +16,7 @@ https://www.conventionalcommits.org/en/v1.0.0/
 Never wrap a line yourself. GitHub turns each newline into a visible break.
 One bullet is one line, however long.
 
-Shortest body a reviewer can review from, under 256 words. Bullets, one line each,
+Shortest body a reviewer can review from, under 300 words. Bullets, one line each,
 not paragraphs. Every line must change how they read the diff. Cut every line that
 does not, and delete every section left with nothing to say. A heading, an
 attribution footer and an embedded screenshot or recording do not count against
