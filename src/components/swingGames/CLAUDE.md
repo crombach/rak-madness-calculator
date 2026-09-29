@@ -3,7 +3,7 @@
 The `/:season/:week/swings` route: each open game, with the players it would
 knock out on either side, grouped by which team they need.
 
-- `SwingGamesRoute`: reads scores from `AppDataContext`, mounted lazily by
+- `SwingGamesRoute`: reads scores from `useScores`, mounted lazily by
   `App.tsx` behind the `swings` path.
 - `SwingGames`: reads `useSwingGames`. A week with no swing game, won or not,
   or a reader without the opt-in, redirects to the scoreboard with `replace`.

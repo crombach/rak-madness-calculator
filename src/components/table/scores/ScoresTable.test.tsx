@@ -60,6 +60,23 @@ describe("ScoresTable", () => {
     expect(screen.queryByRole("table")).toBeNull();
   });
 
+  it("renders the score columns", () => {
+    mountTable(bothPlayers);
+    const headers = screen
+      .getAllByRole("columnheader")
+      .map((header) => header.textContent);
+    expect(headers).toEqual([
+      "Rank",
+      "Player",
+      "MNF Points Pick",
+      "MNF Points Distance",
+      "College Score",
+      "Pro Score",
+      "Pro Score ATS",
+      "Total Score",
+    ]);
+  });
+
   it("renders one row per player, in the order given", () => {
     mountTable(bothPlayers);
     const names = screen

@@ -21,13 +21,15 @@ A feature is experimental when it reads `experimentalFeatures`. No registry, no 
    return experimentalFeatures && <Link to="swings">Swing Games</Link>;
    ```
 
-2. Redirect the feature's route when false. Otherwise a pasted URL still reaches it. Keep the route component to this check and render the page inside it. The page's own hooks then never run while off, and no hook sits after an early return. Redirect to the page that holds the feature's entry point.
+2. Wrap the feature's route in `ExperimentalGate` (`src/components/results/`). A pasted URL then redirects to the scoreboard when false. Keep the route component to the gate and render the page inside it. The page's own hooks then never run while off.
 
    ```tsx
-   export default function SwingGamesRoute() {
-     const { experimentalFeatures } = useSettings();
-     if (!experimentalFeatures) return <Navigate replace to="../scoreboard" />;
-     return <SwingGames />;
+   export default function ComparePlayersRoute() {
+     return (
+       <ExperimentalGate>
+         <ComparePlayers />
+       </ExperimentalGate>
+     );
    }
    ```
 

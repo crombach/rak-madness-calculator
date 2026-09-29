@@ -65,7 +65,7 @@ new style for something the app already renders elsewhere. UI words: `glossary` 
   `--rak-space-half`, `--rak-space-1-5`.
 - Page anatomy: navbar, a visually hidden `<h1>` (`.page__title`), the caption
   `View · Week` on every results page, then the page body.
-- Redirect only through `ExperimentalGate`.
+- Redirect a reader without the experimental opt-in only through `ExperimentalGate`.
 - Literal sizes allowed: `1px` hairlines, safe-area `env()`, `em` gaps that scale
   with font, `--rak-block-inset`, table row heights. Any other literal becomes a token.
 - Navbar height: `--rak-navbar-height`. Below `short-screen`, the mixin in
@@ -82,8 +82,8 @@ new style for something the app already renders elsewhere. UI words: `glossary` 
 
 1. Screenshot at 360px as a touch phone: `record-demo` skill,
    `--touch --device-scale-factor 3`. Confirm the refresh button is hidden.
-2. Also screenshot wide desktop. Both sizes in light and in dark. Compare before
-   and after at 360 and 1280, light and dark.
+2. Also screenshot at 1280px. Both sizes in light and in dark, before and after
+   your change.
 3. Run `make setup` first. Without it, fonts fall back.
 4. Cases the screenshots must show: a live game, the reader's own player, a long
    name, a folded list.

@@ -49,9 +49,8 @@ Use each word for its one meaning.
 
 ## Frozen names
 
-Renaming costs a data migration. Never rename.
+Renaming costs a data migration. Never rename the keys and enum values below.
 
 - R2 keys `picks/{season}/{week}.xlsx`
 - localStorage keys `rak-madness:*`
 - `League` enum values `nfl` and `college-football`
-- `LeagueResult`

@@ -34,6 +34,9 @@ export function isPersistent(toast: Toast): boolean {
   return PERSISTENT_TYPES.has(toast.type);
 }
 
+// Not `crypto.randomUUID`, which a plain-HTTP page lacks. An id need only be unique per page.
+let nextToastId = 0;
+
 export class Toast {
   id: string;
   type: ToastType;
@@ -41,7 +44,7 @@ export class Toast {
   message: string | ReactElement;
 
   constructor(type: ToastType, header: string, message: string | ReactElement) {
-    this.id = crypto.randomUUID();
+    this.id = String(++nextToastId);
     this.type = type;
     this.header = header;
     this.message = message;

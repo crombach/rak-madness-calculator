@@ -293,7 +293,10 @@ export default function usePlayerScores(
         return fetched;
       } catch (error) {
         if (error === SUPERSEDED) return scoredResults;
-        const failure = error as StageFailure;
+        const failure =
+          error instanceof StageFailure
+            ? error
+            : new StageFailure("score", error);
         logFailure(failure, selectedWeek.value);
         if (!keepScoresOnFailure) clearScores();
         if (failure.stage !== "load" && previousScores.current?.key !== key) {
