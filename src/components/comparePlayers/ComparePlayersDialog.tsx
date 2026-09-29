@@ -110,12 +110,7 @@ export default function ComparePlayersDialog({
             })}
           </ul>
           {canAdd && (
-            <Button
-              className="compare-players__add"
-              variant="soft"
-              size="sm"
-              onClick={onAdd}
-            >
+            <Button className="compare-players__add" onClick={onAdd}>
               <AddIcon />
               Add Player
             </Button>
