@@ -142,7 +142,7 @@ describe("NavMenu", () => {
       });
 
       expect(item).toHaveAttribute("data-disabled");
-      expect(item).toHaveAccessibleDescription("Week already won");
+      expect(item).toHaveAccessibleDescription("Week already decided");
     });
 
     it("shows no menu with experimental features off", () => {
@@ -164,7 +164,9 @@ describe("NavMenu", () => {
       });
 
       expect(item).toHaveAttribute("data-disabled");
-      expect(item).toHaveAccessibleDescription("Scores still loading");
+      expect(item).not.toHaveAccessibleDescription();
+      await user.hover(item);
+      expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
     });
 
     it("disables Swing Games once no open game can knock anyone out", async () => {
@@ -317,9 +319,9 @@ describe("NavMenu", () => {
       expect(
         within(drawer).getByRole("link", { name: "Home" }),
       ).toHaveAttribute("href");
-      expect(
-        within(drawer).getByRole("link", { name: "Swing Games" }),
-      ).toHaveAttribute("aria-disabled", "true");
+      const swings = within(drawer).getByRole("link", { name: "Swing Games" });
+      expect(swings).toHaveAttribute("aria-disabled", "true");
+      expect(swings).not.toHaveAccessibleDescription();
     });
 
     it("shows the disabled reason under the item's name in the drawer", async () => {

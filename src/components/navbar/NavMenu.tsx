@@ -7,6 +7,7 @@ import { useIsWeekWon, useSwingGames } from "../../context/AppDataContext";
 import { useSettings } from "../../context/SettingsContext";
 import cssMediaQuery from "../../hooks/cssMediaQuery";
 import useMediaQuery from "../../hooks/useMediaQuery";
+import getClasses from "../../utils/getClasses";
 import { buttonClasses } from "../button/Button";
 import { CloseIcon, HomeIcon, MenuIcon, SwapVertIcon } from "../icon/Icon";
 import resultsPath, { RESULTS_PAGE, weekName } from "../results/resultsPath";
@@ -24,6 +25,8 @@ type NavItem = {
   label: string;
   icon: ReactNode;
   path: (season: Week, week: Week) => string;
+  /** True to disable the item with no reason given. */
+  disabled?: (context: NavContext) => boolean;
   /** Why the item is disabled, or undefined to leave it enabled. */
   disabledReason?: (context: NavContext) => string | undefined;
 };
@@ -34,10 +37,11 @@ const ITEMS: Array<NavItem> = [
     label: RESULTS_PAGE.swingGames,
     icon: <SwapVertIcon />,
     path: (season, week) => resultsPath(season, week, RESULTS_PAGE.swingGames),
+    // Scores still loading, which is soon over and needs no word.
+    disabled: ({ swingGames }) => swingGames == null,
     disabledReason: ({ isWeekWon, swingGames }) => {
-      if (swingGames == null) return "Scores still loading";
-      if (isWeekWon) return "Week already won";
-      if (swingGames.games.length === 0) return "No game knocks anyone out";
+      if (isWeekWon) return "Week already decided";
+      if (swingGames?.games.length === 0) return "No game knocks anyone out";
       return undefined;
     },
   },
@@ -76,6 +80,7 @@ export default function NavMenu({
       ...item,
       path,
       isCurrent: pathname === path,
+      disabled: item.disabled?.(context) ?? false,
       disabledReason: item.disabledReason?.(context),
     };
   });
@@ -98,9 +103,10 @@ export default function NavMenu({
   );
 }
 
-type NavLink = Omit<NavItem, "path" | "disabledReason"> & {
+type NavLink = Omit<NavItem, "path" | "disabled" | "disabledReason"> & {
   path: string;
   isCurrent: boolean;
+  disabled: boolean;
   disabledReason?: string;
 };
 
@@ -127,27 +133,28 @@ function NavPopup({
           sideOffset={4}
         >
           <Menu.Popup className="nav-menu__popup">
-            {links.map(({ label, icon, path, isCurrent, disabledReason }) =>
-              disabledReason != null ? (
-                <DisabledNavItem
-                  key={label}
-                  label={label}
-                  icon={icon}
-                  reason={disabledReason}
-                  isCurrent={isCurrent}
-                />
-              ) : (
-                <Menu.LinkItem
-                  key={label}
-                  closeOnClick
-                  className="nav-menu__item"
-                  render={<Link to={path} />}
-                  aria-current={isCurrent ? "page" : undefined}
-                >
-                  {icon}
-                  {label}
-                </Menu.LinkItem>
-              ),
+            {links.map(
+              ({ label, icon, path, isCurrent, disabled, disabledReason }) =>
+                disabled || disabledReason != null ? (
+                  <DisabledNavItem
+                    key={label}
+                    label={label}
+                    icon={icon}
+                    reason={disabledReason}
+                    isCurrent={isCurrent}
+                  />
+                ) : (
+                  <Menu.LinkItem
+                    key={label}
+                    closeOnClick
+                    className="nav-menu__item"
+                    render={<Link to={path} />}
+                    aria-current={isCurrent ? "page" : undefined}
+                  >
+                    {icon}
+                    {label}
+                  </Menu.LinkItem>
+                ),
             )}
           </Menu.Popup>
         </Menu.Positioner>
@@ -183,11 +190,23 @@ function DisabledNavItem({
 }: {
   label: string;
   icon: ReactNode;
-  reason: string;
+  reason?: string;
   isCurrent: boolean;
 }) {
   const reasonId = useId();
   const [open, setOpen] = useState(false);
+  if (reason == null) {
+    return (
+      <Menu.Item
+        disabled
+        className="nav-menu__item"
+        aria-current={isCurrent ? "page" : undefined}
+      >
+        {icon}
+        {label}
+      </Menu.Item>
+    );
+  }
   return (
     <Tooltip.Root open={open} onOpenChange={setOpen}>
       <Tooltip.Trigger
@@ -266,9 +285,16 @@ function NavDrawer({
             <nav aria-label="Pages">
               <ul className="nav-drawer__list">
                 {links.map(
-                  ({ label, icon, path, isCurrent, disabledReason }) => (
+                  ({
+                    label,
+                    icon,
+                    path,
+                    isCurrent,
+                    disabled,
+                    disabledReason,
+                  }) => (
                     <li key={label}>
-                      {disabledReason != null ? (
+                      {disabled || disabledReason != null ? (
                         <DisabledDrawerItem
                           label={label}
                           icon={icon}
@@ -298,7 +324,7 @@ function NavDrawer({
   );
 }
 
-/** A disabled drawer row, its reason in a smaller line under its label. */
+/** A disabled drawer row, any reason in a smaller line under its label. */
 function DisabledDrawerItem({
   label,
   icon,
@@ -307,7 +333,7 @@ function DisabledDrawerItem({
 }: {
   label: string;
   icon: ReactNode;
-  reason: string;
+  reason?: string;
   isCurrent: boolean;
 }) {
   const reasonId = useId();
@@ -316,18 +342,22 @@ function DisabledDrawerItem({
       role="link"
       // Focusable like the popup's disabled item, so Tab reaches its reason too.
       tabIndex={0}
-      className="nav-drawer__item nav-drawer__item--with-reason"
+      className={getClasses("nav-drawer__item", {
+        "nav-drawer__item--with-reason": reason != null,
+      })}
       aria-disabled="true"
       aria-current={isCurrent ? "page" : undefined}
-      aria-describedby={reasonId}
+      aria-describedby={reason != null ? reasonId : undefined}
     >
       {icon}
       {label}
       {/* Kept out of the row's name, so a screen reader hears it once, as the
           description. */}
-      <span id={reasonId} className="nav-drawer__reason" aria-hidden="true">
-        {reason}
-      </span>
+      {reason != null && (
+        <span id={reasonId} className="nav-drawer__reason" aria-hidden="true">
+          {reason}
+        </span>
+      )}
     </span>
   );
 }
