@@ -79,7 +79,8 @@ instead of recording the whole run.
   waits out its real poll interval, and shows the table update on its own
   once the mocked game goes final.
 - `scenarios/live-games.js` — Live Games with one live and one delayed game,
-  the reader's pick on each. `$LIVE_THEME` is `light` or `dark`.
+  the reader's pick on each. `$LIVE_THEME` is `light` or `dark`. `LIVE_NONE=1`
+  ends both games, for the empty state.
 - `scenarios/scoreline-shape.js` — the Game Status readout on a live game level at
   nothing, then the list its marks are read off. `$SCORELINE_THEME` is `light` or
   `dark`, `$SCORELINE_SHOT_DIR` takes the crop and the full page, so `--out` is a

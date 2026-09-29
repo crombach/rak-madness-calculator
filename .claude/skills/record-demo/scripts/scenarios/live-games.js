@@ -14,6 +14,9 @@ import {
 /** `light` or `dark`. */
 const THEME = process.env.LIVE_THEME ?? "light";
 
+/** `1` ends P1 and P3 too, so the page says nothing is live. */
+const NONE_LIVE = process.env.LIVE_NONE === "1";
+
 /** The reader, whose pick each scoreboard says. */
 const MY_NAME = "Dee";
 
@@ -28,9 +31,11 @@ function rows() {
 function events() {
   return {
     events: [
-      makeGame("P1EVT", "DEN", "KC", 7, 6, "2"),
+      makeGame("P1EVT", "DEN", "KC", 7, 6, NONE_LIVE ? "3" : "2"),
       makeGame("P2EVT", "LAR", "SF", 0, 0, "1"),
-      makeGame("P3EVT", "NYJ", "BUF", 10, 3, "7", 4),
+      NONE_LIVE
+        ? makeGame("P3EVT", "NYJ", "BUF", 10, 3, "3")
+        : makeGame("P3EVT", "NYJ", "BUF", 10, 3, "7", 4),
       makeGame("P4EVT", "NE", "MIA", 0, 0, "1"),
     ],
   };
@@ -56,5 +61,7 @@ export default async function run({ page, context, baseUrl }) {
     [THEME_KEY, THEME, PLAYER_NAME_KEY, MY_NAME, EXPERIMENTAL_FEATURES_KEY],
   );
   await page.goto(path);
-  await page.getByRole("listitem").first().waitFor({ timeout: 10000 });
+  await (NONE_LIVE ? page.getByRole("status") : page.getByRole("listitem"))
+    .first()
+    .waitFor({ timeout: 10000 });
 }
