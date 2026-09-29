@@ -40,7 +40,7 @@ $section-min: calc(
   background-color: var(--rak-surface);
   color: var(--rak-text);
 
-  &.--loading {
+  &.--loading .swing-games__group {
     @include skeleton-sheen;
   }
 }
