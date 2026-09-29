@@ -331,6 +331,7 @@ describe("the compare players route", () => {
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Carol");
     await user.click(screen.getByRole("button", { name: "Add Player" }));
+    await choose(user, "Player 3", "Bob");
     await closeDialog(user);
 
     await user.click(screen.getByRole("button", { name: "Choose Players" }));
@@ -338,6 +339,39 @@ describe("the compare players route", () => {
     expect(
       await screen.findByRole("combobox", { name: "Player 3" }),
     ).not.toHaveFocus();
+  });
+
+  it("drops empty pickers when the dialog opens again", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Alice");
+    await user.click(screen.getByRole("button", { name: "Add Player" }));
+    await choose(user, "Player 3", "Carol");
+    await closeDialog(user);
+
+    await user.click(screen.getByRole("button", { name: "Choose Players" }));
+
+    expect(
+      await screen.findByRole("combobox", { name: "Player 1" }),
+    ).toHaveValue("Alice");
+    expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveValue(
+      "Carol",
+    );
+    expect(screen.getAllByRole("combobox")).toHaveLength(2);
+  });
+
+  it("keeps two pickers when the dialog opens again with fewer chosen", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Alice");
+    await user.click(screen.getByRole("button", { name: "Add Player" }));
+    await closeDialog(user);
+
+    await user.click(screen.getByRole("button", { name: "Choose Players" }));
+
+    expect(
+      await screen.findByRole("combobox", { name: "Player 1" }),
+    ).toHaveValue("Alice");
+    expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveValue("");
+    expect(screen.getAllByRole("combobox")).toHaveLength(2);
   });
 
   it("holds a saved scope with no table and no message until two are chosen", async () => {

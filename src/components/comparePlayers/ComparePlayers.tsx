@@ -35,6 +35,12 @@ function newSlot(id?: string): Slot {
   return { key: slotCount++, id };
 }
 
+/** Drops the empty pickers, except the first empty ones it needs to keep `MIN_PICKERS`. */
+function withoutEmptySlots(slots: Array<Slot>): Array<Slot> {
+  let spare = MIN_PICKERS - slots.filter(({ id }) => id != null).length;
+  return slots.filter(({ id }) => id != null || spare-- > 0);
+}
+
 /** The rows the pickers hold, in picker order. */
 function playersIn(slots: Array<Slot>, scores?: RakMadnessScores) {
   return slots.flatMap(
@@ -114,7 +120,14 @@ export default function ComparePlayers({
     <>
       <div className="compare-players">
         <div className="compare-players__controls">
-          <ChooseButton ref={chooseRef} onClick={() => setIsOpen(true)} />
+          <ChooseButton
+            ref={chooseRef}
+            onClick={() => {
+              // Here rather than on close, where the dialog would shrink as it fades.
+              setSlots(withoutEmptySlots(slots));
+              setIsOpen(true);
+            }}
+          />
           <GamesToggle
             scope={scope}
             onChange={(next) => {

@@ -17,6 +17,7 @@ The `ui-style` skill maps each piece of UI to its token, mixin, or class.
 - `_ink.scss`: `ink-height`, an icon drawn as tall as the text beside it, the
   faces' cap shares, and `live-dot`, the one red dot for a game being played
 - `_a11y.scss`: `visually-hidden`
+- `_layout.scss`: `$content-width`, the column the navbar and pages stand in
 - `_label.scss`: `micro-label`, the tracked capitals every small label is set in
 - `_lcd.scss`: `lcd-glass`, the readout the scoreline and the navbar name share,
   and `lcd-field`, the same well for a control typed or chosen into instead
