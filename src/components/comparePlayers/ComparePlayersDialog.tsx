@@ -97,7 +97,7 @@ export default function ComparePlayersDialog({
       finalFocus={finalFocus}
     >
       <div className="settings">
-        <section className="settings__section">
+        <section className="settings__section compare-players__section">
           <ul className="compare-players__pickers">
             {slots.map((slot, index) => {
               // Each list leaves out the players the other pickers hold.

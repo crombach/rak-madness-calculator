@@ -32,17 +32,21 @@
   }
 }
 
+// The name over the keys on a phone, beside them on a wide screen.
 .compare-players__games {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+
   @include wide-screen {
-    display: flex;
+    flex-direction: row;
     align-items: center;
     gap: var(--rak-space-4);
   }
 }
 
-// The phone stacks the groups, which parts them without a rule or a name.
-.compare-players__divider,
-.compare-players__games-label {
+// The phone stacks the groups, which parts them without a rule.
+.compare-players__divider {
   display: none;
 
   @include wide-screen {
@@ -135,4 +139,10 @@
   .compare-players ~ .table {
     min-width: 100%;
   }
+}
+
+// Add Player is an action on the list, not a row of it, so a block's gap parts
+// them. Against both classes, to outweigh the settings section's own.
+.settings__section.compare-players__section {
+  gap: var(--rak-space-4);
 }
