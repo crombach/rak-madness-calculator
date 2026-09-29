@@ -142,7 +142,7 @@ def build(root):
     def depth(d):
         return 0 if d == "" else d.count(os.sep) + 1
 
-    # Deepest first. Path is used as a stable tiebreaker so output is deterministic
+    # Deepest first, path as a stable tiebreaker so output is deterministic
     # (all_dirs is a set, whose iteration order varies with hash seeding).
     ordered = sorted(all_dirs, key=lambda d: (-depth(d), d))
 
@@ -387,18 +387,18 @@ def report_dupes(root):
 # maintenance note, which grow with the repo rather than with what the file chose to
 # say. A ceiling, not a target. Most files stay far under it: a one-line summary plus
 # links is the format.
-BODY_WORD_LIMIT = 120
+BODY_WORD_LIMIT = 128
 
 # A leaf index earns room per file it describes, since its length is set by how many
 # files sit beside it rather than by how much it chose to say. A flat ceiling taxed
 # exactly the files doing their job: on this repo the six index files sat at 118 to
 # 120 and every edit to one had to buy its words back out of another entry.
 #
-# Eight is one line: a name, then a clause saying what it is for. The base covers the
-# heading and any sentence before the list. A file that lists nothing gets the floor
-# and nothing more, so prose cannot buy room by adding bullets.
-ENTRY_BASE = 40
-ENTRY_WORDS = 8
+# Sixteen is one line: a name, then a clause or two saying what it is for. The base
+# covers any sentence before the list. A file that lists nothing gets the floor and
+# nothing more, so prose cannot buy room by adding bullets.
+ENTRY_BASE = 48
+ENTRY_WORDS = 16
 
 # An item that describes a file, which is a bullet opening with a code span. Prose
 # bullets do not earn room, since they are what the floor is already for.

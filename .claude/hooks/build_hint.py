@@ -2,8 +2,8 @@
 """PreToolUse hook: point Claude at the repo's build-run-test skill.
 
 Pairs with the agentify-build skill. The skill holds what a Makefile target name
-cannot carry: toolchain versions, ports, prereqs, offline-test handling. A skill
-only loads when the model picks it. This hook makes that pick deterministic:
+cannot carry: toolchain versions, ports, prereqs, offline-test handling. A
+skill only loads when the model picks it. This hook makes that pick deterministic:
 before the first build-shaped Bash command of a session it injects one line naming
 the skill.
 

@@ -15,7 +15,7 @@ the CLAUDE.md that covers it, so a documented addition never nags.
 
 Deliberately ignores in-place edits to existing files: rewriting a function body
 rarely changes a one-line directory summary. The hook only detects. Claude judges
-whether the summary actually needs to change and rewrites it.
+whether the summary needs to change and rewrites it.
 
 Self-gating: silent when the command is neither, when cwd is not a git repo, when
 nothing was added, or when no ancestor directory has a CLAUDE.md (tree never
@@ -174,7 +174,7 @@ def main():
         file_dir = os.path.join(root, rel_dir) if rel_dir else root
         nearest = nearest_claude_md(file_dir, root)
         if nearest is None:
-            continue  # no CLAUDE.md tree here. Skill hasn't been run
+            continue  # no CLAUDE.md tree here, skill hasn't been run
         rel_md = os.path.relpath(nearest, root)
         if rel_md in touched_md:
             continue  # already answered for, in this same change
