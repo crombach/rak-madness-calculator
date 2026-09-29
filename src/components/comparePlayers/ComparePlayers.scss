@@ -105,8 +105,11 @@
   }
 }
 
+// A 36px face on its edge spans a combobox, as the remove keys do.
 .compare-players__add {
   align-self: stretch;
+  min-height: 2.25rem;
+  padding-block: 0;
 }
 
 .compare-players__standing {
