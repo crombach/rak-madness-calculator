@@ -21,8 +21,8 @@ first paint it sets `data-theme` from storage and preloads the logo's face.
 
 Navigation index. Changed a dir: update its CLAUDE.md summary and the parent's
 link. New meaningful dir: add a CLAUDE.md, link it. Pointer <= 70 chars. Every
-CLAUDE.md, outside its Subdirectories list and this block: 120 words, or 40 plus
-8 for each file a bullet names, whichever is larger. Ceiling,
+CLAUDE.md, outside its Subdirectories list and this block: 128 words, or 48 plus
+16 for each file a bullet names, whichever is larger. Ceiling,
 not target: land under it, or the next edit pays to shave. `make lint-docs`
 enforces it. Over it, the detail belongs at the point of definition, in a comment
 or docblock beside the code. A skill under `.claude/skills/` is for what no one

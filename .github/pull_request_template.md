@@ -16,12 +16,11 @@ https://www.conventionalcommits.org/en/v1.0.0/
 Never wrap a line yourself. GitHub turns each newline into a visible break.
 One bullet is one line, however long.
 
-Shortest body a reviewer can review from, under 320 words. Bullets, one line each,
-not paragraphs. Every line must change how they read the diff. Cut every line that
-does not, and delete every section left with nothing to say. A heading, an
-attribution footer and an embedded screenshot or recording do not count against
-the budget. Add one where seeing the change beats reading about it,
-usually a UX change, not as a matter of course.
+Shortest body a reviewer can review from, under 256 words. Bullets, one line
+each, not paragraphs. Delete a section marked optional when it has nothing to
+say. A heading, an attribution footer and an embedded screenshot or recording do
+not count against the budget. Add one where seeing the change beats reading
+about it, usually a UX change, not as a matter of course.
 
 Never in the body: a retelling of the ticket, the path taken to the change,
 alternatives rejected, counts of files or lines or tests, timings, coverage or
@@ -60,8 +59,13 @@ Leave no empty headings.
 ## Changes
 
 <!--
-One bullet per design decision a reviewer would otherwise reverse-engineer, plus anything deliberately out of scope.
-One line each, six at most. Skip the mechanical ones.
+One bullet per significant change. One line each, six at most. Starts with an
+imperative verb, design decisions or other crucial details may follow.
+
+Example:
+- Add `TokenCache` in front of the Athenz client, keyed by domain and role, so a burst of parallel requests triggers one token fetch instead of N.
+- Refresh tokens at 80% of their lifetime rather than on expiry. A refresh that fails still leaves a usable token for the remaining 20%.
+- Return the stale token when refresh fails and the token has not expired.
 -->
 
 ## Verification
