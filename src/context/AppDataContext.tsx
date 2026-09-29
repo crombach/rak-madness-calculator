@@ -174,19 +174,20 @@ export function AppDataContextProvider({
     refresh,
     rescore,
   } = playerScores;
-  // Until the week's scores arrive, a week this browser saw settled is taken as
+  // While the week's scores load, a week this browser saw settled is taken as
   // still settled, so its results open without the refresh controls.
   const { season: routeSeason, weekNumber: routeWeekNumber } = route;
   const weekOutcome = useMemo(() => {
     if (scores != null) {
       return { isSettled: isWeekSettled(scores), isWon: isWeekWon(scores) };
     }
-    return routeSeason != null &&
+    return isScoresLoading &&
+      routeSeason != null &&
       routeWeekNumber != null &&
       readSettledWeek(routeSeason, routeWeekNumber)
       ? SETTLED_OUTCOME
       : NO_OUTCOME;
-  }, [scores, routeSeason, routeWeekNumber]);
+  }, [scores, isScoresLoading, routeSeason, routeWeekNumber]);
 
   // The seasons with picks, plus the one running now whether or not it has any.
   // That season's weeks are scored from a spreadsheet the reader uploads until its

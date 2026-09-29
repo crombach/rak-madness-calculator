@@ -16,6 +16,7 @@ const SCORES = { scores: [] } as unknown as RakMadnessScores;
 const NO_OP = () => {};
 
 let heldScores: RakMadnessScores | undefined;
+let isLoading = false;
 
 let setRefreshing: (value: boolean) => void;
 
@@ -30,7 +31,7 @@ vi.mock("../hooks/usePlayerScores", async () => {
           scores: heldScores,
           scoreChanges: NO_SCORE_CHANGES,
           attemptedFor: undefined,
-          isScoresLoading: false,
+          isScoresLoading: isLoading,
           isRefreshing,
           fetchingLeagues: new Set(),
           scoreLocalFile: NO_OP,
@@ -76,16 +77,19 @@ function Reader({ hook }: { hook: () => unknown }) {
 describe("AppDataContextProvider", () => {
   beforeEach(() => {
     heldScores = SCORES;
+    isLoading = false;
     localStorage.clear();
   });
 
   it.each([
-    { recorded: true, expected: true },
-    { recorded: false, expected: false },
+    { recorded: true, loading: true, expected: true },
+    { recorded: false, loading: true, expected: false },
+    { recorded: true, loading: false, expected: false },
   ])(
-    "reads a week recorded settled $recorded as settled $expected before its scores load",
-    ({ recorded, expected }) => {
+    "reads the recorded flag $recorded as settled=$expected with no scores and loading=$loading",
+    ({ recorded, loading, expected }) => {
       heldScores = undefined;
+      isLoading = loading;
       writeSettledWeek(2024, 5, recorded);
       let isSettled: boolean | undefined;
       render(

@@ -19,7 +19,7 @@ export function readSettledWeek(season: number, weekNumber: number): boolean {
   return settledWeeks.read(`${season}:${weekNumber}`) ?? false;
 }
 
-/** Skips the write when nothing changed, since every poll of a live week lands here. */
+/** Skips the write when the stored flag already matches. */
 export function writeSettledWeek(
   season: number,
   weekNumber: number,
