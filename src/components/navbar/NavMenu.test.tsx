@@ -132,6 +132,17 @@ describe("NavMenu", () => {
       ).toEqual(["Home", "Settings"]);
     });
 
+    it("gives the pages no reason when told to disable them", async () => {
+      mockAppData.mockReturnValue({ scores: { scores: [{}] } });
+      mockSwingGames.mockReturnValue({ games: [] });
+      const user = mount({ pagesDisabled: true });
+      await user.click(trigger());
+
+      await screen.findAllByRole("menuitem");
+
+      expect(document.querySelector(".nav-menu__reason")).toBeNull();
+    });
+
     it("opens the settings over the page and closes the menu", async () => {
       const user = mount();
       await user.click(trigger());

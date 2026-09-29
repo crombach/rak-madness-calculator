@@ -60,7 +60,10 @@ export default async function run({ page, context, baseUrl }) {
   const menu = page.getByRole("button", { name: "Menu" });
   await menu.waitFor({ timeout: 20000 });
   await menu.click();
-  const settings = page.getByRole("menuitem", { name: "Settings" });
+  // A menu item in the wide popup, a plain button in the phone drawer.
+  const settings = page
+    .getByRole("menuitem", { name: "Settings" })
+    .or(page.getByRole("button", { name: "Settings" }));
   await settings.waitFor({ timeout: 20000 });
   await page.waitForTimeout(PULSE_HOLD);
 

@@ -85,7 +85,8 @@ const PAGES: Array<NavItem> = [
   },
 ];
 
-// Home leads, the rest run alphabetically. Settings follows them all.
+// Home leads, the rest run alphabetically. Settings renders after them, outside
+// this list.
 const ITEMS: Array<NavItem> = [
   HOME,
   ...[...PAGES].sort((a, b) => a.label.localeCompare(b.label)),
@@ -132,14 +133,13 @@ export default function NavMenu({
   };
   const links = (experimentalFeatures ? ITEMS : [HOME]).map((item) => {
     const path = item.path(season, week);
-    const isPage = item !== HOME;
+    const isHeldOff = pagesDisabled && item !== HOME;
     return {
       ...item,
       path,
       isCurrent: pathname === path,
-      disabled:
-        (isPage && pagesDisabled) || (item.disabled?.(context) ?? false),
-      disabledReason: item.disabledReason?.(context),
+      disabled: isHeldOff || (item.disabled?.(context) ?? false),
+      disabledReason: isHeldOff ? undefined : item.disabledReason?.(context),
     };
   });
   const settings: SettingsEntry = {

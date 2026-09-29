@@ -1,8 +1,9 @@
 # settings
 
 `SettingsDialog`: settings in the `DialogShell` the player analysis and the
-game status use. Only `NavMenu`'s Settings item opens it. Player Name comes first: an `lcd-field` shell holding a text input and
-a clear button, whose value marks that player's row in both tables. Live Player
+game status use. Only `NavMenu`'s Settings item opens it. Player Name comes
+first, an `lcd-field` shell holding a text input and a clear button, whose value
+marks that player's row in both tables. Live Player
 Analysis, Theme, and Experimental Features follow, each a row of `Button`s
 with `selected`, the navbar's own switch idiom. All of them go through
 `SettingsContext`. A new one means moving `SETTINGS_CHANGED_AT` forward.
