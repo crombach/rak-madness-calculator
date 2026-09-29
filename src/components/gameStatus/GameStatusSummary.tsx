@@ -3,6 +3,8 @@ import { GameStatus, HomeAway } from "../../types/ESPN";
 import { GameSide, LeagueResult } from "../../types/LeagueResult";
 import { PlayerScore } from "../../types/RakMadnessScores";
 import { GameSpread, WeekGame } from "../../types/WeekGame";
+import cssMediaQuery from "../../hooks/cssMediaQuery";
+import useMediaQuery from "../../hooks/useMediaQuery";
 import getClasses from "../../utils/getClasses";
 import observeResize from "../../utils/observeResize";
 import parsePick from "../../utils/scoring/parsePick";
@@ -214,6 +216,10 @@ function Game({
 }) {
   const [scoreline, fit] = useScorelineFit(result.id);
   const [lead, wrapped] = useWraps<HTMLDivElement>();
+  // A phone's line is too short for both once a side has ten picks.
+  const [narrowQuery] = useState(() => cssMediaQuery("--rak-below-wide"));
+  const isNarrow = useMediaQuery(narrowQuery);
+  const splitInline = !brief && !isNarrow;
   // The link rides with the place, not the kickoff, so it holds the strip's end
   // when the halves stack. A game ESPN sent no address for still carries it.
   const placeParts = [
@@ -265,7 +271,7 @@ function Game({
           ref={lead}
         >
           <SpreadLine spread={spread} myPick={myPick} />
-          {splitLine}
+          {splitInline && splitLine}
         </div>
       )}
       <div
@@ -278,7 +284,7 @@ function Game({
         <Scoreline result={result} spread={spread} outcomeOf={outcomeOf} />
         <Side homeAway={HomeAway.HOME} {...sideProps(result.home)} />
       </div>
-      {brief && splitLine}
+      {!splitInline && splitLine}
       {/* Under the scoreline rather than over it. The game is what the dialog was
           opened for, and when and where it is played is the footnote. */}
       {!brief && (
