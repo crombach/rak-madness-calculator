@@ -57,6 +57,11 @@ function markFor(game: WeekGame, status?: GameStatus): Mark {
   };
 }
 
+/** What a game's mark says to a screen reader, for a control that names it. */
+export function gameMarkLabel(game: WeekGame, status?: GameStatus): string {
+  return markFor(game, status).label;
+}
+
 /**
  * Where a game stands, in one mark.
  *
