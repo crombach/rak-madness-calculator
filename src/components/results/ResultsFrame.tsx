@@ -259,9 +259,7 @@ export default function ResultsFrame({
                   <Button onClick={onRefresh} busy={isRefreshing}>
                     Retry
                   </Button>
-                  <Button variant="soft" onClick={() => navigate("/")}>
-                    Home
-                  </Button>
+                  <Button onClick={() => navigate("/")}>Home</Button>
                 </div>
               </div>
             ) : (
