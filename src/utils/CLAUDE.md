@@ -8,7 +8,8 @@
 - `picksCache` / `espnCache`: an uploaded workbook, and ESPN's fixed answers,
   on `localStorageCache`, a capped store under one prefix
 - `settingsStore`: the reader's own preferences, kept whatever the caches drop
-- `loadStoredPicks`: a week's workbook from the API, or cache
+- `loadStoredPicks`: a week's workbook from the API, or cache. `prefetchStoredPicks`
+  starts a URL's week before the calendar lands
 - `contentType`: what a response says it is, and why an `/api` path checks
 - `debugLog`: scoring traces, silent outside a dev server
 - `latestOnly`: drops an async result its effect outlived
@@ -17,7 +18,7 @@
 - `doNothing`: the no-op a default prop or context stands in with
 - `plural`: a count and its noun, pluralized
 - `rangeWithPrefix`: labeled index arrays (C1, C2…)
-- `matching`: case-folded substring search, shared by both dialogs' item lists
+- `matching`: case-folded substring search, for both dialogs' lists
 - `readFileToBuffer`: an upload's bytes
 - `lazyPreloadable`: a lazy route that can be fetched ahead, and skips its fallback once in
 - `warmImage`: an image into the browser's cache, once, where prefetch does not reach

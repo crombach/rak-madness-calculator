@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
 import { League } from "../types/League";
 import getLeagueInfo from "../utils/getLeagueInfo";
-import latestOnly from "../utils/latestOnly";
+import useLatestAsync from "./useLatestAsync";
 
 /**
  * The season running now, by the year it started in, once it has begun.
@@ -16,24 +15,17 @@ import latestOnly from "../utils/latestOnly";
  * undefined until its opener, as is a season ESPN could not be asked about at all.
  * The picker then offers the seasons it does know about and nothing else.
  */
+async function fetchCurrentSeason(): Promise<number | undefined> {
+  // No season named, so ESPN answers with the one running now.
+  const proLeagueInfo = await getLeagueInfo(League.PRO);
+  return proLeagueInfo?.activeWeek != null ? proLeagueInfo.season : undefined;
+}
+
+/** The picker still offers the seasons with picks, so a failure stays quiet. */
+function warnCurrentSeasonFailed(error: unknown) {
+  console.warn("Could not work out the season running now", error);
+}
+
 export default function useCurrentSeason() {
-  const [currentSeason, setCurrentSeason] = useState<number>();
-
-  useEffect(
-    () =>
-      latestOnly(async (isCurrent) => {
-        try {
-          // No season named, so ESPN answers with the one running now.
-          const proLeagueInfo = await getLeagueInfo(League.PRO);
-          if (isCurrent() && proLeagueInfo?.activeWeek != null) {
-            setCurrentSeason(proLeagueInfo.season);
-          }
-        } catch (error) {
-          console.warn("Could not work out the season running now", error);
-        }
-      }),
-    [],
-  );
-
-  return currentSeason;
+  return useLatestAsync(fetchCurrentSeason, warnCurrentSeasonFailed).data;
 }

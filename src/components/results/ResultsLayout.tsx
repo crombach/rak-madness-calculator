@@ -26,6 +26,7 @@ export default function ResultsLayout() {
     <ResultsFrame
       view={view}
       isReady={guard.status === "ready"}
+      hasFailed={guard.status === "failed"}
       // Leaving a menu page pushes, so Back returns to it. The menu pushed it, so
       // a replace would leave two entries for the page before it.
       onViewChange={(next) =>

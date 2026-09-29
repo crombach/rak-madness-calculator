@@ -22,7 +22,9 @@ import { useSettings } from "../../context/SettingsContext";
 import ComparePlayersSkeleton from "../comparePlayers/ComparePlayersSkeleton";
 import GamesSkeleton from "../games/GamesSkeleton";
 import { preloadGamesRoute } from "../games/GamesPage";
+import Button from "../button/Button";
 import AppNavbar from "../navbar/AppNavbar";
+import EmptyState from "../pageLayout/EmptyState";
 import { APP_NAME } from "../navbar/LogoButton";
 import SwingGamesSkeleton from "../swingGames/SwingGamesSkeleton";
 import SkeletonTable from "../table/SkeletonTable";
@@ -84,6 +86,7 @@ type Opened =
 export default function ResultsFrame({
   view,
   isReady = false,
+  hasFailed = false,
   onViewChange = doNothing,
   onRefresh = doNothing,
   onPoll,
@@ -95,6 +98,8 @@ export default function ResultsFrame({
   view: ResultsPage;
   /** Left false by a route that has nothing to show and never will. */
   isReady?: boolean;
+  /** Set where the week could not be scored. Shown in place of the wireframe. */
+  hasFailed?: boolean;
   onViewChange?: (view: ScoresView) => void;
   onRefresh?: () => void;
   /** Pulls one league, and rescores the week where anything in it moved. */
@@ -242,7 +247,20 @@ export default function ResultsFrame({
         </p>
         <PlayerAnalysisContextProvider showPlayerAnalysis={showPlayerAnalysis}>
           <GameStatusContextProvider showGameStatus={showGameStatus}>
-            {isReady ? children : SKELETONS[view]}
+            {isReady ? (
+              children
+            ) : hasFailed ? (
+              <div className="results-failure">
+                <EmptyState>
+                  {`The scores for week ${weekParam} could not be loaded.`}
+                </EmptyState>
+                <Button onClick={onRefresh} busy={isRefreshing}>
+                  Retry
+                </Button>
+              </div>
+            ) : (
+              SKELETONS[view]
+            )}
           </GameStatusContextProvider>
         </PlayerAnalysisContextProvider>
       </div>

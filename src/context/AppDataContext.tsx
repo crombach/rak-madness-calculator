@@ -13,6 +13,7 @@ import useLeagueWeeks from "../hooks/useLeagueWeeks";
 import usePicksSeasons from "../hooks/usePicksSeasons";
 import usePlayerScores from "../hooks/usePlayerScores";
 import { WeekInfo } from "../types/League";
+import { prefetchStoredPicks } from "../utils/loadStoredPicks";
 import { RakMadnessScores } from "../types/RakMadnessScores";
 import { NO_SWINGS, SwingGames } from "../utils/scoring/swingGameTypes";
 import isWeekSettled, { isWeekWon } from "../utils/scoring/isWeekSettled";
@@ -109,6 +110,15 @@ export function AppDataContextProvider({
 }: PropsWithChildren<object>) {
   const { pathname } = useLocation();
   const route = routeFromPath(pathname);
+
+  // The week a results URL opens on is known before the calendar arrives, so its
+  // picks load beside the calendar rather than after it. Startup only.
+  const [startRoute] = useState(route);
+  useEffect(() => {
+    if (startRoute.season != null && startRoute.weekNumber != null) {
+      prefetchStoredPicks(startRoute.season, startRoute.weekNumber);
+    }
+  }, [startRoute]);
   // Undefined until a URL or the picker names one, which asks ESPN for the season
   // running now. `loadedSeason` then says which one that was.
   const [selectedSeason, setSelectedSeason] = useState(route.season);
@@ -152,6 +162,7 @@ export function AppDataContextProvider({
     scores,
     scoreChanges,
     attemptedFor,
+    failedFor,
     isScoresLoading,
     isRefreshing,
     fetchingLeagues,
@@ -203,6 +214,7 @@ export function AppDataContextProvider({
   const status = useMemo(
     () => ({
       attemptedFor,
+      failedFor,
       isScoresLoading,
       isRefreshing,
       fetchingLeagues,
@@ -212,6 +224,7 @@ export function AppDataContextProvider({
     }),
     [
       attemptedFor,
+      failedFor,
       isScoresLoading,
       isRefreshing,
       fetchingLeagues,

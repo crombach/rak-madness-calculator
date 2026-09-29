@@ -13,7 +13,7 @@ week worth showing.
 - `ExperimentalGate`: sends a reader without the opt-in to the scoreboard.
 - `ResultsFrame`: the page and wireframe both `ResultsLayout` and
   `CurrentWeekRedirect` render into, captioned by view and week. Holds both
-  dialogs lazily and the table providers. `canRefresh` arms refresh and `pull`
+  dialogs lazily and the table providers. A failed week gets Retry. `canRefresh` arms refresh and `pull`
   on a live week, off Games.
 - `DialogLoadBoundary`: catches a dialog chunk a deploy replaced.
-- `ResultsFrame.scss`: the column table and wireframe share, and the caption.
+- `ResultsFrame.scss`: the column table and wireframe share, the caption.
