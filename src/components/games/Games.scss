@@ -142,6 +142,15 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   font-size: var(--rak-text-sm);
 }
 
+// A fill the size of a title, sized from the stand-in title it never shows.
+.games.--loading .games__section-title {
+  @include skeleton-reserve;
+  @include skeleton-surface;
+
+  display: block;
+  width: fit-content;
+}
+
 // A real card drawn from a stand-in game, so it takes a loaded card's size. Its
 // band keeps its fill, and each block under it becomes a fill with its text hidden.
 .games.--loading .games__game {

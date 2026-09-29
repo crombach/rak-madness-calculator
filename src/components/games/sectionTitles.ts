@@ -9,10 +9,3 @@ export const DAYS: ReadonlyArray<{ day: KickoffDay; title: string }> = [
   { day: KickoffDay.LATER, title: "Upcoming" },
 ];
 export const COMPLETED_TITLE = "Completed";
-
-/** Every section's title, in page order. */
-export const SECTION_TITLES: ReadonlyArray<string> = [
-  LIVE_TITLE,
-  ...DAYS.map(({ title }) => title),
-  COMPLETED_TITLE,
-];
