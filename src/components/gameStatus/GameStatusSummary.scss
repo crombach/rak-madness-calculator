@@ -324,12 +324,6 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.3em);
   line-height: var(--rak-line-height-tight);
 
   @include outcome;
-
-  // The reader's own pick, in the accent their own row carries in the tables.
-  &.--picked {
-    text-decoration: underline var(--rak-border-width) var(--rak-my-row-accent);
-    text-underline-offset: var(--rak-space-1);
-  }
 }
 
 .game-status__sr-only {
