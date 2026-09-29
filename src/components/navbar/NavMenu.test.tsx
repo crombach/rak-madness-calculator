@@ -168,20 +168,21 @@ describe("NavMenu", () => {
       expect(item).toHaveAccessibleDescription("Scores still loading");
     });
 
-    it("disables Live Games once every game is final", async () => {
+    it("disables the pages a complete week has no use for, with no reason", async () => {
       mockIsWeekSettled.mockReturnValue(true);
+      mockIsWeekWon.mockReturnValue(true);
+      mockSwingGames.mockReturnValue({ games: [] });
       const user = mount();
       await user.click(trigger());
 
-      const item = await screen.findByRole("menuitem", {
-        name: /Live Games/,
-      });
-
-      expect(item).toHaveAttribute("data-disabled");
-      expect(item).toHaveAccessibleDescription("Every game is final");
+      for (const name of [/Live Games/, /Swing Games/]) {
+        const item = await screen.findByRole("menuitem", { name });
+        expect(item).toHaveAttribute("data-disabled");
+        expect(item).not.toHaveAccessibleDescription();
+      }
     });
 
-    it("disables Swing Games once the week has a winner", async () => {
+    it("disables Swing Games once the week has a winner, games still to play", async () => {
       mockIsWeekWon.mockReturnValue(true);
       const user = mount();
       await user.click(trigger());

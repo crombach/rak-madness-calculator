@@ -51,9 +51,12 @@ const PAGES: Array<NavItem> = [
     label: RESULTS_PAGE.swingGames,
     icon: <SwapVertIcon />,
     path: (season, week) => resultsPath(season, week, RESULTS_PAGE.swingGames),
-    // Scores still loading, which is soon over and needs no word.
-    disabled: ({ swingGames }) => swingGames == null,
-    disabledReason: ({ isWeekWon, swingGames }) => {
+    // Scores still loading, which is soon over and needs no word. A complete
+    // week needs none either.
+    disabled: ({ isWeekSettled, swingGames }) =>
+      isWeekSettled || swingGames == null,
+    disabledReason: ({ isWeekSettled, isWeekWon, swingGames }) => {
+      if (isWeekSettled) return undefined;
       if (isWeekWon) return "Week is decided";
       if (swingGames?.games.length === 0) return "No game knocks anyone out";
       return undefined;
@@ -63,11 +66,9 @@ const PAGES: Array<NavItem> = [
     label: RESULTS_PAGE.liveGames,
     icon: <ScoreboardIcon />,
     path: (season, week) => resultsPath(season, week, RESULTS_PAGE.liveGames),
-    disabledReason: ({ isWeekSettled, playerCount }) => {
-      if (playerCount == null) return "Scores still loading";
-      if (isWeekSettled) return "Every game is final";
-      return undefined;
-    },
+    disabled: ({ isWeekSettled }) => isWeekSettled,
+    disabledReason: ({ playerCount }) =>
+      playerCount == null ? "Scores still loading" : undefined,
   },
 ];
 
