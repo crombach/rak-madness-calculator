@@ -211,10 +211,14 @@ function PicksTable({
     lightTarget(event);
   }
 
-  // A finger lights the column it taps and holds it until the next tap. A
-  // scroll cancels the touch rather than lifting it, so a fling lights nothing.
-  function trackTap(event: PointerEvent<HTMLTableElement>) {
+  // A finger lights the column it presses until it lifts. A scroll cancels the
+  // touch rather than lifting it, which puts the column out the same way.
+  function trackPress(event: PointerEvent<HTMLTableElement>) {
     if (event.pointerType === "touch") lightTarget(event);
+  }
+
+  function endPress(event: PointerEvent<HTMLTableElement>) {
+    if (event.pointerType === "touch") hover(event.currentTarget, undefined);
   }
 
   function lightTarget(event: PointerEvent<HTMLTableElement>) {
@@ -256,7 +260,9 @@ function PicksTable({
       caption={caption}
       columnCount={columnCount}
       onPointerOver={trackHover}
-      onPointerUp={trackTap}
+      onPointerDown={trackPress}
+      onPointerUp={endPress}
+      onPointerCancel={endPress}
       onPointerLeave={(event) => {
         if (event.pointerType !== "touch")
           hover(event.currentTarget, undefined);

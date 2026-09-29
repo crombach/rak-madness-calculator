@@ -5,8 +5,9 @@
   minutes. `espnScoreboardUrl` builds both URLs
 - `buildSpreadsheetBuffer`: the xlsx export and its content type
 - `pickStatusFill`: the export's pick and standing colors, held to the stylesheet
-- `picksCache` / `espnCache`: an uploaded workbook, and ESPN's fixed answers,
-  on `localStorageCache`, a capped store under one prefix
+- `picksCache` / `espnCache` / `settledWeeksCache`: an uploaded workbook, ESPN's
+  fixed answers, and which weeks settled, on `localStorageCache`, a capped store
+  under one prefix
 - `settingsStore`: the reader's own preferences, kept whatever the caches drop
 - `loadStoredPicks`: a week's workbook from the API, or cache. `prefetchStoredPicks`
   starts a URL's week before the calendar lands

@@ -3,15 +3,24 @@ import { Profiler } from "react";
 import { MemoryRouter } from "react-router";
 import { RakMadnessScores } from "../types/RakMadnessScores";
 import { NO_SCORE_CHANGES } from "../utils/scoring/scoreChanges";
+import { writeSettledWeek } from "../utils/settledWeeksCache";
 import {
   AppDataContextProvider,
   useCalendar,
+  useIsWeekSettled,
   useScores,
   useScoringStatus,
 } from "./AppDataContext";
 
 const SCORES = { scores: [] } as unknown as RakMadnessScores;
+const SETTLED_SCORES = {
+  tiebreaker: 40,
+  scores: [{ college: [{ status: "yes" }], pro: [{ status: "no" }] }],
+} as unknown as RakMadnessScores;
 const NO_OP = () => {};
+
+let heldScores: RakMadnessScores | undefined;
+let heldAttempt: { season: number; weekNumber: number } | undefined;
 
 let setRefreshing: (value: boolean) => void;
 
@@ -23,9 +32,9 @@ vi.mock("../hooks/usePlayerScores", async () => {
       setRefreshing = set;
       return useMemo(
         () => ({
-          scores: SCORES,
+          scores: heldScores,
           scoreChanges: NO_SCORE_CHANGES,
-          attemptedFor: undefined,
+          attemptedFor: heldAttempt,
           isScoresLoading: false,
           isRefreshing,
           fetchingLeagues: new Set(),
@@ -70,6 +79,56 @@ function Reader({ hook }: { hook: () => unknown }) {
 }
 
 describe("AppDataContextProvider", () => {
+  beforeEach(() => {
+    heldScores = SCORES;
+    heldAttempt = undefined;
+    localStorage.clear();
+  });
+
+  function isSettledAt(path: string): boolean | undefined {
+    let isSettled: boolean | undefined;
+    render(
+      <MemoryRouter initialEntries={[path]}>
+        <AppDataContextProvider>
+          <Reader hook={() => (isSettled = useIsWeekSettled())} />
+        </AppDataContextProvider>
+      </MemoryRouter>,
+    );
+    return isSettled;
+  }
+
+  it.each([true, false])(
+    "reads a week not yet scored as recorded, settled=%s",
+    (recorded) => {
+      heldScores = undefined;
+      writeSettledWeek(2024, 5, recorded);
+
+      expect(isSettledAt("/2024/5")).toBe(recorded);
+    },
+  );
+
+  it("reads a week scored with nothing to show as open, whatever was recorded", () => {
+    heldScores = undefined;
+    heldAttempt = { season: 2024, weekNumber: 5 };
+    writeSettledWeek(2024, 5, true);
+
+    expect(isSettledAt("/2024/5")).toBe(false);
+  });
+
+  it("reads the week's own scores once scoring has tried it", () => {
+    heldScores = SETTLED_SCORES;
+    heldAttempt = { season: 2024, weekNumber: 5 };
+
+    expect(isSettledAt("/2024/5")).toBe(true);
+  });
+
+  it("does not read the last week's settled scores as the next week's outcome", () => {
+    heldScores = SETTLED_SCORES;
+    heldAttempt = { season: 2024, weekNumber: 4 };
+
+    expect(isSettledAt("/2024/5")).toBe(false);
+  });
+
   it("re-renders only the consumers of what changed", () => {
     render(
       <MemoryRouter>

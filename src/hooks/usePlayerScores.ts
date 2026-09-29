@@ -18,7 +18,9 @@ import {
   LEAGUE_KEY,
   LeagueResults,
 } from "../utils/scoring/leagueResults";
+import isWeekSettled from "../utils/scoring/isWeekSettled";
 import parsePicksWorkbook from "../utils/scoring/parsePicksWorkbook";
+import { writeSettledWeek } from "../utils/settledWeeksCache";
 import { createScoringPasses, NO_LEAGUES } from "./scoringPasses";
 import scoreChanges, {
   NO_SCORE_CHANGES,
@@ -293,6 +295,7 @@ export default function usePlayerScores(
         showScoreChanges(scoreChanges(before, nextScores));
         previousScores.current = { key, scores: nextScores };
         setScores(nextScores);
+        writeSettledWeek(season, selectedWeek.value, isWeekSettled(nextScores));
         setFailedFor(undefined);
         if (onSuccess) showToast(onSuccess);
         return fetched;

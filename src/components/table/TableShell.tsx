@@ -26,7 +26,9 @@ export default function TableShell({
   ariaHidden = false,
   standInRows = 0,
   onPointerOver,
+  onPointerDown,
   onPointerUp,
+  onPointerCancel,
   onPointerLeave,
   children,
 }: {
@@ -55,7 +57,9 @@ export default function TableShell({
    */
   standInRows?: number;
   onPointerOver?: PointerEventHandler<HTMLTableElement>;
+  onPointerDown?: PointerEventHandler<HTMLTableElement>;
   onPointerUp?: PointerEventHandler<HTMLTableElement>;
+  onPointerCancel?: PointerEventHandler<HTMLTableElement>;
   onPointerLeave?: PointerEventHandler<HTMLTableElement>;
   children?: ReactNode;
 }) {
@@ -72,7 +76,9 @@ export default function TableShell({
       aria-busy={busy || undefined}
       aria-hidden={ariaHidden || undefined}
       onPointerOver={onPointerOver}
+      onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
+      onPointerCancel={onPointerCancel}
       onPointerLeave={onPointerLeave}
     >
       {caption != null && (

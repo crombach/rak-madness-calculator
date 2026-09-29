@@ -1,6 +1,6 @@
 import { Mock } from "vitest";
 import { Profiler } from "react";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import {
   PickResult,
@@ -387,46 +387,33 @@ describe("PicksTable, column hover", () => {
   });
 });
 
-describe("PicksTable, column tap", () => {
+describe("PicksTable, column press", () => {
   const LIT = "--column-lit";
 
-  function tap(user: ReturnType<typeof userEvent.setup>, target: Element) {
-    return user.pointer({ keys: "[TouchA]", target });
-  }
-
-  it("lights the tapped column and keeps it once the finger lifts", async () => {
+  it("lights the pressed column while the finger rests on it", async () => {
     const { user } = renderPicks();
 
-    await tap(user, screen.getByText("MICH"));
+    await user.pointer({ keys: "[TouchA>]", target: screen.getByText("MICH") });
 
     expect(screen.getByText("C1 pick").closest("td")).toHaveClass(LIT);
     expect(screen.getByRole("columnheader", { name: "C1" })).toHaveClass(LIT);
     expect(screen.getByText("OSU").closest("td")).not.toHaveClass(LIT);
   });
 
-  it("moves to the next column tapped", async () => {
+  it("puts the column out once the finger lifts", async () => {
     const { user } = renderPicks();
 
-    await tap(user, screen.getByText("MICH"));
-    await tap(user, screen.getByRole("columnheader", { name: "P2" }));
-
-    expect(screen.getByText("MICH").closest("td")).not.toHaveClass(LIT);
-    expect(screen.getByText("KC").closest("td")).toHaveClass(LIT);
-  });
-
-  it("clears on a tap outside a game", async () => {
-    const { user } = renderPicks();
-
-    await tap(user, screen.getByText("MICH"));
-    await tap(user, screen.getByRole("columnheader", { name: "Player" }));
+    await user.pointer({ keys: "[TouchA]", target: screen.getByText("MICH") });
 
     expect(document.querySelector(`.${LIT}`)).toBeNull();
   });
 
-  it("lights nothing for a finger that lands without lifting, as a scroll does", async () => {
+  it("puts the column out when a scroll cancels the touch", async () => {
     const { user } = renderPicks();
+    const cell = screen.getByText("MICH");
 
-    await user.pointer({ keys: "[TouchA>]", target: screen.getByText("MICH") });
+    await user.pointer({ keys: "[TouchA>]", target: cell });
+    fireEvent.pointerCancel(cell, { pointerType: "touch" });
 
     expect(document.querySelector(`.${LIT}`)).toBeNull();
   });
