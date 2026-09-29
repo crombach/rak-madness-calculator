@@ -8,7 +8,9 @@ import {
   MAX_PICKERS,
   MIN_PICKERS,
   readComparedPlayers,
+  readShowsAll,
   writeComparedPlayers,
+  writeShowsAll,
 } from "./comparedPlayers";
 import ComparePlayersDialog, { Slot } from "./ComparePlayersDialog";
 import { ChooseButton, GamesToggle } from "./ComparePlayersSkeleton";
@@ -61,7 +63,7 @@ export default function ComparePlayers({
     startingIds(scores?.scores ?? [], playerName).map(newSlot),
   );
   const [isOpen, setIsOpen] = useState(false);
-  const [showsAll, setShowsAll] = useState(false);
+  const [showsAll, setShowsAll] = useState(readShowsAll);
   const [addedKey, setAddedKey] = useState<number>();
   const chosen = useMemo(
     () =>
@@ -74,6 +76,10 @@ export default function ComparePlayers({
   useEffect(() => {
     writeComparedPlayers(chosen.map((player) => player.name));
   }, [chosen]);
+
+  useEffect(() => {
+    writeShowsAll(showsAll);
+  }, [showsAll]);
 
   const players = useMemo(
     () => new Set(chosen.map((player) => player.id)),

@@ -28,6 +28,22 @@ export function writeComparedPlayers(names: Array<string>): void {
   writeSetting(SETTING, names.length > 0 ? JSON.stringify(names) : "");
 }
 
+const SHOWS_ALL_SETTING = "compareShowsAll";
+const SHOWS_ALL = "all";
+
+/** The exact key the Different/All choice is saved under, for a test to seed. */
+export const SHOWS_ALL_KEY = PREFIX + SHOWS_ALL_SETTING;
+
+/** Whether the table last showed every game. */
+export function readShowsAll(): boolean {
+  return readSetting(SHOWS_ALL_SETTING) === SHOWS_ALL;
+}
+
+/** Saves the choice of every game, or forgets it for the default, Different. */
+export function writeShowsAll(showsAll: boolean): void {
+  writeSetting(SHOWS_ALL_SETTING, showsAll ? SHOWS_ALL : "");
+}
+
 /** A picker's label and accessible name, counted from 1. */
 export function pickerLabel(index: number): string {
   return `Player ${index + 1}`;

@@ -18,7 +18,7 @@ import {
   PLAYER_NAME_KEY,
 } from "../../context/SettingsContext";
 import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
-import { COMPARED_PLAYERS_KEY } from "./comparedPlayers";
+import { COMPARED_PLAYERS_KEY, SHOWS_ALL_KEY } from "./comparedPlayers";
 
 const COMPARE_PATH = `/${SEASON}/${CURRENT_WEEK}/compare`;
 
@@ -334,6 +334,33 @@ describe("the compare players route", () => {
     );
     expect(screen.getByRole("combobox", { name: "Player 3" })).toHaveValue(
       "Carol",
+    );
+  });
+
+  it("saves the All choice", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Carol");
+    await closeDialog(user);
+    await user.click(screen.getByRole("button", { name: "All" }));
+
+    expect(localStorage.getItem(SHOWS_ALL_KEY)).toBe("all");
+  });
+
+  it("opens on the saved All choice", async () => {
+    localStorage.setItem(SHOWS_ALL_KEY, "all");
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Carol"]),
+    );
+    mountApp(COMPARE_PATH);
+
+    expect(
+      await screen.findByRole("table", { name: "Picks of Alice and Carol" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "All" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
     );
   });
 
