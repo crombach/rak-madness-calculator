@@ -9,12 +9,13 @@ import {
 import "./ComparePlayers.scss";
 
 /**
- * A wireframe of the pickers and the standing, for while the week or the page
+ * A wireframe of the pickers and the prompt under them, for while the week or the page
  * loads. As many pickers as the reader last chose, so the page opens at its
  * loaded size.
  */
 export default function ComparePlayersSkeleton() {
-  const count = Math.max(MIN_PICKERS, readComparedPlayers().length);
+  const saved = readComparedPlayers().length;
+  const count = Math.max(MIN_PICKERS, saved);
   return (
     <div className="compare-players --loading" aria-hidden="true" inert>
       <div className="compare-players__pickers">
@@ -26,7 +27,10 @@ export default function ComparePlayersSkeleton() {
         ))}
       </div>
       <AddButton />
-      <span className="compare-players__skeleton-bar --standing" />
+      {/* The prompt the page shows until two players are chosen. */}
+      {saved < MIN_PICKERS && (
+        <span className="compare-players__skeleton-bar --standing" />
+      )}
     </div>
   );
 }

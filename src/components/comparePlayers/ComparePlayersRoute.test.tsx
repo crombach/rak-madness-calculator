@@ -121,10 +121,6 @@ describe("the compare players route", () => {
       "Pro Score ATS",
       "Total Score",
     ]);
-    expect(screen.getByText("Alice leads on 9 points")).toBeInTheDocument();
-    expect(
-      screen.getByText("Carol can no longer pass Alice on points"),
-    ).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveValue(
       "Carol",
     );
@@ -165,31 +161,15 @@ describe("the compare players route", () => {
     ).toEqual(["Bob", "Carol"]);
   });
 
-  it("says the player behind cannot pass when every game left is picked the same", async () => {
+  it("says so when two players picked every game the same", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Bob");
 
     expect(
-      await screen.findByText("Bob can no longer pass Alice on points"),
+      await screen.findByText("They picked every game the same"),
     ).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
-  });
-
-  it("says how many open games the player behind needs", async () => {
-    getPlayerScoresMock.mockResolvedValue(
-      week([
-        player({ name: "Cal", total: 1, pro: [pick("KC"), pick("SF")] }),
-        player({ name: "Dee", pro: [pick("DEN"), pick("LAR")] }),
-      ]),
-    );
-    const user = mountApp(COMPARE_PATH);
-    await choose(user, "Player 1", "Cal");
-    await choose(user, "Player 2", "Dee");
-
-    expect(
-      await screen.findByText("Dee needs 2 of 2 open games to pass Cal"),
-    ).toBeInTheDocument();
   });
 
   it("shows the open games first and the decided ones on request", async () => {
@@ -241,7 +221,7 @@ describe("the compare players route", () => {
     );
   });
 
-  it("adds a third player, with a verdict against the leader", async () => {
+  it("adds a third player to the table", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Carol");
@@ -252,12 +232,6 @@ describe("the compare players route", () => {
       await screen.findByRole("table", {
         name: "Picks where Alice, Carol, and Bob differ",
       }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Carol can no longer pass Alice on points"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Bob can no longer pass Alice on points"),
     ).toBeInTheDocument();
   });
 
@@ -287,6 +261,23 @@ describe("the compare players route", () => {
 
     await user.click(add);
 
+    expect(add).toBeDisabled();
+  });
+
+  it("stops at eight players", async () => {
+    getPlayerScoresMock.mockResolvedValue(
+      week(
+        Array.from({ length: 10 }, (_, index) =>
+          player({ name: `Player ${String.fromCharCode(65 + index)}` }),
+        ),
+      ),
+    );
+    const user = mountApp(COMPARE_PATH);
+    const add = await screen.findByRole("button", { name: "Add player" });
+
+    for (let added = 0; added < 6; added++) await user.click(add);
+
+    expect(screen.getAllByRole("combobox")).toHaveLength(8);
     expect(add).toBeDisabled();
   });
 

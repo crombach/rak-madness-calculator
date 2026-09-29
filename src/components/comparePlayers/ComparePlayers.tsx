@@ -1,9 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import { isMyPlayer, useSettings } from "../../context/SettingsContext";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
-import plural from "../../utils/plural";
-import getComparison, { Comparison } from "../../utils/scoring/comparePlayers";
-import { Matchup } from "../../utils/scoring/headToHead";
+import getComparison from "../../utils/scoring/comparePlayers";
 import Button from "../button/Button";
 import { CloseIcon } from "../icon/Icon";
 import {
@@ -13,6 +11,7 @@ import {
 import PlayerCombobox from "../playerAnalysis/PlayerCombobox";
 import PicksTable from "../table/picks/PicksTable";
 import {
+  MAX_PICKERS,
   MIN_PICKERS,
   pickerLabel,
   readComparedPlayers,
@@ -110,26 +109,6 @@ function startingIds(
   ];
 }
 
-function standing({ leaders }: Comparison): string {
-  const points = plural(leaders[0].score.total, "point");
-  const names = NAMES.format(leaders.map((player) => player.name));
-  return `${names} ${leaders.length > 1 ? "lead" : "leads"} on ${points}`;
-}
-
-function verdict({ leader, trailer, gap, open, verdict }: Matchup): string {
-  // With no game left that they picked differently, their points move together.
-  if (open.size === 0 && gap === 0) {
-    return `${trailer.name} and ${leader.name} finish level on points, so the tiebreakers decide`;
-  }
-  if (verdict.kind === "level") {
-    return `${trailer.name} can draw level with ${leader.name} at best, so the tiebreakers decide`;
-  }
-  if (verdict.kind === "out") {
-    return `${trailer.name} can no longer pass ${leader.name} on points`;
-  }
-  return `${trailer.name} needs ${verdict.needed} of ${plural(open.size, "open game")} to pass ${leader.name}`;
-}
-
 /** Two or more players' picks, cut to the games they split, open ones first. */
 export default function ComparePlayers({
   scores,
@@ -174,7 +153,7 @@ export default function ComparePlayers({
   const [showsAll, setShowsAll] = useState(false);
   const gamesLabelId = useId();
   const [showsDecided, setShowsDecided] = useState(false);
-  // Open games lead, since only they can still change the standing. With none
+  // Open games lead, since only they can still change the week. With none
   // left, the decided ones are all there is to show. Undefined shows every game.
   const games = useMemo(() => {
     if (comparison == null || showsAll) return undefined;
@@ -209,19 +188,18 @@ export default function ComparePlayers({
             );
           })}
         </div>
-        <AddButton disabled={slots.length >= options.length} onClick={add} />
+        <AddButton
+          disabled={slots.length >= Math.min(MAX_PICKERS, options.length)}
+          onClick={add}
+        />
         <div role="status" className="compare-players__standing">
-          {comparison == null ? (
+          {comparison == null && (
             <p className="analysis__standing">Pick two players to compare</p>
-          ) : (
-            <>
-              <p className="analysis__standing">{standing(comparison)}</p>
-              {comparison.matchups.map((matchup) => (
-                <p key={matchup.trailer.id} className="analysis__standing">
-                  {verdict(matchup)}
-                </p>
-              ))}
-            </>
+          )}
+          {!showsAll && games?.size === 0 && (
+            <p className="analysis__standing">
+              They picked every game the same
+            </p>
           )}
         </div>
         {comparison != null && (

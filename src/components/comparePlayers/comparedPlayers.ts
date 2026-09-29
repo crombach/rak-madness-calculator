@@ -8,12 +8,15 @@ export const COMPARED_PLAYERS_KEY = PREFIX + SETTING;
 /** How many pickers the page opens with, however few names were saved. */
 export const MIN_PICKERS = 2;
 
+/** The most players the page compares at once. */
+export const MAX_PICKERS = 8;
+
 /** The names last chosen, in picker order. Empty when none were saved. */
 export function readComparedPlayers(): Array<string> {
   try {
     const saved: unknown = JSON.parse(readSetting(SETTING) ?? "[]");
     return Array.isArray(saved)
-      ? saved.filter((name) => typeof name === "string")
+      ? saved.filter((name) => typeof name === "string").slice(0, MAX_PICKERS)
       : [];
   } catch {
     return [];
