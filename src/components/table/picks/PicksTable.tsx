@@ -160,6 +160,7 @@ function PicksTable({
   caption = "Player picks for the week, college and pro games",
   players,
   games,
+  showsMnfPick = false,
 }: {
   scores?: RakMadnessScores | null;
   caption?: string;
@@ -167,6 +168,8 @@ function PicksTable({
   players?: ReadonlySet<string>;
   /** The labels of the game columns drawn, or every column when left out. */
   games?: ReadonlySet<string>;
+  /** Adds the scoreboard's MNF Points Pick column after the player. */
+  showsMnfPick?: boolean;
 }) {
   const showGameStatus = useShowGameStatus();
   const { picks: pickChanges } = useScoreChanges();
@@ -189,7 +192,10 @@ function PicksTable({
   const shownCollege = collegeLabels.filter(isShown);
   const shownPro = proLabels.filter(isShown);
   const columnCount =
-    FIXED_COLUMN_COUNT + shownCollege.length + shownPro.length;
+    FIXED_COLUMN_COUNT +
+    Number(showsMnfPick) +
+    shownCollege.length +
+    shownPro.length;
   const statuses = statusByLabel(scores.games);
 
   return (
@@ -202,6 +208,7 @@ function PicksTable({
           <th className={PLAYER_COL_CLASS} scope="col">
             Player
           </th>
+          {showsMnfPick && <th scope="col">MNF Points Pick</th>}
           {leagueHeaders({
             labels: shownCollege,
             statusByLabel: statuses,
@@ -227,6 +234,7 @@ function PicksTable({
               player={player}
               hasNameConflict={repeated.has(player.name)}
             />
+            {showsMnfPick && <td>{player.tiebreaker.pick ?? "N/A"}</td>}
             <PickCells
               playerId={player.id}
               picks={player.college}

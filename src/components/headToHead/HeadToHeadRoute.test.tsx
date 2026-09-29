@@ -27,6 +27,7 @@ function compareScores() {
     player({
       name: "Alice",
       total: 9,
+      tiebreakerPick: 45,
       college: [pick("MICH"), pick("OSU")],
       pro: [pick("KC -3"), pick("BUF")],
     }),
@@ -39,6 +40,7 @@ function compareScores() {
     player({
       name: "Carol",
       total: 5,
+      tiebreakerPick: 38,
       college: [pick("MICH"), pick("PSU")],
       pro: [pick("DEN 3"), pick("BUF")],
     }),
@@ -109,16 +111,32 @@ describe("the head to head route", () => {
     ).toEqual([
       "Rank",
       "Player",
+      "MNF Points Pick",
       "C2",
       "College Score",
       "P1",
       "Pro Score",
       "Total Score",
     ]);
-    expect(screen.getByText("2 games picked differently")).toBeInTheDocument();
+    expect(
+      screen.getByText("Alice leads Carol by 4 points"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Carol can no longer pass Alice on points"),
+    ).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Versus" })).toHaveValue(
       "Carol",
     );
+  });
+
+  it("shows each player's MNF points pick", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player", "Alice");
+    await choose(user, "Versus", "Carol");
+
+    const table = await screen.findByRole("table");
+    expect(within(table).getByRole("cell", { name: "45" })).toBeInTheDocument();
+    expect(within(table).getByRole("cell", { name: "38" })).toBeInTheDocument();
   });
 
   it("keeps each player's rank in the whole week", async () => {
@@ -152,9 +170,54 @@ describe("the head to head route", () => {
     await choose(user, "Versus", "Bob");
 
     expect(
-      await screen.findByText("0 games picked differently"),
+      await screen.findByText("No open game splits them"),
     ).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  it("says how many open games the player behind needs", async () => {
+    getPlayerScoresMock.mockResolvedValue(
+      week([
+        player({ name: "Cal", total: 1, pro: [pick("KC"), pick("SF")] }),
+        player({ name: "Dee", pro: [pick("DEN"), pick("LAR")] }),
+      ]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player", "Cal");
+    await choose(user, "Versus", "Dee");
+
+    expect(
+      await screen.findByText("Dee needs 2 of 2 open games to pass Cal"),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the open games first and the decided ones on request", async () => {
+    getPlayerScoresMock.mockResolvedValue(
+      week([
+        player({
+          name: "Cal",
+          total: 1,
+          pro: [pick("KC", "yes"), pick("SF")],
+        }),
+        player({ name: "Dee", pro: [pick("DEN", "no"), pick("LAR")] }),
+      ]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player", "Cal");
+    await choose(user, "Versus", "Dee");
+    const headers = () =>
+      within(screen.getByRole("table"))
+        .getAllByRole("columnheader")
+        .map((header) => header.textContent);
+
+    expect(await screen.findByRole("table")).toBeInTheDocument();
+    expect(headers()).not.toContain("P1");
+    expect(headers()).toContain("P2");
+
+    await user.click(screen.getByRole("button", { name: "Show more" }));
+
+    expect(headers()).toContain("P1");
+    expect(headers()).toContain("P2");
   });
 
   it("sends a reader without experimental features to the scoreboard", async () => {

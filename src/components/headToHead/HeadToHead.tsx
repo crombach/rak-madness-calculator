@@ -2,14 +2,16 @@ import { useMemo, useState } from "react";
 import { isMyPlayer, useSettings } from "../../context/SettingsContext";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import plural from "../../utils/plural";
-import differingGames from "../../utils/scoring/differingGames";
+import getHeadToHead, { Matchup } from "../../utils/scoring/headToHead";
+import Button from "../button/Button";
 import {
   PlayerOption,
   playerOptions,
 } from "../playerAnalysis/PlayerAnalysisDialog";
 import PlayerCombobox from "../playerAnalysis/PlayerCombobox";
 import PicksTable from "../table/picks/PicksTable";
-// For `analysis__standing`, which this page shares with the analysis dialog.
+// For `analysis__standing` and `analysis__more`, which this page shares with the
+// analysis dialog.
 import "../playerAnalysis/AnalysisSummary.scss";
 import "./HeadToHead.scss";
 
@@ -42,7 +44,23 @@ function PlayerPicker({
   );
 }
 
-/** Two players' picks, cut to the games they picked differently. */
+function standing({ leader, trailer, gap }: Matchup): string {
+  if (gap === 0) return `${leader.name} and ${trailer.name} level on points`;
+  return `${leader.name} leads ${trailer.name} by ${plural(gap, "point")}`;
+}
+
+function verdict({ leader, trailer, open, verdict }: Matchup): string {
+  if (open.size === 0) return "No open game splits them";
+  if (verdict.kind === "level") {
+    return `${trailer.name} can draw level at best, so the tiebreakers decide`;
+  }
+  if (verdict.kind === "out") {
+    return `${trailer.name} can no longer pass ${leader.name} on points`;
+  }
+  return `${trailer.name} needs ${verdict.needed} of ${plural(open.size, "open game")} to pass ${leader.name}`;
+}
+
+/** Two players' picks, cut to the games they picked differently, open ones first. */
 export default function HeadToHead({ scores }: { scores?: RakMadnessScores }) {
   const { playerName } = useSettings();
   const options = useMemo(() => playerOptions(scores), [scores]);
@@ -65,13 +83,22 @@ export default function HeadToHead({ scores }: { scores?: RakMadnessScores }) {
     () => new Set([firstId, secondId].filter((id) => id != null)),
     [firstId, secondId],
   );
-  const games = useMemo(
+  const matchup = useMemo(
     () =>
-      first != null && second != null
-        ? differingGames(first, second)
+      scores != null && first != null && second != null
+        ? getHeadToHead(scores.scores, first, second)
         : undefined,
-    [first, second],
+    [scores, first, second],
   );
+  const [showsDecided, setShowsDecided] = useState(false);
+  // Open games lead, since only they can still change the matchup. With none
+  // left, the decided ones are all there is to show.
+  const games = useMemo(() => {
+    if (matchup == null) return undefined;
+    const { open, decided } = matchup;
+    if (open.size === 0 || showsDecided) return new Set([...open, ...decided]);
+    return open;
+  }, [matchup, showsDecided]);
 
   return (
     <>
@@ -90,11 +117,29 @@ export default function HeadToHead({ scores }: { scores?: RakMadnessScores }) {
             onValueChange={(chosen) => setSecondId(chosen.id)}
           />
         </div>
-        <p className="analysis__standing head-to-head__count" role="status">
-          {games == null
-            ? "Pick two players to compare"
-            : `${plural(games.size, "game")} picked differently`}
-        </p>
+        <div role="status" className="head-to-head__standing">
+          {matchup == null ? (
+            <p className="analysis__standing">Pick two players to compare</p>
+          ) : (
+            <>
+              <p className="analysis__standing">{standing(matchup)}</p>
+              <p className="analysis__standing">{verdict(matchup)}</p>
+            </>
+          )}
+        </div>
+        {matchup != null &&
+          matchup.open.size > 0 &&
+          matchup.decided.size > 0 && (
+            <Button
+              className="analysis__more"
+              variant="soft"
+              size="sm"
+              ariaExpanded={showsDecided}
+              onClick={() => setShowsDecided(!showsDecided)}
+            >
+              {showsDecided ? "Show fewer" : "Show more"}
+            </Button>
+          )}
       </div>
       {first != null && second != null && games != null && games.size > 0 && (
         <PicksTable
@@ -102,6 +147,7 @@ export default function HeadToHead({ scores }: { scores?: RakMadnessScores }) {
           caption={`Picks where ${first.name} and ${second.name} differ`}
           players={players}
           games={games}
+          showsMnfPick
         />
       )}
     </>

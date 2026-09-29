@@ -23,13 +23,34 @@ const MY_NAME = "Dee";
 /** Long enough to truncate in the player column and in the list. */
 const RIVAL = "Bartholomew Montgomery-Smythe";
 
-/** Dee and the rival split on P1, live, and P3, and agree on P2 and P4. */
+/** Dee and the rival split on P1, live, and P3, final, and agree on P2 and P4. */
 function rows() {
   return [
-    { Name: "Ann", P1: "KC -3", P2: "SF -6", P3: "BUF", P4: "MIA +2" },
-    { Name: MY_NAME, P1: "KC -3", P2: "SF -6", P3: "BUF", P4: "MIA +2" },
-    { Name: RIVAL, P1: "DEN +3", P2: "SF -6", P3: "NYJ", P4: "MIA +2" },
-    { Name: "Bob", P1: "DEN +3", P2: "LAR +6", P3: "NYJ", P4: "NE -2" },
+    { Name: "Ann", P1: "KC -3", P2: "SF -6", P3: "BUF", P4: "MIA +2", Pts: 41 },
+    {
+      Name: MY_NAME,
+      P1: "KC -3",
+      P2: "SF -6",
+      P3: "BUF",
+      P4: "MIA +2",
+      Pts: 44,
+    },
+    {
+      Name: RIVAL,
+      P1: "DEN +3",
+      P2: "SF -6",
+      P3: "NYJ",
+      P4: "MIA +2",
+      Pts: 37,
+    },
+    {
+      Name: "Bob",
+      P1: "DEN +3",
+      P2: "LAR +6",
+      P3: "NYJ",
+      P4: "NE -2",
+      Pts: 50,
+    },
   ];
 }
 
@@ -38,7 +59,7 @@ function events() {
     events: [
       makeGame("P1EVT", "DEN", "KC", 7, 6, "2"),
       makeGame("P2EVT", "LAR", "SF", 0, 0, "1"),
-      makeGame("P3EVT", "NYJ", "BUF", 0, 0, "1"),
+      makeGame("P3EVT", "NYJ", "BUF", 10, 24, "3"),
       makeGame("P4EVT", "NE", "MIA", 0, 0, "1"),
     ],
   };

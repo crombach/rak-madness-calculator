@@ -30,7 +30,13 @@
   font-size: var(--rak-text-xs);
 }
 
-// On the frame's dark band, not the dialog's surface the shared rule inks for.
-.head-to-head__count {
-  color: var(--rak-on-solid);
+.head-to-head__standing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+
+  // On the frame's dark band, not the dialog's surface the shared rule inks for.
+  .analysis__standing {
+    color: var(--rak-on-solid);
+  }
 }
