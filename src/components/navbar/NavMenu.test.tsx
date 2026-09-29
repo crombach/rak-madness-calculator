@@ -82,7 +82,7 @@ describe("NavMenu", () => {
   });
 
   describe("at wide-screen", () => {
-    it("lists Home, Swing Games, and Live Games", async () => {
+    it("lists Home first, then the pages alphabetically", async () => {
       const user = mount();
       await user.click(trigger());
 
@@ -90,8 +90,8 @@ describe("NavMenu", () => {
 
       expect(items.map((item) => item.textContent)).toEqual([
         "Home",
-        "Swing Games",
         "Live Games",
+        "Swing Games",
       ]);
     });
 
@@ -243,6 +243,7 @@ describe("NavMenu", () => {
 
       await user.keyboard("{ArrowDown}");
       await user.keyboard("{ArrowDown}");
+      await user.keyboard("{ArrowDown}");
 
       await waitFor(() => expect(item).toHaveFocus());
     });
@@ -282,14 +283,14 @@ describe("NavMenu", () => {
       };
     }
 
-    it("opens a drawer holding Home and Swing Games, with no season or week combobox", async () => {
+    it("opens a drawer holding the menu pages, with no season or week combobox", async () => {
       const { drawer } = await openDrawer();
 
       expect(
         within(drawer)
           .getAllByRole("link")
           .map((link) => link.textContent),
-      ).toEqual(["Home", "Swing Games", "Live Games"]);
+      ).toEqual(["Home", "Live Games", "Swing Games"]);
       expect(within(drawer).queryAllByRole("combobox")).toHaveLength(0);
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });

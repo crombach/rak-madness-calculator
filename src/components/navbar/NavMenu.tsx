@@ -42,8 +42,9 @@ type NavItem = {
   disabledReason?: (context: NavContext) => string | undefined;
 };
 
-const ITEMS: Array<NavItem> = [
-  { label: "Home", icon: <HomeIcon />, path: () => "/" },
+const HOME: NavItem = { label: "Home", icon: <HomeIcon />, path: () => "/" };
+
+const PAGES: Array<NavItem> = [
   {
     label: RESULTS_PAGE.swingGames,
     icon: <SwapVertIcon />,
@@ -63,6 +64,12 @@ const ITEMS: Array<NavItem> = [
     disabledReason: ({ playerCount }) =>
       playerCount == null ? "Scores still loading" : undefined,
   },
+];
+
+// Home leads, the rest run alphabetically.
+const ITEMS: Array<NavItem> = [
+  HOME,
+  ...[...PAGES].sort((a, b) => a.label.localeCompare(b.label)),
 ];
 
 const TRIGGER_CLASSES = buttonClasses({ compact: true, iconOnly: true });
