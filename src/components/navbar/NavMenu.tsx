@@ -24,7 +24,7 @@ type NavItem = {
   label: string;
   icon: ReactNode;
   path: (season: Week, week: Week) => string;
-  /** A reason to show and disable the item for, or undefined to leave it enabled. */
+  /** Why the item is disabled, or undefined to leave it enabled. */
   disabledReason?: (context: NavContext) => string | undefined;
 };
 
