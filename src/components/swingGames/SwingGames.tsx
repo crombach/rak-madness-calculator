@@ -8,8 +8,11 @@ import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
 import { SwingGame, SwingSide } from "../../utils/scoring/getSwingGames";
 import Button from "../button/Button";
-import GameMark, { gameMarkLabel } from "../gameStatus/GameMark";
-import { ExpandMoreIcon, GroupIcon } from "../icon/Icon";
+import GameMark, {
+  PlayerCountMark,
+  gameMarkLabel,
+} from "../gameStatus/GameMark";
+import { ExpandMoreIcon } from "../icon/Icon";
 import plural, { verbFor } from "../../utils/plural";
 import ExperimentalGate from "../results/ExperimentalGate";
 import useGridColumns from "./useGridColumns";
@@ -112,10 +115,7 @@ function Game({ game, weekGame }: { game: SwingGame; weekGame?: WeekGame }) {
           className="swing-games__toggle"
           aria-label={`${gameName}, ${players}`}
         >
-          <span className="swing-games__count">
-            <GroupIcon />
-            {count}
-          </span>
+          <PlayerCountMark count={count} />
           {weekGame && <GameMark game={weekGame} status={status} />}
           <span className="swing-games__chevron">
             <ExpandMoreIcon />
