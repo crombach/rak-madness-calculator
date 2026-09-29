@@ -147,60 +147,31 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   @include visually-hidden;
 }
 
-// The band one line of heading tall, and a scoreline's height of body under it,
-// as the loaded card measures at 360px.
-.live-games__skeleton-band {
-  display: block;
-  height: calc(
-    var(--rak-text-sm) * var(--rak-line-height) + 2 * var(--rak-space-2)
-  );
-  background-color: var(--rak-band-header);
-  box-shadow: var(--rak-shadow-band-header);
-}
-
-.live-games__skeleton-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rak-space-4);
-  padding: var(--rak-space-4);
-}
-
-// The loaded scoreline's height, measured in a browser. Keep in step with the
-// `roomy-screen` step in `GameStatusSummary.scss`.
-$skeleton-scoreline: 100.4px;
-$skeleton-scoreline-roomy: 109.2px;
-
-.live-games__skeleton-bar {
-  @include skeleton-surface;
-
-  display: block;
-
-  &.--scoreline {
-    height: $skeleton-scoreline;
-
-    @include roomy-screen {
-      height: $skeleton-scoreline-roomy;
-    }
+// A real card drawn from a stand-in game, so it takes a loaded card's size. Its
+// band keeps its fill, and each block under it becomes a fill with its text hidden.
+.live-games.--loading .live-games__game {
+  .live-games__header > *,
+  .game-status__scoreline > *,
+  .game-status__split > *,
+  .game-status__meta > * {
+    visibility: hidden;
   }
 
-  // One line of the pick split under it.
-  &.--split {
+  .game-status__scoreline,
+  .game-status__split,
+  .game-status__meta {
+    @include skeleton-surface;
+
+    color: transparent;
+  }
+
+  .game-status__split {
     align-self: center;
     width: 60%;
-    height: calc(var(--rak-text-sm) * var(--rak-line-height));
   }
 
-  // The kickoff and place strip, two lines until `.game-status__meta` sets them
-  // on one from `wide-screen` up.
-  &.--meta {
+  .game-status__meta {
     align-self: center;
     width: 80%;
-    height: calc(
-      2 * var(--rak-text-sm) * var(--rak-line-height) + var(--rak-space-1)
-    );
-
-    @include wide-screen {
-      height: calc(var(--rak-text-sm) * var(--rak-line-height));
-    }
   }
 }

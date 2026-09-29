@@ -9,8 +9,10 @@ scoreboard each.
 - `LiveGamesRoute`: redirects to the scoreboard without the experimental
   opt-in or once the week is settled, else renders `LiveGames`.
 - `LiveGames`: `useLiveWeek` polls every open league, a busy bar under the
-  caption while a live one is fetched. Each game is a brief `GameStatusSummary`
-  in a card banded with its `HEADING_MARK`, label and `SpreadLine`. Sections
-  Today, Tomorrow and Upcoming follow Live.
+  caption while a live one is fetched. Sections Today, Tomorrow and Upcoming
+  follow Live.
+- `LiveGameCard`: a brief `GameStatusSummary` banded with its `HEADING_MARK`,
+  label and `SpreadLine`.
 - `kickoffDay`: a kickoff's day in the reader's time zone.
-- `LiveGamesSkeleton`: the wireframe, also while the week loads.
+- `LiveGamesSkeleton`: `LiveGameCard` on a stand-in game, text hidden under
+  fills. Also while the week loads.
