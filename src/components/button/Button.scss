@@ -136,7 +136,12 @@
     // that is about to be chosen springs it back to rest and then down again,
     // instead of staying down. `:active` and `--selected` both clear the
     // pause below, so pressing, and a key already chosen, still move at once.
-    &.--selectable {
+    //
+    // Only under the pointer or keyboard focus, which is where a release
+    // happens. A key coming out of `:disabled` on its own rises with every
+    // other key, not a pause behind them. `:where` keeps both out of the
+    // specificity, so the rules below still clear the pause.
+    &.--selectable:where(:hover, :focus-visible) {
       transition-delay:
         var(--rak-duration-fast), 0s, var(--rak-duration-fast),
         var(--rak-duration-fast);

@@ -4,11 +4,11 @@ import { GameSide, LeagueResult } from "../../types/LeagueResult";
 import { WeekGame } from "../../types/WeekGame";
 import rangeWithPrefix from "../../utils/rangeWithPrefix";
 import GameCard from "./GameCard";
-import { SECTION_TITLES } from "./sectionTitles";
+import { COMPLETED_TITLE } from "./sectionTitles";
 import "./Games.scss";
 
-// One row at the two-column width.
-const GAMES_PER_SECTION = 2;
+// Four rows at the two-column width, enough to fill a tall screen.
+const STAND_IN_GAMES = 8;
 
 function standInSide(abbreviation: string): GameSide {
   return {
@@ -48,25 +48,30 @@ const STAND_IN: WeekGame = {
   result: STAND_IN_RESULT,
 };
 
-/** A wireframe of every section, for while the week or the page loads. */
+/**
+ * One section of stand-in cards under a blank title, for while the week or the
+ * page loads. Blank because which sections the week has is not known yet, and a
+ * title that changes when it lands reads as the week changing.
+ */
 export default function GamesSkeleton() {
   return (
     <div className="games --loading" aria-hidden="true" inert>
-      {SECTION_TITLES.map((title) => (
-        <div key={title} className="games__section">
-          <span className="games__section-title">{title}</span>
-          <ul className="games__list">
-            {rangeWithPrefix(GAMES_PER_SECTION, "G").map((key) => (
-              <GameCard
-                key={key}
-                game={STAND_IN}
-                result={STAND_IN_RESULT}
-                players={[]}
-              />
-            ))}
-          </ul>
-        </div>
-      ))}
+      <div className="games__section">
+        <span
+          className="games__section-title"
+          data-skeleton-text={COMPLETED_TITLE}
+        />
+        <ul className="games__list">
+          {rangeWithPrefix(STAND_IN_GAMES, "G").map((key) => (
+            <GameCard
+              key={key}
+              game={STAND_IN}
+              result={STAND_IN_RESULT}
+              players={[]}
+            />
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

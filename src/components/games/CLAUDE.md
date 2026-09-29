@@ -13,6 +13,6 @@ each. `/live` redirects here.
   Completed in table order. An empty section is left out.
 - `GameCard`: a `GameStatusSummary` banded with its label, name and `GameMark`.
 - `kickoffDay`: a kickoff's day in the reader's time zone.
-- `sectionTitles`: each section's title, in page order, for both views.
-- `GamesSkeleton`: every section, two `GameCard`s each on a stand-in game,
-  text hidden under fills. Also while the week loads.
+- `sectionTitles`: each section's title, apart from `Games` for the skeleton.
+- `GamesSkeleton`: one section under a blank title, `GameCard`s on a stand-in
+  game, text hidden under fills. Also while the week loads.
