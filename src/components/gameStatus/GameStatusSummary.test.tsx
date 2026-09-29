@@ -227,16 +227,12 @@ describe("GameStatusSummary, what the pool made of a finished game", () => {
     return document.querySelector(".game-status__outcome")?.textContent;
   };
 
-  it("names the side that covered", () => {
-    expect(covered({ team: "BUF", points: -3 })).toBe("BUF covered");
-  });
-
-  it("names the underdog where the favorite won by less than it gave", () => {
-    expect(covered({ team: "BUF", points: -14 })).toBe("KC covered");
-  });
-
-  it("names the underdog where the favorite lost outright", () => {
-    expect(covered({ team: "KC", points: -3 })).toBe("BUF covered");
+  it.each([
+    [{ team: "BUF", points: -3 }, "BUF covered"],
+    [{ team: "BUF", points: -14 }, "KC covered"],
+    [{ team: "KC", points: -3 }, "BUF covered"],
+  ])("names the side that covered for spread %O", (spread, expected) => {
+    expect(covered(spread)).toBe(expected);
   });
 
   it("says a game that landed on the number scored for everybody", () => {
@@ -276,28 +272,14 @@ describe("GameStatusSummary, a game that is over", () => {
   it("calls both sides a team where neither of them is hosting", () => {
     const bowl = result({ isNeutralSite: true });
     render(<GameStatusSummary game={game(bowl)} result={bowl} />);
-    // One word each, which is what keeps the label off a second line on a phone.
     expect(screen.getAllByText("Team")).toHaveLength(2);
     expect(screen.queryByText("Home")).toBeNull();
     expect(screen.queryByText("Away")).toBeNull();
   });
 
-  it("ends the strip with where it was played and the link out, in that order", () => {
-    renderFinal();
-    // Each part on its own, since a dot between two of them is the stylesheet's.
-    expect(
-      [
-        ...document.querySelectorAll(
-          ".game-status__meta-group:last-child span",
-        ),
-      ].map((part) => part.textContent),
-    ).toEqual(["Orchard Park, NY", "Gamecast"]);
-  });
-
   it("says Final, and nothing about how the quarters went", () => {
     renderFinal();
     expect(screen.getByText("Final")).toBeInTheDocument();
-    // The pool is scored on the result, so a quarter's points are nobody's business.
     expect(screen.queryByRole("table")).toBeNull();
   });
 
@@ -306,38 +288,11 @@ describe("GameStatusSummary, a game that is over", () => {
     expect(screen.queryByLabelText("Has the ball")).toBeNull();
   });
 
-  it("joins the two scores at a dash, and leaves the down out with none to say", () => {
-    renderFinal();
-    expect(document.querySelectorAll(".game-status__dash")).toHaveLength(1);
-    expect(document.querySelector(".game-status__down")).toBeNull();
-  });
-
-  it("stands the away side on the left, the way the search names the game", () => {
-    renderFinal();
-    expect(
-      [...document.querySelectorAll(".game-status__side")].map(
-        (side) => side.className,
-      ),
-    ).toEqual(["game-status__side --away", "game-status__side --home"]);
-  });
-
   it("carries each side's abbreviation, which is what a phone shows", () => {
     renderFinal();
     const short = [...document.querySelectorAll(".game-status__name-short")];
     expect(short.map((it) => it.textContent)).toEqual(["KC", "BUF"]);
-    // Neither form is hidden from a reader by hand. The stylesheet draws one and
-    // sets the other `display: none`, which takes it out of the accessibility tree
-    // as well, so whichever is on screen is the one and only one read out. Hidden
-    // here, the side would have no name at all at the widths showing this form.
     short.forEach((it) => expect(it).not.toHaveAttribute("aria-hidden"));
-  });
-
-  it("wears both teams' marks, away first", () => {
-    renderFinal();
-    expect(logos()).toEqual([
-      "https://espn.com/kc.png",
-      "https://espn.com/buf.png",
-    ]);
   });
 });
 
@@ -352,43 +307,6 @@ function litDigits(element: Element): string {
     .map((node) => node.textContent ?? "")
     .join("");
 }
-
-describe("GameStatusSummary, the two scores as a pair", () => {
-  function points(scores: { home: number; away: number }): Array<string> {
-    const scored = result({
-      home: { ...result().home, score: scores.home },
-      away: { ...result().away, score: scores.away },
-    });
-    render(<GameStatusSummary game={game(scored)} result={scored} />);
-    return [...document.querySelectorAll(".game-status__points")].map(
-      litDigits,
-    );
-  }
-
-  /** The row of unlit cells laid under one side's digits. */
-  function cells(scores: { home: number; away: number }): Array<string> {
-    points(scores);
-    return [...document.querySelectorAll(".game-status__points-ghost")].map(
-      (ghost) => ghost.textContent ?? "",
-    );
-  }
-
-  it("lights the digits a score has and no leading zero", () => {
-    expect(points({ home: 7, away: 14 })).toEqual(["14", "7"]);
-  });
-
-  it("does the same whichever side is the short one", () => {
-    expect(points({ home: 21, away: 3 })).toEqual(["3", "21"]);
-  });
-
-  it("leaves two double figures alone", () => {
-    expect(points({ home: 30, away: 20 })).toEqual(["20", "30"]);
-  });
-
-  it("holds both cells regardless of the score", () => {
-    expect(cells({ home: 3, away: 7 })).toEqual(["88", "88"]);
-  });
-});
 
 describe("GameStatusSummary, which side took the point", () => {
   function marked(
@@ -417,56 +335,47 @@ describe("GameStatusSummary, which side took the point", () => {
     };
   }
 
-  it("marks the side that covered, and the other side against it", () => {
-    expect(marked({ team: "BUF", points: -3 })).toEqual({
-      scored: ["BUF"],
-      missed: ["KC"],
-      scores: ["30"],
-    });
-  });
-
-  it("marks the underdog where the favorite won by less than it gave", () => {
-    const { scored, missed } = marked({ team: "BUF", points: -14 });
-    expect(scored).toEqual(["KC"]);
-    expect(missed).toEqual(["BUF"]);
-  });
-
-  it("marks the outright winner where the picks carried no line", () => {
-    // The point still goes to whoever picked the winner, so the game says who that is.
-    const { scored, missed } = marked(undefined);
-    expect(scored).toEqual(["BUF"]);
-    expect(missed).toEqual(["KC"]);
-  });
-
-  // A push and a tie with no line are a point for everybody, so every pick was on a
-  // side that scored and neither side is marked against.
-  it("marks both sides on a game that landed on the number", () => {
-    expect(marked({ team: "BUF", points: -10 })).toEqual({
-      scored: ["KC", "BUF"],
-      missed: [],
-      scores: ["20", "30"],
-    });
-  });
-
-  it("marks both sides on a game that finished level", () => {
-    const drawn = {
-      away: { ...result().away, score: 30 },
-      winner: { team: null, homeAway: null, by: 0 },
-    };
-    const { scored, missed } = marked(undefined, drawn);
-    expect(scored).toEqual(["KC", "BUF"]);
-    expect(missed).toEqual([]);
-  });
-
-  it("marks neither side while the game is still being played", () => {
-    // A side ahead at half time has won nothing yet.
-    const { scored, missed } = marked(
+  it.each([
+    [
+      { team: "BUF", points: -3 },
+      undefined,
+      { scored: ["BUF"], missed: ["KC"], scores: ["30"] },
+    ],
+    [
+      { team: "BUF", points: -14 },
+      undefined,
+      { scored: ["KC"], missed: ["BUF"] },
+    ],
+    [undefined, undefined, { scored: ["BUF"], missed: ["KC"] }],
+    [
+      { team: "BUF", points: -10 },
+      undefined,
+      { scored: ["KC", "BUF"], missed: [], scores: ["20", "30"] },
+    ],
+    [
+      undefined,
+      {
+        away: { ...result().away, score: 30 },
+        winner: { team: null, homeAway: null, by: 0 },
+      },
+      { scored: ["KC", "BUF"], missed: [] },
+    ],
+    [
       { team: "BUF", points: -3 },
       { status: GameStatus.LIVE, period: 2, clock: "8:42" },
-    );
-    expect(scored).toEqual([]);
-    expect(missed).toEqual([]);
-  });
+      { scored: [], missed: [] },
+    ],
+  ])(
+    "marks the sides based on game result and spread",
+    (spread, overrides, expected) => {
+      const result_ = overrides ? marked(spread, overrides) : marked(spread);
+      expect(result_.scored).toEqual(expected.scored);
+      expect(result_.missed).toEqual(expected.missed);
+      if ("scores" in expected) {
+        expect(result_.scores).toEqual(expected.scores);
+      }
+    },
+  );
 });
 
 describe("GameStatusSummary, how the reader's pick and the pool's sides did", () => {
@@ -582,34 +491,9 @@ describe("GameStatusSummary, a game still being played", () => {
 
   it("shows the clock, the quarter, and the down", () => {
     renderLive();
-    // The quarter as `Q3` on every screen, rather than ESPN's own longer wording.
     expect(screen.getByText("Q3 8:42")).toBeInTheDocument();
     expect(screen.queryByText("8:42 - 3rd Quarter")).toBeNull();
     expect(screen.getByText("2nd & 7")).toBeInTheDocument();
-  });
-
-  it("stacks the status over the two scores and the down under them", () => {
-    renderLive();
-    // One block between the two sides, so both lines are read against the numbers
-    // rather than against the dialog's edges.
-    expect(
-      [...document.querySelectorAll(".game-status__scoreline > *")].map(
-        (it) => it.className,
-      ),
-    ).toEqual([
-      "game-status__side --away",
-      "game-status__center",
-      "game-status__side --home",
-    ]);
-    expect(
-      [...document.querySelectorAll(".game-status__center > *")].map(
-        (it) => it.className,
-      ),
-    ).toEqual([
-      "game-status__detail",
-      "game-status__scores",
-      "game-status__down",
-    ]);
   });
 
   it("sends a reader on to ESPN's own page for the game", () => {

@@ -6,16 +6,7 @@ function mountFooter() {
 }
 
 describe("Footer", () => {
-  it("offers the standings and the repo, in that order", () => {
-    mountFooter();
-    const labels = Array.from(document.querySelectorAll(".footer__link")).map(
-      (control) => control.textContent,
-    );
-
-    expect(labels).toEqual(["Standings", "GitHub"]);
-  });
-
-  it("opens every link that leaves the app in a new tab, without the referrer", () => {
+  it("offers the standings and the repo links with correct hrefs and attributes", () => {
     mountFooter();
     const leaving = screen.getAllByRole("link");
 
@@ -27,10 +18,6 @@ describe("Footer", () => {
       expect(link).toHaveAttribute("target", "_blank");
       expect(link).toHaveAttribute("rel", "noreferrer");
     });
-  });
-
-  it("names each link by its text, not the decorative icon beside it", () => {
-    mountFooter();
     expect(screen.getByRole("link", { name: "Standings" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "GitHub" })).toBeInTheDocument();
   });

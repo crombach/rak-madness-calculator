@@ -1,5 +1,5 @@
 import { readSetting, writeSetting } from "./settingsStore";
-import { blockAllStorageMethods } from "./storageMockUtils";
+import { storageContractSuite } from "./storageMockUtils";
 
 beforeEach(() => {
   localStorage.clear();
@@ -31,11 +31,8 @@ describe("settingsStore", () => {
     expect(readSetting("theme")).toBe("dark");
   });
 
-  it("reads a miss rather than throwing where storage is blocked", () => {
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-    blockAllStorageMethods();
-
-    expect(() => writeSetting("theme", "dark")).not.toThrow();
-    expect(readSetting("theme")).toBeUndefined();
-  });
+  storageContractSuite(
+    () => readSetting("theme"),
+    () => writeSetting("theme", "dark"),
+  );
 });

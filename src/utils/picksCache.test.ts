@@ -1,8 +1,5 @@
 import { readCachedPicks, writeCachedPicks } from "./picksCache";
-import {
-  blockAllStorageMethods,
-  mockRejectedSetItem,
-} from "./storageMockUtils";
+import { storageContractSuite, mockRejectedSetItem } from "./storageMockUtils";
 
 const SEASON = 2025;
 
@@ -74,26 +71,18 @@ describe("picksCache", () => {
 
   it("leaves nothing behind when storage rejects a write", () => {
     writeCachedPicks(SEASON, 3, buffer(1));
-    const setItem = mockRejectedSetItem();
+    mockRejectedSetItem();
 
     writeCachedPicks(SEASON, 4, buffer(4));
 
     expect(readCachedPicks(SEASON, 3)).toBeUndefined();
     expect(readCachedPicks(SEASON, 4)).toBeUndefined();
-    setItem.mockRestore();
   });
 
-  it("misses rather than throws when every localStorage method throws", () => {
-    const { getItem, setItem, removeItem, key, length } =
-      blockAllStorageMethods();
-
-    expect(() => readCachedPicks(SEASON, 3)).not.toThrow();
-    expect(() => writeCachedPicks(SEASON, 3, buffer(1))).not.toThrow();
-
-    getItem.mockRestore();
-    setItem.mockRestore();
-    removeItem.mockRestore();
-    key.mockRestore();
-    length.mockRestore();
+  describe("picksCache, storage contract", () => {
+    storageContractSuite(
+      () => readCachedPicks(SEASON, 3),
+      () => writeCachedPicks(SEASON, 3, buffer(1)),
+    );
   });
 });

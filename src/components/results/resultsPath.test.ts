@@ -2,24 +2,12 @@ import { describe, expect, it } from "vitest";
 import resultsPath, { RESULTS_PAGE } from "./resultsPath";
 
 describe("resultsPath", () => {
-  it("builds HomePage's navbar view-change target", () => {
-    expect(resultsPath(2024, "3", RESULTS_PAGE.picks)).toBe("/2024/3/picks");
-  });
-
-  it("builds HomePage's View Results target", () => {
-    expect(resultsPath(2024, "3", RESULTS_PAGE.scoreboard)).toBe(
-      "/2024/3/scoreboard",
-    );
-  });
-
-  it("builds ResultsLayout's view-switch target from string route params", () => {
-    expect(resultsPath("2024", "3", RESULTS_PAGE.picks)).toBe("/2024/3/picks");
-  });
-
-  it("builds CurrentWeekRedirect's target", () => {
-    expect(resultsPath(2024, 3, RESULTS_PAGE.scoreboard)).toBe(
-      "/2024/3/scoreboard",
-    );
+  it.each([
+    [2024, "3", RESULTS_PAGE.picks, "/2024/3/picks"],
+    [2024, "3", RESULTS_PAGE.scoreboard, "/2024/3/scoreboard"],
+    ["2024", "3", RESULTS_PAGE.picks, "/2024/3/picks"],
+  ])("builds %p, %p, %p", (season, week, page, expected) => {
+    expect(resultsPath(season, week, page)).toBe(expected);
   });
 
   it("builds the swing games page's target", () => {

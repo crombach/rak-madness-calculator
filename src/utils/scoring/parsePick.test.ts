@@ -1,58 +1,21 @@
 import parsePick, { formatPickDisplay } from "./parsePick";
 
 describe("parsePick", () => {
-  it("reads a team and a signed spread", () => {
-    expect(parsePick("BUF -7")).toEqual({
-      teamAbbreviation: "BUF",
-      spread: -7,
-    });
-    expect(parsePick("KC +3.5")).toEqual({
-      teamAbbreviation: "KC",
-      spread: 3.5,
-    });
-  });
-
-  it("reads a spread that was written without a sign", () => {
-    expect(parsePick("NE 7")).toEqual({ teamAbbreviation: "NE", spread: 7 });
-  });
-
-  it("reads a team with no spread", () => {
-    expect(parsePick("SF")).toEqual({ teamAbbreviation: "SF", spread: 0 });
-  });
-
-  it("keeps the hyphen in an abbreviation that carries one", () => {
-    expect(parsePick("M-OH -7")).toEqual({
-      teamAbbreviation: "M-OH",
-      spread: -7,
-    });
-    expect(parsePick("M-OH")).toEqual({
-      teamAbbreviation: "M-OH",
-      spread: 0,
-    });
-  });
-
-  it("uppercases the abbreviation", () => {
-    expect(parsePick("buf -7").teamAbbreviation).toBe("BUF");
-  });
-
-  it("names no team for a blank cell, which arrives as a string", () => {
-    expect(parsePick("undefined")).toEqual({
-      teamAbbreviation: undefined,
-      spread: 0,
-    });
-  });
-
-  it("reads a spread written with a space after its sign", () => {
-    expect(parsePick("BUF - 7")).toEqual({
-      teamAbbreviation: "BUF",
-      spread: -7,
-    });
-  });
-
-  it("ignores space around the whole cell", () => {
-    expect(parsePick("  BUF -7  ")).toEqual({
-      teamAbbreviation: "BUF",
-      spread: -7,
+  it.each([
+    ["BUF -7", "BUF", -7],
+    ["KC +3.5", "KC", 3.5],
+    ["NE 7", "NE", 7],
+    ["SF", "SF", 0],
+    ["M-OH -7", "M-OH", -7],
+    ["M-OH", "M-OH", 0],
+    ["buf -7", "BUF", -7],
+    ["undefined", undefined, 0],
+    ["BUF - 7", "BUF", -7],
+    ["  BUF -7  ", "BUF", -7],
+  ])("parses %p to team %p and spread %p", (input, team, spread) => {
+    expect(parsePick(input)).toEqual({
+      teamAbbreviation: team,
+      spread,
     });
   });
 

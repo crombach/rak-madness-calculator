@@ -51,20 +51,13 @@ describe("getPickResults, no spread", () => {
 });
 
 describe("getPickResults, favored pick (negative spread)", () => {
-  it("awards a point when the favorite covers", () => {
-    expect(scoreOf("BUF -7")).toBe(1);
-  });
-
-  it("awards nothing when the favorite wins but fails to cover", () => {
-    expect(scoreOf("BUF -14")).toBe(0);
-  });
-
-  it("treats an exact-margin spread as a push and awards a point", () => {
-    expect(scoreOf("BUF -10")).toBe(1);
-  });
-
-  it("awards nothing when the favorite loses outright", () => {
-    expect(scoreOf("KC -7")).toBe(0);
+  it.each([
+    ["BUF -7", 1],
+    ["BUF -14", 0],
+    ["BUF -10", 1],
+    ["KC -7", 0],
+  ])("scores %p with %p points", (pick, points) => {
+    expect(scoreOf(pick)).toBe(points);
   });
 });
 
@@ -77,16 +70,12 @@ describe("getPickResults, underdog pick (positive spread)", () => {
     ).toBe(1);
   });
 
-  it("awards a point when the underdog loses by less than the spread", () => {
-    expect(scoreOf("KC +14")).toBe(1);
-  });
-
-  it("awards nothing when the underdog loses by more than the spread", () => {
-    expect(scoreOf("KC +7")).toBe(0);
-  });
-
-  it("treats an exact-margin spread as a push and awards a point", () => {
-    expect(scoreOf("KC +10")).toBe(1);
+  it.each([
+    ["KC +14", 1],
+    ["KC +7", 0],
+    ["KC +10", 1],
+  ])("scores %p with %p points", (pick, points) => {
+    expect(scoreOf(pick)).toBe(points);
   });
 });
 

@@ -39,18 +39,36 @@ export default defineConfig({
   server: { port: DEV_PORT, strictPort: true },
   preview: { port: DEV_PORT, strictPort: true },
   test: {
-    environment: "jsdom",
     globals: true,
     // A checkout under here has its own src/, which the default excludes miss
     // because they skip only node_modules and .git.
     exclude: [...configDefaults.exclude, ".claude/worktrees/**"],
-    setupFiles: ["./src/setupTests.ts"],
-    // The suites assert on class names, never on rendered styles.
-    css: false,
     // Several suites assume a clean call count per test.
     mockReset: true,
-    // Above the 5s a single `findBy` is now allowed to wait, so a slow wait fails
-    // on its own assertion rather than on the test running out of time.
-    testTimeout: 15000,
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "app",
+          environment: "jsdom",
+          include: ["src/**/*.test.{ts,tsx}"],
+          setupFiles: ["./src/setupTests.ts"],
+          // The suites assert on class names, never on rendered styles.
+          css: false,
+          // Above the 5s a single `findBy` is now allowed to wait, so a slow wait fails
+          // on its own assertion rather than on the test running out of time.
+          testTimeout: 15000,
+        },
+      },
+      {
+        // The Functions run on Workers, not in a browser, and setupTests reaches for `window`.
+        extends: true,
+        test: {
+          name: "functions",
+          environment: "node",
+          include: ["functions/**/*.test.ts"],
+        },
+      },
+    ],
   },
 });

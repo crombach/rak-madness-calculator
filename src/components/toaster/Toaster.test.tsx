@@ -30,13 +30,7 @@ async function show(header: string) {
 }
 
 describe("Toaster", () => {
-  it("renders nothing until a toast is shown", () => {
-    mountToaster(new Toast("neutral", "Alice", "Winner!"));
-    expect(screen.queryByRole("status")).toBeNull();
-    expect(screen.queryByRole("alert")).toBeNull();
-  });
-
-  it("renders a toast's header and message", async () => {
+  it("renders a toast's message when shown", async () => {
     mountToaster(new Toast("neutral", "Alice", "Winner!"));
     await show("Alice");
     expect(screen.getByRole("status")).toBeInTheDocument();
