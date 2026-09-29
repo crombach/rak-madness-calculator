@@ -82,7 +82,7 @@ export default function HomePage() {
           <NavMenu
             season={loadedSeason}
             week={selectedWeek?.value}
-            disabled={hasNoScoresYet}
+            pagesDisabled={hasNoScoresYet}
           />
         </>
       }

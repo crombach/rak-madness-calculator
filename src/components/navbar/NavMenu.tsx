@@ -19,9 +19,12 @@ import {
   HomeIcon,
   MenuIcon,
   ScoreboardIcon,
+  SettingsIcon,
   SwapVertIcon,
 } from "../icon/Icon";
 import resultsPath, { RESULTS_PAGE, weekName } from "../results/resultsPath";
+import SettingsDialog from "../settings/SettingsDialog";
+import useSettingsSeen from "../settings/useSettingsSeen";
 import "./NavMenu.scss";
 
 type Week = number | string | undefined;
@@ -82,26 +85,33 @@ const PAGES: Array<NavItem> = [
   },
 ];
 
-// Home leads, the rest run alphabetically.
+// Home leads, the rest run alphabetically. Settings follows them all.
 const ITEMS: Array<NavItem> = [
   HOME,
   ...[...PAGES].sort((a, b) => a.label.localeCompare(b.label)),
 ];
 
+const SETTINGS_LABEL = "Settings";
+
+/** The one item that opens a dialog over the page rather than leading away. */
+type SettingsEntry = { onOpen: () => void; isUnseen: boolean };
+
 const TRIGGER_CLASSES = buttonClasses({ compact: true, iconOnly: true });
 
 /**
  * The hamburger every page opens beside the scoreboard/picks switch. A drawer
- * from the right edge below `wide-screen`, a popup menu at it and above.
+ * from the right edge below `wide-screen`, a popup menu at it and above. Only
+ * Home and Settings without the experimental opt-in.
  */
 export default function NavMenu({
   season,
   week,
-  disabled = false,
+  pagesDisabled = false,
 }: {
   season: Week;
   week: Week;
-  disabled?: boolean;
+  /** True to disable every item but Home and Settings, with no reason given. */
+  pagesDisabled?: boolean;
 }) {
   const [query] = useState(() => cssMediaQuery("--rak-below-wide"));
   const isNarrow = useMediaQuery(query);
@@ -111,7 +121,8 @@ export default function NavMenu({
   const swingGames = useSwingGames();
   const playerCount = useAppData().scores?.scores.length;
   const { experimentalFeatures } = useSettings();
-  if (!experimentalFeatures) return null;
+  const [isSettingsOpen, setSettingsOpen] = useState(false);
+  const [hasSeenSettings, markSettingsSeen] = useSettingsSeen();
 
   const context: NavContext = {
     isWeekSettled,
@@ -119,16 +130,25 @@ export default function NavMenu({
     swingGames,
     playerCount,
   };
-  const links = ITEMS.map((item) => {
+  const links = (experimentalFeatures ? ITEMS : [HOME]).map((item) => {
     const path = item.path(season, week);
+    const isPage = item !== HOME;
     return {
       ...item,
       path,
       isCurrent: pathname === path,
-      disabled: item.disabled?.(context) ?? false,
+      disabled:
+        (isPage && pagesDisabled) || (item.disabled?.(context) ?? false),
       disabledReason: item.disabledReason?.(context),
     };
   });
+  const settings: SettingsEntry = {
+    onOpen: () => {
+      setSettingsOpen(true);
+      markSettingsSeen();
+    },
+    isUnseen: !hasSeenSettings,
+  };
 
   return (
     <>
@@ -136,14 +156,15 @@ export default function NavMenu({
       {isNarrow ? (
         <NavDrawer
           links={links}
-          disabled={disabled}
+          settings={settings}
           title={
             season != null && week != null ? weekName(season, week) : undefined
           }
         />
       ) : (
-        <NavPopup links={links} disabled={disabled} />
+        <NavPopup links={links} settings={settings} />
       )}
+      <SettingsDialog open={isSettingsOpen} onOpenChange={setSettingsOpen} />
     </>
   );
 }
@@ -175,10 +196,10 @@ function useOpenUntilNavigated(): [boolean, (open: boolean) => void] {
 
 function NavPopup({
   links,
-  disabled,
+  settings,
 }: {
   links: Array<NavLink>;
-  disabled: boolean;
+  settings: SettingsEntry;
 }) {
   const [open, setOpen] = useOpenUntilNavigated();
   // The key's face sinks under a press. Anchored to the key, the popup rides
@@ -187,11 +208,7 @@ function NavPopup({
   return (
     <Menu.Root open={open} onOpenChange={setOpen}>
       <span ref={anchorRef} className="nav-menu__anchor">
-        <Menu.Trigger
-          className={TRIGGER_CLASSES}
-          aria-label="Menu"
-          disabled={disabled}
-        >
+        <Menu.Trigger className={TRIGGER_CLASSES} aria-label="Menu">
           <MenuIcon />
         </Menu.Trigger>
       </span>
@@ -226,6 +243,15 @@ function NavPopup({
                   </Menu.LinkItem>
                 ),
             )}
+            <Menu.Item
+              className={getClasses("nav-menu__item", {
+                "nav-menu__settings--unseen": settings.isUnseen,
+              })}
+              onClick={settings.onOpen}
+            >
+              <SettingsIcon />
+              {SETTINGS_LABEL}
+            </Menu.Item>
           </Menu.Popup>
         </Menu.Positioner>
       </Menu.Portal>
@@ -298,11 +324,11 @@ function DisabledNavItem({
 
 function NavDrawer({
   links,
-  disabled,
+  settings,
   title,
 }: {
   links: Array<NavLink>;
-  disabled: boolean;
+  settings: SettingsEntry;
   /** The week the pages are for, shown atop the drawer. */
   title?: string;
 }) {
@@ -310,11 +336,7 @@ function NavDrawer({
 
   return (
     <Drawer.Root open={open} onOpenChange={setOpen} swipeDirection="right">
-      <Drawer.Trigger
-        className={TRIGGER_CLASSES}
-        aria-label="Menu"
-        disabled={disabled}
-      >
+      <Drawer.Trigger className={TRIGGER_CLASSES} aria-label="Menu">
         <MenuIcon />
       </Drawer.Trigger>
       <Drawer.Portal>
@@ -368,6 +390,21 @@ function NavDrawer({
                     </li>
                   ),
                 )}
+                <li>
+                  <button
+                    type="button"
+                    className={getClasses("nav-drawer__item", {
+                      "nav-menu__settings--unseen": settings.isUnseen,
+                    })}
+                    onClick={() => {
+                      setOpen(false);
+                      settings.onOpen();
+                    }}
+                  >
+                    <SettingsIcon />
+                    {SETTINGS_LABEL}
+                  </button>
+                </li>
               </ul>
             </nav>
           </Drawer.Popup>
