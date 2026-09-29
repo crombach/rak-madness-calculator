@@ -174,20 +174,23 @@ export function AppDataContextProvider({
     refresh,
     rescore,
   } = playerScores;
-  // While the week's scores load, a week this browser saw settled is taken as
-  // still settled, so its results open without the refresh controls.
+  // The scores on screen can still be the last week's while the URL's week loads.
+  // Until scoring has tried the URL's week, the outcome is this browser's record
+  // of it, so a settled week opens without the refresh controls.
   const { season: routeSeason, weekNumber: routeWeekNumber } = route;
+  const isRouteAttempted =
+    attemptedFor?.season === routeSeason &&
+    attemptedFor?.weekNumber === routeWeekNumber;
   const weekOutcome = useMemo(() => {
-    if (scores != null) {
-      return { isSettled: isWeekSettled(scores), isWon: isWeekWon(scores) };
+    if (routeSeason != null && routeWeekNumber != null && !isRouteAttempted) {
+      return readSettledWeek(routeSeason, routeWeekNumber)
+        ? SETTLED_OUTCOME
+        : NO_OUTCOME;
     }
-    return isScoresLoading &&
-      routeSeason != null &&
-      routeWeekNumber != null &&
-      readSettledWeek(routeSeason, routeWeekNumber)
-      ? SETTLED_OUTCOME
-      : NO_OUTCOME;
-  }, [scores, isScoresLoading, routeSeason, routeWeekNumber]);
+    return scores == null
+      ? NO_OUTCOME
+      : { isSettled: isWeekSettled(scores), isWon: isWeekWon(scores) };
+  }, [scores, isRouteAttempted, routeSeason, routeWeekNumber]);
 
   // The seasons with picks, plus the one running now whether or not it has any.
   // That season's weeks are scored from a spreadsheet the reader uploads until its
