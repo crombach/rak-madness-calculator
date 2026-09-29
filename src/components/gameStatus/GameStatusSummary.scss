@@ -90,14 +90,46 @@
   color: var(--rak-text);
 }
 
-// A count, so it takes the rule `.analysis__standing` sets every count in.
+// Set as the spread line is, since the dialog puts the two on one line.
 .game-status__split {
-  @include micro-label;
-
   margin: 0;
-  color: var(--rak-analysis-label);
-  font-size: var(--rak-text-xs);
+  color: var(--rak-text-secondary);
+  font-size: var(--rak-text-sm);
+  font-weight: var(--rak-weight-semibold);
   text-align: center;
+  // Its dot never ends or starts a line. The line holds both counts at 360px.
+  white-space: nowrap;
+
+  span + span::before {
+    @include meta-dot;
+  }
+}
+
+// A `meta-dot` and its margins, as wide as the one inside the split.
+$lead-dot: calc(2 * var(--rak-space-2) + 0.3em);
+
+// The spread line, then the split, on one line where both fit. The dot between
+// them takes no room of its own, so dropping it once the line wraps cannot
+// unwrap it again.
+.game-status__lead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: var(--rak-space-1) $lead-dot;
+
+  .game-status__spread + .game-status__split {
+    position: relative;
+  }
+
+  &:not(.--wrapped) .game-status__spread + .game-status__split::before {
+    content: "·";
+    position: absolute;
+    right: 100%;
+    width: $lead-dot;
+    color: var(--rak-text-secondary);
+    text-align: center;
+  }
 }
 
 // What is the same about the game however it is going. It starts at a fixed time and

@@ -192,9 +192,8 @@ describe("GameStatusDialog", () => {
       games,
     };
     render(dialog("P1", true, pool, () => Promise.resolve(undefined)));
-    expect(await screen.findByText(/picked KC/)).toHaveTextContent(
-      "2 picked KC · 1 picked BUF",
-    );
+    expect(await screen.findByText("2 picked KC")).toBeInTheDocument();
+    expect(screen.getByText("1 picked BUF")).toBeInTheDocument();
   });
 
   it("polls the open game's league, keeps it up to date, and stops when it is final", async () => {

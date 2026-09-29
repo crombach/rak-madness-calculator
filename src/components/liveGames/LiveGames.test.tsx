@@ -120,9 +120,8 @@ describe("LiveGames", () => {
   it("says how many players picked each side", () => {
     mount(scores);
     const [first] = cards();
-    expect(within(first).getByText(/picked KC/)).toHaveTextContent(
-      "1 picked KC · 0 picked BUF",
-    );
+    expect(within(first).getByText("1 picked KC")).toBeInTheDocument();
+    expect(within(first).getByText("0 picked BUF")).toBeInTheDocument();
   });
 
   it("says the pool's line with no name set", () => {

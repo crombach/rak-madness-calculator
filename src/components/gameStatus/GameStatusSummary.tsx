@@ -1,9 +1,10 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, RefObject, useLayoutEffect, useRef, useState } from "react";
 import { GameStatus, HomeAway } from "../../types/ESPN";
 import { GameSide, LeagueResult } from "../../types/LeagueResult";
 import { PlayerScore } from "../../types/RakMadnessScores";
 import { GameSpread, WeekGame } from "../../types/WeekGame";
 import getClasses from "../../utils/getClasses";
+import observeResize from "../../utils/observeResize";
 import parsePick from "../../utils/scoring/parsePick";
 import pickSplit, { PickSplit } from "../../utils/scoring/pickSplit";
 import { gamecastUrl, kickoffParts, scoringTeam } from "./gameStatusText";
@@ -37,8 +38,6 @@ const MY_PICK_LABEL = "Your Pick";
 
 /** Read out beside the side the reader picked, for the underline marking it. */
 const PICKED_SIDE_LABEL = "Your pick";
-
-const SPLIT_SEPARATOR = " · ";
 
 /** Said in its place for a game the picks put no line on. */
 const NO_SPREAD = "NONE";
@@ -135,6 +134,29 @@ function Side({
   );
 }
 
+/**
+ * Whether the box's last child has wrapped below its first. Read off the layout
+ * rather than a width, since what fits turns on the text in both.
+ */
+function useWraps<T extends HTMLElement>(): [RefObject<T | null>, boolean] {
+  const box = useRef<T>(null);
+  const [wraps, setWraps] = useState(false);
+  useLayoutEffect(() => {
+    const element = box.current;
+    if (element == null) return undefined;
+    const measure = () => {
+      const first = element.firstElementChild as HTMLElement | null;
+      const last = element.lastElementChild as HTMLElement | null;
+      setWraps(
+        first != null && last != null && last.offsetTop > first.offsetTop,
+      );
+    };
+    measure();
+    return observeResize([element], measure);
+  }, []);
+  return [box, wraps];
+}
+
 /** The reader's own pick on the game where they have one, else the pool's line. */
 export function SpreadLine({
   spread,
@@ -191,6 +213,7 @@ function Game({
   gamecastHref: string;
 }) {
   const [scoreline, fit] = useScorelineFit(result.id);
+  const [lead, wrapped] = useWraps<HTMLDivElement>();
   // The link rides with the place, not the kickoff, so it holds the strip's end
   // when the halves stack. A game ESPN sent no address for still carries it.
   const placeParts = [
@@ -228,9 +251,23 @@ function Game({
     outcome: outcomeOf(side),
     isPicked: side.team.abbreviation.toUpperCase() === pickedTeam,
   });
+  const splitLine = split != null && (
+    <p className="game-status__split">
+      <span>{`${split.away} picked ${result.away.team.abbreviation}`}</span>
+      <span>{`${split.home} picked ${result.home.team.abbreviation}`}</span>
+    </p>
+  );
   return (
     <>
-      {!brief && <SpreadLine spread={spread} myPick={myPick} />}
+      {!brief && (
+        <div
+          className={getClasses("game-status__lead", { "--wrapped": wrapped })}
+          ref={lead}
+        >
+          <SpreadLine spread={spread} myPick={myPick} />
+          {splitLine}
+        </div>
+      )}
       <div
         className={getClasses("game-status__scoreline", {
           "--short-names": fit >= SHORT_NAMES,
@@ -241,13 +278,7 @@ function Game({
         <Scoreline result={result} spread={spread} outcomeOf={outcomeOf} />
         <Side homeAway={HomeAway.HOME} {...sideProps(result.home)} />
       </div>
-      {split != null && (
-        <p className="game-status__split">
-          {`${split.away} picked ${result.away.team.abbreviation}`}
-          {SPLIT_SEPARATOR}
-          {`${split.home} picked ${result.home.team.abbreviation}`}
-        </p>
-      )}
+      {brief && splitLine}
       {/* Under the scoreline rather than over it. The game is what the dialog was
           opened for, and when and where it is played is the footnote. */}
       {!brief && (
