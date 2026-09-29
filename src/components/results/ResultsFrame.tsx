@@ -98,7 +98,9 @@ export default function ResultsFrame({
   const { season: seasonParam, week: weekParam } = useParams();
   const hasWeek = Boolean(seasonParam && weekParam);
   const scoresView: ScoresView | null =
-    view === RESULTS_PAGE.swingGames || view === RESULTS_PAGE.liveGames
+    view === RESULTS_PAGE.swingGames ||
+    view === RESULTS_PAGE.liveGames ||
+    view === RESULTS_PAGE.headToHead
       ? null
       : view;
   // Once every game is final there is nothing left to fetch, so the refresh button

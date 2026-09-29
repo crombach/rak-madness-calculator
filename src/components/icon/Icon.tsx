@@ -286,6 +286,14 @@ export function ScoreboardIcon() {
   );
 }
 
+export function CompareArrowsIcon() {
+  return (
+    <Icon name="CompareArrowsIcon">
+      <path d="M320-160 120-360l200-200 56 57-103 103h287v80H273l103 103-56 57Zm320-240-56-57 103-103H400v-80h287L584-743l56-57 200 200-200 200Z" />
+    </Icon>
+  );
+}
+
 export function GitHubIcon() {
   return (
     <Icon name="GitHubIcon" viewBox="0 0 24 24">

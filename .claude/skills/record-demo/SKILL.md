@@ -86,6 +86,9 @@ instead of recording the whole run.
 - `scenarios/pick-result.js` — Game Status on a finished game, the reader's pick
   and the pool line colored by how each side did. `$PICK_RESULT` is `right` or
   `wrong`, `$PICK_THEME` is `light` or `dark`.
+- `scenarios/head-to-head.js` — Head to Head on the reader against a long
+  name, split on a live game. `$HTH_THEME` is `light` or `dark`. `HTH_OPEN=1`
+  ends on the Versus list open.
 - `scenarios/scoreline-shape.js` — the Game Status readout on a live game level at
   nothing, then the list its marks are read off. `$SCORELINE_THEME` is `light` or
   `dark`, `$SCORELINE_SHOT_DIR` takes the crop and the full page, so `--out` is a

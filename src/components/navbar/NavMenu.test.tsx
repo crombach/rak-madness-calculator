@@ -26,12 +26,15 @@ const mockAppData = useAppData as Mock;
 const mockIsWeekSettled = useIsWeekSettled as Mock;
 const mockIsWeekWon = useIsWeekWon as Mock;
 const mockSwingGames = useSwingGames as Mock;
+/** Enough players to compare, as `useAppData().scores` holds them. */
+const TWO_PLAYERS = { scores: [{}, {}] };
 const A_SWING_GAME = {} as SwingGame;
 
 const SEASON = 2024;
 const WEEK = 3;
 const SWINGS_PATH = `/${SEASON}/${WEEK}/swings`;
 const LIVE_PATH = `/${SEASON}/${WEEK}/live`;
+const COMPARE_PATH = `/${SEASON}/${WEEK}/compare`;
 
 /** Names the URL a click landed on, from the router's own history. */
 function Landed() {
@@ -73,10 +76,10 @@ describe("NavMenu", () => {
   beforeEach(() => {
     // Swing Games gates on this opt-in too, beside `isWeekWon`.
     localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
-    mockAppData.mockReturnValue({ scores: { scores: [] } });
     mockIsWeekSettled.mockReturnValue(false);
     mockIsWeekWon.mockReturnValue(false);
     mockSwingGames.mockReturnValue({ games: [A_SWING_GAME] });
+    mockAppData.mockReturnValue({ scores: TWO_PLAYERS });
   });
 
   it('names its trigger "Menu"', () => {
@@ -94,6 +97,7 @@ describe("NavMenu", () => {
 
       expect(items.map((item) => item.textContent)).toEqual([
         "Home",
+        "Head to Head",
         "Live Games",
         "Swing Games",
       ]);
@@ -143,6 +147,34 @@ describe("NavMenu", () => {
         SWINGS_PATH,
       );
       expect(screen.queryByRole("menuitem")).not.toBeInTheDocument();
+    });
+
+    it("goes to the head to head page on a click", async () => {
+      const user = mount();
+      await user.click(trigger());
+      await user.click(
+        await screen.findByRole("menuitem", { name: "Head to Head" }),
+      );
+
+      expect(await screen.findByTestId("landed")).toHaveTextContent(
+        COMPARE_PATH,
+      );
+    });
+
+    it.each([
+      ["while scores load", undefined, ""],
+      ["with fewer than two players", { scores: [{}] }, "Needs two players"],
+    ])("disables Head to Head %s", async (_, scores, reason) => {
+      mockAppData.mockReturnValue({ scores });
+      const user = mount();
+      await user.click(trigger());
+
+      const item = await screen.findByRole("menuitem", {
+        name: "Head to Head",
+      });
+
+      expect(item).toHaveAttribute("data-disabled");
+      expect(item).toHaveAccessibleDescription(reason);
     });
 
     it("goes to the live games page on a click", async () => {
@@ -262,6 +294,7 @@ describe("NavMenu", () => {
       await user.keyboard("{ArrowDown}");
       await user.keyboard("{ArrowDown}");
       await user.keyboard("{ArrowDown}");
+      await user.keyboard("{ArrowDown}");
 
       await waitFor(() => expect(item).toHaveFocus());
     });
@@ -308,7 +341,7 @@ describe("NavMenu", () => {
         within(drawer)
           .getAllByRole("link")
           .map((link) => link.textContent),
-      ).toEqual(["Home", "Live Games", "Swing Games"]);
+      ).toEqual(["Home", "Head to Head", "Live Games", "Swing Games"]);
       expect(within(drawer).queryAllByRole("combobox")).toHaveLength(0);
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });

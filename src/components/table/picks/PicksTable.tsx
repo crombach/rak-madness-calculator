@@ -118,6 +118,7 @@ function PickCells({
   playerId,
   picks,
   labels,
+  isShown,
   pickChanges,
   onClick,
 }: {
@@ -125,31 +126,48 @@ function PickCells({
   playerId: string;
   picks: Array<PickResult>;
   labels: Array<string>;
+  /** Whether a game's column is drawn, by its label. */
+  isShown: (gameLabel: string) => boolean;
   pickChanges: Map<string, Status>;
   onClick: (gameLabel: string) => void;
 }) {
   return (
     <>
-      {picks.map((result, index) => (
-        <td
-          key={pickChangeKey(playerId, labels[index])}
-          className={`table__pick --${fillStatus(result)}`}
-        >
-          <PickCell
-            result={result}
-            gameLabel={labels[index]}
-            previousStatus={pickChanges.get(
-              pickChangeKey(playerId, labels[index]),
-            )}
-            onClick={onClick}
-          />
-        </td>
-      ))}
+      {picks.map(
+        (result, index) =>
+          isShown(labels[index]) && (
+            <td
+              key={pickChangeKey(playerId, labels[index])}
+              className={`table__pick --${fillStatus(result)}`}
+            >
+              <PickCell
+                result={result}
+                gameLabel={labels[index]}
+                previousStatus={pickChanges.get(
+                  pickChangeKey(playerId, labels[index]),
+                )}
+                onClick={onClick}
+              />
+            </td>
+          ),
+      )}
     </>
   );
 }
 
-function PicksTable({ scores }: { scores?: RakMadnessScores | null }) {
+function PicksTable({
+  scores,
+  caption = "Player picks for the week, college and pro games",
+  players,
+  games,
+}: {
+  scores?: RakMadnessScores | null;
+  caption?: string;
+  /** The ids of the rows drawn, or every row when left out. Ranks still count every row. */
+  players?: ReadonlySet<string>;
+  /** The labels of the game columns drawn, or every column when left out. */
+  games?: ReadonlySet<string>;
+}) {
   const showGameStatus = useShowGameStatus();
   const { picks: pickChanges } = useScoreChanges();
 
@@ -163,16 +181,20 @@ function PicksTable({ scores }: { scores?: RakMadnessScores | null }) {
   const firstPlayer = scores.scores[0];
   const collegeCount = firstPlayer.college.length;
   const proCount = firstPlayer.pro.length;
-  const columnCount = FIXED_COLUMN_COUNT + collegeCount + proCount;
   // Built once for the headers and every row's cells, so a cell and the column it
   // sits under cannot disagree about which game they mean.
   const collegeLabels = leagueLabels(collegeCount, "college");
   const proLabels = leagueLabels(proCount, "pro");
+  const isShown = (label: string) => games == null || games.has(label);
+  const shownCollege = collegeLabels.filter(isShown);
+  const shownPro = proLabels.filter(isShown);
+  const columnCount =
+    FIXED_COLUMN_COUNT + shownCollege.length + shownPro.length;
   const statuses = statusByLabel(scores.games);
 
   return (
     <TableShell
-      caption="Player picks for the week, college and pro games"
+      caption={caption}
       columnCount={columnCount}
       header={
         <>
@@ -181,13 +203,13 @@ function PicksTable({ scores }: { scores?: RakMadnessScores | null }) {
             Player
           </th>
           {leagueHeaders({
-            labels: collegeLabels,
+            labels: shownCollege,
             statusByLabel: statuses,
             onClick: showGameStatus,
           })}
           <th scope="col">College Score</th>
           {leagueHeaders({
-            labels: proLabels,
+            labels: shownPro,
             statusByLabel: statuses,
             onClick: showGameStatus,
           })}
@@ -197,6 +219,7 @@ function PicksTable({ scores }: { scores?: RakMadnessScores | null }) {
       }
     >
       {scores.scores.map((player: PlayerScore, index: number) => {
+        if (players != null && !players.has(player.id)) return null;
         return (
           <tr key={player.id}>
             <RankCell rank={index + 1} />
@@ -208,6 +231,7 @@ function PicksTable({ scores }: { scores?: RakMadnessScores | null }) {
               playerId={player.id}
               picks={player.college}
               labels={collegeLabels}
+              isShown={isShown}
               pickChanges={pickChanges}
               onClick={showGameStatus}
             />
@@ -216,6 +240,7 @@ function PicksTable({ scores }: { scores?: RakMadnessScores | null }) {
               playerId={player.id}
               picks={player.pro}
               labels={proLabels}
+              isShown={isShown}
               pickChanges={pickChanges}
               onClick={showGameStatus}
             />

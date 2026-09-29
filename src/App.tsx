@@ -14,6 +14,10 @@ import SwingGamesSkeleton from "./components/swingGames/SwingGamesSkeleton";
 const SwingGamesRoute = lazy(
   () => import("./components/swingGames/SwingGamesRoute"),
 );
+// Lazy for Base UI's combobox, which `ResultsFrame` keeps out of that chunk too.
+const HeadToHeadRoute = lazy(
+  () => import("./components/headToHead/HeadToHeadRoute"),
+);
 
 export default function App() {
   return (
@@ -41,6 +45,14 @@ export default function App() {
           }
         />
         <Route path="live" element={<LiveGamesPage />} />
+        <Route
+          path="compare"
+          element={
+            <Suspense fallback={null}>
+              <HeadToHeadRoute />
+            </Suspense>
+          }
+        />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

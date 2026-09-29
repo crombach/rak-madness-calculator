@@ -15,6 +15,7 @@ import getClasses from "../../utils/getClasses";
 import { buttonClasses } from "../button/Button";
 import {
   CloseIcon,
+  CompareArrowsIcon,
   HomeIcon,
   MenuIcon,
   ScoreboardIcon,
@@ -61,6 +62,15 @@ const PAGES: Array<NavItem> = [
       if (swingGames?.games.length === 0) return "No game knocks anyone out";
       return undefined;
     },
+  },
+  {
+    label: RESULTS_PAGE.headToHead,
+    icon: <CompareArrowsIcon />,
+    path: (season, week) => resultsPath(season, week, RESULTS_PAGE.headToHead),
+    // Scores still loading, as for Swing Games.
+    disabled: ({ playerCount }) => playerCount == null,
+    disabledReason: ({ playerCount }) =>
+      playerCount != null && playerCount < 2 ? "Needs two players" : undefined,
   },
   {
     label: RESULTS_PAGE.liveGames,
