@@ -41,9 +41,9 @@ function BackButton() {
   );
 }
 
-/** The toggle's `aria-label`: the game, then its player count. */
-function bandName(game: string, count: number) {
-  return `${game}, ${plural(count, "player")}`;
+/** The toggle's `aria-label`: the game, its player count, then its mark's label. */
+function bandName(game: string, count: number, status = "Not listed by ESPN") {
+  return `${game}, ${plural(count, "player")}, ${status}`;
 }
 
 /**

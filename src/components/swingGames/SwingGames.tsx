@@ -85,6 +85,7 @@ function Game({ game, weekGame }: { game: SwingGame; weekGame?: WeekGame }) {
   const players = plural(count, "player");
   const gameName = `${game.label} ${game.name}`;
   const status = weekGame?.result?.status;
+  const markLabel = weekGame && gameMarkLabel(weekGame, status);
 
   return (
     <Accordion.Item
@@ -98,10 +99,7 @@ function Game({ game, weekGame }: { game: SwingGame; weekGame?: WeekGame }) {
         <button
           type="button"
           className="swing-games__game"
-          aria-label={[
-            `Game Status for ${gameName}`,
-            weekGame && gameMarkLabel(weekGame, status),
-          ]
+          aria-label={[`Game Status for ${gameName}`, markLabel]
             .filter((part) => part != null)
             .join(", ")}
           onClick={() => showGameStatus(game.label)}
@@ -113,7 +111,9 @@ function Game({ game, weekGame }: { game: SwingGame; weekGame?: WeekGame }) {
             has it. Inside the toggle, so a tap beside them still folds the game. */}
         <Accordion.Trigger
           className="swing-games__toggle"
-          aria-label={`${gameName}, ${players}`}
+          aria-label={[gameName, players, markLabel]
+            .filter((part) => part != null)
+            .join(", ")}
         >
           <PlayerCountMark count={count} />
           {weekGame && <GameMark game={weekGame} status={status} />}

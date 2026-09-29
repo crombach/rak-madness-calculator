@@ -415,7 +415,7 @@
   --rak-mark-final-text: var(--rak-success-600);
   --rak-mark-upcoming-bg: var(--rak-neutral-100);
   --rak-mark-upcoming-text: var(--rak-neutral-700);
-  // A count beside a mark, as quiet as the upcoming one. Told apart by its figures.
+  // A player count beside a mark, in the upcoming mark's colors.
   --rak-mark-count-bg: var(--rak-mark-upcoming-bg);
   --rak-mark-count-text: var(--rak-mark-upcoming-text);
   // The dot for a game being played, read by the mark inside the dialog's live

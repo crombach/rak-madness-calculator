@@ -94,7 +94,7 @@ $section-min: calc(
   text-align: start;
 }
 
-// Right: the mark and the chevron, filling whatever the game button does
+// Right: the count, the mark and the chevron, filling whatever the game button does
 // not use, so a tap on the rest of the bar still folds or opens it.
 .swing-games__toggle {
   @include band-target;
