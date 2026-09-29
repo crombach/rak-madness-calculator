@@ -69,8 +69,6 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   }
 }
 
-// Framed and banded as a Swing Games panel is, so a game reads as a panel of the
-// device.
 .live-games__game {
   display: flex;
   flex-direction: column;

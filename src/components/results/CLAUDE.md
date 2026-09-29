@@ -12,8 +12,8 @@ week worth showing.
 - `ScoreboardRoute`, `PicksRoute`: one table each, from context.
 - `ResultsFrame`: the page and wireframe both `ResultsLayout` and
   `CurrentWeekRedirect` render into, captioned by its `ResultsPage` `view`. Holds
-  both dialogs lazily, the table providers, `NavMenu`. `canRefresh` arms refresh
+  both dialogs lazily, plus the table providers and `NavMenu`. `canRefresh` arms refresh
   and `pull` on a live week, off Live Games.
 - `DialogLoadBoundary`: catches a dialog chunk a deploy replaced.
-- `ResultsFrame.scss`: the column the table and the wireframe share, and the
-  caption over both.
+- `ResultsFrame.scss`: the column table and wireframe share, and the caption
+  over both.

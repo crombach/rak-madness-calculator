@@ -221,9 +221,7 @@ describe("GameStatusDialog", () => {
       screen.getByRole("progressbar", { name: "Fetching the game" }),
     ).toHaveAttribute("aria-busy", "true");
 
-    // The game and its column both, so a reader who came from a cell can tell it
-    // is the one they clicked, and the week's own copy of it already up rather
-    // than a wait for the fetch that is out.
+    // Shows the column with the game, so the reader can tell which one they clicked.
     expect(screen.getByRole("combobox", { name: "Game" })).toHaveValue(
       "P1 KC @ BUF",
     );
