@@ -1,6 +1,7 @@
 @use "../../styles/focus" as *;
 @use "../../styles/lcd" as *;
 @use "../../styles/listbox" as *;
+@use "../../styles/text" as *;
 
 // Base UI ships the combobox unstyled, so these rules carry its whole look. It
 // sits inside a popup and is shorter than a page-level control, so it keeps its own
@@ -67,8 +68,9 @@
 }
 
 .dialog__input {
+  @include truncate-line;
+
   flex: 1;
-  min-width: 0;
   padding: 3px 0;
   border: 0 solid var(--rak-border);
   background-color: transparent;
