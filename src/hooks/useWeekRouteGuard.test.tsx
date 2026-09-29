@@ -1,6 +1,10 @@
 import { renderHook } from "@testing-library/react";
 import { Mock } from "vitest";
-import { useAppData } from "../context/AppDataContext";
+import {
+  useCalendar,
+  useScores,
+  useScoringStatus,
+} from "../context/AppDataContext";
 import { useToastActions } from "../context/ToastContext";
 import { SEASON, week } from "../weekFixtures";
 import useWeekRouteGuard from "./useWeekRouteGuard";
@@ -8,7 +12,11 @@ import useWeekRouteGuard from "./useWeekRouteGuard";
 const navigate = vi.fn();
 
 vi.mock("react-router", () => ({ useNavigate: () => navigate }));
-vi.mock("../context/AppDataContext", () => ({ useAppData: vi.fn() }));
+vi.mock("../context/AppDataContext", () => ({
+  useCalendar: vi.fn(),
+  useScores: vi.fn(),
+  useScoringStatus: vi.fn(),
+}));
 vi.mock("../context/ToastContext", async (importOriginal) => ({
   // The real `Toast`, so the assertions below read the header and message the
   // user would see rather than a stand-in's.
@@ -50,7 +58,10 @@ function guard(
   weekParam?: string,
   overrides: Record<string, unknown> = {},
 ) {
-  (useAppData as Mock).mockReturnValue(appData(overrides));
+  const data = appData(overrides);
+  (useCalendar as Mock).mockReturnValue(data);
+  (useScores as Mock).mockReturnValue(data.scores);
+  (useScoringStatus as Mock).mockReturnValue(data);
   return renderHook(() => useWeekRouteGuard(seasonParam, weekParam)).result
     .current;
 }

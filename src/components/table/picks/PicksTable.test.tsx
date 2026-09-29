@@ -1,4 +1,5 @@
 import { Mock } from "vitest";
+import { Profiler } from "react";
 import { render, screen, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import {
@@ -298,6 +299,54 @@ describe("PicksTable, column hover", () => {
     expect(headingOf("C1")).toHaveClass(HOVERED);
     expect(cellOf("OSU")).not.toHaveClass(HOVERED);
     expect(headingOf("P1")).not.toHaveClass(HOVERED);
+  });
+
+  it("does not render the table again when the pointer moves", async () => {
+    const user = userEvent.setup();
+    const onRender = vi.fn();
+    render(
+      <GameStatusContextProvider showGameStatus={vi.fn()}>
+        <Profiler id="picks" onRender={onRender}>
+          <PicksTable scores={scores} />
+        </Profiler>
+      </GameStatusContextProvider>,
+    );
+    const rendersBefore = onRender.mock.calls.length;
+
+    await user.hover(screen.getByText("MICH"));
+    await user.hover(screen.getByText("OSU"));
+    await user.unhover(screen.getByRole("table"));
+
+    expect(onRender).toHaveBeenCalledTimes(rendersBefore);
+  });
+
+  it("keeps the column lit when a refresh redraws its cells", async () => {
+    const user = userEvent.setup();
+    const tree = (value: RakMadnessScores) => (
+      <GameStatusContextProvider showGameStatus={vi.fn()}>
+        <PicksTable scores={value} />
+      </GameStatusContextProvider>
+    );
+    const { rerender } = render(tree(scores));
+    await user.hover(screen.getByText("MICH"));
+
+    rerender(
+      tree({
+        ...scores,
+        scores: [
+          player({
+            name: "Alice",
+            college: [pick("MICH", "no"), pick("OSU", "no")],
+            pro: [pick("BUF"), pick("KC"), pick("MIA")],
+          }),
+          player({ name: "Bob", isKnockedOut: true }),
+        ],
+      }),
+    );
+
+    expect(cellOf("MICH")).toHaveClass("--no");
+    expect(cellOf("MICH")).toHaveClass(HOVERED);
+    expect(cellOf("C1 pick")).toHaveClass(HOVERED);
   });
 
   it("lights the column from its heading too", async () => {

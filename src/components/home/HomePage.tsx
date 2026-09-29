@@ -1,6 +1,10 @@
 import { ChangeEventHandler, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
-import { useAppData } from "../../context/AppDataContext";
+import {
+  useCalendar,
+  useScores,
+  useScoringStatus,
+} from "../../context/AppDataContext";
 import useExportScores from "../../hooks/useExportScores";
 import { WeekInfo } from "../../types/League";
 import getClasses from "../../utils/getClasses";
@@ -26,10 +30,9 @@ export default function HomePage() {
     requestedSeason,
     setSelectedSeason,
     isWeeksLoading,
-    scores,
-    isScoresLoading,
-    scoreLocalFile,
-  } = useAppData();
+  } = useCalendar();
+  const scores = useScores();
+  const { isScoresLoading, scoreLocalFile } = useScoringStatus();
   const { exportResults, isExportLoading } = useExportScores(
     scores,
     selectedWeek,

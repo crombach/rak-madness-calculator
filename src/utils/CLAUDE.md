@@ -1,7 +1,8 @@
 # src/utils
 
 - `getLeagueInfo` / `getLeagueResults`: ESPN fetch, calendar, week mapping, and
-  `getRegularSeasonWeekCount`, a season's week count, cached
+  `getRegularSeasonWeekCount`, cached. A named season's answer is held five
+  minutes. `espnScoreboardUrl` builds both URLs
 - `buildSpreadsheetBuffer`: the xlsx export and its content type
 - `pickStatusFill`: the export's pick and standing colors, held to the stylesheet
 - `picksCache` / `espnCache`: an uploaded workbook, and ESPN's fixed answers,

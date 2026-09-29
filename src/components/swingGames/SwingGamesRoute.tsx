@@ -1,6 +1,6 @@
-import { useAppData } from "../../context/AppDataContext";
+import { useScores } from "../../context/AppDataContext";
 import SwingGames from "./SwingGames";
 
 export default function SwingGamesRoute() {
-  return <SwingGames scores={useAppData().scores} />;
+  return <SwingGames scores={useScores()} />;
 }

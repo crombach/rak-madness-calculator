@@ -1,7 +1,10 @@
 import { Mock } from "vitest";
 import { League, SeasonType } from "../types/League";
 import { SEASON } from "../weekFixtures";
-import getLeagueInfo, { getRegularSeasonWeekCount } from "./getLeagueInfo";
+import getLeagueInfo, {
+  clearLeagueInfoAnswers,
+  getRegularSeasonWeekCount,
+} from "./getLeagueInfo";
 
 const NOW = new Date("2024-10-06T12:00:00Z");
 
@@ -104,6 +107,7 @@ async function infoFor(league: League) {
 beforeEach(() => {
   // jsdom keeps storage between cases, and a finished season's calendar is held there.
   localStorage.clear();
+  clearLeagueInfoAnswers();
   vi.useFakeTimers().setSystemTime(NOW);
 });
 
@@ -280,10 +284,11 @@ describe("getLeagueInfo, what it holds on to", () => {
     expect(again?.activeWeek?.startDate).toBeInstanceOf(Date);
   });
 
-  it("asks again for a season that is not over", async () => {
+  it("asks again for a season that is not over once its answer is stale", async () => {
     const fetchMock = mockFetch(scoreboardForSeason(League.PRO, 3102));
 
     await getLeagueInfo(League.PRO, 3102);
+    vi.setSystemTime(new Date(NOW.valueOf() + 10 * 60 * 1000));
     await getLeagueInfo(League.PRO, 3102);
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
@@ -300,6 +305,31 @@ describe("getLeagueInfo, what it holds on to", () => {
     await getLeagueInfo(League.PRO);
     await getLeagueInfo(League.PRO);
 
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("getLeagueInfo, answers held", () => {
+  it("asks ESPN once per league and season when an unnamed lookup comes first", async () => {
+    const fetchMock = mockFetch(scoreboard(League.PRO));
+    await getLeagueInfo(League.PRO);
+    await getLeagueInfo(League.PRO, SEASON);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("asks again for another league or season", async () => {
+    const fetchMock = mockFetch(scoreboard(League.PRO));
+    await getLeagueInfo(League.PRO);
+    await getLeagueInfo(League.COLLEGE);
+    await getLeagueInfo(League.PRO, SEASON - 1);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("does not hold a failed answer", async () => {
+    const fetchMock = mockFetch({}, false, 500);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    await getLeagueInfo(League.PRO, SEASON);
+    await getLeagueInfo(League.PRO, SEASON);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

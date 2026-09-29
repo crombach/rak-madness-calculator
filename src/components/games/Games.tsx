@@ -6,14 +6,17 @@ import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
-import { LeagueResults } from "../../utils/scoring/leagueResults";
+import { LEAGUES as LEAGUE_KEYS } from "../../utils/scoring/gameColumns";
+import { ESPN_LEAGUE, LeagueResults } from "../../utils/scoring/leagueResults";
 import EmptyState from "../pageLayout/EmptyState";
 import kickoffDay from "./kickoffDay";
 import GameCard from "./GameCard";
 import { COMPLETED_TITLE, DAYS, LIVE_TITLE } from "./sectionTitles";
 import "./Games.scss";
 
-const LEAGUES: ReadonlyArray<League> = [League.COLLEGE, League.PRO];
+const LEAGUES: ReadonlyArray<League> = LEAGUE_KEYS.map(
+  (key) => ESPN_LEAGUE[key],
+);
 
 /** ESPN's `in` state, a game stopped part way through included. */
 const LIVE_STATUSES: ReadonlySet<GameStatus> = new Set([

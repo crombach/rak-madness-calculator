@@ -1,9 +1,10 @@
-import { useAppData } from "../../context/AppDataContext";
+import { useScores, useScoringStatus } from "../../context/AppDataContext";
 import ExperimentalGate from "../results/ExperimentalGate";
 import Games from "./Games";
 
 export default function GamesRoute() {
-  const { scores, rescore, fetchingLeagues } = useAppData();
+  const scores = useScores();
+  const { rescore, fetchingLeagues } = useScoringStatus();
   return (
     <ExperimentalGate>
       <Games

@@ -8,7 +8,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { v4 as uuidv4 } from "uuid";
 import doNothing from "../utils/doNothing";
 
 export const MAX_VISIBLE_TOASTS = 3;
@@ -42,7 +41,7 @@ export class Toast {
   message: string | ReactElement;
 
   constructor(type: ToastType, header: string, message: string | ReactElement) {
-    this.id = uuidv4();
+    this.id = crypto.randomUUID();
     this.type = type;
     this.header = header;
     this.message = message;

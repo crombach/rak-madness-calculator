@@ -93,7 +93,7 @@ function pickCell(result: PickResult) {
  */
 function rowStatusOf(
   player: PlayerScore,
-  repeated: Set<string>,
+  repeated: ReadonlySet<string>,
   showStatus: boolean,
 ): PlayerRowStatus {
   if (repeated.has(player.name)) return "nameConflict";

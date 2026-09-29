@@ -1,6 +1,10 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import { useAppData } from "../context/AppDataContext";
+import {
+  useCalendar,
+  useScores,
+  useScoringStatus,
+} from "../context/AppDataContext";
 import { Toast, useToastActions } from "../context/ToastContext";
 import { WeekInfo } from "../types/League";
 
@@ -35,9 +39,9 @@ export default function useWeekRouteGuard(
     findWeek,
     selectedWeek,
     setSelectedWeek,
-    scores,
-    attemptedFor,
-  } = useAppData();
+  } = useCalendar();
+  const scores = useScores();
+  const { attemptedFor } = useScoringStatus();
 
   const seasonNumber = Number(seasonParam);
   const isKnownSeason = SEASON_PATTERN.test(seasonParam ?? "");

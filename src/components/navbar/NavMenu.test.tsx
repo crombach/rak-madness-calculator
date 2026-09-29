@@ -3,7 +3,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router";
 import {
-  useAppData,
+  useScores,
   useIsWeekSettled,
   useIsWeekWon,
   useSwingGames,
@@ -17,17 +17,17 @@ import { SETTINGS_SEEN_KEY } from "../settings/useSettingsSeen";
 import NavMenu from "./NavMenu";
 
 vi.mock("../../context/AppDataContext", () => ({
-  useAppData: vi.fn(),
+  useScores: vi.fn(),
   useIsWeekSettled: vi.fn(),
   useIsWeekWon: vi.fn(),
   useSwingGames: vi.fn(),
 }));
 
-const mockAppData = useAppData as Mock;
+const mockScores = useScores as Mock;
 const mockIsWeekSettled = useIsWeekSettled as Mock;
 const mockIsWeekWon = useIsWeekWon as Mock;
 const mockSwingGames = useSwingGames as Mock;
-/** Enough players to compare, as `useAppData().scores` holds them. */
+/** Enough players to compare, as `useScores()` holds them. */
 const TWO_PLAYERS = { scores: [{}, {}] };
 const A_SWING_GAME = {} as SwingGame;
 
@@ -81,7 +81,7 @@ describe("NavMenu", () => {
     mockIsWeekSettled.mockReturnValue(false);
     mockIsWeekWon.mockReturnValue(false);
     mockSwingGames.mockReturnValue({ games: [A_SWING_GAME] });
-    mockAppData.mockReturnValue({ scores: TWO_PLAYERS });
+    mockScores.mockReturnValue(TWO_PLAYERS);
   });
 
   it('names its trigger "Menu"', () => {
@@ -133,7 +133,7 @@ describe("NavMenu", () => {
     });
 
     it("gives the pages no reason when told to disable them", async () => {
-      mockAppData.mockReturnValue({ scores: { scores: [{}] } });
+      mockScores.mockReturnValue({ scores: [{}] });
       mockSwingGames.mockReturnValue({ games: [] });
       const user = mount({ pagesDisabled: true });
       await user.click(trigger());
@@ -287,7 +287,7 @@ describe("NavMenu", () => {
       ],
       ["with no reason once the week is settled", { scores: [{}] }, true, ""],
     ])("disables Compare Players %s", async (_, scores, isSettled, reason) => {
-      mockAppData.mockReturnValue({ scores });
+      mockScores.mockReturnValue(scores);
       mockIsWeekSettled.mockReturnValue(isSettled);
       const user = mount();
       await user.click(trigger());
@@ -311,7 +311,7 @@ describe("NavMenu", () => {
     });
 
     it("disables Games while scores load, with no reason", async () => {
-      mockAppData.mockReturnValue({ scores: undefined });
+      mockScores.mockReturnValue(undefined);
       const user = mount();
       await user.click(trigger());
 

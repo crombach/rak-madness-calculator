@@ -1,5 +1,5 @@
 import { Navigate } from "react-router";
-import { useAppData } from "../../context/AppDataContext";
+import { useCalendar } from "../../context/AppDataContext";
 import ResultsFrame from "./ResultsFrame";
 import resultsPath, { ScoresView } from "./resultsPath";
 
@@ -19,7 +19,7 @@ import resultsPath, { ScoresView } from "./resultsPath";
  */
 export default function CurrentWeekRedirect({ view }: { view: ScoresView }) {
   const { loadedSeason, defaultWeekNumber, weeks, isWeeksLoading } =
-    useAppData();
+    useCalendar();
 
   if (!isWeeksLoading) {
     // The schedule lookup failed and already said so in its own toast, or the

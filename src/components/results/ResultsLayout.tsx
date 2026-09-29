@@ -1,5 +1,5 @@
 import { Outlet, useMatch, useNavigate, useParams } from "react-router";
-import { useAppData } from "../../context/AppDataContext";
+import { useScores, useScoringStatus } from "../../context/AppDataContext";
 import useWeekRouteGuard from "../../hooks/useWeekRouteGuard";
 import ResultsFrame from "./ResultsFrame";
 import resultsPath, { PAGES, pageForSegment } from "./resultsPath";
@@ -14,8 +14,9 @@ import resultsPath, { PAGES, pageForSegment } from "./resultsPath";
 export default function ResultsLayout() {
   const { season: seasonParam, week: weekParam } = useParams();
   const navigate = useNavigate();
-  const { refresh, rescore, isRefreshing, fetchingLeagues, scores } =
-    useAppData();
+  const { refresh, rescore, isRefreshing, fetchingLeagues } =
+    useScoringStatus();
+  const scores = useScores();
   const guard = useWeekRouteGuard(seasonParam, weekParam);
 
   // The route decides which view is showing, not component state.
