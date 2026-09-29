@@ -4,6 +4,7 @@ import { Mock } from "vitest";
 import { useAppData } from "../../context/AppDataContext";
 import { SEASON } from "../../weekFixtures";
 import CurrentWeekRedirect from "./CurrentWeekRedirect";
+import { RESULTS_PAGE, ScoresView } from "./resultsPath";
 
 vi.mock("../../context/AppDataContext", () => ({
   useAppData: vi.fn(),
@@ -23,10 +24,7 @@ function Landed() {
   return <span data-testid="landed">{useLocation().pathname}</span>;
 }
 
-function mount(
-  view: "Scoreboard" | "Picks",
-  appData: Record<string, unknown>,
-): void {
+function mount(view: ScoresView, appData: Record<string, unknown>): void {
   (useAppData as Mock).mockReturnValue({
     loadedSeason: SEASON,
     currentWeekNumber: CURRENT_WEEK,
@@ -53,33 +51,33 @@ function landedOn(): string | undefined {
 
 describe("CurrentWeekRedirect", () => {
   it("sends /scoreboard to the current week of the season on hand", () => {
-    mount("Scoreboard", {});
+    mount(RESULTS_PAGE.scoreboard, {});
     expect(landedOn()).toBe(`/${SEASON}/${CURRENT_WEEK}/scoreboard`);
   });
 
   it("sends /picks to the picks view of that same week", () => {
-    mount("Picks", {});
+    mount(RESULTS_PAGE.picks, {});
     expect(landedOn()).toBe(`/${SEASON}/${CURRENT_WEEK}/picks`);
   });
 
   it("lands on the newest week with picks, not the week ESPN has reached", () => {
-    mount("Scoreboard", { defaultWeekNumber: DEFAULT_WEEK });
+    mount(RESULTS_PAGE.scoreboard, { defaultWeekNumber: DEFAULT_WEEK });
     expect(landedOn()).toBe(`/${SEASON}/${DEFAULT_WEEK}/scoreboard`);
   });
 
   it("goes home when the schedule could not be loaded", () => {
-    mount("Scoreboard", { weeks: undefined });
+    mount(RESULTS_PAGE.scoreboard, { weeks: undefined });
     expect(landedOn()).toBe("/");
   });
 
   it("goes home when the season has no week behind it yet", () => {
     // Between the Super Bowl and the opener, which is the case this exists for.
-    mount("Scoreboard", { defaultWeekNumber: undefined });
+    mount(RESULTS_PAGE.scoreboard, { defaultWeekNumber: undefined });
     expect(landedOn()).toBe("/");
   });
 
   it("shows the wireframe rather than guessing while the schedule loads", () => {
-    mount("Scoreboard", { isWeeksLoading: true });
+    mount(RESULTS_PAGE.scoreboard, { isWeeksLoading: true });
     expect(landedOn()).toBeUndefined();
     expect(screen.getByRole("table", { hidden: true })).toHaveAttribute(
       "aria-busy",
@@ -90,7 +88,7 @@ describe("CurrentWeekRedirect", () => {
   // This route knows no week to name yet, so the caption holds its room instead
   // of naming one. Filled in, the table below it would move when the week landed.
   it("holds the caption's room while the week is unknown", () => {
-    mount("Scoreboard", { isWeeksLoading: true });
+    mount(RESULTS_PAGE.scoreboard, { isWeeksLoading: true });
     const caption = document.querySelector(".results-caption");
     expect(caption).toBeInTheDocument();
     expect(caption).toHaveClass("--loading");

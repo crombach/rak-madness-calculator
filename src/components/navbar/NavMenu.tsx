@@ -9,7 +9,7 @@ import cssMediaQuery from "../../hooks/cssMediaQuery";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import { buttonClasses } from "../button/Button";
 import { CloseIcon, HomeIcon, MenuIcon, SwapVertIcon } from "../icon/Icon";
-import resultsPath from "../results/resultsPath";
+import resultsPath, { RESULTS_PAGE } from "../results/resultsPath";
 import "./NavMenu.scss";
 
 type Week = number | string | undefined;
@@ -31,9 +31,9 @@ type NavItem = {
 const ITEMS: Array<NavItem> = [
   { label: "Home", icon: <HomeIcon />, path: () => "/" },
   {
-    label: "Swing Games",
+    label: RESULTS_PAGE.swingGames,
     icon: <SwapVertIcon />,
-    path: (season, week) => resultsPath(season, week, "Swing Games"),
+    path: (season, week) => resultsPath(season, week, RESULTS_PAGE.swingGames),
     disabledReason: ({ isWeekWon, swingGames }) => {
       if (swingGames == null) return "Scores still loading";
       if (isWeekWon) return "Week already won";

@@ -1,6 +1,6 @@
 import { Navigate } from "react-router";
 import { useAppData } from "../../context/AppDataContext";
-import { ScoresView } from "../navbar/ScoresNavbar";
+import { ScoresView } from "./resultsPath";
 import ResultsFrame from "./ResultsFrame";
 import resultsPath from "./resultsPath";
 

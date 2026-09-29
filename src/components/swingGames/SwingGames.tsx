@@ -11,7 +11,7 @@ import { SwingGame, SwingSide } from "../../utils/scoring/getSwingGames";
 import Button from "../button/Button";
 import { ExpandMoreIcon } from "../icon/Icon";
 import plural, { verbFor } from "../../utils/plural";
-import resultsPath from "../results/resultsPath";
+import resultsPath, { RESULTS_PAGE } from "../results/resultsPath";
 import { HEADING_MARK, statusByLabel } from "../table/picks/headingMark";
 // For `analysis__more` and `analysis__standing`, which this page shares with the
 // analysis dialog.
@@ -153,7 +153,12 @@ export default function SwingGames({
   // A won week, one no single game decides, or a reader who has not opted into
   // experimental features, has nothing to show here.
   if (!experimentalFeatures || swings.games.length === 0) {
-    return <Navigate replace to={resultsPath(season, week, "Scoreboard")} />;
+    return (
+      <Navigate
+        replace
+        to={resultsPath(season, week, RESULTS_PAGE.scoreboard)}
+      />
+    );
   }
 
   const labels = swings.games.map((game) => game.label);

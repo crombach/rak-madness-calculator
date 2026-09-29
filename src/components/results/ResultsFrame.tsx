@@ -19,12 +19,12 @@ import getClasses from "../../utils/getClasses";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
 import LogoButton, { APP_NAME } from "../navbar/LogoButton";
 import NavMenu from "../navbar/NavMenu";
-import ScoresNavbar, { ScoresView } from "../navbar/ScoresNavbar";
+import ScoresNavbar from "../navbar/ScoresNavbar";
 import PageLayout from "../pageLayout/PageLayout";
 import SwingGamesSkeleton from "../swingGames/SwingGamesSkeleton";
 import SkeletonTable from "../table/SkeletonTable";
 import DialogLoadBoundary from "./DialogLoadBoundary";
-import { ResultsPage } from "./resultsPath";
+import { RESULTS_PAGE, ResultsPage, ScoresView } from "./resultsPath";
 import "./ResultsFrame.scss";
 
 /*
@@ -94,7 +94,8 @@ export default function ResultsFrame({
   // week they are headed for.
   const { season: seasonParam, week: weekParam } = useParams();
   const hasWeek = Boolean(seasonParam && weekParam);
-  const scoresView: ScoresView | null = view === "Swing Games" ? null : view;
+  const scoresView: ScoresView | null =
+    view === RESULTS_PAGE.swingGames ? null : view;
   // Once every game is final there is nothing left to fetch, so the refresh button
   // and the divider beside it go rather than sit there doing nothing.
   const isWeekSettled = useIsWeekSettled();
@@ -223,7 +224,7 @@ export default function ResultsFrame({
           <GameStatusContextProvider showGameStatus={showGameStatus}>
             {isReady ? (
               children
-            ) : view === "Swing Games" ? (
+            ) : view === RESULTS_PAGE.swingGames ? (
               <SwingGamesSkeleton />
             ) : (
               // A page with no table has no wireframe to stand in for it.

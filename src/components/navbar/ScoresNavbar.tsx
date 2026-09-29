@@ -3,8 +3,7 @@ import { FactCheckIcon, LeaderboardIcon, UpdateIcon } from "../icon/Icon";
 import Button from "../button/Button";
 import "./ScoresNavbar.scss";
 import getClasses from "../../utils/getClasses";
-
-export type ScoresView = "Scoreboard" | "Picks";
+import { RESULTS_PAGE, ScoresView } from "../results/resultsPath";
 
 /**
  * How long the refresh button takes to fade away. Held here because it has to
@@ -116,18 +115,18 @@ export default function ScoresNavbar({
         </div>
       )}
       <ViewButton
-        view="Scoreboard"
+        view={RESULTS_PAGE.scoreboard}
         icon={<LeaderboardIcon />}
-        label="Scoreboard"
+        label={RESULTS_PAGE.scoreboard}
         currentView={view}
         noWeekYet={noWeekYet}
         disabled={disabled}
         onViewChange={onViewChange}
       />
       <ViewButton
-        view="Picks"
+        view={RESULTS_PAGE.picks}
         icon={<FactCheckIcon />}
-        label="Picks"
+        label={RESULTS_PAGE.picks}
         currentView={view}
         noWeekYet={noWeekYet}
         disabled={disabled}

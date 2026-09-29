@@ -2,6 +2,7 @@ import { Suspense, lazy } from "react";
 import { Navigate, Route, Routes } from "react-router";
 import HomePage from "./components/home/HomePage";
 import CurrentWeekRedirect from "./components/results/CurrentWeekRedirect";
+import { RESULTS_PAGE } from "./components/results/resultsPath";
 import PicksRoute from "./components/results/PicksRoute";
 import ResultsLayout from "./components/results/ResultsLayout";
 import ScoreboardRoute from "./components/results/ScoreboardRoute";
@@ -20,9 +21,12 @@ export default function App() {
       {/* Bookmarkable shortcuts to the latest week worth showing. */}
       <Route
         path="/scoreboard"
-        element={<CurrentWeekRedirect view="Scoreboard" />}
+        element={<CurrentWeekRedirect view={RESULTS_PAGE.scoreboard} />}
       />
-      <Route path="/picks" element={<CurrentWeekRedirect view="Picks" />} />
+      <Route
+        path="/picks"
+        element={<CurrentWeekRedirect view={RESULTS_PAGE.picks} />}
+      />
       <Route path="/:season/:week" element={<ResultsLayout />}>
         <Route index element={<Navigate to="scoreboard" replace />} />
         <Route path="scoreboard" element={<ScoreboardRoute />} />
