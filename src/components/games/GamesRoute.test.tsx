@@ -77,28 +77,6 @@ describe("the games route", () => {
     ).toBeInTheDocument();
   });
 
-  it("sends the old live path to the games page", async () => {
-    mountApp(`/${SEASON}/${CURRENT_WEEK}/live`);
-
-    expect(
-      await screen.findByRole("heading", {
-        level: 1,
-        name: `${SEASON} Week ${CURRENT_WEEK} All Games`,
-      }),
-    ).toBeInTheDocument();
-  });
-
-  it("sends the old games path to the all-games page", async () => {
-    mountApp(`/${SEASON}/${CURRENT_WEEK}/games`);
-
-    expect(
-      await screen.findByRole("heading", {
-        level: 1,
-        name: `${SEASON} Week ${CURRENT_WEEK} All Games`,
-      }),
-    ).toBeInTheDocument();
-  });
-
   it("sends a reader without experimental features to the scoreboard", async () => {
     localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
     mountApp(GAMES_PATH);

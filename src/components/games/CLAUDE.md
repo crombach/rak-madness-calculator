@@ -1,7 +1,7 @@
 # games
 
 The `/:season/:week/all-games` route: every game of the week, one scoreboard
-each. `/games` and `/live` redirect here.
+each.
 
 - `GamesPage`: `lazyPreloadable` over `GamesRoute`, mounted by `App.tsx`.
   `ResultsFrame` preloads it.
