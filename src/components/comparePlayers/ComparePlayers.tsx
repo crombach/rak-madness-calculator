@@ -3,7 +3,9 @@ import { isMyPlayer, useSettings } from "../../context/SettingsContext";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import differingGames from "../../utils/scoring/differingGames";
 import { playerOptions } from "../playerAnalysis/PlayerAnalysisDialog";
+import { RESULTS_PAGE } from "../results/resultsPath";
 import PicksTable from "../table/picks/PicksTable";
+import SkeletonTable from "../table/SkeletonTable";
 import {
   MAX_PICKERS,
   MIN_PICKERS,
@@ -62,7 +64,10 @@ export default function ComparePlayers({
   const [slots, setSlots] = useState(() =>
     startingIds(scores?.scores ?? [], playerName).map(newSlot),
   );
-  const [isOpen, setIsOpen] = useState(false);
+  // Opens on the pickers when fewer than two players come back from last time.
+  const [isOpen, setIsOpen] = useState(
+    () => slots.filter(({ id }) => id != null).length < MIN_PICKERS,
+  );
   const [showsAll, setShowsAll] = useState(readShowsAll);
   const [addedKey, setAddedKey] = useState<number>();
   const chosen = useMemo(
@@ -115,6 +120,9 @@ export default function ComparePlayers({
           )}
         </div>
       </div>
+      {!isReady && (
+        <SkeletonTable view={RESULTS_PAGE.comparePlayers} loading={false} />
+      )}
       {isReady && (games == null || games.size > 0) && (
         <PicksTable
           scores={scores}

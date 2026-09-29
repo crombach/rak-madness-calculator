@@ -69,15 +69,14 @@ const PICKS_COLUMNS: Array<Column> = [
 ];
 
 /**
- * Compare Players' shape: a couple of differing games in each league, among the
+ * Compare Players' shape: a few differing pro games, among the
  * tiebreakers the real table adds. Filled to the bottom of the box alone, since
  * two to ten players never scroll it.
  */
 const COMPARE_COLUMNS: Array<Column> = [
   ...RANK_AND_PLAYER,
-  ...leagueColumns(2, "C"),
   { header: "College Score" },
-  ...leagueColumns(4, "P"),
+  ...leagueColumns(2, "P"),
   { header: "Pro Score" },
   { header: "Pro Score ATS" },
   { header: "MNF Points Pick" },
@@ -113,7 +112,14 @@ function headerClass(column: Column): string | undefined {
  * Memoized because it is well over a thousand cells and its route re-renders on
  * every flag the week's loading sets, all of them while this is on screen.
  */
-function SkeletonTable({ view }: { view: SkeletonView }) {
+function SkeletonTable({
+  view,
+  loading = true,
+}: {
+  view: SkeletonView;
+  /** False where it stands in for a table with nothing chosen yet, not one loading. */
+  loading?: boolean;
+}) {
   const { columns, standInRows } = SHAPES[view];
 
   return (
@@ -122,14 +128,16 @@ function SkeletonTable({ view }: { view: SkeletonView }) {
         A screen reader has nothing to read out of the wireframe below, hidden
         entirely, so this says what it stands in for instead.
       */}
-      <span className="skeleton__status" role="status">
-        Loading {view.toLowerCase()} results
-      </span>
+      {loading && (
+        <span className="skeleton__status" role="status">
+          Loading {view.toLowerCase()} results
+        </span>
+      )}
       <TableShell
         className="--skeleton"
         columnCount={columns.length}
         standInRows={standInRows}
-        busy
+        busy={loading}
         ariaHidden
         header={columns.map((column, index) => (
           // The heading itself, hidden, so a header that wraps to two lines is two

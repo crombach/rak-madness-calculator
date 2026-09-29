@@ -78,10 +78,29 @@
   display: flex;
   flex-direction: column;
   gap: var(--rak-space-2);
+
+  // Out of the flow while it has nothing to say, so the gap above it opens only
+  // with its text and the table sits where the wireframe's did. Still in the
+  // accessibility tree, which a live region needs before its text arrives.
+  &:empty {
+    position: absolute;
+  }
 }
 
 // An edge between the table and the controls' surface above it, which the header
 // band would otherwise meet with nothing between.
 .compare-players ~ .table .table__header th {
   border-top: var(--rak-table-border);
+}
+
+// A frame hugging a table of a few games stands a narrow strip in a wide case.
+// The controls hold it open, and the table stretches to meet them.
+@include roomy-screen {
+  .compare-players {
+    min-width: min(60rem, 100cqi);
+  }
+
+  .compare-players ~ .table {
+    min-width: 100%;
+  }
 }

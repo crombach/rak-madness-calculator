@@ -88,7 +88,7 @@ instead of recording the whole run.
   `wrong`, `$PICK_THEME` is `light` or `dark`.
 - `scenarios/compare-players.js` — Compare Players on the reader against a long
   name, split on a live game. `$COMPARE_THEME` is `light` or `dark`. `COMPARE_OPEN=1`
-  ends on the Player 2 list open. `COMPARE_ADD=1` adds Ann third,
+  ends on the Player 2 list open, over the placeholder table. `COMPARE_ADD=1` adds Ann third,
   `COMPARE_ALL=1` shows every game, `COMPARE_DIALOG=1` ends with the dialog open.
 - `scenarios/scoreline-shape.js` — the Game Status readout on a live game level at
   nothing, then the list its marks are read off. `$SCORELINE_THEME` is `light` or

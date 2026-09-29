@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 
 vi.mock("../../utils/getLeagueInfo");
 vi.mock("../../utils/readFileToBuffer");
@@ -48,12 +48,17 @@ function compareScores() {
   ]);
 }
 
-/** Opens the dialog the pickers are in, unless it is open already. */
+/**
+ * Opens the dialog the pickers are in, unless it is open already. The page opens
+ * it itself when fewer than two players come back from last time.
+ */
 async function openDialog(user: ReturnType<typeof mountApp>) {
-  if (screen.queryByRole("dialog") != null) return;
-  await user.click(
-    await screen.findByRole("button", { name: "Choose Players" }),
+  const opener = await waitFor(
+    () =>
+      screen.queryByRole("dialog") ??
+      screen.getByRole("button", { name: "Choose Players" }),
   );
+  if (opener.getAttribute("role") !== "dialog") await user.click(opener);
 }
 
 async function closeDialog(user: ReturnType<typeof mountApp>) {
@@ -92,11 +97,11 @@ describe("the compare players route", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows no picks until two players are chosen", async () => {
+  it("opens on the pickers, with no picks, until two players are chosen", async () => {
     mountApp(COMPARE_PATH);
 
     expect(
-      await screen.findByRole("button", { name: "Choose Players" }),
+      await screen.findByRole("dialog", { name: "Compare Players" }),
     ).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
