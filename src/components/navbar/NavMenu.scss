@@ -144,7 +144,7 @@
   border-radius: var(--rak-radius-lg) 0 0 var(--rak-radius-lg);
   background-color: var(--rak-surface-raised);
   box-shadow: var(--rak-shadow-dialog);
-  color: var(--rak-text-secondary);
+  color: var(--rak-text);
   transform: translateX(var(--drawer-swipe-movement-x, 0px));
   transition: transform var(--rak-duration-medium) var(--rak-ease-standard);
 
@@ -185,7 +185,6 @@
 
   margin: 0;
   font-size: var(--rak-text-sm);
-  color: var(--rak-text-tertiary);
 }
 
 .nav-drawer__list {
