@@ -5,7 +5,7 @@ each.
 
 - `GamesPage`: `lazyPreloadable` over `GamesRoute`, mounted by `App.tsx`.
   `ResultsFrame` preloads it.
-- `GamesRoute`: `Games` behind `ExperimentalGate`. A settled week stays.
+- `GamesRoute`: `Games` on the week's scores. A settled week stays.
 - `Games`: `useLiveWeek` polls every open league, a busy bar under the caption
   while a live one is fetched. Sections Live, Today, Tomorrow, Upcoming, then
   Completed in table order. An empty section is left out.
