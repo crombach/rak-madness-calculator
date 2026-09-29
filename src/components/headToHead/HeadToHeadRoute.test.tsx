@@ -112,10 +112,12 @@ describe("the head to head route", () => {
       "Rank",
       "Player",
       "MNF Points Pick",
+      "MNF Points Distance",
       "C2",
       "College Score",
       "P1",
       "Pro Score",
+      "Pro Score ATS",
       "Total Score",
     ]);
     expect(
@@ -129,7 +131,7 @@ describe("the head to head route", () => {
     );
   });
 
-  it("shows each player's MNF points pick", async () => {
+  it("shows each player's MNF points pick among the tiebreakers", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player", "Alice");
     await choose(user, "Versus", "Carol");

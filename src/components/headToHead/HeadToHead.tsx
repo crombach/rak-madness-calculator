@@ -147,7 +147,7 @@ export default function HeadToHead({ scores }: { scores?: RakMadnessScores }) {
           caption={`Picks where ${first.name} and ${second.name} differ`}
           players={players}
           games={games}
-          showsMnfPick
+          showsTiebreakers
         />
       )}
     </>

@@ -26,6 +26,9 @@ import "./PicksTable.scss";
 /** Rank, player, college score, pro score, and total score. */
 const FIXED_COLUMN_COUNT = 5;
 
+/** MNF Points Pick, MNF Points Distance, and Pro Score ATS. */
+const TIEBREAKER_COLUMN_COUNT = 3;
+
 /**
  * A pick's status, in words, for the fill color a sighted reader gets instead.
  * Keyed by `fillStatus` rather than the scored status, so a cell says what it was
@@ -160,7 +163,7 @@ function PicksTable({
   caption = "Player picks for the week, college and pro games",
   players,
   games,
-  showsMnfPick = false,
+  showsTiebreakers = false,
 }: {
   scores?: RakMadnessScores | null;
   caption?: string;
@@ -168,8 +171,8 @@ function PicksTable({
   players?: ReadonlySet<string>;
   /** The labels of the game columns drawn, or every column when left out. */
   games?: ReadonlySet<string>;
-  /** Adds the scoreboard's MNF Points Pick column after the player. */
-  showsMnfPick?: boolean;
+  /** Adds the scoreboard's tiebreaker columns: both MNF Points ones and Pro Score ATS. */
+  showsTiebreakers?: boolean;
 }) {
   const showGameStatus = useShowGameStatus();
   const { picks: pickChanges } = useScoreChanges();
@@ -193,7 +196,7 @@ function PicksTable({
   const shownPro = proLabels.filter(isShown);
   const columnCount =
     FIXED_COLUMN_COUNT +
-    Number(showsMnfPick) +
+    (showsTiebreakers ? TIEBREAKER_COLUMN_COUNT : 0) +
     shownCollege.length +
     shownPro.length;
   const statuses = statusByLabel(scores.games);
@@ -208,7 +211,12 @@ function PicksTable({
           <th className={PLAYER_COL_CLASS} scope="col">
             Player
           </th>
-          {showsMnfPick && <th scope="col">MNF Points Pick</th>}
+          {showsTiebreakers && (
+            <>
+              <th scope="col">MNF Points Pick</th>
+              <th scope="col">MNF Points Distance</th>
+            </>
+          )}
           {leagueHeaders({
             labels: shownCollege,
             statusByLabel: statuses,
@@ -221,6 +229,7 @@ function PicksTable({
             onClick: showGameStatus,
           })}
           <th scope="col">Pro Score</th>
+          {showsTiebreakers && <th scope="col">Pro Score ATS</th>}
           <th scope="col">Total Score</th>
         </>
       }
@@ -234,7 +243,12 @@ function PicksTable({
               player={player}
               hasNameConflict={repeated.has(player.name)}
             />
-            {showsMnfPick && <td>{player.tiebreaker.pick ?? "N/A"}</td>}
+            {showsTiebreakers && (
+              <>
+                <td>{player.tiebreaker.pick ?? "N/A"}</td>
+                <td>{player.tiebreaker.distance ?? "N/A"}</td>
+              </>
+            )}
             <PickCells
               playerId={player.id}
               picks={player.college}
@@ -253,6 +267,7 @@ function PicksTable({
               onClick={showGameStatus}
             />
             <td>{player.score.pro}</td>
+            {showsTiebreakers && <td>{player.score.proAgainstTheSpread}</td>}
             <td>
               <b>{player.score.total}</b>
             </td>

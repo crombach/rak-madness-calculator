@@ -7,4 +7,5 @@ open games that can still change them.
   opt-in, else renders `HeadToHead`. Mounted lazily by `App.tsx`.
 - `HeadToHead`: two `PlayerCombobox` pickers, the first set to the reader's own
   player. `getHeadToHead` gives the gap and verdict. `PicksTable` draws the two
-  rows, open split games first, decided ones behind "Show more".
+  rows with every tiebreaker, open split games first, decided ones behind
+  "Show more".
