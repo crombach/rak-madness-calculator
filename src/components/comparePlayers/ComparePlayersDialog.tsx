@@ -26,7 +26,7 @@ function PlayerPicker({
   value?: PlayerOption;
   onValueChange: (chosen: PlayerOption) => void;
   onRemove: () => void;
-  /** Whether the page holds more pickers than it opens with. */
+  /** Whether more than the fewest pickers remain. */
   canRemove: boolean;
   focusOnMount?: boolean;
 }) {

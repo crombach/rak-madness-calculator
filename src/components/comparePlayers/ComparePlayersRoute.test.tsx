@@ -349,6 +349,17 @@ describe("the compare players route", () => {
     ).toEqual(["Carol", "Alice"]);
   });
 
+  it("keeps saved players this week lacks until the reader chooses", async () => {
+    const saved = JSON.stringify(["Gone", "Alice", "Missing"]);
+    localStorage.setItem(COMPARED_PLAYERS_KEY, saved);
+    await openDialog(mountApp(COMPARE_PATH));
+
+    expect(
+      await screen.findByRole("combobox", { name: "Player 1" }),
+    ).toHaveValue("Alice");
+    expect(localStorage.getItem(COMPARED_PLAYERS_KEY)).toBe(saved);
+  });
+
   it("opens on the saved players the week still has", async () => {
     localStorage.setItem(
       COMPARED_PLAYERS_KEY,

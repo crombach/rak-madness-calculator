@@ -35,6 +35,13 @@ function newSlot(id?: string): Slot {
   return { key: slotCount++, id };
 }
 
+/** The rows the pickers hold, in picker order. */
+function playersIn(slots: Array<Slot>, scores?: RakMadnessScores) {
+  return slots.flatMap(
+    ({ id }) => scores?.scores.find((player) => player.id === id) ?? [],
+  );
+}
+
 /**
  * The rows the saved names still name this week, one row per name. Falls back to
  * the reader's own row alone when none of them does.
@@ -77,17 +84,13 @@ export default function ComparePlayers({
   );
   const [scope, setScope] = useState(readGameScope);
   const [addedKey, setAddedKey] = useState<number>();
-  const chosen = useMemo(
-    () =>
-      slots.flatMap(
-        ({ id }) => scores?.scores.find((player) => player.id === id) ?? [],
-      ),
-    [slots, scores],
-  );
-
-  useEffect(() => {
-    writeComparedPlayers(chosen.map((player) => player.name));
-  }, [chosen]);
+  const chosen = useMemo(() => playersIn(slots, scores), [slots, scores]);
+  // Saved only on the reader's own change, so a week missing the saved names
+  // leaves them for a week that has them.
+  const changeSlots = (next: Array<Slot>) => {
+    setSlots(next);
+    writeComparedPlayers(playersIn(next, scores).map((player) => player.name));
+  };
 
   useEffect(() => {
     writeGameScope(scope);
@@ -142,7 +145,9 @@ export default function ComparePlayers({
         slots={slots}
         canAdd={slots.length < Math.min(MAX_PICKERS, options.length)}
         onChoose={(key, id) =>
-          setSlots(slots.map((slot) => (slot.key === key ? { key, id } : slot)))
+          changeSlots(
+            slots.map((slot) => (slot.key === key ? { key, id } : slot)),
+          )
         }
         onAdd={() => {
           const slot = newSlot();
@@ -150,7 +155,9 @@ export default function ComparePlayers({
           setAddedKey(slot.key);
         }}
         addedKey={addedKey}
-        onRemove={(key) => setSlots(slots.filter((slot) => slot.key !== key))}
+        onRemove={(key) =>
+          changeSlots(slots.filter((slot) => slot.key !== key))
+        }
       />
     </>
   );

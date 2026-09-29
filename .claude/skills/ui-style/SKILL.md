@@ -36,8 +36,6 @@ new style for something the app already renders elsewhere.
   is settled. Otherwise it says why, such as "Needs two players".
 - Button text in title case: "Choose Players", "Show More". Not an icon button's
   `aria-label`, which no one sees.
-- Button text in title case: "Choose Players", "Show More". Not an icon button's
-  `aria-label`, which no one sees.
 - One line of separate facts splits them with `·`. The items of one list split
   with a comma. Never a `·` inside a list.
 - A loading placeholder for a view one component draws is that component on

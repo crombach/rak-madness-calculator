@@ -18,10 +18,10 @@ a touch phone: Playwright `isMobile` and `hasTouch`, no hover, no refresh button
 ## Subdirectories
 
 - [`components/button/`](components/button/CLAUDE.md) — shared button, Base UI's primitive
+- [`components/comparePlayers/`](components/comparePlayers/CLAUDE.md) — players' picks side by side
 - [`components/dialog/`](components/dialog/CLAUDE.md) — the shared dialog shell and its search
 - [`components/footer/`](components/footer/CLAUDE.md) — bottom links bar
 - [`components/gameStatus/`](components/gameStatus/CLAUDE.md) — how one game in the week is going
-- [`components/comparePlayers/`](components/comparePlayers/CLAUDE.md) — players' picks side by side, cut to splits
 - [`components/home/`](components/home/CLAUDE.md) — home route: pickers, upload, export
 - [`components/icon/`](components/icon/CLAUDE.md) — SVG icons inlined from Material Design
 - [`components/liveGames/`](components/liveGames/CLAUDE.md) — every game being played now
