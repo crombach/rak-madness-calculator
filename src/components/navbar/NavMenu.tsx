@@ -1,7 +1,7 @@
 import { Drawer } from "@base-ui/react/drawer";
 import { Menu } from "@base-ui/react/menu";
 import { Tooltip } from "@base-ui/react/tooltip";
-import { ReactNode, useId, useState } from "react";
+import { ReactElement, ReactNode, useId, useState } from "react";
 import { Link, useLocation } from "react-router";
 import { useIsWeekWon, useSwingGames } from "../../context/AppDataContext";
 import { useSettings } from "../../context/SettingsContext";
@@ -9,7 +9,7 @@ import cssMediaQuery from "../../hooks/cssMediaQuery";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import { buttonClasses } from "../button/Button";
 import { CloseIcon, HomeIcon, MenuIcon, SwapVertIcon } from "../icon/Icon";
-import resultsPath, { RESULTS_PAGE } from "../results/resultsPath";
+import resultsPath, { RESULTS_PAGE, weekName } from "../results/resultsPath";
 import "./NavMenu.scss";
 
 type Week = number | string | undefined;
@@ -84,7 +84,13 @@ export default function NavMenu({
     <>
       <div className="navbar__divider" />
       {isNarrow ? (
-        <NavDrawer links={links} disabled={disabled} />
+        <NavDrawer
+          links={links}
+          disabled={disabled}
+          title={
+            season != null && week != null ? weekName(season, week) : undefined
+          }
+        />
       ) : (
         <NavPopup links={links} disabled={disabled} />
       )}
@@ -163,9 +169,56 @@ function DisabledReason({ id, reason }: { id: string; reason: string }) {
 }
 
 /**
+ * A disabled item's reason as a tooltip, on hover, keyboard focus, or a tap.
+ * Base UI opens a tooltip for neither a tap nor a click, so a press opens it here,
+ * and a press anywhere else closes it again.
+ */
+function ReasonTooltip({
+  reason,
+  side,
+  align,
+  className,
+  trigger,
+  children,
+}: {
+  reason: string;
+  side: "left" | "bottom";
+  align: "center" | "end";
+  className: string;
+  trigger: ReactElement;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Tooltip.Root open={open} onOpenChange={setOpen}>
+      <Tooltip.Trigger
+        delay={TOOLTIP_DELAY_MS}
+        closeOnClick={false}
+        render={trigger}
+        // Capture, since a disabled Base UI item drops its own pointer handlers.
+        onPointerDownCapture={() => setOpen(true)}
+      >
+        {children}
+      </Tooltip.Trigger>
+      <Tooltip.Portal>
+        <Tooltip.Positioner
+          className={className}
+          side={side}
+          align={align}
+          sideOffset={4}
+        >
+          <Tooltip.Popup role="tooltip" className="nav-menu__tooltip">
+            {reason}
+          </Tooltip.Popup>
+        </Tooltip.Positioner>
+      </Tooltip.Portal>
+    </Tooltip.Root>
+  );
+}
+
+/**
  * A disabled popup item. Base UI keeps `Menu.Item` focusable while disabled, so
- * the reason shows as a tooltip on hover or keyboard focus, and sits in an
- * `aria-describedby` span too, for a reader neither reaches.
+ * keyboard focus reaches its reason, which an `aria-describedby` span holds too.
  */
 function DisabledNavItem({
   label,
@@ -180,44 +233,36 @@ function DisabledNavItem({
 }) {
   const reasonId = useId();
   return (
-    <Tooltip.Root>
-      <Tooltip.Trigger
-        delay={TOOLTIP_DELAY_MS}
-        render={
-          <Menu.Item
-            disabled
-            className="nav-menu__item"
-            aria-current={isCurrent ? "page" : undefined}
-            aria-describedby={reasonId}
-          />
-        }
-      >
-        {icon}
-        {label}
-        <DisabledReason id={reasonId} reason={reason} />
-      </Tooltip.Trigger>
-      <Tooltip.Portal>
-        <Tooltip.Positioner
-          className="nav-menu__tooltip-positioner"
-          side="left"
-          align="center"
-          sideOffset={4}
-        >
-          <Tooltip.Popup role="tooltip" className="nav-menu__tooltip">
-            {reason}
-          </Tooltip.Popup>
-        </Tooltip.Positioner>
-      </Tooltip.Portal>
-    </Tooltip.Root>
+    <ReasonTooltip
+      reason={reason}
+      side="left"
+      align="center"
+      className="nav-menu__tooltip-positioner"
+      trigger={
+        <Menu.Item
+          disabled
+          className="nav-menu__item"
+          aria-current={isCurrent ? "page" : undefined}
+          aria-describedby={reasonId}
+        />
+      }
+    >
+      {icon}
+      {label}
+      <DisabledReason id={reasonId} reason={reason} />
+    </ReasonTooltip>
   );
 }
 
 function NavDrawer({
   links,
   disabled,
+  title,
 }: {
   links: Array<NavLink>;
   disabled: boolean;
+  /** The week the pages are for, shown atop the drawer. */
+  title?: string;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -235,7 +280,12 @@ function NavDrawer({
         <Drawer.Viewport className="nav-drawer__viewport">
           <Drawer.Popup className="nav-drawer__popup">
             <header className="nav-drawer__header">
-              <Drawer.Title className="nav-drawer__title">Menu</Drawer.Title>
+              <Drawer.Title className="nav-menu__sr-only">Menu</Drawer.Title>
+              {title != null && (
+                <Drawer.Description className="nav-drawer__title">
+                  {title}
+                </Drawer.Description>
+              )}
               <Drawer.Close
                 className={buttonClasses({ variant: "soft", iconOnly: true })}
                 aria-label="Close"
@@ -278,7 +328,10 @@ function NavDrawer({
   );
 }
 
-/** A disabled drawer row. The reason reaches only a screen reader, through this span. */
+/**
+ * A disabled drawer row. Its reason shows below it on a tap, since the drawer
+ * leaves no room to its left, and at its end, clear of the next row's label.
+ */
 function DisabledDrawerItem({
   label,
   icon,
@@ -292,18 +345,26 @@ function DisabledDrawerItem({
 }) {
   const reasonId = useId();
   return (
-    <span
-      role="link"
-      // Focusable like the popup's disabled item, so Tab reaches its reason too.
-      tabIndex={0}
-      className="nav-drawer__item"
-      aria-disabled="true"
-      aria-current={isCurrent ? "page" : undefined}
-      aria-describedby={reasonId}
+    <ReasonTooltip
+      reason={reason}
+      side="bottom"
+      align="end"
+      className="nav-menu__tooltip-positioner nav-menu__tooltip-positioner--drawer"
+      trigger={
+        <span
+          role="link"
+          // Focusable like the popup's disabled item, so Tab reaches its reason too.
+          tabIndex={0}
+          className="nav-drawer__item"
+          aria-disabled="true"
+          aria-current={isCurrent ? "page" : undefined}
+          aria-describedby={reasonId}
+        />
+      }
     >
       {icon}
       {label}
       <DisabledReason id={reasonId} reason={reason} />
-    </span>
+    </ReasonTooltip>
   );
 }

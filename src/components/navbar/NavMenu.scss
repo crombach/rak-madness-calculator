@@ -93,14 +93,19 @@
   }
 }
 
-// A disabled item's reason, read by a screen reader instead of shown, in
-// either the popup or the drawer.
+// Text a screen reader reads instead of seeing: a disabled item's reason, and
+// the drawer's own name.
 .nav-menu__sr-only {
   @include visually-hidden;
 }
 
 .nav-menu__tooltip-positioner {
   z-index: var(--rak-z-overlay);
+}
+
+// Inside the drawer, so above the dialog layer it sits in.
+.nav-menu__tooltip-positioner--drawer {
+  z-index: calc(var(--rak-z-dialog) + 1);
 }
 
 .nav-menu__tooltip {
@@ -216,6 +221,9 @@
 
 .nav-drawer__item {
   @include nav-menu-row;
+
+  // A finger needs more room than a pointer, so phone rows sit further apart.
+  padding-block: var(--rak-space-3);
 
   border-radius: var(--rak-radius-xs);
 

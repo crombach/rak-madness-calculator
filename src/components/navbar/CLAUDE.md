@@ -7,8 +7,7 @@
   then unmounts them.
 - `NavMenu`: the hamburger every page mounts, opt-in gated, to "Home" and
   "Swing Games". A wide-screen popup, a drawer with the same items below it.
-  `ITEMS` disables an item, never hides it. Reason: popup tooltip, drawer
-  screen-reader text.
+  `ITEMS` disables, never hides, an item. Its reason: a tooltip a tap opens.
 - `LogoButton`: `APP_NAME`, which it exports, as a target that goes home, used
   by the results frame and the home page too, set in `--rak-font-display`.
 

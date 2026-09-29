@@ -217,6 +217,21 @@ describe("NavMenu", () => {
       );
     });
 
+    it("shows the disabled reason in a tooltip on a tap", async () => {
+      mockSwingGames.mockReturnValue({ games: [] });
+      const user = mount();
+      await user.click(trigger());
+      const item = await screen.findByRole("menuitem", {
+        name: /Swing Games/,
+      });
+
+      await user.pointer({ keys: "[TouchA]", target: item });
+
+      expect(await screen.findByRole("tooltip")).toHaveTextContent(
+        "No game knocks anyone out",
+      );
+    });
+
     it("shows the disabled reason in a tooltip on keyboard focus", async () => {
       mockSwingGames.mockReturnValue({ games: [] });
       const user = mount();
@@ -281,6 +296,20 @@ describe("NavMenu", () => {
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });
 
+    it("heads the drawer with its week, and still names it Menu", async () => {
+      const { drawer } = await openDrawer();
+
+      expect(drawer).toHaveAccessibleDescription(
+        `${SEASON} Season · Week ${WEEK}`,
+      );
+    });
+
+    it("heads the drawer with nothing when no week is chosen", async () => {
+      const { drawer } = await openDrawer({ hasWeek: false });
+
+      expect(drawer).not.toHaveAccessibleDescription();
+    });
+
     it("disables Swing Games while scores load", async () => {
       mockSwingGames.mockReturnValue(undefined);
       const { drawer } = await openDrawer();
@@ -309,6 +338,27 @@ describe("NavMenu", () => {
       expect(
         within(drawer).getByText(/Swing Games/),
       ).toHaveAccessibleDescription("No game knocks anyone out");
+    });
+
+    it("shows the disabled reason in a tooltip on a tap, until a tap elsewhere", async () => {
+      mockSwingGames.mockReturnValue({ games: [] });
+      const { user, drawer } = await openDrawer();
+
+      await user.pointer({
+        keys: "[TouchA]",
+        target: within(drawer).getByRole("link", { name: "Swing Games" }),
+      });
+      expect(await screen.findByRole("tooltip")).toHaveTextContent(
+        "No game knocks anyone out",
+      );
+
+      await user.pointer({
+        keys: "[TouchA]",
+        target: within(drawer).getByRole("heading", { name: "Menu" }),
+      });
+      await waitFor(() =>
+        expect(screen.queryByRole("tooltip")).not.toBeInTheDocument(),
+      );
     });
 
     it("leaves Swing Games enabled with a game open", async () => {

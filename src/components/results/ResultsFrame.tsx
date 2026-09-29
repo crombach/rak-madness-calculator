@@ -24,7 +24,7 @@ import PageLayout from "../pageLayout/PageLayout";
 import SwingGamesSkeleton from "../swingGames/SwingGamesSkeleton";
 import SkeletonTable from "../table/SkeletonTable";
 import DialogLoadBoundary from "./DialogLoadBoundary";
-import { RESULTS_PAGE, ResultsPage, ScoresView } from "./resultsPath";
+import { RESULTS_PAGE, ResultsPage, ScoresView, weekName } from "./resultsPath";
 import "./ResultsFrame.scss";
 
 /*
@@ -214,9 +214,9 @@ export default function ResultsFrame({
           data-skeleton-text={hasWeek ? undefined : CAPTION_STAND_IN}
           aria-hidden="true"
         >
-          {hasWeek && (
+          {seasonParam && weekParam && (
             <span className="results-caption__text">
-              {`${view} · ${seasonParam} Season · Week ${weekParam}`}
+              {`${view} · ${weekName(seasonParam, weekParam)}`}
             </span>
           )}
         </p>
