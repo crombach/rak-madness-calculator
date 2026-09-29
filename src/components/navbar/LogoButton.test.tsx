@@ -34,4 +34,16 @@ describe("LogoButton", () => {
       `${APP_NAME} ${BETA_WORD}`,
     );
   });
+
+  it("sets the beta mark beside the button, not inside it", () => {
+    localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
+    render(
+      <SettingsContextProvider>
+        <LogoButton onClick={() => undefined} />
+      </SettingsContextProvider>,
+    );
+    expect(screen.getByRole("button")).not.toContainElement(
+      screen.getByText("β"),
+    );
+  });
 });

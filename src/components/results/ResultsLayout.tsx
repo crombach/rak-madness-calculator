@@ -2,7 +2,7 @@ import { Outlet, useMatch, useNavigate, useParams } from "react-router";
 import { useAppData } from "../../context/AppDataContext";
 import useWeekRouteGuard from "../../hooks/useWeekRouteGuard";
 import ResultsFrame from "./ResultsFrame";
-import resultsPath, { ResultsPage } from "./resultsPath";
+import resultsPath, { RESULTS_PAGE, ResultsPage } from "./resultsPath";
 
 /**
  * Chrome for a week's results, shared by every page of them.
@@ -22,10 +22,10 @@ export default function ResultsLayout() {
   const isPicks = useMatch("/:season/:week/picks") != null;
   const isSwings = useMatch("/:season/:week/swings") != null;
   const view: ResultsPage = isSwings
-    ? "Swing Games"
+    ? RESULTS_PAGE.swingGames
     : isPicks
-      ? "Picks"
-      : "Scoreboard";
+      ? RESULTS_PAGE.picks
+      : RESULTS_PAGE.scoreboard;
 
   return (
     <ResultsFrame

@@ -1,10 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { act } from "react";
+import { RESULTS_PAGE } from "../results/resultsPath";
 import ScoresNavbar, { COLLAPSE_DURATION_MS } from "./ScoresNavbar";
 
 const props = {
-  view: "Scoreboard" as const,
+  view: RESULTS_PAGE.scoreboard,
   onViewChange: () => undefined,
   onRefresh: () => undefined,
   isRefreshing: false,

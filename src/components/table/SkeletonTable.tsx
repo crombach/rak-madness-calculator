@@ -1,6 +1,6 @@
 import { memo } from "react";
 import rangeWithPrefix from "../../utils/rangeWithPrefix";
-import { ScoresView } from "../navbar/ScoresNavbar";
+import { RESULTS_PAGE, ScoresView } from "../results/resultsPath";
 import TableShell, { PICK_COL_CLASS, PLAYER_COL_CLASS } from "./TableShell";
 import "./SkeletonTable.scss";
 
@@ -82,7 +82,8 @@ function headerClass(column: Column): string | undefined {
  * every flag the week's loading sets, all of them while this is on screen.
  */
 function SkeletonTable({ view }: { view: ScoresView }) {
-  const columns = view === "Picks" ? PICKS_COLUMNS : SCOREBOARD_COLUMNS;
+  const columns =
+    view === RESULTS_PAGE.picks ? PICKS_COLUMNS : SCOREBOARD_COLUMNS;
 
   return (
     <>

@@ -93,24 +93,9 @@
   }
 }
 
-// A disabled item's reason, read by a screen reader instead of shown, in
-// either the popup or the drawer.
+// The drawer's own name, read by a screen reader instead of shown.
 .nav-menu__sr-only {
   @include visually-hidden;
-}
-
-.nav-menu__tooltip-positioner {
-  z-index: var(--rak-z-overlay);
-}
-
-.nav-menu__tooltip {
-  max-width: 12rem;
-  padding: var(--rak-space-1) var(--rak-space-2);
-  border-radius: var(--rak-radius-xs);
-  background-color: var(--rak-nav-key-active);
-  box-shadow: var(--rak-shadow-band-navbar);
-  color: var(--rak-nav-ink);
-  font-size: var(--rak-text-xs);
 }
 
 // The drawer below `wide-screen`, timed and eased like `DialogShell.scss`'s sheet.
@@ -145,7 +130,8 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: var(--rak-space-4);
+  // Tight, since the first row's own padding already sets it off from the header.
+  gap: 0;
   width: min(80vw, 320px);
   height: 100%;
   padding: calc(var(--rak-space-4) + env(safe-area-inset-top))
@@ -158,7 +144,7 @@
   border-radius: var(--rak-radius-lg) 0 0 var(--rak-radius-lg);
   background-color: var(--rak-surface-raised);
   box-shadow: var(--rak-shadow-dialog);
-  color: var(--rak-text-secondary);
+  color: var(--rak-text);
   transform: translateX(var(--drawer-swipe-movement-x, 0px));
   transition: transform var(--rak-duration-medium) var(--rak-ease-standard);
 
@@ -198,8 +184,7 @@
   @include micro-label;
 
   margin: 0;
-  font-size: var(--rak-text-xs);
-  color: var(--rak-text-tertiary);
+  font-size: var(--rak-text-sm);
 }
 
 .nav-drawer__list {
@@ -217,7 +202,23 @@
 .nav-drawer__item {
   @include nav-menu-row;
 
+  // A finger needs more room than a pointer, so phone rows sit further apart.
+  padding-block: var(--rak-space-4);
+
   border-radius: var(--rak-radius-xs);
 
   @include focus-ring;
+}
+
+// A disabled item with a reason, in the popup or the drawer. A grid, so the icon
+// centers on the name alone and the reason sits under the name, aligned with it.
+.nav-menu__with-reason {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  row-gap: 0;
+}
+
+.nav-menu__reason {
+  grid-column: 2;
+  font-size: var(--rak-text-xs);
 }

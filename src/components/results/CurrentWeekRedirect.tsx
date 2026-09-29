@@ -1,8 +1,7 @@
 import { Navigate } from "react-router";
 import { useAppData } from "../../context/AppDataContext";
-import { ScoresView } from "../navbar/ScoresNavbar";
 import ResultsFrame from "./ResultsFrame";
-import resultsPath from "./resultsPath";
+import resultsPath, { ScoresView } from "./resultsPath";
 
 /**
  * Sends `/scoreboard` and `/picks` to the latest week worth showing.

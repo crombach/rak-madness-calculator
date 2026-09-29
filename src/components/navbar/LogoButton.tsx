@@ -25,27 +25,31 @@ export const BETA_WORD = "beta";
 export default function LogoButton({ onClick }: { onClick: () => void }) {
   const { experimentalFeatures } = useSettings();
   return (
-    <Button
-      onClick={onClick}
-      className="logo-button"
-      ariaLabel={experimentalFeatures ? `${APP_NAME} ${BETA_WORD}` : undefined}
-    >
-      <span className="logo-button__name">
-        <span className="logo-button__name-ghost" aria-hidden="true">
-          {UNLIT_SEGMENTS}
+    <>
+      <Button
+        onClick={onClick}
+        className="logo-button"
+        ariaLabel={
+          experimentalFeatures ? `${APP_NAME} ${BETA_WORD}` : undefined
+        }
+      >
+        <span className="logo-button__name">
+          <span className="logo-button__name-ghost" aria-hidden="true">
+            {UNLIT_SEGMENTS}
+          </span>
+          {/*
+            The name in a box of its own, because the well around it is a flex
+            container. The glass has to fill the whole key, and `text-overflow`
+            reaches the text of a block, not a flex item the browser wrapped for it.
+          */}
+          <span className="logo-button__name-text">{APP_NAME}</span>
         </span>
-        {/*
-          The name in a box of its own, because the well around it is a flex
-          container. The glass has to fill the whole key, and `text-overflow`
-          reaches the text of a block, not a flex item the browser wrapped for it.
-        */}
-        <span className="logo-button__name-text">{APP_NAME}</span>
-      </span>
+      </Button>
       {experimentalFeatures && (
         <span className="logo-button__beta" aria-hidden="true">
           {BETA_MARK}
         </span>
       )}
-    </Button>
+    </>
   );
 }

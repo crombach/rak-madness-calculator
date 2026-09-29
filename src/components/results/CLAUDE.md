@@ -4,7 +4,7 @@ The week's results routes: `/:season/:week/scoreboard`, `/picks` and `/swings`.
 `CurrentWeekRedirect` backs `/scoreboard` and `/picks`, redirecting to the latest
 week worth showing.
 
-- `resultsPath`: builds `/season/week/page` for any `ResultsPage`, the one place
+- `resultsPath`: builds `/season/week/page` for each `RESULTS_PAGE`, the one place
   every route and nav link gets that URL.
 - `ResultsLayout`: the layout route. Runs `useWeekRouteGuard`, keeps the URL and the
   selected page in step, and holds the navbar.

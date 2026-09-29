@@ -13,7 +13,7 @@ import {
 /** `light` or `dark`. */
 const THEME = process.env.NAV_THEME ?? "light";
 
-/** `popup` hovers the disabled item open at wide-screen. `drawer` just opens it. */
+/** `popup` opens the wide-screen menu. `drawer` opens the drawer, so needs `--touch`. */
 const MODE = process.env.NAV_MODE ?? "popup";
 
 /** `disabled` leaves Swing Games disabled. `enabled` leaves a game open to split. */
@@ -69,7 +69,8 @@ export default async function run({ page, context, baseUrl }) {
 
   const trigger = page.getByRole("button", { name: "Menu" });
   await trigger.waitFor({ timeout: 10000 });
-  await trigger.click();
+  if (MODE === "drawer") await trigger.tap();
+  else await trigger.click();
 
   const item = page.getByText("Swing Games").last();
   await item.waitFor();
@@ -77,9 +78,4 @@ export default async function run({ page, context, baseUrl }) {
   await page.waitForFunction(
     "document.getAnimations().every((a) => a.playState !== 'running')",
   );
-
-  if (MODE === "popup" && STATE === "disabled") {
-    await item.hover();
-    await page.getByRole("tooltip").waitFor({ state: "visible" });
-  }
 }

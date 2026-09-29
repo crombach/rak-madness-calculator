@@ -12,7 +12,7 @@ import LogoButton, { APP_NAME } from "../navbar/LogoButton";
 import NavMenu from "../navbar/NavMenu";
 import ScoresNavbar from "../navbar/ScoresNavbar";
 import PageLayout from "../pageLayout/PageLayout";
-import resultsPath from "../results/resultsPath";
+import resultsPath, { RESULTS_PAGE } from "../results/resultsPath";
 import "./HomePage.scss";
 
 /** Title case, to read like the week labels ESPN sends. */
@@ -154,7 +154,11 @@ export default function HomePage() {
               color="info"
               onClick={() =>
                 navigate(
-                  resultsPath(loadedSeason, selectedWeek?.value, "Scoreboard"),
+                  resultsPath(
+                    loadedSeason,
+                    selectedWeek?.value,
+                    RESULTS_PAGE.scoreboard,
+                  ),
                 )
               }
             >
