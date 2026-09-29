@@ -145,6 +145,8 @@
       // takes `currentColor`, which is white here.
       border-color: var(--rak-table-header-divider);
 
+      // An edge between the header band and whatever surface sits above it.
+      border-top: var(--rak-table-border);
       border-bottom: var(--rak-table-header-border);
       // The lowest of the three bands, cast onto the rows that pass under it.
       // Per cell rather than on the row, which a sticky `<thead>` cannot carry.
