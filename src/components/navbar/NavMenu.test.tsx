@@ -191,7 +191,7 @@ describe("NavMenu", () => {
       });
 
       expect(item).toHaveAttribute("data-disabled");
-      expect(item).toHaveAccessibleDescription("Week already decided");
+      expect(item).toHaveAccessibleDescription("Week is decided");
     });
 
     it("shows no menu with experimental features off", () => {

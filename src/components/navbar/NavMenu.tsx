@@ -54,7 +54,7 @@ const PAGES: Array<NavItem> = [
     // Scores still loading, which is soon over and needs no word.
     disabled: ({ swingGames }) => swingGames == null,
     disabledReason: ({ isWeekWon, swingGames }) => {
-      if (isWeekWon) return "Week already decided";
+      if (isWeekWon) return "Week is decided";
       if (swingGames?.games.length === 0) return "No game knocks anyone out";
       return undefined;
     },

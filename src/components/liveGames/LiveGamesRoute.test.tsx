@@ -63,6 +63,20 @@ describe("the live games route", () => {
     );
   });
 
+  it("sends a reader to the scoreboard once every game is settled", async () => {
+    getPlayerScoresMock.mockResolvedValue(
+      week([player({ name: "Alice", pro: [pick("KC -3", "yes")] })], 42),
+    );
+    mountApp(LIVE_PATH);
+
+    expect(
+      await screen.findByRole("heading", {
+        level: 1,
+        name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
+      }),
+    ).toBeInTheDocument();
+  });
+
   it("sends a reader without experimental features to the scoreboard", async () => {
     localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
     mountApp(LIVE_PATH);
