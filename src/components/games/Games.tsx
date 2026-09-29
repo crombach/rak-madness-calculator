@@ -7,10 +7,10 @@ import { LeagueResult } from "../../types/LeagueResult";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
-import kickoffDay, { KickoffDay } from "./kickoffDay";
-import LiveGameCard from "./LiveGameCard";
-import { LIVE_TITLE } from "./LiveGamesSkeleton";
-import "./LiveGames.scss";
+import kickoffDay from "./kickoffDay";
+import GameCard from "./GameCard";
+import { COMPLETED_TITLE, DAYS, LIVE_TITLE } from "./sectionTitles";
+import "./Games.scss";
 
 const LEAGUES: ReadonlyArray<League> = [League.COLLEGE, League.PRO];
 
@@ -21,14 +21,9 @@ const LIVE_STATUSES: ReadonlySet<GameStatus> = new Set([
 ]);
 
 const FETCHING_LABEL = "Fetching the games";
-/** Each day's section, in page order. */
-const DAYS: ReadonlyArray<{ day: KickoffDay; title: string }> = [
-  { day: KickoffDay.TODAY, title: "Today" },
-  { day: KickoffDay.TOMORROW, title: "Tomorrow" },
-  { day: KickoffDay.LATER, title: "Upcoming" },
-];
+const NO_GAMES = "No games this week";
 
-function LiveGame({
+function PoolGame({
   game,
   result,
   scores,
@@ -38,7 +33,7 @@ function LiveGame({
   scores: RakMadnessScores;
 }) {
   return (
-    <LiveGameCard
+    <GameCard
       game={game}
       result={result}
       myPick={useMyPick(scores, game)}
@@ -50,8 +45,8 @@ function LiveGame({
 function Section({ title, children }: { title: string; children: ReactNode }) {
   const id = useId();
   return (
-    <section className="live-games__section" aria-labelledby={id}>
-      <h2 id={id} className="live-games__section-title">
+    <section className="games__section" aria-labelledby={id}>
+      <h2 id={id} className="games__section-title">
         {title}
       </h2>
       {children}
@@ -60,10 +55,11 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 }
 
 /**
- * Every game of the week not over, each as the Game Status dialog shows it. The
- * ones being played first, then the rest by the reader's own calendar day.
+ * Every game of the week, each as the Game Status dialog shows it. The ones being
+ * played first, then those to come by the reader's own calendar day, then the
+ * finished ones in table order. A section with no game is left out.
  */
-export default function LiveGames({
+export default function Games({
   scores,
   onPoll,
   fetchingLeagues,
@@ -92,58 +88,53 @@ export default function LiveGames({
   const upcoming = current
     .filter(({ result }) => result.status === GameStatus.UPCOMING)
     .sort((a, b) => a.result.date.getTime() - b.result.date.getTime());
+  const completed = current.filter(
+    ({ result }) => result.status === GameStatus.FINAL,
+  );
+
+  const sections = [
+    { title: LIVE_TITLE, games: live },
+    ...DAYS.map(({ title, day }) => ({
+      title,
+      games: upcoming.filter(
+        ({ result }) => kickoffDay(result.date, now) === day,
+      ),
+    })),
+    { title: COMPLETED_TITLE, games: completed },
+  ].filter(({ games }) => games.length > 0);
 
   const isFetching = live.some(({ game }) => fetchingLeagues?.has(game.league));
 
   return (
-    <div className="live-games">
+    <div className="games">
       {isFetching && (
         <span
-          className="live-games__progress --live"
+          className="games__progress --live"
           role="progressbar"
           aria-busy="true"
           aria-label={FETCHING_LABEL}
         />
       )}
-      <Section title={LIVE_TITLE}>
-        {scores == null || live.length === 0 ? (
-          <p className="game-status__missing live-games__empty" role="status">
-            No games are live right now
-          </p>
-        ) : (
-          <ul className="live-games__list">
-            {live.map(({ game, result }) => (
-              <LiveGame
-                key={game.label}
-                game={game}
-                result={result}
-                scores={scores}
-              />
-            ))}
-          </ul>
-        )}
-      </Section>
+      {scores != null && sections.length === 0 && (
+        <p className="game-status__missing" role="status">
+          {NO_GAMES}
+        </p>
+      )}
       {scores != null &&
-        DAYS.map(({ day, title }) => {
-          const games = upcoming.filter(
-            ({ result }) => kickoffDay(result.date, now) === day,
-          );
-          if (games.length === 0) return null;
-          return (
-            <Section key={day} title={title}>
-              <ul className="live-games__list">
-                {games.map(({ game, result }) => (
-                  <LiveGame
-                    key={game.label}
-                    game={game}
-                    result={result}
-                    scores={scores}
-                  />
-                ))}
-              </ul>
-            </Section>
-          );
-        })}
+        sections.map(({ title, games }) => (
+          <Section key={title} title={title}>
+            <ul className="games__list">
+              {games.map(({ game, result }) => (
+                <PoolGame
+                  key={game.label}
+                  game={game}
+                  result={result}
+                  scores={scores}
+                />
+              ))}
+            </ul>
+          </Section>
+        ))}
     </div>
   );
 }

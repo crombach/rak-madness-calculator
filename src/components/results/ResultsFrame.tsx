@@ -19,8 +19,8 @@ import getClasses from "../../utils/getClasses";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
 import { useSettings } from "../../context/SettingsContext";
 import ComparePlayersSkeleton from "../comparePlayers/ComparePlayersSkeleton";
-import LiveGamesSkeleton from "../liveGames/LiveGamesSkeleton";
-import loadLiveGamesRoute from "../liveGames/loadLiveGamesRoute";
+import GamesSkeleton from "../games/GamesSkeleton";
+import loadGamesRoute from "../games/loadGamesRoute";
 import LogoButton, { APP_NAME } from "../navbar/LogoButton";
 import NavMenu from "../navbar/NavMenu";
 import ScoresNavbar from "../navbar/ScoresNavbar";
@@ -100,15 +100,15 @@ export default function ResultsFrame({
   const hasWeek = Boolean(seasonParam && weekParam);
   const scoresView: ScoresView | null =
     view === RESULTS_PAGE.swingGames ||
-    view === RESULTS_PAGE.liveGames ||
+    view === RESULTS_PAGE.games ||
     view === RESULTS_PAGE.comparePlayers
       ? null
       : view;
   // Once every game is final there is nothing left to fetch, so the refresh button
   // and the divider beside it go rather than sit there doing nothing.
   const isWeekSettled = useIsWeekSettled();
-  // Live Games polls on its own, so it offers no refresh of its own either.
-  const canRefresh = !isWeekSettled && view !== RESULTS_PAGE.liveGames;
+  // Games polls on its own, so it offers no refresh of its own either.
+  const canRefresh = !isWeekSettled && view !== RESULTS_PAGE.games;
   const { experimentalFeatures } = useSettings();
   const [opened, setOpened] = useState<Opened>();
   // Set once both dialogs are fetched, which mounts them closed. Each one reads
@@ -167,7 +167,7 @@ export default function ResultsFrame({
   // Fetched ahead too, so the menu's link lands on the page rather than on a
   // frame of wireframe while its chunk arrives.
   useEffect(() => {
-    if (experimentalFeatures) loadLiveGamesRoute().catch(doNothing);
+    if (experimentalFeatures) loadGamesRoute().catch(doNothing);
   }, [experimentalFeatures]);
 
   // Stable, so the memoized tables below do not re-render for a dialog opening.
@@ -243,8 +243,8 @@ export default function ResultsFrame({
               children
             ) : view === RESULTS_PAGE.swingGames ? (
               <SwingGamesSkeleton />
-            ) : view === RESULTS_PAGE.liveGames ? (
-              <LiveGamesSkeleton />
+            ) : view === RESULTS_PAGE.games ? (
+              <GamesSkeleton />
             ) : view === RESULTS_PAGE.comparePlayers ? (
               <ComparePlayersSkeleton />
             ) : (

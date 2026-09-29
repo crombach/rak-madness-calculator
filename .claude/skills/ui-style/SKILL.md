@@ -23,7 +23,7 @@ new style for something the app already renders elsewhere.
 | Small tracked capitals                          | `micro-label`                                                                                                                                                                                                              | `src/styles/_label.scss`                             |
 | Counts ("13 players", "3 games remaining")      | `.analysis__standing` rule. Use `plural` and `verbFor` from `src/utils/plural.ts`. Never an inline singular/plural switch                                                                                                  | `src/components/playerAnalysis/AnalysisSummary.scss` |
 | Fold toggles                                    | Text "Show More" / "Show Fewer", `.analysis__more` class. Fold at whole rows                                                                                                                                               | `src/components/playerAnalysis/AnalysisSummary.scss` |
-| Bands and section headers                       | `--rak-band-header` fill, `--rak-on-solid` ink                                                                                                                                                                             | `src/index.scss`                                     |
+| Bands and section headers                       | `--rak-band-header` fill, `--rak-on-solid` ink. A game card band takes `--rak-band-card`                                                                                                                                   | `src/index.scss`                                     |
 
 ## States and chrome
 
@@ -40,7 +40,7 @@ new style for something the app already renders elsewhere.
   with a comma. Never a `·` inside a list.
 - A loading placeholder for a view one component draws is that component on
   stand-in data, its text hidden under `skeleton-surface` fills, so it takes the
-  loaded size. `LiveGamesSkeleton` is the model.
+  loaded size. `GamesSkeleton` is the model.
 - Hover only inside `can-hover`. Every interactive element gets `focus-ring` and a
   minimum `--rak-touch-target`.
 - Dividers use `--rak-on-solid`, as `.navbar__divider` does. Inside a popup list,

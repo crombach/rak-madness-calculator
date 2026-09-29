@@ -1,7 +1,7 @@
 # results
 
 The week's results routes: `/:season/:week/scoreboard`, `/picks`, `/swings`,
-`/live`, `/compare`.
+`/games`, `/compare`.
 `CurrentWeekRedirect` backs `/scoreboard` and `/picks`, redirecting to the latest
 week worth showing.
 
@@ -13,7 +13,7 @@ week worth showing.
 - `ResultsFrame`: the page and wireframe both `ResultsLayout` and
   `CurrentWeekRedirect` render into, captioned by its `ResultsPage` `view`. Holds
   both dialogs lazily, plus the table providers and `NavMenu`. `canRefresh` arms refresh
-  and `pull` on a live week, off Live Games.
+  and `pull` on a live week, off Games.
 - `DialogLoadBoundary`: catches a dialog chunk a deploy replaced.
 - `ResultsFrame.scss`: the column table and wireframe share, and the caption
   over both.

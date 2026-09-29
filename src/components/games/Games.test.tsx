@@ -18,7 +18,7 @@ import {
 } from "../../utils/scoring/leagueResultFixtures";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
 import { pick, player } from "../../utils/scoring/scoringTestFixtures";
-import LiveGames from "./LiveGames";
+import Games from "./Games";
 
 const proLiveGame = liveGame({
   home: "BUF",
@@ -77,7 +77,7 @@ function mount(
 ) {
   return render(
     <SettingsContextProvider>
-      <LiveGames scores={shown} onPoll={onPoll} />
+      <Games scores={shown} onPoll={onPoll} />
     </SettingsContextProvider>,
   );
 }
@@ -86,16 +86,16 @@ function mount(
 const cards = (section = "Live") =>
   within(screen.getByRole("region", { name: section }))
     .queryAllByRole("listitem")
-    .filter((item) => item.classList.contains("live-games__game"));
+    .filter((item) => item.classList.contains("games__game"));
 
 const labelsIn = (section: string) =>
   cards(section).map(
-    (card) => card.querySelector(".live-games__label")?.textContent,
+    (card) => card.querySelector(".games__label")?.textContent,
   );
 
 beforeEach(() => localStorage.clear());
 
-describe("LiveGames", () => {
+describe("Games", () => {
   it("lists the games being played and the ones stopped part way, in table order", () => {
     mount(scores);
     expect(
@@ -116,17 +116,14 @@ describe("LiveGames", () => {
   it("draws the busy bar only while a live game's league is fetched", () => {
     const { rerender } = render(
       <SettingsContextProvider>
-        <LiveGames
-          scores={scores}
-          fetchingLeagues={new Set([League.COLLEGE])}
-        />
+        <Games scores={scores} fetchingLeagues={new Set([League.COLLEGE])} />
       </SettingsContextProvider>,
     );
     expect(screen.queryByRole("progressbar")).toBeNull();
 
     rerender(
       <SettingsContextProvider>
-        <LiveGames scores={scores} fetchingLeagues={new Set([League.PRO])} />
+        <Games scores={scores} fetchingLeagues={new Set([League.PRO])} />
       </SettingsContextProvider>,
     );
     expect(screen.getByRole("progressbar")).toHaveAccessibleName(
@@ -214,7 +211,7 @@ describe("LiveGames", () => {
       screen
         .getAllByRole("heading", { level: 2 })
         .map((heading) => heading.textContent),
-    ).toEqual(["Live", "Today", "Tomorrow", "Upcoming"]);
+    ).toEqual(["Live", "Today", "Tomorrow", "Upcoming", "Completed"]);
     expect(labelsIn("Live")).toEqual(["P3", "P1"]);
     expect(labelsIn("Today")).toEqual(["P4", "P2"]);
     expect(labelsIn("Tomorrow")).toEqual(["P5"]);
@@ -223,7 +220,7 @@ describe("LiveGames", () => {
     expect(later.querySelector(".game-status__meta")).toHaveTextContent(
       "Oct 10, 2024",
     );
-    expect(document.querySelector(".live-games__kickoff")).toBeNull();
+    expect(document.querySelector(".games__kickoff")).toBeNull();
     vi.useRealTimers();
   });
 
@@ -237,12 +234,57 @@ describe("LiveGames", () => {
     vi.useRealTimers();
   });
 
-  it("says so when nothing is being played", () => {
+  it("lists the finished games last, in table order", () => {
+    const final = (id: string, home: string, away: string, date: Date) => ({
+      ...finalGame({ home, away, homeScore: 21, awayScore: 14 }),
+      id,
+      date,
+    });
+    mount({
+      ...scores,
+      games: [
+        ...(scores.games ?? []),
+        column(
+          "P4",
+          League.PRO,
+          final("405", "NE", "MIA", new Date(2024, 9, 7, 17)),
+        ),
+        column(
+          "P5",
+          League.PRO,
+          final("406", "SF", "LAR", new Date(2024, 9, 6, 13)),
+        ),
+      ],
+    });
+
+    expect(
+      screen.getAllByRole("heading", { level: 2 }).at(-1),
+    ).toHaveTextContent("Completed");
+    expect(labelsIn("Completed")).toEqual(["C1", "P4", "P5"]);
+  });
+
+  it("leaves out Completed while no game is final", () => {
+    mount({
+      ...scores,
+      games: (scores.games ?? []).filter(({ label }) => label !== "C1"),
+    });
+    expect(screen.queryByRole("region", { name: "Completed" })).toBeNull();
+  });
+
+  it("leaves out Live while nothing is being played", () => {
     mount({ ...scores, games: [column("C1", League.COLLEGE, collegeFinal)] });
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "No games are live right now",
-    );
-    expect(screen.queryByRole("list")).toBeNull();
+    expect(
+      screen
+        .getAllByRole("heading", { level: 2 })
+        .map((heading) => heading.textContent),
+    ).toEqual(["Completed"]);
+    expect(labelsIn("Completed")).toEqual(["C1"]);
+  });
+
+  it("says so when the week has no game to list", () => {
+    mount({ ...scores, games: [] });
+    expect(screen.getByRole("status")).toHaveTextContent("No games this week");
+    expect(screen.queryByRole("region")).toBeNull();
   });
 
   it("asks on every tick for a league with nothing kicked off, as a refresh would", async () => {
@@ -265,7 +307,7 @@ describe("LiveGames", () => {
     vi.useRealTimers();
   });
 
-  it("polls every twenty seconds, and drops a game once it is final", async () => {
+  it("polls every twenty seconds, and moves a game to Completed once it is final", async () => {
     vi.useFakeTimers();
     const onPoll = vi
       .fn<
@@ -292,6 +334,7 @@ describe("LiveGames", () => {
     await vi.advanceTimersByTimeAsync(POLL_MS);
     expect(onPoll).toHaveBeenCalledTimes(2);
     await waitFor(() => expect(cards()).toHaveLength(1));
+    expect(labelsIn("Completed")).toEqual(["C1", "P1"]);
 
     vi.useRealTimers();
   });

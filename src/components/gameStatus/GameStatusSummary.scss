@@ -5,19 +5,21 @@
 @use "../../styles/picks" as *;
 
 // Which side a player had to pick to score the point, and which one cost them it,
-// in the two hues the picks table fills a cell with. The 400 step, which is the one
-// that reads both on the white a name is set on and on the dark its score is lit
-// against, so a side and its number are the same color rather than two shades of it.
+// in the two hues the picks table fills a cell with, the 400 step. A score lit on the
+// glass takes the glass's own pair, since the glass is dark in both modes.
 //
 // Neither side is marked where nobody scored, and the sentence under the scores names
 // the side in words, so nothing here rests on the hue alone.
-@mixin outcome {
+@mixin outcome(
+  $scored: var(--rak-success-400),
+  $missed: var(--rak-danger-400)
+) {
   &.--scored {
-    color: var(--rak-success-400);
+    color: $scored;
   }
 
   &.--missed {
-    color: var(--rak-danger-400);
+    color: $missed;
   }
 }
 
@@ -100,6 +102,12 @@
   text-align: center;
   // The line holds both counts at 360px, so it never breaks between them.
   white-space: nowrap;
+}
+
+// The main text color, which the team name beside it also takes until the game is
+// over, so each count reads with the team it counts.
+.game-status__split-count {
+  color: var(--rak-text);
 }
 
 .game-status__split-team {
@@ -231,6 +239,9 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.3em);
   align-items: center;
   column-gap: var(--rak-space-2);
   row-gap: var(--rak-space-1);
+  // Added to the summary's own gap, so the pick line above and the kickoff line below
+  // stand further off the scoreline than they do off each other.
+  padding-block: var(--rak-space-1);
 }
 
 // Both carry the grouping and nothing else, so what is inside them is the scoreline's
@@ -413,7 +424,7 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.3em);
     text-align: left;
   }
 
-  @include outcome;
+  @include outcome(var(--rak-glass-scored), var(--rak-glass-missed));
 }
 
 // Two digits wide whether the side has one or two, so a score going from 7 to 14

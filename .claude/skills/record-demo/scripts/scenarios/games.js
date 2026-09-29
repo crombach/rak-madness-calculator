@@ -89,7 +89,7 @@ function events() {
   };
 }
 
-/** Opens Live Games with the reader's name set. */
+/** Opens Games with the reader's name set. */
 export default async function run({ page, context, baseUrl }) {
   await registerAppMocks(context, {
     season: SEASON,
@@ -101,7 +101,7 @@ export default async function run({ page, context, baseUrl }) {
   if (SPREAD_DAYS) {
     await page.clock.setFixedTime(new Date(DAYS_NOW));
   }
-  const path = `${baseUrl}/${SEASON}/${WEEK}/live`;
+  const path = `${baseUrl}/${SEASON}/${WEEK}/games`;
   await page.goto(path);
   await page.evaluate(
     ([themeKey, theme, nameKey, name, flagKey]) => {
@@ -112,9 +112,7 @@ export default async function run({ page, context, baseUrl }) {
     [THEME_KEY, THEME, PLAYER_NAME_KEY, MY_NAME, EXPERIMENTAL_FEATURES_KEY],
   );
   await page.goto(path);
-  await (NONE_LIVE ? page.getByRole("status") : page.getByRole("listitem"))
-    .first()
-    .waitFor({ timeout: 10000 });
+  await page.getByRole("listitem").first().waitFor({ timeout: 10000 });
 
   if (OPEN_DIALOG) {
     await page.goto(`${baseUrl}/${SEASON}/${WEEK}/picks`);

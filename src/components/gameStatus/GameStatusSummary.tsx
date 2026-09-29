@@ -261,7 +261,7 @@ function Game({
   });
   const sideCount = (count: number, side: GameSide) => (
     <span>
-      {count}
+      <span className="game-status__split-count">{count}</span>
       <span className="game-status__sr-only"> picked</span>{" "}
       <span
         className={getClasses(

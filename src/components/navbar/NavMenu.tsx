@@ -75,11 +75,10 @@ const PAGES: Array<NavItem> = [
         : undefined,
   },
   {
-    label: RESULTS_PAGE.liveGames,
+    label: RESULTS_PAGE.games,
     icon: <ScoreboardIcon />,
-    path: (season, week) => resultsPath(season, week, RESULTS_PAGE.liveGames),
-    disabled: ({ isWeekSettled, playerCount }) =>
-      isWeekSettled || playerCount == null,
+    path: (season, week) => resultsPath(season, week, RESULTS_PAGE.games),
+    disabled: ({ playerCount }) => playerCount == null,
   },
 ];
 
