@@ -276,32 +276,37 @@ describe("the compare players route", () => {
     expect(screen.getByRole("combobox", { name: "Player 3" })).toHaveFocus();
   });
 
-  it("disables Add Player once every player has a picker", async () => {
+  it("hides Add Player once every player has a picker", async () => {
     const user = mountApp(COMPARE_PATH);
     await openDialog(user);
-    const add = await screen.findByRole("button", { name: "Add Player" });
 
-    await user.click(add);
+    await user.click(await screen.findByRole("button", { name: "Add Player" }));
 
-    expect(add).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: "Add Player" }),
+    ).not.toBeInTheDocument();
   });
 
-  it("stops at eight players", async () => {
+  it("stops at ten players", async () => {
     getPlayerScoresMock.mockResolvedValue(
       week(
-        Array.from({ length: 10 }, (_, index) =>
+        Array.from({ length: 12 }, (_, index) =>
           player({ name: `Player ${String.fromCharCode(65 + index)}` }),
         ),
       ),
     );
     const user = mountApp(COMPARE_PATH);
     await openDialog(user);
-    const add = await screen.findByRole("button", { name: "Add Player" });
+    await screen.findByRole("button", { name: "Add Player" });
 
-    for (let added = 0; added < 6; added++) await user.click(add);
+    for (let added = 0; added < 8; added++) {
+      await user.click(screen.getByRole("button", { name: "Add Player" }));
+    }
 
-    expect(screen.getAllByRole("combobox")).toHaveLength(8);
-    expect(add).toBeDisabled();
+    expect(screen.getAllByRole("combobox")).toHaveLength(10);
+    expect(
+      screen.queryByRole("button", { name: "Add Player" }),
+    ).not.toBeInTheDocument();
   });
 
   it("saves the chosen players and opens on them next time", async () => {

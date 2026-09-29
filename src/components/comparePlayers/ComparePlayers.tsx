@@ -49,7 +49,7 @@ function startingIds(
   ];
 }
 
-/** Two to eight players' picks in one table, on the games they split or all. */
+/** Two to ten players' picks in one table, on the games they split or all. */
 export default function ComparePlayers({
   scores,
 }: {

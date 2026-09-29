@@ -1,6 +1,6 @@
 # comparePlayers
 
-The `/:season/:week/compare` route: two to eight players' picks in one table.
+The `/:season/:week/compare` route: two to ten players' picks in one table.
 
 - `ComparePlayersRoute`: redirects to the scoreboard without the experimental
   opt-in, else renders `ComparePlayers`. Mounted lazily by `App.tsx`.

@@ -71,7 +71,7 @@ const PICKS_COLUMNS: Array<Column> = [
 /**
  * Compare Players' shape: a couple of differing games in each league, among the
  * tiebreakers the real table adds. Filled to the bottom of the box alone, since
- * two to eight players never scroll it.
+ * two to ten players never scroll it.
  */
 const COMPARE_COLUMNS: Array<Column> = [
   ...RANK_AND_PLAYER,

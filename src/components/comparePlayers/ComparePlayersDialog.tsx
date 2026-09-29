@@ -85,9 +85,7 @@ export default function ComparePlayersDialog({
     >
       <div className="settings">
         <section className="settings__section">
-          <ul
-            className="compare-players__pickers"
-          >
+          <ul className="compare-players__pickers">
             {slots.map((slot, index) => {
               // Each list leaves out the players the other pickers hold.
               const taken = new Set(
@@ -111,16 +109,17 @@ export default function ComparePlayersDialog({
               );
             })}
           </ul>
-          <Button
-            className="compare-players__add"
-            variant="soft"
-            size="sm"
-            disabled={!canAdd}
-            onClick={onAdd}
-          >
-            <AddIcon />
-            Add Player
-          </Button>
+          {canAdd && (
+            <Button
+              className="compare-players__add"
+              variant="soft"
+              size="sm"
+              onClick={onAdd}
+            >
+              <AddIcon />
+              Add Player
+            </Button>
+          )}
         </section>
       </div>
     </DialogShell>
