@@ -1,9 +1,10 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, RefObject, useLayoutEffect, useRef, useState } from "react";
 import { GameStatus, HomeAway } from "../../types/ESPN";
 import { GameSide, LeagueResult } from "../../types/LeagueResult";
 import { PlayerScore } from "../../types/RakMadnessScores";
 import { GameSpread, WeekGame } from "../../types/WeekGame";
 import getClasses from "../../utils/getClasses";
+import observeResize from "../../utils/observeResize";
 import parsePick from "../../utils/scoring/parsePick";
 import pickSplit, { PickSplit } from "../../utils/scoring/pickSplit";
 import { gamecastUrl, kickoffParts, scoringTeam } from "./gameStatusText";
@@ -30,7 +31,10 @@ const SIDE_LABEL: Record<"hosted" | "neutral", Record<HomeAway, string>> = {
 };
 
 /** Each side's pool count and its line, over the scoreline. */
-const PICKS_LABEL = "Picks";
+const POOL_LABEL = "Pool";
+
+/** The reader's own pick, beside the pool's. */
+const MY_PICK_LABEL = "You";
 
 /** Read out beside the side the reader picked, to a screen reader alone. */
 const PICKED_SIDE_LABEL = "Your pick";
@@ -127,6 +131,29 @@ function Side({
   );
 }
 
+/**
+ * Whether the box's last child has wrapped below its first. Read off the layout
+ * rather than a width, since what fits turns on the text in both.
+ */
+function useWraps<T extends HTMLElement>(): [RefObject<T | null>, boolean] {
+  const box = useRef<T>(null);
+  const [wraps, setWraps] = useState(false);
+  useLayoutEffect(() => {
+    const element = box.current;
+    if (element == null) return undefined;
+    const measure = () => {
+      const first = element.firstElementChild as HTMLElement | null;
+      const last = element.lastElementChild as HTMLElement | null;
+      setWraps(
+        first != null && last != null && last.offsetTop > first.offsetTop,
+      );
+    };
+    measure();
+    return observeResize([element], measure);
+  }, []);
+  return [box, wraps];
+}
+
 /** The line a side takes, signed: the favorite gives it, the other side gets it. */
 function sideLine(spread: GameSpread, team: string): string {
   const points = team === spread.team ? spread.points : -spread.points;
@@ -165,6 +192,7 @@ function Game({
   gamecastHref: string;
 }) {
   const [scoreline, fit] = useScorelineFit(result.id);
+  const [lead, wrapped] = useWraps<HTMLDivElement>();
   // The link rides with the place, not the kickoff, so it holds the strip's end
   // when the halves stack. A game ESPN sent no address for still carries it.
   const placeParts = [
@@ -197,6 +225,7 @@ function Game({
     myPick != null ? parsePick(myPick).teamAbbreviation : undefined;
   const isPicked = (side: GameSide) =>
     side.team.abbreviation.toUpperCase() === pickedTeam;
+  const pickedSide = [result.away, result.home].find(isPicked);
   const sideProps = (side: GameSide) => ({
     side,
     isNeutralSite: result.isNeutralSite,
@@ -204,13 +233,8 @@ function Game({
     outcome: outcomeOf(side),
     isPicked: isPicked(side),
   });
-  // Ruled like the reader's own row in the tables, around the side they picked.
   const sidePicks = (side: GameSide, count?: number) => (
-    <span
-      className={getClasses("game-status__picks-side", {
-        "--picked": isPicked(side),
-      })}
-    >
+    <span className="game-status__picks-side">
       {count != null && (
         <>
           <span className="game-status__picks-count">{count}</span>
@@ -226,17 +250,34 @@ function Game({
         {side.team.abbreviation}
         {spread != null && ` ${sideLine(spread, side.team.abbreviation)}`}
       </span>
-      {isPicked(side) && (
-        <span className="game-status__sr-only">, {PICKED_SIDE_LABEL}</span>
-      )}
     </span>
   );
   return (
     <>
-      <p className="game-status__picks">
-        {PICKS_LABEL}: {sidePicks(result.away, split?.away)},{" "}
-        {sidePicks(result.home, split?.home)}
-      </p>
+      <div
+        className={getClasses("game-status__lead", { "--wrapped": wrapped })}
+        ref={lead}
+      >
+        <p className="game-status__picks">
+          {POOL_LABEL}: {sidePicks(result.away, split?.away)},{" "}
+          {sidePicks(result.home, split?.home)}
+        </p>
+        {myPick != null && (
+          <p className="game-status__my-pick">
+            {MY_PICK_LABEL}:{" "}
+            <span
+              className={getClasses(
+                "game-status__picks-team",
+                outcomeClasses(
+                  pickedSide != null ? outcomeOf(pickedSide) : undefined,
+                ),
+              )}
+            >
+              {myPick}
+            </span>
+          </p>
+        )}
+      </div>
       <div
         className={getClasses("game-status__scoreline", {
           "--short-names": fit >= SHORT_NAMES,

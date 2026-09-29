@@ -70,25 +70,19 @@
   }
 }
 
-// Each side's pool count and line, over the scoreline they decide. The gray the
-// labels over the two names are set in, so both read as one tier of the dialog.
-.game-status__picks {
+// Each side's pool count and line, then the reader's own pick, over the
+// scoreline they decide. The gray the labels over the two names are set in, so
+// both read as one tier of the dialog.
+.game-status__picks,
+.game-status__my-pick {
   align-self: center;
   margin: 0;
   color: var(--rak-text-secondary);
   font-size: var(--rak-text-sm);
   font-weight: var(--rak-weight-semibold);
   text-align: center;
-  // The line holds both sides at 360px, so it never breaks between them.
+  // Each part holds on one line at 360px, so neither breaks inside itself.
   white-space: nowrap;
-}
-
-// Ruled in the accent the reader's own table row takes. A ring rather than a
-// fill, so the outcome color of the text inside keeps its contrast.
-.game-status__picks-side.--picked {
-  padding: 0 var(--rak-space-1);
-  border-radius: var(--rak-radius-sm);
-  box-shadow: inset 0 0 0 var(--rak-border-width) var(--rak-my-row-accent);
 }
 
 // The main text color, which the team beside it also takes until the game is
@@ -102,6 +96,33 @@
   @include outcome;
 
   color: var(--rak-text);
+}
+
+// A `meta-dot` and its margins.
+$lead-dot: calc(2 * var(--rak-space-2) + 0.3em);
+
+// The pool's picks, then the reader's, on one line where both fit. The dot
+// between them takes no room of its own, so dropping it once the line wraps
+// cannot unwrap it again.
+.game-status__lead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: var(--rak-space-1) $lead-dot;
+
+  .game-status__picks + .game-status__my-pick {
+    position: relative;
+  }
+
+  &:not(.--wrapped) .game-status__picks + .game-status__my-pick::before {
+    content: "·";
+    position: absolute;
+    right: 100%;
+    width: $lead-dot;
+    color: var(--rak-text-secondary);
+    text-align: center;
+  }
 }
 
 // What is the same about the game however it is going. It starts at a fixed time and
@@ -299,12 +320,6 @@
   line-height: var(--rak-line-height-tight);
 
   @include outcome;
-}
-
-// The side the reader picked, underlined in their own row's accent.
-.game-status__team-name.--picked {
-  text-decoration: underline var(--rak-border-width) var(--rak-my-row-accent);
-  text-underline-offset: 0.2em;
 }
 
 .game-status__sr-only {

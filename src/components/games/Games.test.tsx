@@ -141,13 +141,11 @@ describe("Games", () => {
     }
   });
 
-  it("marks the side the reader picked", () => {
+  it("says the reader's own pick, and marks the side it names", () => {
     localStorage.setItem(PLAYER_NAME_KEY, "alice");
     mount(scores);
     const [first] = cards();
-    expect(
-      first.querySelector(".game-status__picks-side.--picked"),
-    ).toHaveTextContent("KC");
+    expect(within(first).getByText(/^You:/)).toHaveTextContent("You: KC -3");
     expect(
       first.querySelector(".game-status__team-name.--picked"),
     ).toHaveTextContent("KC");
@@ -161,10 +159,11 @@ describe("Games", () => {
     expect(home).toHaveTextContent(/^0 picked BUF/);
   });
 
-  it("marks no side with no name set", () => {
+  it("says no pick and marks no side with no name set", () => {
     mount(scores);
     const [first] = cards();
-    expect(within(first).getByText(/^Picks:/)).toBeInTheDocument();
+    expect(within(first).getByText(/^Pool:/)).toBeInTheDocument();
+    expect(within(first).queryByText(/^You:/)).toBeNull();
     expect(first.querySelector(".--picked")).toBeNull();
   });
 

@@ -162,7 +162,7 @@ describe("the games a query offers", () => {
  * each game reads like is covered against `GameStatusSummary` instead.
  */
 describe("GameStatusDialog", () => {
-  it("marks the side the reader picked", async () => {
+  it("says the reader's own pick, and marks the side it names", async () => {
     localStorage.setItem(PLAYER_NAME_KEY, "alice");
     const withMe: RakMadnessScores = {
       scores: [player({ name: "Alice", pro: [pick("KC -3")] })],
@@ -173,11 +173,7 @@ describe("GameStatusDialog", () => {
         {dialog("P1", true, withMe, () => Promise.resolve(undefined))}
       </SettingsContextProvider>,
     );
-    expect(
-      await screen.findByText(/^KC/, {
-        selector: ".game-status__picks-side.--picked .game-status__picks-team",
-      }),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/^You:/)).toHaveTextContent("You: KC -3");
     expect(
       document.querySelector(".game-status__team-name.--picked"),
     ).toHaveTextContent("KC");
