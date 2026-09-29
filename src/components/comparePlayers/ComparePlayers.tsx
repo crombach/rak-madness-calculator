@@ -101,9 +101,6 @@ export default function ComparePlayers({
           />
         </div>
         <div role="status" className="compare-players__standing">
-          {!isReady && (
-            <p className="analysis__standing">Choose two players to compare</p>
-          )}
           {games?.size === 0 && (
             <p className="analysis__standing">
               They picked every game the same

@@ -92,11 +92,11 @@ describe("the compare players route", () => {
     ).toBeInTheDocument();
   });
 
-  it("asks for two players before showing any picks", async () => {
+  it("shows no picks until two players are chosen", async () => {
     mountApp(COMPARE_PATH);
 
     expect(
-      await screen.findByText("Choose two players to compare"),
+      await screen.findByRole("button", { name: "Choose players" }),
     ).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });

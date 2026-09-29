@@ -9,6 +9,6 @@ The `/:season/:week/compare` route: two to eight players' picks in one table.
 - `ComparePlayersDialog`: a `PlayerCombobox` per player, added and removed by
   the reader.
 - `comparedPlayers`: the chosen names in `settingsStore`, restored by name.
-- `ComparePlayersSkeleton`: the controls and prompt as fills, while the week or
+- `ComparePlayersSkeleton`: the controls as fills, while the week or
   the page chunk loads. Exports `ChooseButton` and `GamesToggle`, which it
   draws too.

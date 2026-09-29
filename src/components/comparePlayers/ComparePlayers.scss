@@ -87,16 +87,3 @@
     color: var(--rak-on-solid);
   }
 }
-
-// One line of `analysis__standing`, for the prompt.
-.compare-players__skeleton-bar {
-  @include skeleton-surface;
-
-  display: block;
-
-  &.--standing {
-    width: 12rem;
-    height: 1lh;
-    font-size: var(--rak-text-xs);
-  }
-}

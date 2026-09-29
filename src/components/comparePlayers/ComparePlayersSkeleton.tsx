@@ -1,13 +1,9 @@
 import doNothing from "../../utils/doNothing";
 import Button from "../button/Button";
 import { TuneIcon } from "../icon/Icon";
-import { MIN_PICKERS, readComparedPlayers } from "./comparedPlayers";
 import "./ComparePlayers.scss";
 
-/**
- * A wireframe of the page above its table, for while the week or the page loads.
- * The prompt shows only where the page will show it, so the table lands in place.
- */
+/** A wireframe of the page above its table, for while the week or the page loads. */
 export default function ComparePlayersSkeleton() {
   return (
     <div className="compare-players --loading" aria-hidden="true" inert>
@@ -15,9 +11,6 @@ export default function ComparePlayersSkeleton() {
         <ChooseButton />
         <GamesToggle />
       </div>
-      {readComparedPlayers().length < MIN_PICKERS && (
-        <span className="compare-players__skeleton-bar --standing" />
-      )}
     </div>
   );
 }
