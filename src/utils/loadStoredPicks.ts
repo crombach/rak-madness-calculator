@@ -15,7 +15,7 @@ export default async function loadStoredPicks(
   try {
     const response = await fetch(`/api/picks/${season}/${week.value}`);
     if (response.status === 404) {
-      throw new Error("Picks spreadsheet is missing from database");
+      throw new Error("Picks spreadsheet is missing from the picks store");
     }
     // Why the type is checked at all: see `contentType.ts`.
     if (!isContentType(response, XLSX_CONTENT_TYPE)) {

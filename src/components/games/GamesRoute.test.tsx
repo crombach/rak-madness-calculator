@@ -16,7 +16,7 @@ import {
 import { EXPERIMENTAL_FEATURES_KEY } from "../../context/SettingsContext";
 import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
 
-const GAMES_PATH = `/${SEASON}/${CURRENT_WEEK}/games`;
+const GAMES_PATH = `/${SEASON}/${CURRENT_WEEK}/all-games`;
 
 beforeEach(() => {
   setUpAppTest().mockResolvedValue(spreadsheetResponse());
@@ -79,6 +79,17 @@ describe("the games route", () => {
 
   it("sends the old live path to the games page", async () => {
     mountApp(`/${SEASON}/${CURRENT_WEEK}/live`);
+
+    expect(
+      await screen.findByRole("heading", {
+        level: 1,
+        name: `${SEASON} Week ${CURRENT_WEEK} All Games`,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("sends the old games path to the all-games page", async () => {
+    mountApp(`/${SEASON}/${CURRENT_WEEK}/games`);
 
     expect(
       await screen.findByRole("heading", {

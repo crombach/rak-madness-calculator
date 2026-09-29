@@ -337,7 +337,7 @@ function picksIn(
  * Carries the reason `applyKnockouts` already wrote, rather than writing another.
  *
  * Only where it knocked the player out. This search reads the tiers more closely
- * than the standings do, so it can answer a loss for a row left standing there,
+ * than the ranking does, so it can answer a loss for a row left standing there,
  * and that row's explanation says it is still in contention. Empty leaves the
  * caller its own line.
  */

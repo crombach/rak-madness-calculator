@@ -10,7 +10,7 @@ export type SwingSide = {
   team: string;
   /** The first of these players' cells, as the tables show it. */
   pick: string;
-  /** In standings order. */
+  /** In ranking order. */
   players: Array<string>;
 };
 

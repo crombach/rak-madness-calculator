@@ -7,9 +7,9 @@ import latestOnly from "../utils/latestOnly";
  * The season running now, by the year it started in, once it has begun.
  *
  * Asked for on its own, because the season list holds only the seasons with picks
- * in the database, and the picker has to offer this one once it starts whether or
+ * in the picks store, and the picker has to offer this one once it starts whether or
  * not it has any. A week of it with no picks behind it is scored from a spreadsheet
- * the user uploads, which is what that path is for.
+ * the reader uploads, which is what that path is for.
  *
  * ESPN moves on to the next season as soon as the last one ends, months before
  * anything is played. That season has no week anybody could score, so it is left

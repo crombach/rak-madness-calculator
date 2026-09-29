@@ -1,7 +1,7 @@
 # results
 
 The week's results routes: `/:season/:week/scoreboard`, `/picks`, `/swings`,
-`/games`, `/compare`.
+`/all-games`, `/compare`.
 `CurrentWeekRedirect` backs `/scoreboard` and `/picks`, redirecting to the latest
 week worth showing.
 

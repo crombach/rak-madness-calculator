@@ -40,7 +40,7 @@ type AppData = ReturnType<typeof useLeagueWeeks> &
     requestedSeason?: number;
     /**
      * The seasons that can be chosen, newest first. The ones with picks in the
-     * database, plus the season running now whether or not it has any.
+     * picks store, plus the season running now whether or not it has any.
      */
     selectableSeasons: Array<number>;
   };
@@ -145,8 +145,8 @@ export function AppDataContextProvider({
   );
 
   // The seasons with picks, plus the one running now whether or not it has any.
-  // That season's weeks are scored from a spreadsheet the user uploads until its
-  // picks reach the database, and leaving it out puts the week they are holding
+  // That season's weeks are scored from a spreadsheet the reader uploads until its
+  // picks reach the picks store, and leaving it out puts the week they are holding
   // out of reach. Falling back to the season the week list describes keeps the
   // picker usable where neither could be fetched, which is every `make run`, so
   // long as that season has a week behind it to score.

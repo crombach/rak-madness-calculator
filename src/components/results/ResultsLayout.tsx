@@ -21,7 +21,7 @@ export default function ResultsLayout() {
   // The route decides which view is showing, not component state.
   const isPicks = useMatch("/:season/:week/picks") != null;
   const isSwings = useMatch("/:season/:week/swings") != null;
-  const isGames = useMatch("/:season/:week/games") != null;
+  const isGames = useMatch("/:season/:week/all-games") != null;
   const isCompare = useMatch("/:season/:week/compare") != null;
   const view: ResultsPage = isSwings
     ? RESULTS_PAGE.swingGames

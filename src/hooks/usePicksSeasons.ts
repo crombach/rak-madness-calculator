@@ -16,7 +16,7 @@ type SeasonsResponse = {
 const NO_WEEKS: Array<number> = [];
 
 /**
- * The picks in the database, season by season, both newest first.
+ * The picks in the picks store, season by season, both newest first.
  *
  * Why the type is checked at all: see `contentType.ts`. A dev server's HTML reads
  * the same as an empty list here, and the caller falls back to the season running

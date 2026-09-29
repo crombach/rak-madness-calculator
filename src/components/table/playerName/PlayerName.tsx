@@ -66,7 +66,7 @@ function PlayerName({
         "--no-status": !showStatus,
         "--mine": isMine,
         // Last, so it stands whichever fill the standing above would have given
-        // the cell, and whether or not the reader has the standings turned on.
+        // the cell, and whether or not the reader has player status turned on.
         "--name-conflict": hasNameConflict === true,
       })}
     >

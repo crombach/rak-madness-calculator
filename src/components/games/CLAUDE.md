@@ -1,7 +1,7 @@
 # games
 
-The `/:season/:week/games` route: every game of the week, one scoreboard
-each. `/live` redirects here.
+The `/:season/:week/all-games` route: every game of the week, one scoreboard
+each. `/games` and `/live` redirect here.
 
 - `GamesPage`: what `App.tsx` mounts. The route at once when its chunk is in,
   else `GamesSkeleton` until it is.

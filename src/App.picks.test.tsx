@@ -311,7 +311,7 @@ describe("the app, automatic picks fetch", () => {
     });
     expect(
       screen.getByText(
-        `The picks spreadsheet for week ${CURRENT_WEEK} is not yet in the database, but you can use a local spreadsheet if you have one.`,
+        `The picks spreadsheet for week ${CURRENT_WEEK} is not yet in the picks store, but you can use a local spreadsheet if you have one.`,
       ),
     ).toBeInTheDocument();
   });
@@ -364,7 +364,7 @@ describe("the app, automatic picks fetch", () => {
     await waitFor(() => {
       expect(
         screen.getByText(
-          "The picks spreadsheet for week 1 is not yet in the database, but you can use a local spreadsheet if you have one.",
+          "The picks spreadsheet for week 1 is not yet in the picks store, but you can use a local spreadsheet if you have one.",
         ),
       ).toBeInTheDocument();
     });

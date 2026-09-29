@@ -460,7 +460,7 @@ export default function usePlayerScores(
         onLoadFailure: new Toast(
           "warning",
           "Missing Picks",
-          `The picks spreadsheet for week ${selectedWeek.value} is not yet in the database, but you can use a local spreadsheet if you have one.`,
+          `The picks spreadsheet for week ${selectedWeek.value} is not yet in the picks store, but you can use a local spreadsheet if you have one.`,
         ),
         onScoreFailure: scoringFailed(selectedWeek.value),
       });
@@ -528,7 +528,7 @@ export default function usePlayerScores(
         // out to carry an error, so asking is how a correction reaches a live week
         // without a page load. A workbook the reader uploaded is replaced by it,
         // which is the point: the upload stands in until the week reaches the
-        // database.
+        // picks store.
         //
         // A poll asks for none of that. It rescores what is in hand, since the
         // reader did not ask for anything and a sheet arriving under them is not

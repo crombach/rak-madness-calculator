@@ -61,7 +61,7 @@ const PAGES: Array<NavItem> = [
       isWeekSettled || swingGames == null,
     disabledReason: ({ isWeekSettled, isWeekWon, swingGames }) => {
       if (isWeekSettled) return undefined;
-      if (isWeekWon) return "Week is decided";
+      if (isWeekWon) return "Week complete";
       if (swingGames?.games.length === 0) return "No game knocks anyone out";
       return undefined;
     },

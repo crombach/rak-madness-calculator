@@ -45,8 +45,9 @@ export default function App() {
             </Suspense>
           }
         />
-        <Route path="games" element={<GamesPage />} />
-        <Route path="live" element={<Navigate to="../games" replace />} />
+        <Route path="all-games" element={<GamesPage />} />
+        <Route path="games" element={<Navigate to="../all-games" replace />} />
+        <Route path="live" element={<Navigate to="../all-games" replace />} />
         <Route
           path="compare"
           element={

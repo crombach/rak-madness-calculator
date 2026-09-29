@@ -8,7 +8,7 @@ export type RemainingPick = {
 /**
  * How the week is settled once a route's games land.
  *
- * `settled` means the Monday night game is already final, so the standings carry its
+ * `settled` means the Monday night game is already final, so the ranking carries its
  * result and nothing here is open. `range` carries the totals that win, with an end
  * absent where that side is unbounded.
  */

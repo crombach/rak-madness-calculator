@@ -10,7 +10,7 @@ import { MISSING_PICK } from "./scoring/getPickResults";
 
 const WEEK = 5;
 const SEASON = 2025;
-const RESULTS_SHEET = `${SEASON} Week ${WEEK} Results`;
+const RESULTS_SHEET = `${SEASON} Week ${WEEK} Scoreboard`;
 const PICKS_SHEET = `${SEASON} Week ${WEEK} Picks`;
 
 /** What Excel refuses a sheet name past. */
@@ -95,7 +95,7 @@ describe("buildSpreadsheetBuffer, workbook shape", () => {
   it("names both sheets after whichever season and week it was given", async () => {
     const workbook = await readBack(scores, 12, 2024);
     expect(workbook.SheetNames).toEqual([
-      "2024 Week 12 Results",
+      "2024 Week 12 Scoreboard",
       "2024 Week 12 Picks",
     ]);
   });

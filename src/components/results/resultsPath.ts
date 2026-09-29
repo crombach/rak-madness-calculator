@@ -17,7 +17,7 @@ const SEGMENTS: Record<ResultsPage, string> = {
   [RESULTS_PAGE.scoreboard]: "scoreboard",
   [RESULTS_PAGE.picks]: "picks",
   [RESULTS_PAGE.swingGames]: "swings",
-  [RESULTS_PAGE.games]: "games",
+  [RESULTS_PAGE.games]: "all-games",
   [RESULTS_PAGE.comparePlayers]: "compare",
 };
 

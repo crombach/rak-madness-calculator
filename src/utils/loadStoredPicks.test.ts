@@ -43,7 +43,7 @@ describe("loadStoredPicks", () => {
     respond("Not Found", { status: 404 });
 
     await expect(loadStoredPicks(SEASON, WEEK)).rejects.toThrow(
-      "Picks spreadsheet is missing from database",
+      "Picks spreadsheet is missing from the picks store",
     );
   });
 

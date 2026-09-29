@@ -34,7 +34,7 @@ const A_SWING_GAME = {} as SwingGame;
 const SEASON = 2024;
 const WEEK = 3;
 const SWINGS_PATH = `/${SEASON}/${WEEK}/swings`;
-const GAMES_PATH = `/${SEASON}/${WEEK}/games`;
+const GAMES_PATH = `/${SEASON}/${WEEK}/all-games`;
 const COMPARE_PATH = `/${SEASON}/${WEEK}/compare`;
 
 /** Names the URL a click landed on, from the router's own history. */
@@ -346,7 +346,7 @@ describe("NavMenu", () => {
       });
 
       expect(item).toHaveAttribute("data-disabled");
-      expect(item).toHaveAccessibleDescription("Week is decided");
+      expect(item).toHaveAccessibleDescription("Week complete");
     });
 
     it("disables Swing Games while scores load", async () => {
