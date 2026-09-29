@@ -18,6 +18,7 @@ function PlayerPicker({
   value,
   onValueChange,
   onRemove,
+  focusOnMount,
 }: {
   label: string;
   options: Array<PlayerOption>;
@@ -25,6 +26,7 @@ function PlayerPicker({
   onValueChange: (chosen: PlayerOption) => void;
   /** Absent while the page holds no more pickers than it opens with. */
   onRemove?: () => void;
+  focusOnMount?: boolean;
 }) {
   const [query, setQuery] = useState(value?.name ?? "");
   return (
@@ -36,6 +38,7 @@ function PlayerPicker({
         onValueChange={onValueChange}
         query={query}
         onQueryChange={setQuery}
+        focusOnMount={focusOnMount}
       />
       {onRemove != null && (
         <Button
@@ -61,6 +64,7 @@ export default function ComparePlayersDialog({
   onChoose,
   onAdd,
   onRemove,
+  addedKey,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -70,6 +74,8 @@ export default function ComparePlayersDialog({
   onChoose: (key: number, id: string) => void;
   onAdd: () => void;
   onRemove: (key: number) => void;
+  /** The picker "Add Player" made last, which takes the focus as it mounts. */
+  addedKey?: number;
 }) {
   const playersLabelId = useId();
   return (
@@ -100,6 +106,7 @@ export default function ComparePlayersDialog({
                   options={listed}
                   value={listed.find((option) => option.id === slot.id)}
                   onValueChange={(option) => onChoose(slot.key, option.id)}
+                  focusOnMount={slot.key === addedKey}
                   onRemove={
                     slots.length > MIN_PICKERS
                       ? () => onRemove(slot.key)
@@ -117,7 +124,7 @@ export default function ComparePlayersDialog({
             onClick={onAdd}
           >
             <AddIcon />
-            Add player
+            Add Player
           </Button>
         </section>
       </div>

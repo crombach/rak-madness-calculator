@@ -24,6 +24,9 @@ const PRO_COUNT = 13;
  */
 const PLAYER_COUNT = 60;
 
+/** The pages whose table this stands in for. */
+type SkeletonView = ScoresView | typeof RESULTS_PAGE.comparePlayers;
+
 type Column = {
   header: string;
   /** A game's column, which the real table sizes and centers by its own class. */
@@ -65,6 +68,35 @@ const PICKS_COLUMNS: Array<Column> = [
   TOTAL_SCORE,
 ];
 
+/**
+ * Compare Players' shape: a couple of differing games in each league, among the
+ * tiebreakers the real table adds. Filled to the bottom of the box alone, since
+ * two to eight players never scroll it.
+ */
+const COMPARE_COLUMNS: Array<Column> = [
+  ...RANK_AND_PLAYER,
+  { header: "MNF Points Pick" },
+  { header: "MNF Points Distance" },
+  ...leagueColumns(2, "C"),
+  { header: "College Score" },
+  ...leagueColumns(4, "P"),
+  { header: "Pro Score" },
+  { header: "Pro Score ATS" },
+  TOTAL_SCORE,
+];
+
+const SHAPES: Record<
+  SkeletonView,
+  { columns: Array<Column>; standInRows: number }
+> = {
+  [RESULTS_PAGE.scoreboard]: {
+    columns: SCOREBOARD_COLUMNS,
+    standInRows: PLAYER_COUNT,
+  },
+  [RESULTS_PAGE.picks]: { columns: PICKS_COLUMNS, standInRows: PLAYER_COUNT },
+  [RESULTS_PAGE.comparePlayers]: { columns: COMPARE_COLUMNS, standInRows: 0 },
+};
+
 /** The class the real table's header cell of that kind carries, and its width with it. */
 function headerClass(column: Column): string | undefined {
   if (column.isPlayer) return PLAYER_COL_CLASS;
@@ -81,9 +113,8 @@ function headerClass(column: Column): string | undefined {
  * Memoized because it is well over a thousand cells and its route re-renders on
  * every flag the week's loading sets, all of them while this is on screen.
  */
-function SkeletonTable({ view }: { view: ScoresView }) {
-  const columns =
-    view === RESULTS_PAGE.picks ? PICKS_COLUMNS : SCOREBOARD_COLUMNS;
+function SkeletonTable({ view }: { view: SkeletonView }) {
+  const { columns, standInRows } = SHAPES[view];
 
   return (
     <>
@@ -97,7 +128,7 @@ function SkeletonTable({ view }: { view: ScoresView }) {
       <TableShell
         className="--skeleton"
         columnCount={columns.length}
-        standInRows={PLAYER_COUNT}
+        standInRows={standInRows}
         busy
         ariaHidden
         header={columns.map((column, index) => (

@@ -1,17 +1,21 @@
 import doNothing from "../../utils/doNothing";
 import Button from "../button/Button";
-import { TuneIcon } from "../icon/Icon";
+import { RESULTS_PAGE } from "../results/resultsPath";
+import SkeletonTable from "../table/SkeletonTable";
 import "./ComparePlayers.scss";
 
-/** A wireframe of the page above its table, for while the week or the page loads. */
+/** A wireframe of the page, for while the week or the page loads. */
 export default function ComparePlayersSkeleton() {
   return (
-    <div className="compare-players --loading" aria-hidden="true" inert>
-      <div className="compare-players__controls">
-        <ChooseButton />
-        <GamesToggle />
+    <>
+      <div className="compare-players" aria-hidden="true" inert>
+        <div className="compare-players__controls">
+          <ChooseButton />
+          <GamesToggle />
+        </div>
       </div>
-    </div>
+      <SkeletonTable view={RESULTS_PAGE.comparePlayers} />
+    </>
   );
 }
 
@@ -23,8 +27,7 @@ export function ChooseButton({
 }) {
   return (
     <Button className="compare-players__choose" onClick={onClick}>
-      <TuneIcon />
-      Choose players
+      Choose Players
     </Button>
   );
 }

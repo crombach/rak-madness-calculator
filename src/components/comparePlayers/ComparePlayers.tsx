@@ -62,6 +62,7 @@ export default function ComparePlayers({
   );
   const [isOpen, setIsOpen] = useState(false);
   const [showsAll, setShowsAll] = useState(false);
+  const [addedKey, setAddedKey] = useState<number>();
   const chosen = useMemo(
     () =>
       slots.flatMap(
@@ -128,7 +129,12 @@ export default function ComparePlayers({
         onChoose={(key, id) =>
           setSlots(slots.map((slot) => (slot.key === key ? { key, id } : slot)))
         }
-        onAdd={() => setSlots([...slots, newSlot()])}
+        onAdd={() => {
+          const slot = newSlot();
+          setSlots([...slots, slot]);
+          setAddedKey(slot.key);
+        }}
+        addedKey={addedKey}
         onRemove={(key) => setSlots(slots.filter((slot) => slot.key !== key))}
       />
     </>

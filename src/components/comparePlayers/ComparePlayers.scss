@@ -1,5 +1,4 @@
 @use "../../styles/breakpoints" as *;
-@use "../../styles/skeleton" as *;
 
 // Pinned to the screen's left edge while a wide table pans under it.
 .compare-players {
@@ -11,14 +10,12 @@
   gap: var(--rak-space-2);
   width: min(100cqi, 100%);
   padding: var(--rak-space-4);
-  color: var(--rak-on-solid);
-
-  &.--loading {
-    @include skeleton-sheen;
-  }
+  // The dialog's surface, which the keys read against more clearly than the band.
+  background-color: var(--rak-surface-raised);
+  color: var(--rak-text);
 }
 
-// Choose players over the game scope, each the full width, until there is room to
+// Choose Players over the game scope, each the full width, until there is room to
 // set them side by side.
 .compare-players__controls {
   display: flex;
@@ -81,9 +78,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--rak-space-2);
+}
 
-  // On the frame's dark band, not the dialog's surface the shared rule inks for.
-  .analysis__standing {
-    color: var(--rak-on-solid);
-  }
+// An edge between the table and the controls' surface above it, which the header
+// band would otherwise meet with nothing between.
+.compare-players ~ .table .table__header th {
+  border-top: var(--rak-table-border);
 }

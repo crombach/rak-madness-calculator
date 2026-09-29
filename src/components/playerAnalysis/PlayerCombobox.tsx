@@ -15,6 +15,7 @@ export default function PlayerCombobox({
   query,
   onQueryChange,
   adornment,
+  focusOnMount,
 }: {
   ariaLabel: string;
   options: Array<PlayerOption>;
@@ -23,6 +24,7 @@ export default function PlayerCombobox({
   query: string;
   onQueryChange: (query: string) => void;
   adornment?: ReactNode;
+  focusOnMount?: boolean;
 }) {
   return (
     <DialogCombobox<PlayerOption>
@@ -46,6 +48,7 @@ export default function PlayerCombobox({
         })
       }
       adornment={adornment}
+      focusOnMount={focusOnMount}
       // An entry carries the status icon the tables give the same player, in
       // the hue they fill that player's cell with.
       renderOption={(option) => (

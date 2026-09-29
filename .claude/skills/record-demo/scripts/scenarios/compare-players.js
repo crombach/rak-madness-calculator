@@ -94,7 +94,7 @@ export default async function run({ page, context, baseUrl }) {
     [THEME_KEY, THEME, PLAYER_NAME_KEY, MY_NAME, EXPERIMENTAL_FEATURES_KEY],
   );
   await page.goto(path);
-  const choose = page.getByRole("button", { name: "Choose players" });
+  const choose = page.getByRole("button", { name: "Choose Players" });
   await choose.waitFor({ timeout: 10000 });
   await choose.click();
   const versus = page.getByRole("combobox", { name: "Player 2" });
@@ -103,7 +103,7 @@ export default async function run({ page, context, baseUrl }) {
   if (OPEN_LIST) return;
   await page.getByRole("option", { name: RIVAL }).click();
   if (ADD_THIRD) {
-    await page.getByRole("button", { name: "Add player" }).click();
+    await page.getByRole("button", { name: "Add Player" }).click();
     await page.getByRole("combobox", { name: "Player 3" }).click();
     await page.getByRole("option", { name: "Ann" }).click();
   }
