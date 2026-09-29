@@ -50,6 +50,13 @@ type NavItem = {
 
 const HOME: NavItem = { label: "Home", icon: <HomeIcon />, path: () => "/" };
 
+const GAMES: NavItem = {
+  label: RESULTS_PAGE.games,
+  icon: <ScoreboardIcon />,
+  path: (season, week) => resultsPath(season, week, RESULTS_PAGE.games),
+  disabled: ({ playerCount }) => playerCount == null,
+};
+
 const PAGES: Array<NavItem> = [
   {
     label: RESULTS_PAGE.swingGames,
@@ -77,12 +84,7 @@ const PAGES: Array<NavItem> = [
         ? "Needs two players"
         : undefined,
   },
-  {
-    label: RESULTS_PAGE.games,
-    icon: <ScoreboardIcon />,
-    path: (season, week) => resultsPath(season, week, RESULTS_PAGE.games),
-    disabled: ({ playerCount }) => playerCount == null,
-  },
+  GAMES,
 ];
 
 // Home leads, the rest run alphabetically. Settings renders after them, outside
@@ -102,7 +104,7 @@ const TRIGGER_CLASSES = buttonClasses({ compact: true, iconOnly: true });
 /**
  * The hamburger every page opens beside the scoreboard/picks switch. A drawer
  * from the right edge below `wide-screen`, a popup menu at it and above. Only
- * Home and Settings without the experimental opt-in.
+ * Home, All Games and Settings without the experimental opt-in.
  */
 export default function NavMenu({
   season,
@@ -131,7 +133,7 @@ export default function NavMenu({
     swingGames,
     playerCount,
   };
-  const links = (experimentalFeatures ? ITEMS : [HOME]).map((item) => {
+  const links = (experimentalFeatures ? ITEMS : [HOME, GAMES]).map((item) => {
     const path = item.path(season, week);
     const isHeldOff = pagesDisabled && item !== HOME;
     return {

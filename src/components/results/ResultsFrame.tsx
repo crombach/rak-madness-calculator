@@ -19,7 +19,6 @@ import { RakMadnessScores } from "../../types/RakMadnessScores";
 import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
-import { useSettings } from "../../context/SettingsContext";
 import ComparePlayersSkeleton from "../comparePlayers/ComparePlayersSkeleton";
 import GamesSkeleton from "../games/GamesSkeleton";
 import { preloadGamesRoute } from "../games/GamesPage";
@@ -124,7 +123,6 @@ export default function ResultsFrame({
   const isWeekSettled = useIsWeekSettled();
   // Games polls on its own, so it offers no refresh of its own either.
   const canRefresh = !isWeekSettled && view !== RESULTS_PAGE.games;
-  const { experimentalFeatures } = useSettings();
   const [opened, setOpened] = useState<Opened>();
   // Set once both dialogs are fetched, which mounts them closed. Each one reads
   // the week as it mounts, and `PlayerAnalysisDialog` walks every pick of every
@@ -182,8 +180,8 @@ export default function ResultsFrame({
   // Fetched ahead too, so the menu's link lands on the page rather than on a
   // frame of wireframe while its chunk arrives.
   useEffect(() => {
-    if (experimentalFeatures) preloadGamesRoute().catch(doNothing);
-  }, [experimentalFeatures]);
+    preloadGamesRoute().catch(doNothing);
+  }, []);
 
   // Stable, so the memoized tables below do not re-render for a dialog opening.
   const showPlayerAnalysis = useCallback(

@@ -70,47 +70,28 @@
   }
 }
 
-// The pool's own line on the game, over the scoreline it decides. Always said, `None`
-// and all, so a game with no line on it is not a game the dialog forgot to mention.
-.game-status__spread {
+// Each side's pool count and line, then the reader's own pick, over the
+// scoreline they decide. Both take the gray the labels over the two names use,
+// so they read as one tier of the dialog.
+.game-status__picks,
+.game-status__my-pick {
   align-self: center;
   margin: 0;
-  // The gray the labels over the two names are set in, so the line over the
-  // scoreline and the labels inside it read as one tier of the same dialog.
   color: var(--rak-text-secondary);
   font-size: var(--rak-text-sm);
   font-weight: var(--rak-weight-semibold);
   text-align: center;
-}
-
-// The line itself, set the way a pick names its team: `pick-face`, full ink. `None`
-// too, so a value that changes face with its own value never reads as two different
-// fields.
-.game-status__spread-value {
-  @include pick-face;
-  @include outcome;
-
-  color: var(--rak-text);
-}
-
-// Set as the spread line is, since the dialog puts the two on one line.
-.game-status__split {
-  margin: 0;
-  color: var(--rak-text-secondary);
-  font-size: var(--rak-text-sm);
-  font-weight: var(--rak-weight-semibold);
-  text-align: center;
-  // The line holds both counts at 360px, so it never breaks between them.
+  // Each part holds on one line at 360px, so neither breaks inside itself.
   white-space: nowrap;
 }
 
-// The main text color, which the team name beside it also takes until the game is
+// The main text color, which the team beside it also takes until the game is
 // over, so each count reads with the team it counts.
-.game-status__split-count {
+.game-status__picks-count {
   color: var(--rak-text);
 }
 
-.game-status__split-team {
+.game-status__picks-team {
   @include pick-face;
   @include outcome;
 
@@ -120,9 +101,9 @@
 // A `meta-dot` and its margins.
 $lead-dot: calc(2 * var(--rak-space-2) + 0.3em);
 
-// The spread line, then the split, on one line where both fit. The dot between
-// them takes no room of its own, so dropping it once the line wraps cannot
-// unwrap it again.
+// The pool's picks, then the reader's, on one line where both fit. The dot
+// between them takes no room of its own, so dropping it once the line wraps
+// cannot unwrap it again.
 .game-status__lead {
   display: flex;
   flex-wrap: wrap;
@@ -130,11 +111,11 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.3em);
   align-items: baseline;
   gap: var(--rak-space-1) $lead-dot;
 
-  .game-status__spread + .game-status__split {
+  .game-status__picks + .game-status__my-pick {
     position: relative;
   }
 
-  &:not(.--wrapped) .game-status__spread + .game-status__split::before {
+  &:not(.--wrapped) .game-status__picks + .game-status__my-pick::before {
     content: "·";
     position: absolute;
     right: 100%;

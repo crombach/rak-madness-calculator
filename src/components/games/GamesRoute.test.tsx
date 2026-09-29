@@ -13,7 +13,6 @@ import {
   setUpAppTest,
   spreadsheetResponse,
 } from "../../appTestFixtures";
-import { EXPERIMENTAL_FEATURES_KEY } from "../../context/SettingsContext";
 import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
 
 const GAMES_PATH = `/${SEASON}/${CURRENT_WEEK}/all-games`;
@@ -23,7 +22,6 @@ beforeEach(() => {
   getPlayerScoresMock.mockResolvedValue(
     week([player({ name: "Alice", pro: [pick("KC -3")] })]),
   );
-  localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
 });
 
 afterEach(() => {
@@ -73,18 +71,6 @@ describe("the games route", () => {
       await screen.findByRole("heading", {
         level: 1,
         name: `${SEASON} Week ${CURRENT_WEEK} All Games`,
-      }),
-    ).toBeInTheDocument();
-  });
-
-  it("sends a reader without experimental features to the scoreboard", async () => {
-    localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
-    mountApp(GAMES_PATH);
-
-    expect(
-      await screen.findByRole("heading", {
-        level: 1,
-        name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
       }),
     ).toBeInTheDocument();
   });

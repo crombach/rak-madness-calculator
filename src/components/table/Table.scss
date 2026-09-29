@@ -12,13 +12,16 @@
   @return color-mix(in srgb, var(--rak-cell-fill) $strength, black);
 }
 
-// The hover and press fills of a tappable cell. A column lit by the hovered
-// heading takes the hover fill too.
+// The hover and press fills of a tappable cell. A lit column takes the hover
+// fill on touch too, since a tap lights it where a finger has no hover. Kept
+// before the press fill, so a pressed cell in a lit column still darkens.
 @mixin cell-interactive-fill {
+  &.--column-lit {
+    background-color: cell-darkened(var(--rak-hover-strength));
+  }
   @include interactive-fill(
     cell-darkened(var(--rak-hover-strength)),
-    cell-darkened(var(--rak-press-strength)),
-    ".--column-hover"
+    cell-darkened(var(--rak-press-strength))
   );
 }
 
