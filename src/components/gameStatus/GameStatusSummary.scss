@@ -1,3 +1,4 @@
+@use "../../styles/a11y" as *;
 @use "../../styles/breakpoints" as *;
 @use "../../styles/label" as *;
 @use "../../styles/lcd" as *;
@@ -87,6 +88,50 @@
   @include pick-face;
 
   color: var(--rak-text);
+}
+
+// Set as the spread line is, since the dialog puts the two on one line.
+.game-status__split {
+  margin: 0;
+  color: var(--rak-text-secondary);
+  font-size: var(--rak-text-sm);
+  font-weight: var(--rak-weight-semibold);
+  text-align: center;
+  // The line holds both counts at 360px, so it never breaks between them.
+  white-space: nowrap;
+}
+
+.game-status__split-team {
+  @include pick-face;
+
+  color: var(--rak-text);
+}
+
+// A `meta-dot` and its margins.
+$lead-dot: calc(2 * var(--rak-space-2) + 0.3em);
+
+// The spread line, then the split, on one line where both fit. The dot between
+// them takes no room of its own, so dropping it once the line wraps cannot
+// unwrap it again.
+.game-status__lead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: var(--rak-space-1) $lead-dot;
+
+  .game-status__spread + .game-status__split {
+    position: relative;
+  }
+
+  &:not(.--wrapped) .game-status__spread + .game-status__split::before {
+    content: "·";
+    position: absolute;
+    right: 100%;
+    width: $lead-dot;
+    color: var(--rak-text-secondary);
+    text-align: center;
+  }
 }
 
 // What is the same about the game however it is going. It starts at a fixed time and
@@ -281,6 +326,10 @@
   line-height: var(--rak-line-height-tight);
 
   @include outcome;
+}
+
+.game-status__sr-only {
+  @include visually-hidden;
 }
 
 // A phone gets the abbreviation, a name of three words wrapping to three lines in

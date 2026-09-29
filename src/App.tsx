@@ -6,6 +6,7 @@ import { RESULTS_PAGE } from "./components/results/resultsPath";
 import PicksRoute from "./components/results/PicksRoute";
 import ResultsLayout from "./components/results/ResultsLayout";
 import ScoreboardRoute from "./components/results/ScoreboardRoute";
+import LiveGamesPage from "./components/liveGames/LiveGamesPage";
 import SwingGamesSkeleton from "./components/swingGames/SwingGamesSkeleton";
 
 // Lazy for the must-win search it reaches, which `ResultsFrame` keeps out of the
@@ -39,6 +40,7 @@ export default function App() {
             </Suspense>
           }
         />
+        <Route path="live" element={<LiveGamesPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

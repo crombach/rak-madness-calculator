@@ -3,6 +3,7 @@ export const RESULTS_PAGE = {
   scoreboard: "Scoreboard",
   picks: "Picks",
   swingGames: "Swing Games",
+  liveGames: "Live Games",
 } as const;
 
 export type ResultsPage = (typeof RESULTS_PAGE)[keyof typeof RESULTS_PAGE];
@@ -15,6 +16,7 @@ const SEGMENTS: Record<ResultsPage, string> = {
   [RESULTS_PAGE.scoreboard]: "scoreboard",
   [RESULTS_PAGE.picks]: "picks",
   [RESULTS_PAGE.swingGames]: "swings",
+  [RESULTS_PAGE.liveGames]: "live",
 };
 
 /** How a week reads as text, as in "2026 Season · Week 3". */

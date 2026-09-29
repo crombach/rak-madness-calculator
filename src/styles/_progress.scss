@@ -1,0 +1,54 @@
+@use "breakpoints" as *;
+
+$progress-height: 2px;
+
+/**
+ * A thin bar with a segment sweeping across it, for a wait that must not move
+ * what is on screen. Placement is left to the caller. `--live` draws it in the
+ * colors of a game being played.
+ */
+@mixin progress-bar {
+  display: block;
+  height: $progress-height;
+  overflow: hidden;
+  background-color: var(--rak-fill-subtle);
+
+  &::after {
+    content: "";
+    display: block;
+    width: 40%;
+    height: 100%;
+    background-color: var(--rak-progress-fill);
+    // The sweep speed `_skeleton.scss` times its sheen to. Eased at each end, where
+    // a sheen crosses at a constant rate.
+    animation: progress-sweep var(--rak-duration-loop) ease-in-out infinite;
+  }
+
+  // A wait on a game being played, drawn in the two colors that game's own mark
+  // is, so the bar and the pill over it say the one thing.
+  &.--live {
+    background-color: var(--rak-mark-live-bg);
+
+    &::after {
+      background-color: var(--rak-live-dot);
+    }
+  }
+
+  // Still says work is under way, without a thing crossing the screen to say it.
+  @include reduced-motion {
+    &::after {
+      width: 100%;
+      animation: none;
+    }
+  }
+}
+
+@keyframes progress-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(250%);
+  }
+}

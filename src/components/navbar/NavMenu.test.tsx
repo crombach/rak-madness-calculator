@@ -2,7 +2,12 @@ import { Mock } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router";
-import { useIsWeekWon, useSwingGames } from "../../context/AppDataContext";
+import {
+  useAppData,
+  useIsWeekSettled,
+  useIsWeekWon,
+  useSwingGames,
+} from "../../context/AppDataContext";
 import {
   EXPERIMENTAL_FEATURES_KEY,
   SettingsContextProvider,
@@ -11,10 +16,14 @@ import { SwingGame } from "../../utils/scoring/getSwingGames";
 import NavMenu from "./NavMenu";
 
 vi.mock("../../context/AppDataContext", () => ({
+  useAppData: vi.fn(),
+  useIsWeekSettled: vi.fn(),
   useIsWeekWon: vi.fn(),
   useSwingGames: vi.fn(),
 }));
 
+const mockAppData = useAppData as Mock;
+const mockIsWeekSettled = useIsWeekSettled as Mock;
 const mockIsWeekWon = useIsWeekWon as Mock;
 const mockSwingGames = useSwingGames as Mock;
 const A_SWING_GAME = {} as SwingGame;
@@ -22,6 +31,7 @@ const A_SWING_GAME = {} as SwingGame;
 const SEASON = 2024;
 const WEEK = 3;
 const SWINGS_PATH = `/${SEASON}/${WEEK}/swings`;
+const LIVE_PATH = `/${SEASON}/${WEEK}/live`;
 
 /** Names the URL a click landed on, from the router's own history. */
 function Landed() {
@@ -63,6 +73,8 @@ describe("NavMenu", () => {
   beforeEach(() => {
     // Swing Games gates on this opt-in too, beside `isWeekWon`.
     localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
+    mockAppData.mockReturnValue({ scores: { scores: [] } });
+    mockIsWeekSettled.mockReturnValue(false);
     mockIsWeekWon.mockReturnValue(false);
     mockSwingGames.mockReturnValue({ games: [A_SWING_GAME] });
   });
@@ -74,7 +86,7 @@ describe("NavMenu", () => {
   });
 
   describe("at wide-screen", () => {
-    it("lists Home and Swing Games", async () => {
+    it("lists Home first, then the pages alphabetically", async () => {
       const user = mount();
       await user.click(trigger());
 
@@ -82,6 +94,7 @@ describe("NavMenu", () => {
 
       expect(items.map((item) => item.textContent)).toEqual([
         "Home",
+        "Live Games",
         "Swing Games",
       ]);
     });
@@ -132,7 +145,44 @@ describe("NavMenu", () => {
       expect(screen.queryByRole("menuitem")).not.toBeInTheDocument();
     });
 
-    it("disables Swing Games once the week has a winner", async () => {
+    it("goes to the live games page on a click", async () => {
+      const user = mount();
+      await user.click(trigger());
+      await user.click(
+        await screen.findByRole("menuitem", { name: "Live Games" }),
+      );
+
+      expect(await screen.findByTestId("landed")).toHaveTextContent(LIVE_PATH);
+    });
+
+    it("disables Live Games while scores load", async () => {
+      mockAppData.mockReturnValue({ scores: undefined });
+      const user = mount();
+      await user.click(trigger());
+
+      const item = await screen.findByRole("menuitem", {
+        name: /Live Games/,
+      });
+
+      expect(item).toHaveAttribute("data-disabled");
+      expect(item).toHaveAccessibleDescription("Scores still loading");
+    });
+
+    it("disables the pages a complete week has no use for, with no reason", async () => {
+      mockIsWeekSettled.mockReturnValue(true);
+      mockIsWeekWon.mockReturnValue(true);
+      mockSwingGames.mockReturnValue({ games: [] });
+      const user = mount();
+      await user.click(trigger());
+
+      for (const name of [/Live Games/, /Swing Games/]) {
+        const item = await screen.findByRole("menuitem", { name });
+        expect(item).toHaveAttribute("data-disabled");
+        expect(item).not.toHaveAccessibleDescription();
+      }
+    });
+
+    it("disables Swing Games once the week has a winner, games still to play", async () => {
       mockIsWeekWon.mockReturnValue(true);
       const user = mount();
       await user.click(trigger());
@@ -142,7 +192,7 @@ describe("NavMenu", () => {
       });
 
       expect(item).toHaveAttribute("data-disabled");
-      expect(item).toHaveAccessibleDescription("Week already decided");
+      expect(item).toHaveAccessibleDescription("Week is decided");
     });
 
     it("shows no menu with experimental features off", () => {
@@ -211,6 +261,7 @@ describe("NavMenu", () => {
 
       await user.keyboard("{ArrowDown}");
       await user.keyboard("{ArrowDown}");
+      await user.keyboard("{ArrowDown}");
 
       await waitFor(() => expect(item).toHaveFocus());
     });
@@ -250,14 +301,14 @@ describe("NavMenu", () => {
       };
     }
 
-    it("opens a drawer holding Home and Swing Games, with no season or week combobox", async () => {
+    it("opens a drawer holding the menu pages, with no season or week combobox", async () => {
       const { drawer } = await openDrawer();
 
       expect(
         within(drawer)
           .getAllByRole("link")
           .map((link) => link.textContent),
-      ).toEqual(["Home", "Swing Games"]);
+      ).toEqual(["Home", "Live Games", "Swing Games"]);
       expect(within(drawer).queryAllByRole("combobox")).toHaveLength(0);
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });
@@ -344,6 +395,18 @@ describe("NavMenu", () => {
       expect(await screen.findByTestId("landed")).toHaveTextContent(
         SWINGS_PATH,
       );
+      await waitFor(() =>
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+      );
+    });
+
+    it("closes on a tap of the page it is on", async () => {
+      const { user, drawer } = await openDrawer({ at: SWINGS_PATH });
+
+      await user.click(
+        within(drawer).getByRole("link", { name: "Swing Games" }),
+      );
+
       await waitFor(() =>
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
       );

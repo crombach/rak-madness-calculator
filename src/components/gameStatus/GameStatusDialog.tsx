@@ -1,6 +1,7 @@
-import { ReactNode, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import useArrival from "../../hooks/useArrival";
 import useLiveGame from "../../hooks/useLiveGame";
+import useMyPick from "../../hooks/useMyPick";
 import { GameStatus } from "../../types/ESPN";
 import { League } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
@@ -9,103 +10,25 @@ import matching from "../../utils/matching";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
 import DialogCombobox from "../dialog/DialogCombobox";
 import DialogShell from "../dialog/DialogShell";
-import { CheckIcon, EventIcon, PauseIcon, WarningIcon } from "../icon/Icon";
+import GameMark from "./GameMark";
 import GameStatusSummary from "./GameStatusSummary";
 import "./GameStatusDialog.scss";
 
 /**
- * A query is matched against the column the game is. Then it is matched against
- * the game itself.
- *
- * Wider than the input reads once a game is chosen, which is the game alone. The
- * column is how a reader who came from a cell knows which game they clicked, so it
- * is worth typing even where it is not worth keeping on screen.
+ * The column and the matchup together. The input reads it back once a game is
+ * chosen, and a query is matched against it, so the input's own text always finds
+ * its game.
  */
 export function gameSearchText(game: WeekGame): string {
-  return `${game.label}  ${game.name}`;
+  return `${game.label} ${game.name}`;
 }
 
-/** What one mark is. It says the state in the shape, the word and the label. */
-type Mark = { modifier: string; label: string; icon: ReactNode; word: string };
-
-/**
- * Which mark a game wears, tested in the order the states rule each other out.
- *
- * A column ESPN lists no game for comes before any status, since there is no game
- * to have one. Then the game is tested as its own status says it. Anything ESPN
- * reports that the app does not model falls through to the calendar.
- */
-function markFor(game: WeekGame, status?: GameStatus): Mark {
-  if (game.result == null) {
-    return {
-      modifier: "--invalid",
-      label: "Not listed by ESPN",
-      icon: <WarningIcon />,
-      word: "WARN",
-    };
-  }
-  if (status === GameStatus.FINAL) {
-    return {
-      modifier: "--final",
-      label: "Final",
-      icon: <CheckIcon />,
-      word: "DONE",
-    };
-  }
-  if (status === GameStatus.DELAYED) {
-    return {
-      modifier: "--delayed",
-      label: "Delayed",
-      icon: <PauseIcon />,
-      word: "DLAY",
-    };
-  }
-  if (status === GameStatus.LIVE) {
-    return {
-      modifier: "--live",
-      label: "Live",
-      // Read out by the label rather than as letters, so a reader being read to
-      // hears "Live" and not "L I V E".
-      icon: <span className="game-status__live-dot" />,
-      word: "LIVE",
-    };
-  }
-  return {
-    modifier: "--upcoming",
-    label: "Yet to kick off",
-    icon: <EventIcon />,
-    word: "SOON",
-  };
-}
-
-/**
- * Where a game stands, in one mark, on every game the search offers.
- *
- * Every state says so in a word beside its shape. LIVE beside a red dot for a game
- * being played, DLAY beside a pause for one that has stopped, WARN beside a warning
- * for a column ESPN lists no game for, which is the one game the dialog can say
- * nothing else about, DONE beside a tick once the game is over, and SOON beside a
- * calendar before kickoff. That a live game is being asked about again is the
- * progress bar's to say, which is how every other wait in the app says it.
- */
-function GameMark({
-  game,
-  status,
-}: {
-  game: WeekGame;
-  /** The freshest status known, which for the chosen game is not the scoring pass's. */
-  status?: GameStatus;
-}) {
-  const { modifier, label, icon, word } = markFor(game, status);
+function GameName({ game }: { game: WeekGame }) {
   return (
-    <span
-      className={`game-status__mark ${modifier}`}
-      role="img"
-      aria-label={label}
-    >
-      <span className="game-status__mark-icon">{icon}</span>
-      <span className="game-status__mark-word">{word}</span>
-    </span>
+    <>
+      <span className="game-status__option-label">{game.label}</span>
+      <span className="game-status__option-name">{game.name}</span>
+    </>
   );
 }
 
@@ -163,7 +86,8 @@ export default function GameStatusDialog({
   // A column arriving from outside stands in for a choice made in the search.
   useArrival(named, (label) => {
     setChosen(label);
-    setQuery(games.find((it) => it.label === label)?.name ?? label);
+    const found = games.find((it) => it.label === label);
+    setQuery(found != null ? gameSearchText(found) : label);
   });
 
   const { shown } = useLiveGame({
@@ -172,6 +96,7 @@ export default function GameStatusDialog({
     games: scores?.games,
     onPoll,
   });
+  const myPick = useMyPick(scores, game);
 
   // A game the week already has final is never fetched, so a fetch running on
   // behalf of the week's other columns draws nothing over it.
@@ -199,9 +124,9 @@ export default function GameStatusDialog({
           onValueChange={(next) => setChosen(next.label)}
           query={query}
           onQueryChange={setQuery}
-          // The game alone. The column is what the list is read by and what the
-          // search matches, and saying it back here only crowds the game's name.
-          itemToStringLabel={(option) => option.name}
+          // The column and the game both, so the reader who came from a cell can
+          // tell this is the game they clicked once it fills the input.
+          itemToStringLabel={gameSearchText}
           itemKey={(option) => option.label}
           // The chosen game's mark uses the freshest status, not the week's, so going
           // final stops pulsing. The week's stands until the first answer lands.
@@ -213,17 +138,22 @@ export default function GameStatusDialog({
               />
             )
           }
+          renderValue={(chosen) => <GameName game={chosen} />}
           renderOption={(option) => (
             <>
-              <span className="game-status__option-label">{option.label}</span>
-              <span className="game-status__option-name">{option.name}</span>
+              <GameName game={option} />
               <GameMark game={option} status={option.result?.status} />
             </>
           )}
         />
       }
     >
-      <GameStatusSummary game={game} result={shown} />
+      <GameStatusSummary
+        game={game}
+        result={shown}
+        myPick={myPick}
+        players={scores?.scores}
+      />
     </DialogShell>
   );
 }

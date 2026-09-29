@@ -1,9 +1,15 @@
+import { useEffect, useState } from "react";
 import { GameStatus, HomeAway } from "../../types/ESPN";
 import { GameSide, LeagueResult } from "../../types/LeagueResult";
 import { GameSpread } from "../../types/WeekGame";
 import getClasses from "../../utils/getClasses";
 import { PossessionIcon } from "../icon/Icon";
-import { detailText, outcomeText } from "./gameStatusText";
+import {
+  MINUTE_MS,
+  countdownText,
+  detailText,
+  outcomeText,
+} from "./gameStatusText";
 // The readout is part of the `game-status` block, which `GameStatusSummary.scss` owns.
 import "./GameStatusSummary.scss";
 
@@ -23,6 +29,20 @@ const SCORE_DASH = "-";
  * fourteen-segment face that draws letters.
  */
 const DSEG7_ALL_SEGMENTS = "8";
+
+/**
+ * The time now, moved on every minute while `ticking`, which is as fine as a
+ * countdown says it. A poll waiting out a kickoff renders nothing on its own.
+ */
+function useMinuteClock(ticking: boolean): Date {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    if (!ticking) return;
+    const timer = window.setInterval(() => setNow(new Date()), MINUTE_MS);
+    return () => window.clearInterval(timer);
+  }, [ticking]);
+  return now;
+}
 
 /** What the mark beside a score is called, for anyone who cannot see it. */
 const HAS_BALL_LABEL = "Has the ball";
@@ -64,8 +84,9 @@ function Detail({ result }: { result: LeagueResult }) {
 }
 
 /**
- * Under the scores is what the offense is facing while the game is being played, and
- * what the pool made of it once the game is over.
+ * Under the scores is how long until kickoff before the game starts, what the
+ * offense is facing while it is being played, and what the pool made of it once
+ * it is over.
  *
  * Who has the ball is left to the marker beside their score.
  */
@@ -76,6 +97,14 @@ function Note({
   result: LeagueResult;
   spread?: GameSpread;
 }) {
+  const isPregame = result.status === GameStatus.UPCOMING;
+  const now = useMinuteClock(isPregame);
+  if (isPregame) {
+    const countdown = countdownText(result.date, now);
+    return countdown == null ? null : (
+      <p className="game-status__down">{countdown}</p>
+    );
+  }
   if (result.status === GameStatus.FINAL) {
     return (
       <p className="game-status__outcome">{outcomeText(result, spread)}</p>
@@ -190,7 +219,8 @@ export default function Scoreline({
           outcome={outcomeOf(result.home)}
         />
       </div>
-      <Note result={result} spread={spread} />
+      {/* Keyed so a game moved to counts down from now, not from its mount. */}
+      <Note key={result.id} result={result} spread={spread} />
     </div>
   );
 }

@@ -1,5 +1,9 @@
-import { render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import {
+  PLAYER_NAME_KEY,
+  SettingsContextProvider,
+} from "../../context/SettingsContext";
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
@@ -12,7 +16,8 @@ import {
   weekOf,
 } from "../../utils/scoring/leagueResultFixtures";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
-import { POLL_MS } from "../../hooks/useLiveGame";
+import { pick, player } from "../../utils/scoring/scoringTestFixtures";
+import { POLL_MS } from "../../hooks/useLiveWeek";
 import matching from "../../utils/matching";
 import { gameSearchText } from "./GameStatusDialog";
 import { dialog } from "./gameStatusDialogTestSupport";
@@ -157,6 +162,95 @@ describe("the games a query offers", () => {
  * each game reads like is covered against `GameStatusSummary` instead.
  */
 describe("GameStatusDialog", () => {
+  it("says the reader's own pick in place of the spread", async () => {
+    localStorage.setItem(PLAYER_NAME_KEY, "alice");
+    const withMe: RakMadnessScores = {
+      scores: [player({ name: "Alice", pro: [pick("KC -3")] })],
+      games,
+    };
+    render(
+      <SettingsContextProvider>
+        {dialog("P1", true, withMe, () => Promise.resolve(undefined))}
+      </SettingsContextProvider>,
+    );
+    expect(await screen.findByText(/Your Pick/)).toHaveTextContent(
+      "Your Pick: KC -3",
+    );
+    expect(
+      document.querySelector(".game-status__team-name.--picked"),
+    ).toHaveTextContent("KC");
+    localStorage.clear();
+  });
+
+  it("sets the chosen game's column as a game ID over the input, until it takes the focus", async () => {
+    render(dialog("P1", true, scores, () => Promise.resolve(undefined)));
+    const input = screen.getByRole("combobox", { name: "Game" });
+    const value = await screen.findByText("P1", {
+      selector: ".dialog__input-value .game-status__option-label",
+    });
+    expect(value.nextElementSibling).toHaveTextContent("KC @ BUF");
+    expect(input).toHaveClass("--overlaid");
+
+    act(() => input.focus());
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    fireEvent.change(input, { target: { value: "B" } });
+    expect(document.querySelector(".dialog__input-value")).toBeNull();
+  });
+
+  it("offers the chosen game when the list opens from the keyboard", async () => {
+    render(dialog("P1", true, scores, () => Promise.resolve(undefined)));
+    const input = screen.getByRole("combobox", { name: "Game" });
+    act(() => input.focus());
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    expect(
+      await screen.findByRole("option", { name: /KC @ BUF/ }),
+    ).toBeInTheDocument();
+  });
+
+  it("says how many players picked each side", async () => {
+    const pool: RakMadnessScores = {
+      scores: [
+        player({ name: "Alice", pro: [pick("KC -3")] }),
+        player({ name: "Bob", pro: [pick("BUF +3")] }),
+        player({ name: "Cy", pro: [pick("KC")] }),
+      ],
+      games,
+    };
+    render(dialog("P1", true, pool, () => Promise.resolve(undefined)));
+    await screen.findByText("KC", { selector: ".game-status__split-team" });
+    const [away, home] = document.querySelectorAll(
+      ".game-status__split > span",
+    );
+    expect(away).toHaveTextContent("2 picked KC");
+    expect(home).toHaveTextContent("1 picked BUF");
+  });
+
+  it("sets the pool's counts on the pick's line, a phone's too", async () => {
+    const wide = window.matchMedia;
+    window.matchMedia = ((media: string) => ({
+      ...wide(media),
+      matches: true,
+    })) as typeof window.matchMedia;
+    try {
+      const pool: RakMadnessScores = {
+        scores: [player({ name: "Alice", pro: [pick("KC -3")] })],
+        games,
+      };
+      render(dialog("P1", true, pool, () => Promise.resolve(undefined)));
+      const split = await screen.findByText(/^Pool:/, {
+        selector: ".game-status__split",
+      });
+      expect(split.closest(".game-status__lead")).not.toBeNull();
+      // A comma between the sides, since a dot is what ends the pick before it.
+      expect(split).toHaveTextContent("Pool: 1 picked KC, 0 picked BUF");
+      expect(split.querySelector(".game-status__sr-only")).toHaveTextContent(
+        "picked",
+      );
+    } finally {
+      window.matchMedia = wide;
+    }
+  });
+
   it("polls the open game's league, keeps it up to date, and stops when it is final", async () => {
     vi.useFakeTimers();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
@@ -178,10 +272,9 @@ describe("GameStatusDialog", () => {
       screen.getByRole("progressbar", { name: "Fetching the game" }),
     ).toHaveAttribute("aria-busy", "true");
 
-    // The game, not the column the cell that opened it was in, and the week's own
-    // copy of it already up rather than a wait for the fetch that is out.
+    // Shows the column with the game, so the reader can tell which one they clicked.
     expect(screen.getByRole("combobox", { name: "Game" })).toHaveValue(
-      "KC @ BUF",
+      "P1 KC @ BUF",
     );
     expect(screen.getByText("BUF Team")).toBeInTheDocument();
     // In words as well as in a dot, a red dot alone reading as a decoration.
@@ -221,7 +314,9 @@ describe("GameStatusDialog", () => {
     expect(screen.getByText("BUF Team")).toBeInTheDocument();
 
     held.settle(proGame);
-    expect(await screen.findByText("0")).toBeInTheDocument();
+    expect(
+      await screen.findByText("0", { selector: ".game-status__points" }),
+    ).toBeInTheDocument();
     // A fetch of the other league draws nothing over this one, since it cannot
     // change the game on screen.
     rerender(dialog("P1", true, scores, onPoll, COLLEGE_IN_FLIGHT));

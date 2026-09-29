@@ -210,12 +210,16 @@
   @include focus-ring;
 }
 
-// A disabled item with a reason, in the popup or the drawer. A grid, so the icon
-// centers on the name alone and the reason sits under the name, aligned with it.
+// A disabled item with a reason, in the popup or the drawer. A grid, so the reason
+// sits under the name, aligned with it, and the icon centers on the two together.
 .nav-menu__with-reason {
   display: grid;
   grid-template-columns: auto 1fr;
   row-gap: 0;
+
+  > svg {
+    grid-row: span 2;
+  }
 }
 
 .nav-menu__reason {

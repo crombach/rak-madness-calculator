@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { POLL_MS } from "../../hooks/useLiveGame";
+import { POLL_MS } from "../../hooks/useLiveWeek";
 import { League } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";

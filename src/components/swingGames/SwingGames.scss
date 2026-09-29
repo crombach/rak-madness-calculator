@@ -40,7 +40,7 @@ $section-min: calc(
   background-color: var(--rak-surface);
   color: var(--rak-text);
 
-  &.--loading {
+  &.--loading .swing-games__group {
     @include skeleton-sheen;
   }
 }
@@ -169,6 +169,13 @@ $section-min: calc(
   @include pick-label;
 
   letter-spacing: normal;
+}
+
+.swing-games__game-matchup {
+  @include pick-face;
+
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .swing-games__side {

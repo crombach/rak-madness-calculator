@@ -1,4 +1,5 @@
 @use "../../styles/breakpoints" as *;
+@use "../../styles/progress" as *;
 
 // Base UI ships the dialog unstyled, so these rules carry its whole look. State
 // comes off the data attributes it sets, the same way the select on the home page
@@ -142,61 +143,17 @@
 // anything that would move the answer still on screen. Stuck to the rule so
 // scrolling cannot carry it off, and pulled back out of the flow by its own
 // height, so it does not push the answer below it down the page.
-$bar-height: 2px;
-
 .dialog__progress {
+  @include progress-bar;
+
   position: sticky;
   // Measured from where the answer starts, which is the inset below the rule.
   top: calc(-1 * var(--rak-dialog-inset));
   z-index: 1;
-  display: block;
-  height: $bar-height;
   // Pulled up onto the rule, and the room it took given back underneath, so the
   // answer sits where it would with no bar there at all.
   margin-top: calc(-1 * var(--rak-dialog-inset));
-  margin-bottom: calc(var(--rak-dialog-inset) - #{$bar-height});
-  overflow: hidden;
-  background-color: var(--rak-fill-subtle);
-
-  &::after {
-    content: "";
-    display: block;
-    width: 40%;
-    height: 100%;
-    background-color: var(--rak-progress-fill);
-    // The app's one sweep speed, the same `_skeleton.scss` times its sheen to.
-    // The curve is this bar's own. A sheen crosses at a constant rate, and a
-    // progress bar eases at each end of its run.
-    animation: dialog-sweep var(--rak-duration-loop) ease-in-out infinite;
-  }
-
-  // A wait on a game being played, drawn in the two colors that game's own mark
-  // is, so the bar and the pill over it say the one thing.
-  &.--live {
-    background-color: var(--rak-mark-live-bg);
-
-    &::after {
-      background-color: var(--rak-live-dot);
-    }
-  }
-
-  // Still says work is under way, without a thing crossing the screen to say it.
-  @include reduced-motion {
-    &::after {
-      width: 100%;
-      animation: none;
-    }
-  }
-}
-
-@keyframes dialog-sweep {
-  from {
-    transform: translateX(-100%);
-  }
-
-  to {
-    transform: translateX(250%);
-  }
+  margin-bottom: calc(var(--rak-dialog-inset) - #{$progress-height});
 }
 
 // Room enough either side of it to read as a window, so the sheet above stands up
@@ -211,7 +168,7 @@ $bar-height: 2px;
     left: 50%;
     right: auto;
     bottom: auto;
-    width: min(640px, calc(100vw - 32px));
+    width: min(var(--rak-scoreboard-width), calc(100vw - 32px));
     max-height: min(680px, calc(var(--rak-viewport-height, 100dvh) - 64px));
     // No keyboard to stand over and no home indicator to clear. A centered
     // window is off both edges already. The body still carries it.

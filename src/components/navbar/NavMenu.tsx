@@ -2,13 +2,24 @@ import { Drawer } from "@base-ui/react/drawer";
 import { Menu } from "@base-ui/react/menu";
 import { ReactNode, useId, useState } from "react";
 import { Link, useLocation } from "react-router";
-import { useIsWeekWon, useSwingGames } from "../../context/AppDataContext";
+import {
+  useAppData,
+  useIsWeekSettled,
+  useIsWeekWon,
+  useSwingGames,
+} from "../../context/AppDataContext";
 import { useSettings } from "../../context/SettingsContext";
 import cssMediaQuery from "../../hooks/cssMediaQuery";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import getClasses from "../../utils/getClasses";
 import { buttonClasses } from "../button/Button";
-import { CloseIcon, HomeIcon, MenuIcon, SwapVertIcon } from "../icon/Icon";
+import {
+  CloseIcon,
+  HomeIcon,
+  MenuIcon,
+  ScoreboardIcon,
+  SwapVertIcon,
+} from "../icon/Icon";
 import resultsPath, { RESULTS_PAGE, weekName } from "../results/resultsPath";
 import "./NavMenu.scss";
 
@@ -16,8 +27,11 @@ type Week = number | string | undefined;
 
 /** What an item's enabled rule can read. */
 type NavContext = {
+  isWeekSettled: boolean;
   isWeekWon: boolean;
   swingGames: ReturnType<typeof useSwingGames>;
+  /** How many players the week has, or undefined while its scores load. */
+  playerCount?: number;
 };
 
 type NavItem = {
@@ -30,20 +44,38 @@ type NavItem = {
   disabledReason?: (context: NavContext) => string | undefined;
 };
 
-const ITEMS: Array<NavItem> = [
-  { label: "Home", icon: <HomeIcon />, path: () => "/" },
+const HOME: NavItem = { label: "Home", icon: <HomeIcon />, path: () => "/" };
+
+const PAGES: Array<NavItem> = [
   {
     label: RESULTS_PAGE.swingGames,
     icon: <SwapVertIcon />,
     path: (season, week) => resultsPath(season, week, RESULTS_PAGE.swingGames),
-    // Scores still loading, which is soon over and needs no word.
-    disabled: ({ swingGames }) => swingGames == null,
-    disabledReason: ({ isWeekWon, swingGames }) => {
-      if (isWeekWon) return "Week already decided";
+    // Scores still loading, which is soon over and needs no word. A complete
+    // week needs none either.
+    disabled: ({ isWeekSettled, swingGames }) =>
+      isWeekSettled || swingGames == null,
+    disabledReason: ({ isWeekSettled, isWeekWon, swingGames }) => {
+      if (isWeekSettled) return undefined;
+      if (isWeekWon) return "Week is decided";
       if (swingGames?.games.length === 0) return "No game knocks anyone out";
       return undefined;
     },
   },
+  {
+    label: RESULTS_PAGE.liveGames,
+    icon: <ScoreboardIcon />,
+    path: (season, week) => resultsPath(season, week, RESULTS_PAGE.liveGames),
+    disabled: ({ isWeekSettled }) => isWeekSettled,
+    disabledReason: ({ playerCount }) =>
+      playerCount == null ? "Scores still loading" : undefined,
+  },
+];
+
+// Home leads, the rest run alphabetically.
+const ITEMS: Array<NavItem> = [
+  HOME,
+  ...[...PAGES].sort((a, b) => a.label.localeCompare(b.label)),
 ];
 
 const TRIGGER_CLASSES = buttonClasses({ compact: true, iconOnly: true });
@@ -64,12 +96,19 @@ export default function NavMenu({
   const [query] = useState(() => cssMediaQuery("--rak-below-wide"));
   const isNarrow = useMediaQuery(query);
   const { pathname } = useLocation();
+  const isWeekSettled = useIsWeekSettled();
   const isWeekWon = useIsWeekWon();
   const swingGames = useSwingGames();
+  const playerCount = useAppData().scores?.scores.length;
   const { experimentalFeatures } = useSettings();
   if (!experimentalFeatures) return null;
 
-  const context: NavContext = { isWeekWon, swingGames };
+  const context: NavContext = {
+    isWeekSettled,
+    isWeekWon,
+    swingGames,
+    playerCount,
+  };
   const links = ITEMS.map((item) => {
     const path = item.path(season, week);
     return {
@@ -106,6 +145,24 @@ type NavLink = Omit<NavItem, "path" | "disabled" | "disabledReason"> & {
   disabledReason?: string;
 };
 
+/**
+ * A menu's open state, held open until the page a link leads to is on screen.
+ *
+ * The router swaps pages in a transition, which commits after the click. So the
+ * menu closes in the render that swaps the page, never on the click, or it slides
+ * away over the page being left.
+ */
+function useOpenUntilNavigated(): [boolean, (open: boolean) => void] {
+  const [open, setOpen] = useState(false);
+  const { key } = useLocation();
+  const [shownKey, setShownKey] = useState(key);
+  if (key !== shownKey) {
+    setShownKey(key);
+    setOpen(false);
+  }
+  return [open, setOpen];
+}
+
 function NavPopup({
   links,
   disabled,
@@ -113,8 +170,9 @@ function NavPopup({
   links: Array<NavLink>;
   disabled: boolean;
 }) {
+  const [open, setOpen] = useOpenUntilNavigated();
   return (
-    <Menu.Root>
+    <Menu.Root open={open} onOpenChange={setOpen}>
       <Menu.Trigger
         className={TRIGGER_CLASSES}
         aria-label="Menu"
@@ -142,7 +200,7 @@ function NavPopup({
                 ) : (
                   <Menu.LinkItem
                     key={label}
-                    closeOnClick
+                    closeOnClick={isCurrent}
                     className="nav-menu__item"
                     render={<Link to={path} />}
                     aria-current={isCurrent ? "page" : undefined}
@@ -232,7 +290,7 @@ function NavDrawer({
   /** The week the pages are for, shown atop the drawer. */
   title?: string;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useOpenUntilNavigated();
 
   return (
     <Drawer.Root open={open} onOpenChange={setOpen} swipeDirection="right">
@@ -285,7 +343,7 @@ function NavDrawer({
                           to={path}
                           className="nav-drawer__item"
                           aria-current={isCurrent ? "page" : undefined}
-                          onClick={() => setOpen(false)}
+                          onClick={() => isCurrent && setOpen(false)}
                         >
                           {icon}
                           {label}

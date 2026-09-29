@@ -78,6 +78,11 @@ instead of recording the whole run.
 - `scenarios/live-refresh.js` — opens the Game Status dialog on a live pick,
   waits out its real poll interval, and shows the table update on its own
   once the mocked game goes final.
+- `scenarios/live-games.js` — Live Games with one live and one delayed game,
+  the reader's pick on each. `$LIVE_THEME` is `light` or `dark`. `LIVE_NONE=1`
+  ends both games, for the empty state. `LIVE_DIALOG=1` ends on Game Status
+  for P1. `LIVE_DAYS=1` pins the clock and spreads three games over today,
+  tomorrow and later, for each section and countdown.
 - `scenarios/scoreline-shape.js` — the Game Status readout on a live game level at
   nothing, then the list its marks are read off. `$SCORELINE_THEME` is `light` or
   `dark`, `$SCORELINE_SHOT_DIR` takes the crop and the full page, so `--out` is a

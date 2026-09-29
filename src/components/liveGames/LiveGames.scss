@@ -1,0 +1,165 @@
+@use "../../styles/breakpoints" as *;
+@use "../../styles/label" as *;
+@use "../../styles/picks" as *;
+@use "../../styles/progress" as *;
+@use "../../styles/skeleton" as *;
+
+// `100cqi` is the scrolling box `PageLayout.scss` declares the container on, so a
+// phone gets the whole screen and never a sideways scroll.
+.live-games {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--rak-space-4);
+  flex: 1;
+  width: 100cqi;
+  padding: var(--rak-space-4);
+  background-color: var(--rak-surface);
+  color: var(--rak-text);
+
+  &.--loading .live-games__game {
+    @include skeleton-sheen;
+  }
+}
+
+// Stuck to the top of the scroll area across its full width. The margins give
+// back the page's padding and the bar's own height, so nothing under it moves.
+.live-games__progress {
+  @include progress-bar;
+
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  align-self: stretch;
+  margin: calc(-1 * var(--rak-space-4)) calc(-1 * var(--rak-space-4))
+    calc(-1 * #{$progress-height});
+}
+
+// A card as wide as the dialog, its padding and frame included.
+$card-max: calc(
+  var(--rak-scoreboard-width) + 2 * var(--rak-space-4) + 2 *
+    var(--rak-border-width)
+);
+// Two cards of 516px, so no scoreboard in them is narrower than 480px, a 16px gap,
+// and the page padding either side, all three `--rak-space-4`.
+$two-columns-from: 2 * 516px + 3 * 16px;
+
+.live-games__section {
+  width: 100%;
+  max-width: $card-max;
+
+  @container (min-width: #{$two-columns-from}) {
+    max-width: calc(2 * #{$card-max} + var(--rak-space-4));
+  }
+}
+
+.live-games__list {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: start;
+  gap: var(--rak-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @container (min-width: #{$two-columns-from}) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.live-games__game {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: var(--rak-border-width) solid var(--rak-panel-border);
+  border-radius: var(--rak-radius-sm);
+
+  .game-status {
+    padding: var(--rak-space-4);
+  }
+}
+
+// The band. The mark keeps to the heading's line, at its end, as it sits at the
+// end of the dialog's search.
+.live-games__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rak-space-2);
+  padding: var(--rak-space-2) var(--rak-space-3);
+  background-color: var(--rak-band-header);
+  box-shadow: var(--rak-shadow-band-header);
+  color: var(--rak-on-solid);
+
+  .live-games__name {
+    color: var(--rak-on-solid);
+  }
+
+  .game-status__mark {
+    margin-inline-start: auto;
+  }
+}
+
+.live-games__heading {
+  display: flex;
+  align-items: center;
+  gap: var(--rak-space-2);
+  margin: 0;
+  font-size: var(--rak-text-sm);
+  font-weight: normal;
+}
+
+.live-games__label {
+  @include pick-type;
+  @include pick-label;
+}
+
+.live-games__name {
+  @include pick-face;
+
+  color: var(--rak-text-secondary);
+}
+
+.live-games__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+}
+
+// Set as `.analysis__section-title` sets a section's name.
+.live-games__section-title {
+  @include micro-label;
+
+  margin: 0;
+  color: var(--rak-analysis-label);
+  font-size: var(--rak-text-xs);
+}
+
+// A real card drawn from a stand-in game, so it takes a loaded card's size. Its
+// band keeps its fill, and each block under it becomes a fill with its text hidden.
+.live-games.--loading .live-games__game {
+  .live-games__header > *,
+  .game-status__lead > *,
+  .game-status__scoreline > *,
+  .game-status__meta > * {
+    visibility: hidden;
+  }
+
+  .game-status__lead,
+  .game-status__scoreline,
+  .game-status__meta {
+    @include skeleton-surface;
+
+    color: transparent;
+  }
+
+  // As wide as its own line, so the fill never wraps what it covers.
+  .game-status__lead {
+    align-self: center;
+  }
+
+  .game-status__meta {
+    align-self: center;
+    width: 80%;
+  }
+}

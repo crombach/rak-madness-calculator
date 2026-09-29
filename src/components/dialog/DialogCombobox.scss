@@ -36,10 +36,37 @@
   cursor: pointer;
 }
 
-.dialog__input {
-  // Over the trigger, since a press here is the input's own. It is what opens a
-  // phone's keyboard, and it places the caret.
+// Over the trigger, since a press on the input is the input's own. It is what opens
+// a phone's keyboard, and it places the caret.
+.dialog__input-box {
   position: relative;
+  flex: 1;
+  display: flex;
+  min-width: 0;
+}
+
+// The input's own text stays under it, invisible, so the caret and a selection
+// still land where the reader presses.
+.dialog__input-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--rak-space-2);
+  overflow: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.dialog__input:focus + .dialog__input-value {
+  visibility: hidden;
+}
+
+.dialog__input.--overlaid:not(:focus) {
+  color: transparent;
+}
+
+.dialog__input {
   flex: 1;
   min-width: 0;
   padding: 3px 0;

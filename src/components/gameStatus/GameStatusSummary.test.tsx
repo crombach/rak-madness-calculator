@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { GameStatus, HomeAway } from "../../types/ESPN";
 import { LeagueResult } from "../../types/LeagueResult";
 import { League } from "../../types/League";
@@ -131,6 +131,46 @@ describe("GameStatusSummary, the game it is given", () => {
     expect(logos()).toEqual([]);
   });
 
+  it("counts down to kickoff under the scores, a minute at a time", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(KICKOFF.getTime() - 2 * 60_000));
+    try {
+      const pregame = result({ status: GameStatus.UPCOMING });
+      render(<GameStatusSummary game={game(pregame)} />);
+      expect(screen.getByText("Kickoff in 2m")).toBeInTheDocument();
+
+      await act(() => vi.advanceTimersByTimeAsync(60_000));
+      expect(screen.getByText("Kickoff in 1m")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("counts down from now on a game moved to, not from when the summary mounted", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(KICKOFF.getTime() - 40 * 60_000));
+    try {
+      const live = result({ status: GameStatus.LIVE });
+      const { rerender } = render(<GameStatusSummary game={game(live)} />);
+
+      vi.setSystemTime(new Date(KICKOFF.getTime() - 10 * 60_000));
+      const pregame = result({ id: "402", status: GameStatus.UPCOMING });
+      rerender(<GameStatusSummary game={game(pregame)} />);
+      expect(screen.getByText("Kickoff in 10m")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("says nothing under the scores for a kickoff ESPN sent nothing to parse", () => {
+    const pregame = result({
+      status: GameStatus.UPCOMING,
+      date: new Date(Number.NaN),
+    });
+    render(<GameStatusSummary game={game(pregame)} />);
+    expect(screen.queryByText(/Kickoff/)).toBeNull();
+  });
+
   it("says so where ESPN listed no game for the column", () => {
     render(<GameStatusSummary game={game()} />);
     expect(screen.getByText(/No game was found for P1/)).toHaveTextContent(
@@ -143,7 +183,7 @@ describe("GameStatusSummary, the game it is given", () => {
 describe("GameStatusSummary, the pool's line on the game", () => {
   // The label and the line are two elements, since the line alone is set in the
   // table's face, so the sentence is read off the paragraph holding both.
-  const spreadLine = () => screen.getByText(/Rak Madness Spread/);
+  const spreadLine = () => screen.getByText(/Spread/);
 
   it("names the favored side and what it gives", () => {
     render(
@@ -152,13 +192,29 @@ describe("GameStatusSummary, the pool's line on the game", () => {
         result={result()}
       />,
     );
-    expect(spreadLine()).toHaveTextContent("Rak Madness Spread: BUF -3");
+    expect(spreadLine()).toHaveTextContent("Spread: BUF -3");
   });
 
   it("says so where the picks put no line on the game", () => {
     render(<GameStatusSummary game={game(result())} result={result()} />);
     // Said either way, so a game with no line is not one the dialog forgot about.
-    expect(spreadLine()).toHaveTextContent("Rak Madness Spread: NONE");
+    expect(spreadLine()).toHaveTextContent("Spread: NONE");
+  });
+
+  it("says the reader's own pick in the line's place, and marks the side it names", () => {
+    render(
+      <GameStatusSummary
+        game={game(result(), { team: "BUF", points: -3 })}
+        result={result()}
+        myPick="kc +3"
+      />,
+    );
+    expect(screen.getByText(/Your Pick/)).toHaveTextContent("Your Pick: kc +3");
+    expect(screen.queryByText(/Spread/)).toBeNull();
+    const picked = document.querySelector(".game-status__team-name.--picked");
+    expect(picked).toHaveTextContent("KC");
+    expect(picked).toHaveTextContent("Your pick");
+    expect(document.querySelectorAll(".--picked")).toHaveLength(1);
   });
 });
 

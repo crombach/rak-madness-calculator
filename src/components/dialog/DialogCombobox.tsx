@@ -26,6 +26,7 @@ export default function DialogCombobox<T>({
   itemKey,
   optionClassName,
   adornment,
+  renderValue,
   renderOption,
 }: {
   ariaLabel: string;
@@ -46,6 +47,11 @@ export default function DialogCombobox<T>({
    * only while the input still names it, so a cleared search clears this too.
    */
   adornment?: ReactNode;
+  /**
+   * The choice as styled text, drawn over the input while it names the choice and
+   * has no focus. An input holds plain text alone, so this is what styles it.
+   */
+  renderValue?: (item: T) => ReactNode;
   renderOption: (item: T) => ReactNode;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -59,6 +65,7 @@ export default function DialogCombobox<T>({
    * dismissed without a pick, so that restores this along with the text.
    */
   const showsChoice = value != null && query === itemToStringLabel(value);
+  const overlay = showsChoice ? renderValue?.(value) : undefined;
 
   /**
    * Choosing is the end of the search, so the input gives the focus up.
@@ -138,12 +145,21 @@ export default function DialogCombobox<T>({
           tabIndex={-1}
           onClick={() => inputRef.current?.focus()}
         />
-        <Combobox.Input
-          ref={inputRef}
-          placeholder={placeholder}
-          aria-label={ariaLabel}
-          className="dialog__input"
-        />
+        <span className="dialog__input-box">
+          <Combobox.Input
+            ref={inputRef}
+            placeholder={placeholder}
+            aria-label={ariaLabel}
+            className={getClasses("dialog__input", {
+              "--overlaid": overlay != null,
+            })}
+          />
+          {overlay != null && (
+            <span className="dialog__input-value" aria-hidden="true">
+              {overlay}
+            </span>
+          )}
+        </span>
         {showsChoice && adornment}
         <Combobox.Icon className="dialog__input-icon">
           <UnfoldMoreIcon />

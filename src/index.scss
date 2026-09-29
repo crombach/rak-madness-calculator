@@ -102,6 +102,9 @@
   // The floor for anything a finger has to hit.
   --rak-touch-target: 44px;
 
+  // The widest a Game Status scoreboard is drawn, in the dialog or on a page.
+  --rak-scoreboard-width: 640px;
+
   --rak-icon-sm: 16px;
   --rak-icon-md: 24px;
   // Only the note covering a phone held sideways, where the icon leads the screen

@@ -1,8 +1,8 @@
 # styles
 
 Sass partials, mixins and variables only, so a partial emits no CSS however many
-files `@use` it. `_skeleton.scss` is the one exception, and says so: it holds
-keyframes. Design tokens live in `src/index.scss` instead.
+files `@use` it. `_skeleton.scss` and `_progress.scss` are the exceptions: they
+hold keyframes. Design tokens live in `src/index.scss` instead.
 
 The `ui-style` skill maps each piece of UI to its token, mixin, or class.
 
@@ -22,6 +22,8 @@ The `ui-style` skill maps each piece of UI to its token, mixin, or class.
   and `lcd-field`, the same well for a control typed or chosen into instead
 - `_listbox.scss`: `listbox-popup` and `listbox-item`, a Base UI popup list's shape
 - `_skeleton.scss`: `skeleton-surface`, `skeleton-sheen`, `skeleton-reserve`
+- `_progress.scss`: `progress-bar`, the sweep a wait draws without moving the
+  page, and `$progress-height`
 - `_picks.scss`: `pick-type`, `pick-face`, `pick-label`, and `ruled-block` with
   its `$rule-*` colors. How a pick, its game ID and a ruled block look anywhere
 - `_text.scss`: `truncate-line`, one line cut short where it runs out of room,

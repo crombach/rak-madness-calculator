@@ -9,7 +9,10 @@ The data layer, plus the page measurements. The first four mount once in
 - `usePlayerScores`: a week's scores, and the one refresh. `refresh` rereads the
   sheet and both leagues, `rescore` the named leagues, scoring only where a game
   moved
-- `useLiveGame`: a game, `onPoll` on its league every twenty seconds past kickoff
+- `useLiveWeek`: the named leagues, `onPoll` every twenty seconds past kickoff,
+  or from the start with `holdForKickoff` off
+- `useLiveGame`: one game, off `useLiveWeek` on its league
+- `useMyPick`: the reader's own pick on a game
 - `useArrival`: an outside value, taken as it arrives
 - `useWarmTeamLogos`: the week's logos, fetched before a game is opened
 - `useMediaQuery`: whether a media query holds, kept in step
