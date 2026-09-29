@@ -188,6 +188,9 @@
   // both ways.
   --rak-band-caption: #bfbfbf;
   --rak-band-header: #f0f0f0;
+  // A game card's band, a step darker, so the pale `GameMark` pill on it reads as
+  // its own shape.
+  --rak-band-card: var(--rak-fill-muted);
   // The navbar's own chrome. Its own steps rather than the ramp above, which
   // runs light here for every key elsewhere: the bar is the darkest of the
   // three bands now, and a key set into it goes lighter, not darker.
@@ -697,6 +700,7 @@ html {
   // the ramp steps to these and a read back would be a cycle.
   --rak-band-caption: var(--rak-primary-600);
   --rak-band-header: var(--rak-primary-800);
+  --rak-band-card: var(--rak-band-header);
   --rak-nav-fill: #4f4f4f;
   --rak-nav-key: #5e5e5e;
   --rak-nav-key-active: #404040;

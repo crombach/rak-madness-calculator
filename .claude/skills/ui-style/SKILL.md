@@ -23,7 +23,7 @@ new style for something the app already renders elsewhere.
 | Small tracked capitals                          | `micro-label`                                                                                                                                                                                                              | `src/styles/_label.scss`                             |
 | Counts ("13 players", "3 games remaining")      | `.analysis__standing` rule. Use `plural` and `verbFor` from `src/utils/plural.ts`. Never an inline singular/plural switch                                                                                                  | `src/components/playerAnalysis/AnalysisSummary.scss` |
 | Fold toggles                                    | Text "Show More" / "Show Fewer", `.analysis__more` class. Fold at whole rows                                                                                                                                               | `src/components/playerAnalysis/AnalysisSummary.scss` |
-| Bands and section headers                       | `--rak-band-header` fill, `--rak-on-solid` ink                                                                                                                                                                             | `src/index.scss`                                     |
+| Bands and section headers                       | `--rak-band-header` fill, `--rak-on-solid` ink. A game card band takes `--rak-band-card`                                                                                                                                   | `src/index.scss`                                     |
 
 ## States and chrome
 

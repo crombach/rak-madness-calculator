@@ -5,8 +5,8 @@
 @use "../../styles/picks" as *;
 
 // Which side a player had to pick to score the point, and which one cost them it,
-// in the two hues the picks table fills a cell with. The 400 step on the page. A score
-// lit on the glass takes the glass's own pair, since the glass is dark in both modes.
+// in the two hues the picks table fills a cell with, the 400 step. A score lit on the
+// glass takes the glass's own pair, since the glass is dark in both modes.
 //
 // Neither side is marked where nobody scored, and the sentence under the scores names
 // the side in words, so nothing here rests on the hue alone.
