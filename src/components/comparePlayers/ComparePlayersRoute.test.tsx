@@ -18,6 +18,7 @@ import {
   PLAYER_NAME_KEY,
 } from "../../context/SettingsContext";
 import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
+import { COMPARED_PLAYERS_KEY } from "./comparedPlayers";
 
 const COMPARE_PATH = `/${SEASON}/${CURRENT_WEEK}/compare`;
 
@@ -66,14 +67,14 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("the head to head route", () => {
+describe("the compare players route", () => {
   it("names the page", async () => {
     mountApp(COMPARE_PATH);
 
     expect(
       await screen.findByRole("heading", {
         level: 1,
-        name: `${SEASON} Week ${CURRENT_WEEK} Head to Head`,
+        name: `${SEASON} Week ${CURRENT_WEEK} Compare Players`,
       }),
     ).toBeInTheDocument();
   });
@@ -91,15 +92,15 @@ describe("the head to head route", () => {
     localStorage.setItem(PLAYER_NAME_KEY, "carol");
     mountApp(COMPARE_PATH);
 
-    expect(await screen.findByRole("combobox", { name: "Player" })).toHaveValue(
-      "Carol",
-    );
+    expect(
+      await screen.findByRole("combobox", { name: "Player 1" }),
+    ).toHaveValue("Carol");
   });
 
   it("shows only the games two players picked differently", async () => {
     const user = mountApp(COMPARE_PATH);
-    await choose(user, "Player", "Alice");
-    await choose(user, "Versus", "Carol");
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Carol");
 
     const table = await screen.findByRole("table", {
       name: "Picks where Alice and Carol differ",
@@ -120,21 +121,19 @@ describe("the head to head route", () => {
       "Pro Score ATS",
       "Total Score",
     ]);
-    expect(
-      screen.getByText("Alice leads Carol by 4 points"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Alice leads on 9 points")).toBeInTheDocument();
     expect(
       screen.getByText("Carol can no longer pass Alice on points"),
     ).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "Versus" })).toHaveValue(
+    expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveValue(
       "Carol",
     );
   });
 
   it("shows each player's MNF points pick among the tiebreakers", async () => {
     const user = mountApp(COMPARE_PATH);
-    await choose(user, "Player", "Alice");
-    await choose(user, "Versus", "Carol");
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Carol");
 
     const table = await screen.findByRole("table");
     expect(within(table).getByRole("cell", { name: "45" })).toBeInTheDocument();
@@ -143,8 +142,8 @@ describe("the head to head route", () => {
 
   it("keeps each player's rank in the whole week", async () => {
     const user = mountApp(COMPARE_PATH);
-    await choose(user, "Player", "Alice");
-    await choose(user, "Versus", "Carol");
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Carol");
 
     const ranks = within(await screen.findByRole("table"))
       .getAllByRole("row")
@@ -155,9 +154,9 @@ describe("the head to head route", () => {
 
   it("leaves the player already chosen out of the other list", async () => {
     const user = mountApp(COMPARE_PATH);
-    await choose(user, "Player", "Alice");
+    await choose(user, "Player 1", "Alice");
 
-    await user.click(screen.getByRole("combobox", { name: "Versus" }));
+    await user.click(screen.getByRole("combobox", { name: "Player 2" }));
 
     expect(
       (await screen.findAllByRole("option")).map(
@@ -166,13 +165,13 @@ describe("the head to head route", () => {
     ).toEqual(["Bob", "Carol"]);
   });
 
-  it("says so when two players picked every game the same", async () => {
+  it("says the player behind cannot pass when every game left is picked the same", async () => {
     const user = mountApp(COMPARE_PATH);
-    await choose(user, "Player", "Alice");
-    await choose(user, "Versus", "Bob");
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Bob");
 
     expect(
-      await screen.findByText("No open game splits them"),
+      await screen.findByText("Bob can no longer pass Alice on points"),
     ).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
@@ -185,8 +184,8 @@ describe("the head to head route", () => {
       ]),
     );
     const user = mountApp(COMPARE_PATH);
-    await choose(user, "Player", "Cal");
-    await choose(user, "Versus", "Dee");
+    await choose(user, "Player 1", "Cal");
+    await choose(user, "Player 2", "Dee");
 
     expect(
       await screen.findByText("Dee needs 2 of 2 open games to pass Cal"),
@@ -205,8 +204,8 @@ describe("the head to head route", () => {
       ]),
     );
     const user = mountApp(COMPARE_PATH);
-    await choose(user, "Player", "Cal");
-    await choose(user, "Versus", "Dee");
+    await choose(user, "Player 1", "Cal");
+    await choose(user, "Player 2", "Dee");
     const headers = () =>
       within(screen.getByRole("table"))
         .getAllByRole("columnheader")
@@ -220,6 +219,103 @@ describe("the head to head route", () => {
 
     expect(headers()).toContain("P1");
     expect(headers()).toContain("P2");
+  });
+
+  it("shows every game once the reader picks All", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Carol");
+
+    await user.click(screen.getByRole("button", { name: "All" }));
+
+    const table = await screen.findByRole("table", {
+      name: "Picks of Alice and Carol",
+    });
+    const headers = within(table)
+      .getAllByRole("columnheader")
+      .map((header) => header.textContent);
+    expect(headers).toEqual(expect.arrayContaining(["C1", "C2", "P1", "P2"]));
+    expect(screen.getByRole("button", { name: "All" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  it("adds a third player, with a verdict against the leader", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Carol");
+    await user.click(screen.getByRole("button", { name: "Add player" }));
+    await choose(user, "Player 3", "Bob");
+
+    expect(
+      await screen.findByRole("table", {
+        name: "Picks where Alice, Carol, and Bob differ",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Carol can no longer pass Alice on points"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Bob can no longer pass Alice on points"),
+    ).toBeInTheDocument();
+  });
+
+  it("removes a player, keeping the others in their pickers", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Carol");
+    await user.click(screen.getByRole("button", { name: "Add player" }));
+    await choose(user, "Player 3", "Bob");
+
+    await user.click(screen.getByRole("button", { name: "Remove Player 2" }));
+
+    expect(screen.getByRole("combobox", { name: "Player 1" })).toHaveValue(
+      "Alice",
+    );
+    expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveValue(
+      "Bob",
+    );
+    expect(
+      screen.queryByRole("button", { name: /Remove/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("disables Add player once every player has a picker", async () => {
+    const user = mountApp(COMPARE_PATH);
+    const add = await screen.findByRole("button", { name: "Add player" });
+
+    await user.click(add);
+
+    expect(add).toBeDisabled();
+  });
+
+  it("saves the chosen players and opens on them next time", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Carol");
+    await choose(user, "Player 2", "Alice");
+
+    expect(
+      JSON.parse(localStorage.getItem(COMPARED_PLAYERS_KEY) ?? ""),
+    ).toEqual(["Carol", "Alice"]);
+  });
+
+  it("opens on the saved players the week still has", async () => {
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Bob", "Gone", "Alice", "Carol"]),
+    );
+    mountApp(COMPARE_PATH);
+
+    expect(
+      await screen.findByRole("combobox", { name: "Player 1" }),
+    ).toHaveValue("Bob");
+    expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveValue(
+      "Alice",
+    );
+    expect(screen.getByRole("combobox", { name: "Player 3" })).toHaveValue(
+      "Carol",
+    );
   });
 
   it("sends a reader without experimental features to the scoreboard", async () => {

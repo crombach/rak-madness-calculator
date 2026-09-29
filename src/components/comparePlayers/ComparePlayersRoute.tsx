@@ -2,9 +2,9 @@ import { Navigate, useParams } from "react-router";
 import { useAppData } from "../../context/AppDataContext";
 import { useSettings } from "../../context/SettingsContext";
 import resultsPath, { RESULTS_PAGE } from "../results/resultsPath";
-import HeadToHead from "./HeadToHead";
+import ComparePlayers from "./ComparePlayers";
 
-export default function HeadToHeadRoute() {
+export default function ComparePlayersRoute() {
   const { season, week } = useParams();
   const { scores } = useAppData();
   const { experimentalFeatures } = useSettings();
@@ -16,5 +16,5 @@ export default function HeadToHeadRoute() {
       />
     );
   }
-  return <HeadToHead scores={scores} />;
+  return <ComparePlayers scores={scores} />;
 }

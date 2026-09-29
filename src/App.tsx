@@ -8,7 +8,7 @@ import ResultsLayout from "./components/results/ResultsLayout";
 import ScoreboardRoute from "./components/results/ScoreboardRoute";
 import LiveGamesPage from "./components/liveGames/LiveGamesPage";
 import SwingGamesSkeleton from "./components/swingGames/SwingGamesSkeleton";
-import HeadToHeadSkeleton from "./components/headToHead/HeadToHeadSkeleton";
+import ComparePlayersSkeleton from "./components/comparePlayers/ComparePlayersSkeleton";
 
 // Lazy for the must-win search it reaches, which `ResultsFrame` keeps out of the
 // chunk every route waits on.
@@ -16,8 +16,8 @@ const SwingGamesRoute = lazy(
   () => import("./components/swingGames/SwingGamesRoute"),
 );
 // Lazy for Base UI's combobox, which `ResultsFrame` keeps out of that chunk too.
-const HeadToHeadRoute = lazy(
-  () => import("./components/headToHead/HeadToHeadRoute"),
+const ComparePlayersRoute = lazy(
+  () => import("./components/comparePlayers/ComparePlayersRoute"),
 );
 
 export default function App() {
@@ -49,8 +49,8 @@ export default function App() {
         <Route
           path="compare"
           element={
-            <Suspense fallback={<HeadToHeadSkeleton />}>
-              <HeadToHeadRoute />
+            <Suspense fallback={<ComparePlayersSkeleton />}>
+              <ComparePlayersRoute />
             </Suspense>
           }
         />

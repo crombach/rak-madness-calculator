@@ -97,7 +97,7 @@ describe("NavMenu", () => {
 
       expect(items.map((item) => item.textContent)).toEqual([
         "Home",
-        "Head to Head",
+        "Compare Players",
         "Live Games",
         "Swing Games",
       ]);
@@ -149,11 +149,11 @@ describe("NavMenu", () => {
       expect(screen.queryByRole("menuitem")).not.toBeInTheDocument();
     });
 
-    it("goes to the head to head page on a click", async () => {
+    it("goes to the compare players page on a click", async () => {
       const user = mount();
       await user.click(trigger());
       await user.click(
-        await screen.findByRole("menuitem", { name: "Head to Head" }),
+        await screen.findByRole("menuitem", { name: "Compare Players" }),
       );
 
       expect(await screen.findByTestId("landed")).toHaveTextContent(
@@ -170,14 +170,14 @@ describe("NavMenu", () => {
         "Needs two players",
       ],
       ["with no reason once the week is settled", { scores: [{}] }, true, ""],
-    ])("disables Head to Head %s", async (_, scores, isSettled, reason) => {
+    ])("disables Compare Players %s", async (_, scores, isSettled, reason) => {
       mockAppData.mockReturnValue({ scores });
       mockIsWeekSettled.mockReturnValue(isSettled);
       const user = mount();
       await user.click(trigger());
 
       const item = await screen.findByRole("menuitem", {
-        name: "Head to Head",
+        name: "Compare Players",
       });
 
       expect(item).toHaveAttribute("data-disabled");
@@ -348,7 +348,7 @@ describe("NavMenu", () => {
         within(drawer)
           .getAllByRole("link")
           .map((link) => link.textContent),
-      ).toEqual(["Home", "Head to Head", "Live Games", "Swing Games"]);
+      ).toEqual(["Home", "Compare Players", "Live Games", "Swing Games"]);
       expect(within(drawer).queryAllByRole("combobox")).toHaveLength(0);
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });

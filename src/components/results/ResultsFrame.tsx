@@ -18,7 +18,7 @@ import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
 import { useSettings } from "../../context/SettingsContext";
-import HeadToHeadSkeleton from "../headToHead/HeadToHeadSkeleton";
+import ComparePlayersSkeleton from "../comparePlayers/ComparePlayersSkeleton";
 import LiveGamesSkeleton from "../liveGames/LiveGamesSkeleton";
 import loadLiveGamesRoute from "../liveGames/loadLiveGamesRoute";
 import LogoButton, { APP_NAME } from "../navbar/LogoButton";
@@ -101,7 +101,7 @@ export default function ResultsFrame({
   const scoresView: ScoresView | null =
     view === RESULTS_PAGE.swingGames ||
     view === RESULTS_PAGE.liveGames ||
-    view === RESULTS_PAGE.headToHead
+    view === RESULTS_PAGE.comparePlayers
       ? null
       : view;
   // Once every game is final there is nothing left to fetch, so the refresh button
@@ -245,8 +245,8 @@ export default function ResultsFrame({
               <SwingGamesSkeleton />
             ) : view === RESULTS_PAGE.liveGames ? (
               <LiveGamesSkeleton />
-            ) : view === RESULTS_PAGE.headToHead ? (
-              <HeadToHeadSkeleton />
+            ) : view === RESULTS_PAGE.comparePlayers ? (
+              <ComparePlayersSkeleton />
             ) : (
               // A page with no table has no wireframe to stand in for it.
               scoresView != null && <SkeletonTable view={scoresView} />

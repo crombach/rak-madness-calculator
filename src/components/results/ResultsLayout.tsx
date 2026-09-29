@@ -28,7 +28,7 @@ export default function ResultsLayout() {
     : isLive
       ? RESULTS_PAGE.liveGames
       : isCompare
-        ? RESULTS_PAGE.headToHead
+        ? RESULTS_PAGE.comparePlayers
         : isPicks
           ? RESULTS_PAGE.picks
           : RESULTS_PAGE.scoreboard;

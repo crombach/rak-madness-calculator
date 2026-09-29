@@ -53,7 +53,7 @@ export default function getHeadToHead(
   const [leader, trailer] =
     second.score.total > first.score.total ? [second, first] : [first, second];
   const gap = leader.score.total - trailer.score.total;
-  const split = differingGames(first, second);
+  const split = differingGames([first, second]);
   const remaining = weekShape(players).remaining.filter((game) =>
     split.has(game.label),
   );

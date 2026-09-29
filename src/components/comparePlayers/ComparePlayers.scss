@@ -2,7 +2,7 @@
 @use "../../styles/skeleton" as *;
 
 // Pinned to the screen's left edge while a wide table pans under it.
-.head-to-head {
+.compare-players {
   position: sticky;
   left: 0;
   display: flex;
@@ -17,25 +17,58 @@
   }
 }
 
-.head-to-head__pickers {
+.compare-players__pickers {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   gap: var(--rak-space-4);
 }
 
-.head-to-head__picker {
+.compare-players__picker {
   display: flex;
   flex-direction: column;
   gap: var(--rak-space-2);
 }
 
-.head-to-head__label {
+// The combobox, and the remove button beside it once there are more than two.
+.compare-players__field {
+  display: flex;
+  align-items: center;
+  gap: var(--rak-space-2);
+
+  > :first-child {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.compare-players__add {
+  align-self: flex-start;
+}
+
+// Which games the table shows, drawn as the settings dialog's choices are.
+.compare-players__scope {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+}
+
+.compare-players__choices {
+  display: flex;
+  gap: var(--rak-space-2);
+  max-width: 16rem;
+}
+
+.compare-players__choice {
+  flex: 1 1 0;
+}
+
+.compare-players__label {
   @include micro-label;
 
   font-size: var(--rak-text-xs);
 }
 
-.head-to-head__standing {
+.compare-players__standing {
   display: flex;
   flex-direction: column;
   gap: var(--rak-space-2);
@@ -46,7 +79,7 @@
   }
 }
 
-.head-to-head__skeleton-bar {
+.compare-players__skeleton-bar {
   @include skeleton-surface;
 
   display: block;

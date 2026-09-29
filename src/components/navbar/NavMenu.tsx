@@ -64,9 +64,10 @@ const PAGES: Array<NavItem> = [
     },
   },
   {
-    label: RESULTS_PAGE.headToHead,
+    label: RESULTS_PAGE.comparePlayers,
     icon: <CompareArrowsIcon />,
-    path: (season, week) => resultsPath(season, week, RESULTS_PAGE.headToHead),
+    path: (season, week) =>
+      resultsPath(season, week, RESULTS_PAGE.comparePlayers),
     disabled: ({ playerCount }) => playerCount == null || playerCount < 2,
     disabledReason: ({ isWeekSettled, playerCount }) => {
       if (isWeekSettled) return undefined;

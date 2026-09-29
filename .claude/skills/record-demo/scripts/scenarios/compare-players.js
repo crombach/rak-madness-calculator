@@ -12,10 +12,16 @@ import {
 } from "../lib/constants.js";
 
 /** `light` or `dark`. */
-const THEME = process.env.HTH_THEME ?? "light";
+const THEME = process.env.COMPARE_THEME ?? "light";
 
-/** Set to end on the Versus list open rather than on the table. */
-const OPEN_LIST = process.env.HTH_OPEN === "1";
+/** Set to end on the Player 2 list open rather than on the table. */
+const OPEN_LIST = process.env.COMPARE_OPEN === "1";
+
+/** Set to add Ann in a third picker. */
+const ADD_THIRD = process.env.COMPARE_ADD === "1";
+
+/** Set to end with the table on every game. */
+const SHOW_ALL = process.env.COMPARE_ALL === "1";
 
 /** The reader, preset in the Player picker. */
 const MY_NAME = "Dee";
@@ -65,7 +71,7 @@ function events() {
   };
 }
 
-/** Opens Head to Head on the reader, then picks the rival unless `HTH_OPEN` is set. */
+/** Opens Compare Players on the reader, then picks the rival unless `COMPARE_OPEN` is set. */
 export default async function run({ page, context, baseUrl }) {
   await registerAppMocks(context, {
     season: SEASON,
@@ -85,10 +91,20 @@ export default async function run({ page, context, baseUrl }) {
     [THEME_KEY, THEME, PLAYER_NAME_KEY, MY_NAME, EXPERIMENTAL_FEATURES_KEY],
   );
   await page.goto(path);
-  const versus = page.getByRole("combobox", { name: "Versus" });
+  const versus = page.getByRole("combobox", { name: "Player 2" });
   await versus.waitFor({ timeout: 10000 });
   await versus.click();
   if (OPEN_LIST) return;
   await page.getByRole("option", { name: RIVAL }).click();
+  if (ADD_THIRD) {
+    await page.getByRole("button", { name: "Add player" }).click();
+    await page.getByRole("combobox", { name: "Player 3" }).click();
+    await page.getByRole("option", { name: "Ann" }).click();
+  }
+  if (SHOW_ALL) {
+    await page.getByRole("button", { name: "All" }).click();
+    // The lamp fades over to the new choice.
+    await page.waitForTimeout(500);
+  }
   await page.getByRole("table").waitFor();
 }

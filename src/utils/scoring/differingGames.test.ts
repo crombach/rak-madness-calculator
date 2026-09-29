@@ -2,6 +2,14 @@ import differingGames from "./differingGames";
 import { pick, player } from "./scoringTestFixtures";
 
 describe("differingGames", () => {
+  it("names a game where any of three players split, even two who agree with each other", () => {
+    const alice = player({ name: "Alice", pro: [pick("KC -3"), pick("BUF")] });
+    const bob = player({ name: "Bob", pro: [pick("KC -3"), pick("BUF")] });
+    const cal = player({ name: "Cal", pro: [pick("KC -3"), pick("NYJ")] });
+
+    expect(differingGames([alice, bob, cal])).toEqual(new Set(["P2"]));
+  });
+
   it("names only the games the two players picked differently", () => {
     const alice = player({
       name: "Alice",
@@ -14,7 +22,7 @@ describe("differingGames", () => {
       pro: [pick("DEN 3"), pick("BUF")],
     });
 
-    expect(differingGames(alice, bob)).toEqual(new Set(["C2", "P1"]));
+    expect(differingGames([alice, bob])).toEqual(new Set(["C2", "P1"]));
   });
 
   it("reads hand-typed cells for the same pick as the same", () => {
@@ -24,13 +32,13 @@ describe("differingGames", () => {
     });
     const bob = player({ name: "Bob", pro: [pick("kc-3"), pick("DEN +3")] });
 
-    expect(differingGames(alice, bob).size).toBe(0);
+    expect(differingGames([alice, bob]).size).toBe(0);
   });
 
   it("tells the same team apart by its spread", () => {
     const alice = player({ name: "Alice", pro: [pick("KC -3")] });
     const bob = player({ name: "Bob", pro: [pick("KC -3.5")] });
 
-    expect(differingGames(alice, bob)).toEqual(new Set(["P1"]));
+    expect(differingGames([alice, bob])).toEqual(new Set(["P1"]));
   });
 });
