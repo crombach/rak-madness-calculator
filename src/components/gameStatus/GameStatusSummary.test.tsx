@@ -469,6 +469,47 @@ describe("GameStatusSummary, which side took the point", () => {
   });
 });
 
+describe("GameStatusSummary, how the reader's pick and the pool's sides did", () => {
+  // Buffalo won by ten, so with Buffalo giving three, Buffalo covered.
+  function lead(myPick: string, over: Partial<LeagueResult> = {}) {
+    const played = result(over);
+    render(
+      <GameStatusSummary
+        game={game(played, { team: "BUF", points: -3 })}
+        result={played}
+        myPick={myPick}
+        players={[]}
+      />,
+    );
+    const pick = document.querySelector(".game-status__spread-value");
+    const pool = [...document.querySelectorAll(".game-status__split-team")];
+    const outcome = (el: Element | null) =>
+      el?.classList.contains("--scored")
+        ? "scored"
+        : el?.classList.contains("--missed")
+          ? "missed"
+          : undefined;
+    return { pick: outcome(pick), pool: pool.map(outcome) };
+  }
+
+  it("marks a pick on the side that covered as right", () => {
+    expect(lead("BUF -3")).toEqual({
+      pick: "scored",
+      pool: ["missed", "scored"],
+    });
+  });
+
+  it("marks a pick on the side that did not cover as wrong", () => {
+    expect(lead("kc +3").pick).toBe("missed");
+  });
+
+  it("marks neither while the game is still being played", () => {
+    expect(
+      lead("BUF -3", { status: GameStatus.LIVE, period: 2, clock: "8:42" }),
+    ).toEqual({ pick: undefined, pool: [undefined, undefined] });
+  });
+});
+
 /*
  * `TZ` is what `toLocaleDateString` reads the zone from, and Node picks a change to it
  * up on the next call. Set here so the kickoff asserted is the same wherever the suite

@@ -8,7 +8,7 @@ How a game in the week is going, opened from a pick cell.
 - `GameStatusSummary`: `SpreadLine`, both sides, `pickSplit`, kickoff, town,
   Gamecast link.
 - `Scoreline`: the two scores, the state over, the down or outcome under.
-  `outcomeClasses` colors a side and its score alike.
+  `outcomeClasses` colors a side, its score, the pick and the pool line alike.
 - `gameStatusText`: the strings both read.
 - `useScorelineFit`: takes the names, then the marks, off a narrow one.
 - `GameStatusSummary.scss`: both sides in one grid, the dash in a track between two
