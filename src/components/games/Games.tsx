@@ -21,6 +21,7 @@ const LIVE_STATUSES: ReadonlySet<GameStatus> = new Set([
 ]);
 
 const FETCHING_LABEL = "Fetching the games";
+const NO_GAMES = "No games this week";
 
 function PoolGame({
   game,
@@ -113,6 +114,11 @@ export default function Games({
           aria-busy="true"
           aria-label={FETCHING_LABEL}
         />
+      )}
+      {scores != null && sections.length === 0 && (
+        <p className="game-status__missing" role="status">
+          {NO_GAMES}
+        </p>
       )}
       {scores != null &&
         sections.map(({ title, games }) => (

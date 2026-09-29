@@ -281,6 +281,12 @@ describe("Games", () => {
     expect(labelsIn("Completed")).toEqual(["C1"]);
   });
 
+  it("says so when the week has no game to list", () => {
+    mount({ ...scores, games: [] });
+    expect(screen.getByRole("status")).toHaveTextContent("No games this week");
+    expect(screen.queryByRole("region")).toBeNull();
+  });
+
   it("asks on every tick for a league with nothing kicked off, as a refresh would", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(proUpcoming.date.getTime() - 3_600_000));
