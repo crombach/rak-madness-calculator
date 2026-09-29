@@ -316,19 +316,17 @@ function DisabledDrawerItem({
       role="link"
       // Focusable like the popup's disabled item, so Tab reaches its reason too.
       tabIndex={0}
-      className="nav-drawer__item"
+      className="nav-drawer__item nav-drawer__item--with-reason"
       aria-disabled="true"
       aria-current={isCurrent ? "page" : undefined}
       aria-describedby={reasonId}
     >
       {icon}
-      <span className="nav-drawer__text">
-        {label}
-        {/* Kept out of the row's name, so a screen reader hears it once, as the
-            description. */}
-        <span id={reasonId} className="nav-drawer__reason" aria-hidden="true">
-          {reason}
-        </span>
+      {label}
+      {/* Kept out of the row's name, so a screen reader hears it once, as the
+          description. */}
+      <span id={reasonId} className="nav-drawer__reason" aria-hidden="true">
+        {reason}
       </span>
     </span>
   );

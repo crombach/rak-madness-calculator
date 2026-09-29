@@ -225,11 +225,15 @@
   @include focus-ring;
 }
 
-.nav-drawer__text {
-  display: flex;
-  flex-direction: column;
+// A grid, so the icon centers on the name alone and the reason sits under the
+// name, left-aligned with it.
+.nav-drawer__item--with-reason {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  row-gap: 0;
 }
 
 .nav-drawer__reason {
-  font-size: var(--rak-text-sm);
+  grid-column: 2;
+  font-size: var(--rak-text-xs);
 }
