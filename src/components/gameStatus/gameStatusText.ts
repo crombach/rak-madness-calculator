@@ -2,6 +2,7 @@ import { GameStatus } from "../../types/ESPN";
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import { GameSpread } from "../../types/WeekGame";
+import plural from "../../utils/plural";
 import marginAgainstSpread from "../../utils/scoring/marginAgainstSpread";
 
 /** Regulation is four quarters, and anything past them is overtime. */
@@ -96,6 +97,7 @@ export const MINUTE_MS = 60_000;
 const HOUR_MINUTES = 60;
 const DAY_MINUTES = 24 * HOUR_MINUTES;
 const KICKING_OFF = "Kicking off";
+const KICKOFF = "Kickoff";
 
 /**
  * How many of the reader's calendar days from `now` to `date`, in their own time
@@ -118,13 +120,13 @@ export function countdownText(kickoff: Date, now: Date): string {
   const left = kickoff.getTime() - now.getTime();
   if (left <= 0) return KICKING_OFF;
   const days = calendarDaysUntil(kickoff, now);
-  if (days === 1) return "Kicks off tomorrow";
-  if (days > 1) return `Kicks off in ${days}d`;
+  if (days === 1) return `${KICKOFF} tomorrow`;
+  if (days > 1) return `${KICKOFF} in ${plural(days, "day")}`;
   const total = Math.ceil(left / MINUTE_MS);
   const hours = Math.floor(total / HOUR_MINUTES);
   const minutes = total % HOUR_MINUTES;
   const parts = [hours > 0 && `${hours}h`, minutes > 0 && `${minutes}m`];
-  return `Kicks off in ${parts.filter(Boolean).join(" ")}`;
+  return `${KICKOFF} in ${parts.filter(Boolean).join(" ")}`;
 }
 
 /** `OT` for the first period past regulation, `2OT` for the next, and so on. */

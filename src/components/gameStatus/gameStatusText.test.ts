@@ -14,41 +14,41 @@ describe("countdownText", () => {
     new Date(NOW.getTime() + minutes * 60_000);
 
   it("counts the minutes down inside the hour", () => {
-    expect(countdownText(inMinutes(25), NOW)).toBe("Kicks off in 25m");
+    expect(countdownText(inMinutes(25), NOW)).toBe("Kickoff in 25m");
   });
 
   it("counts hours and minutes inside the day", () => {
-    expect(countdownText(inMinutes(135), NOW)).toBe("Kicks off in 2h 15m");
-    expect(countdownText(inMinutes(120), NOW)).toBe("Kicks off in 2h");
+    expect(countdownText(inMinutes(135), NOW)).toBe("Kickoff in 2h 15m");
+    expect(countdownText(inMinutes(120), NOW)).toBe("Kickoff in 2h");
   });
 
   it("rounds up, so a kickoff seconds away is never said as now", () => {
     expect(countdownText(new Date(NOW.getTime() + 10_000), NOW)).toBe(
-      "Kicks off in 1m",
+      "Kickoff in 1m",
     );
   });
 
   it("says tomorrow for a kickoff on the reader's next day", () => {
     expect(countdownText(new Date(2024, 9, 7, 0, 30), NOW)).toBe(
-      "Kicks off tomorrow",
+      "Kickoff tomorrow",
     );
     expect(countdownText(new Date(2024, 9, 7, 23, 0), NOW)).toBe(
-      "Kicks off tomorrow",
+      "Kickoff tomorrow",
     );
   });
 
   it("counts the reader's days alone past tomorrow", () => {
     expect(countdownText(new Date(2024, 9, 8, 1, 0), NOW)).toBe(
-      "Kicks off in 2d",
+      "Kickoff in 2 days",
     );
     expect(countdownText(new Date(2024, 9, 13, 20, 0), NOW)).toBe(
-      "Kicks off in 7d",
+      "Kickoff in 7 days",
     );
   });
 
   it("counts hours and minutes all the way to midnight", () => {
     expect(countdownText(new Date(2024, 9, 6, 23, 59), NOW)).toBe(
-      "Kicks off in 13h 59m",
+      "Kickoff in 13h 59m",
     );
   });
 

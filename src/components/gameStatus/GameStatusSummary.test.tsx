@@ -137,10 +137,10 @@ describe("GameStatusSummary, the game it is given", () => {
     try {
       const pregame = result({ status: GameStatus.UPCOMING });
       render(<GameStatusSummary game={game(pregame)} />);
-      expect(screen.getByText("Kicks off in 2m")).toBeInTheDocument();
+      expect(screen.getByText("Kickoff in 2m")).toBeInTheDocument();
 
       await act(() => vi.advanceTimersByTimeAsync(60_000));
-      expect(screen.getByText("Kicks off in 1m")).toBeInTheDocument();
+      expect(screen.getByText("Kickoff in 1m")).toBeInTheDocument();
     } finally {
       vi.useRealTimers();
     }
