@@ -97,6 +97,27 @@ describe("LiveGames", () => {
     ).toEqual(["LiveP1KC @ BUF", "DelayedP3DAL @ PHI"]);
   });
 
+  it("draws the busy bar only while a live game's league is fetched", () => {
+    const { rerender } = render(
+      <SettingsContextProvider>
+        <LiveGames
+          scores={scores}
+          fetchingLeagues={new Set([League.COLLEGE])}
+        />
+      </SettingsContextProvider>,
+    );
+    expect(screen.queryByRole("progressbar")).toBeNull();
+
+    rerender(
+      <SettingsContextProvider>
+        <LiveGames scores={scores} fetchingLeagues={new Set([League.PRO])} />
+      </SettingsContextProvider>,
+    );
+    expect(screen.getByRole("progressbar")).toHaveAccessibleName(
+      "Fetching the games",
+    );
+  });
+
   it("shows each as a scoreboard with its records, without the strip under it", () => {
     mount(scores);
     expect(screen.getByText("4-1")).toHaveClass("game-status__record");
@@ -120,8 +141,9 @@ describe("LiveGames", () => {
   it("says how many players picked each side", () => {
     mount(scores);
     const [first] = cards();
-    expect(within(first).getByText("1 picked KC")).toBeInTheDocument();
-    expect(within(first).getByText("0 picked BUF")).toBeInTheDocument();
+    const [away, home] = first.querySelectorAll(".game-status__split > span");
+    expect(away).toHaveTextContent("1 picked KC");
+    expect(home).toHaveTextContent("0 picked BUF");
   });
 
   it("says the pool's line with no name set", () => {

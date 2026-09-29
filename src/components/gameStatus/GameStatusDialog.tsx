@@ -26,6 +26,11 @@ export function gameSearchText(game: WeekGame): string {
   return `${game.label}  ${game.name}`;
 }
 
+/** The column and the matchup together, read back into the input once chosen. */
+function gameLabelText(game: WeekGame): string {
+  return `${game.label} ${game.name}`;
+}
+
 /** What one mark is. It says the state in the shape, the word and the label. */
 type Mark = { modifier: string; label: string; icon: ReactNode; word: string };
 
@@ -164,7 +169,8 @@ export default function GameStatusDialog({
   // A column arriving from outside stands in for a choice made in the search.
   useArrival(named, (label) => {
     setChosen(label);
-    setQuery(games.find((it) => it.label === label)?.name ?? label);
+    const found = games.find((it) => it.label === label);
+    setQuery(found != null ? gameLabelText(found) : label);
   });
 
   const { shown } = useLiveGame({
@@ -201,9 +207,9 @@ export default function GameStatusDialog({
           onValueChange={(next) => setChosen(next.label)}
           query={query}
           onQueryChange={setQuery}
-          // The game alone. The column is what the list is read by and what the
-          // search matches, and saying it back here only crowds the game's name.
-          itemToStringLabel={(option) => option.name}
+          // The column and the game both, so the reader who came from a cell can
+          // tell this is the game they clicked once it fills the input.
+          itemToStringLabel={gameLabelText}
           itemKey={(option) => option.label}
           // The chosen game's mark uses the freshest status, not the week's, so going
           // final stops pulsing. The week's stands until the first answer lands.

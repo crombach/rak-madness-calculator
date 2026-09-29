@@ -19,6 +19,7 @@ const LIVE_STATUSES: ReadonlySet<GameStatus> = new Set([
   GameStatus.DELAYED,
 ]);
 
+const FETCHING_LABEL = "Fetching the games";
 const NEXT_TITLE = "Up next";
 const NEXT_ID = "live-games-next";
 const KICKOFF_SEPARATOR = " · ";
@@ -64,8 +65,11 @@ function LiveGame({
 export default function LiveGames({
   scores,
   onPoll,
+  fetchingLeagues,
 }: {
   scores?: RakMadnessScores;
+  /** Which leagues have a request in flight, which is what the busy bar says. */
+  fetchingLeagues?: ReadonlySet<League>;
   onPoll?: (
     leagues: ReadonlyArray<League>,
   ) => Promise<LeagueResults | undefined>;
@@ -86,8 +90,18 @@ export default function LiveGames({
     .filter(({ result }) => result.status === GameStatus.UPCOMING)
     .sort((a, b) => a.result.date.getTime() - b.result.date.getTime());
 
+  const isFetching = live.some(({ game }) => fetchingLeagues?.has(game.league));
+
   return (
     <div className="live-games">
+      {isFetching && (
+        <span
+          className="live-games__progress --live"
+          role="progressbar"
+          aria-busy="true"
+          aria-label={FETCHING_LABEL}
+        />
+      )}
       {scores == null || live.length === 0 ? (
         <p className="game-status__missing live-games__empty" role="status">
           No games are live right now

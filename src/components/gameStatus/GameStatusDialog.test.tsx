@@ -192,8 +192,12 @@ describe("GameStatusDialog", () => {
       games,
     };
     render(dialog("P1", true, pool, () => Promise.resolve(undefined)));
-    expect(await screen.findByText("2 picked KC")).toBeInTheDocument();
-    expect(screen.getByText("1 picked BUF")).toBeInTheDocument();
+    await screen.findByText("KC", { selector: ".game-status__split-team" });
+    const [away, home] = document.querySelectorAll(
+      ".game-status__split > span",
+    );
+    expect(away).toHaveTextContent("2 picked KC");
+    expect(home).toHaveTextContent("1 picked BUF");
   });
 
   it("polls the open game's league, keeps it up to date, and stops when it is final", async () => {
@@ -217,10 +221,11 @@ describe("GameStatusDialog", () => {
       screen.getByRole("progressbar", { name: "Fetching the game" }),
     ).toHaveAttribute("aria-busy", "true");
 
-    // The game, not the column the cell that opened it was in, and the week's own
-    // copy of it already up rather than a wait for the fetch that is out.
+    // The game and its column both, so a reader who came from a cell can tell it
+    // is the one they clicked, and the week's own copy of it already up rather
+    // than a wait for the fetch that is out.
     expect(screen.getByRole("combobox", { name: "Game" })).toHaveValue(
-      "KC @ BUF",
+      "P1 KC @ BUF",
     );
     expect(screen.getByText("BUF Team")).toBeInTheDocument();
     // In words as well as in a dot, a red dot alone reading as a decoration.

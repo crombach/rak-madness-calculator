@@ -106,7 +106,7 @@ function Game({ game, status }: { game: SwingGame; status?: GameStatus }) {
           <span className="swing-games__game-name">
             {heading?.mark}
             <span className="swing-games__game-label">{game.label}</span>{" "}
-            <span>{game.name}</span>
+            <span className="swing-games__game-matchup">{game.name}</span>
           </span>
         </button>
         <Accordion.Trigger

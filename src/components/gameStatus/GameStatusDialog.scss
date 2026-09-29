@@ -42,6 +42,14 @@ $cap-right-bearing: 0.065em;
   );
 }
 
+// The chosen game reads as one string in the input, which is plain text and
+// cannot split the column from the game the way an option's two spans do, so
+// both wear the pick's own face. Scoped to the mark this dialog's own search
+// carries, since `.dialog__input` is shared by every dialog.
+.dialog__search:has(.game-status__mark) .dialog__input {
+  @include pick-face;
+}
+
 // An entry reads as its column then its game. Both at the one size, in the monospace
 // face every entry is set in, so the column is held to a width the game names line up
 // past whatever letters either holds.
@@ -53,11 +61,13 @@ $cap-right-bearing: 0.065em;
 .dialog__option .game-status__option-label {
   flex: 0 0 auto;
   min-width: 2.5ch;
+  @include pick-type;
   @include pick-label;
 }
 
 .dialog__option .game-status__option-name {
   @include truncate-line;
+  @include pick-face;
 
   flex: 1;
   text-align: left;

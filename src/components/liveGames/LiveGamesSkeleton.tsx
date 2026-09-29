@@ -1,0 +1,22 @@
+import rangeWithPrefix from "../../utils/rangeWithPrefix";
+import "./LiveGames.scss";
+
+const GAME_COUNT = 2;
+
+/** A wireframe of the live games list, for while the week or the page loads. */
+export default function LiveGamesSkeleton() {
+  return (
+    <div className="live-games --loading" aria-hidden="true">
+      <div className="live-games__list">
+        {rangeWithPrefix(GAME_COUNT, "G").map((game) => (
+          <div key={game} className="live-games__game">
+            <span className="live-games__skeleton-band" />
+            <span className="live-games__skeleton-body">
+              <span className="live-games__skeleton-bar" />
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

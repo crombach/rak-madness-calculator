@@ -1,6 +1,8 @@
 @use "../../styles/a11y" as *;
 @use "../../styles/label" as *;
 @use "../../styles/picks" as *;
+@use "../../styles/progress" as *;
+@use "../../styles/skeleton" as *;
 
 // `100cqi` is the scrolling box `PageLayout.scss` declares the container on, so a
 // phone gets the whole screen and never a sideways scroll.
@@ -14,6 +16,23 @@
   padding: var(--rak-space-4);
   background-color: var(--rak-surface);
   color: var(--rak-text);
+
+  &.--loading {
+    @include skeleton-sheen;
+  }
+}
+
+// Stuck to the top of the scroll area across its full width. The margins give
+// back the page's padding and the bar's own height, so nothing under it moves.
+.live-games__progress {
+  @include progress-bar;
+
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  align-self: stretch;
+  margin: calc(-1 * var(--rak-space-4)) calc(-1 * var(--rak-space-4))
+    calc(-1 * #{$progress-height});
 }
 
 // A card as wide as the dialog, its padding and frame included.
@@ -77,15 +96,19 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   color: var(--rak-on-solid);
 
   .live-games__name,
-  .live-games__pick,
   .game-status__spread-value {
-    color: inherit;
+    color: var(--rak-on-solid);
   }
-}
 
-.live-games__pick {
-  margin-inline-start: auto;
-  text-align: end;
+  // Its label set as the game ID across the band is. Nested to outrank
+  // `.game-status__spread`, whose stylesheet can load after this one.
+  .live-games__pick {
+    @include pick-type;
+    @include pick-label;
+
+    margin-inline-start: auto;
+    text-align: end;
+  }
 }
 
 .live-games__heading {
@@ -98,10 +121,13 @@ $two-columns-from: 2 * 516px + 3 * 16px;
 }
 
 .live-games__label {
+  @include pick-type;
   @include pick-label;
 }
 
 .live-games__name {
+  @include pick-face;
+
   color: var(--rak-text-secondary);
 }
 
@@ -146,4 +172,27 @@ $two-columns-from: 2 * 516px + 3 * 16px;
 
 .live-games__sr-only {
   @include visually-hidden;
+}
+
+// The band one line of heading tall, and a scoreline's height of body under it,
+// as the loaded card measures at 360px.
+.live-games__skeleton-band {
+  display: block;
+  height: calc(
+    var(--rak-text-sm) * var(--rak-line-height) + 2 * var(--rak-space-2)
+  );
+  background-color: var(--rak-band-header);
+  box-shadow: var(--rak-shadow-band-header);
+}
+
+.live-games__skeleton-body {
+  display: block;
+  padding: var(--rak-space-4);
+}
+
+.live-games__skeleton-bar {
+  @include skeleton-surface;
+
+  display: block;
+  height: calc(3 * var(--rak-touch-target));
 }

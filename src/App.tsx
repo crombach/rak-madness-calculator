@@ -6,16 +6,13 @@ import { RESULTS_PAGE } from "./components/results/resultsPath";
 import PicksRoute from "./components/results/PicksRoute";
 import ResultsLayout from "./components/results/ResultsLayout";
 import ScoreboardRoute from "./components/results/ScoreboardRoute";
+import LiveGamesPage from "./components/liveGames/LiveGamesPage";
 import SwingGamesSkeleton from "./components/swingGames/SwingGamesSkeleton";
 
 // Lazy for the must-win search it reaches, which `ResultsFrame` keeps out of the
 // chunk every route waits on.
 const SwingGamesRoute = lazy(
   () => import("./components/swingGames/SwingGamesRoute"),
-);
-// Lazy for the scoreline, which `ResultsFrame` keeps out of that chunk too.
-const LiveGamesRoute = lazy(
-  () => import("./components/liveGames/LiveGamesRoute"),
 );
 
 export default function App() {
@@ -43,14 +40,7 @@ export default function App() {
             </Suspense>
           }
         />
-        <Route
-          path="live"
-          element={
-            <Suspense fallback={null}>
-              <LiveGamesRoute />
-            </Suspense>
-          }
-        />
+        <Route path="live" element={<LiveGamesPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -259,8 +259,18 @@ function Game({
   });
   const splitLine = split != null && (
     <p className="game-status__split">
-      <span>{`${split.away} picked ${result.away.team.abbreviation}`}</span>
-      <span>{`${split.home} picked ${result.home.team.abbreviation}`}</span>
+      <span>
+        {`${split.away} picked `}
+        <span className="game-status__split-team">
+          {result.away.team.abbreviation}
+        </span>
+      </span>
+      <span>
+        {`${split.home} picked `}
+        <span className="game-status__split-team">
+          {result.home.team.abbreviation}
+        </span>
+      </span>
     </p>
   );
   return (

@@ -171,6 +171,13 @@ $section-min: calc(
   letter-spacing: normal;
 }
 
+.swing-games__game-matchup {
+  @include pick-face;
+
+  letter-spacing: normal;
+  text-transform: none;
+}
+
 .swing-games__side {
   display: flex;
   flex-direction: column;

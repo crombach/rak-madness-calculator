@@ -17,6 +17,9 @@ import { RakMadnessScores } from "../../types/RakMadnessScores";
 import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
+import { useSettings } from "../../context/SettingsContext";
+import LiveGamesSkeleton from "../liveGames/LiveGamesSkeleton";
+import loadLiveGamesRoute from "../liveGames/loadLiveGamesRoute";
 import LogoButton, { APP_NAME } from "../navbar/LogoButton";
 import NavMenu from "../navbar/NavMenu";
 import ScoresNavbar from "../navbar/ScoresNavbar";
@@ -101,6 +104,9 @@ export default function ResultsFrame({
   // Once every game is final there is nothing left to fetch, so the refresh button
   // and the divider beside it go rather than sit there doing nothing.
   const isWeekSettled = useIsWeekSettled();
+  // Live Games polls on its own, so it offers no refresh of its own either.
+  const canRefresh = !isWeekSettled && view !== RESULTS_PAGE.liveGames;
+  const { experimentalFeatures } = useSettings();
   const [opened, setOpened] = useState<Opened>();
   // Set once both dialogs are fetched, which mounts them closed. Each one reads
   // the week as it mounts, and `PlayerAnalysisDialog` walks every pick of every
@@ -155,6 +161,12 @@ export default function ResultsFrame({
     };
   }, []);
 
+  // Fetched ahead too, so the menu's link lands on the page rather than on a
+  // frame of wireframe while its chunk arrives.
+  useEffect(() => {
+    if (experimentalFeatures) loadLiveGamesRoute().catch(doNothing);
+  }, [experimentalFeatures]);
+
   // Stable, so the memoized tables below do not re-render for a dialog opening.
   const showPlayerAnalysis = useCallback(
     (name: string) => setOpened({ kind: "player", name }),
@@ -183,7 +195,7 @@ export default function ResultsFrame({
       scrollable={isReady}
       // This matches the refresh button beside it exactly. Both gate on the
       // same live week, and only once there is a table to pull on.
-      pull={isReady && !isWeekSettled ? { onRefresh, isRefreshing } : undefined}
+      pull={isReady && canRefresh ? { onRefresh, isRefreshing } : undefined}
       navbarLeft={<LogoButton onClick={() => navigate("/")} />}
       navbarRight={
         // Rendered while the week loads, so the navbar's shape won't shift under
@@ -192,7 +204,7 @@ export default function ResultsFrame({
           <ScoresNavbar
             view={scoresView}
             disabled={!isReady}
-            isWeekLive={!isWeekSettled}
+            isWeekLive={canRefresh}
             onViewChange={onViewChange}
             onRefresh={onRefresh}
             isRefreshing={isRefreshing}
@@ -228,6 +240,8 @@ export default function ResultsFrame({
               children
             ) : view === RESULTS_PAGE.swingGames ? (
               <SwingGamesSkeleton />
+            ) : view === RESULTS_PAGE.liveGames ? (
+              <LiveGamesSkeleton />
             ) : (
               // A page with no table has no wireframe to stand in for it.
               scoresView != null && <SkeletonTable view={scoresView} />

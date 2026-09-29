@@ -100,9 +100,13 @@
   // Its dot never ends or starts a line. The line holds both counts at 360px.
   white-space: nowrap;
 
-  span + span::before {
+  > span + span::before {
     @include meta-dot;
   }
+}
+
+.game-status__split-team {
+  @include pick-face;
 }
 
 // A `meta-dot` and its margins, as wide as the one inside the split.
