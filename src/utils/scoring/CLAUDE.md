@@ -26,8 +26,8 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
   set of rows
 - `remainingGames`: the open games, and `countDifferences`, where two rows split
 - `differingGames`: every game two rows picked differently, spread included
-- `headToHead`: two rows' gap, split games open and decided, and how many open
-  games the one behind needs to pass
+- `headToHead`: two rows' gap, their open and decided splits, and what the
+  one behind needs
 - `applyKnockouts`: who can still win, why not. A row under a shared name
   knocks nobody out
 - `repeatedNames`: the names more than one row was entered under

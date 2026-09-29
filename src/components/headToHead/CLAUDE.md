@@ -9,3 +9,5 @@ open games that can still change them.
   player. `getHeadToHead` gives the gap and verdict. `PicksTable` draws the two
   rows with every tiebreaker, open split games first, decided ones behind
   "Show more".
+- `HeadToHeadSkeleton`: the pickers and standing as fills, while the week or
+  the page chunk loads. Owns the picker labels, so it never pulls in the page.

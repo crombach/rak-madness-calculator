@@ -13,6 +13,7 @@ import PicksTable from "../table/picks/PicksTable";
 // For `analysis__standing` and `analysis__more`, which this page shares with the
 // analysis dialog.
 import "../playerAnalysis/AnalysisSummary.scss";
+import { PICKER_LABELS } from "./HeadToHeadSkeleton";
 import "./HeadToHead.scss";
 
 function PlayerPicker({
@@ -105,13 +106,13 @@ export default function HeadToHead({ scores }: { scores?: RakMadnessScores }) {
       <div className="head-to-head">
         <div className="head-to-head__pickers">
           <PlayerPicker
-            label="Player"
+            label={PICKER_LABELS[0]}
             options={firstOptions}
             value={firstOptions.find((option) => option.id === firstId)}
             onValueChange={(chosen) => setFirstId(chosen.id)}
           />
           <PlayerPicker
-            label="Versus"
+            label={PICKER_LABELS[1]}
             options={secondOptions}
             value={secondOptions.find((option) => option.id === secondId)}
             onValueChange={(chosen) => setSecondId(chosen.id)}

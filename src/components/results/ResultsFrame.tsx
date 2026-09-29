@@ -18,6 +18,7 @@ import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
 import { useSettings } from "../../context/SettingsContext";
+import HeadToHeadSkeleton from "../headToHead/HeadToHeadSkeleton";
 import LiveGamesSkeleton from "../liveGames/LiveGamesSkeleton";
 import loadLiveGamesRoute from "../liveGames/loadLiveGamesRoute";
 import LogoButton, { APP_NAME } from "../navbar/LogoButton";
@@ -244,6 +245,8 @@ export default function ResultsFrame({
               <SwingGamesSkeleton />
             ) : view === RESULTS_PAGE.liveGames ? (
               <LiveGamesSkeleton />
+            ) : view === RESULTS_PAGE.headToHead ? (
+              <HeadToHeadSkeleton />
             ) : (
               // A page with no table has no wireframe to stand in for it.
               scoresView != null && <SkeletonTable view={scoresView} />
