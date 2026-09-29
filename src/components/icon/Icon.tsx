@@ -188,6 +188,14 @@ export function CheckCircleIcon() {
   );
 }
 
+export function TuneIcon() {
+  return (
+    <Icon name="TuneIcon">
+      <path d="M440-120v-240h80v80h320v80H520v80h-80Zm-320-80v-80h240v80H120Zm160-160v-80H120v-80h160v-80h80v240h-80Zm160-80v-80h400v80H440Zm160-160v-240h80v80h160v80H680v80h-80Zm-480-80v-80h400v80H120Z" />
+    </Icon>
+  );
+}
+
 export function AddIcon() {
   return (
     <Icon name="AddIcon">
@@ -200,6 +208,14 @@ export function CloseIcon() {
   return (
     <Icon name="CloseIcon">
       <path d="m249-207-42-42 231-231-231-231 42-42 231 231 231-231 42 42-231 231 231 231-42 42-231-231-231 231Z" />
+    </Icon>
+  );
+}
+
+export function DeleteIcon() {
+  return (
+    <Icon name="DeleteIcon">
+      <path d="M200-120v-640h-40v-80h200v-40h240v40h200v80h-40v640H200Zm80-80h400v-560H280v560Zm80-80h80v-400h-80v400Zm160 0h80v-400h-80v400ZM280-760v560-560Z" />
     </Icon>
   );
 }

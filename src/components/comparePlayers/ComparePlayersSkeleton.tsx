@@ -1,58 +1,69 @@
 import doNothing from "../../utils/doNothing";
 import Button from "../button/Button";
-import { AddIcon } from "../icon/Icon";
-import {
-  MIN_PICKERS,
-  pickerLabel,
-  readComparedPlayers,
-} from "./comparedPlayers";
+import { TuneIcon } from "../icon/Icon";
+import { MIN_PICKERS, readComparedPlayers } from "./comparedPlayers";
 import "./ComparePlayers.scss";
 
 /**
- * A wireframe of the pickers and the prompt under them, for while the week or the page
- * loads. As many pickers as the reader last chose, so the page opens at its
- * loaded size.
+ * A wireframe of the page above its table, for while the week or the page loads.
+ * The prompt shows only where the page will show it, so the table lands in place.
  */
 export default function ComparePlayersSkeleton() {
-  const saved = readComparedPlayers().length;
-  const count = Math.max(MIN_PICKERS, saved);
   return (
     <div className="compare-players --loading" aria-hidden="true" inert>
-      <div className="compare-players__pickers">
-        {Array.from({ length: count }, (_, index) => (
-          <div key={index} className="compare-players__picker">
-            <span className="compare-players__label">{pickerLabel(index)}</span>
-            <span className="compare-players__skeleton-bar --field" />
-          </div>
-        ))}
+      <div className="compare-players__controls">
+        <ChooseButton />
+        <GamesToggle />
       </div>
-      <AddButton />
-      {/* The prompt the page shows until two players are chosen. */}
-      {saved < MIN_PICKERS && (
+      {readComparedPlayers().length < MIN_PICKERS && (
         <span className="compare-players__skeleton-bar --standing" />
       )}
     </div>
   );
 }
 
-/** Adds a picker. Here, so the wireframe draws the same button. */
-export function AddButton({
-  disabled = false,
+/** Opens the dialog. Here, so the wireframe draws the same button. */
+export function ChooseButton({
   onClick = doNothing,
 }: {
-  disabled?: boolean;
   onClick?: () => void;
 }) {
   return (
-    <Button
-      className="compare-players__add"
-      variant="soft"
-      size="sm"
-      disabled={disabled}
-      onClick={onClick}
-    >
-      <AddIcon />
-      Add player
+    <Button className="compare-players__choose" onClick={onClick}>
+      <TuneIcon />
+      Choose players
     </Button>
+  );
+}
+
+/** The table's two scopes, by whether it shows every game. */
+const GAME_SCOPES = [
+  { showsAll: false, label: "Different" },
+  { showsAll: true, label: "All" },
+] as const;
+
+/** Picks whether the table shows every game or only those picked differently. */
+export function GamesToggle({
+  showsAll = false,
+  onChange = doNothing,
+  disabled = false,
+}: {
+  showsAll?: boolean;
+  onChange?: (showsAll: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="compare-players__scopes" role="group" aria-label="Games">
+      {GAME_SCOPES.map(({ showsAll: value, label }) => (
+        <Button
+          key={label}
+          disabled={disabled}
+          selected={showsAll === value}
+          onClick={() => onChange(value)}
+        >
+          {label}
+        </Button>
+      ))}
+    </div>
   );
 }

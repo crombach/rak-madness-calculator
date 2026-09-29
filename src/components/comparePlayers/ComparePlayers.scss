@@ -1,4 +1,4 @@
-@use "../../styles/label" as *;
+@use "../../styles/breakpoints" as *;
 @use "../../styles/skeleton" as *;
 
 // Pinned to the screen's left edge while a wide table pans under it.
@@ -7,6 +7,7 @@
   left: 0;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: var(--rak-space-2);
   width: min(100cqi, 100%);
   padding: var(--rak-space-4);
@@ -17,22 +18,41 @@
   }
 }
 
-.compare-players__pickers {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-  gap: var(--rak-space-4);
+// Choose players over the game scope, each the full width, until there is room to
+// set them side by side.
+.compare-players__controls {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: var(--rak-space-2);
+
+  @include wide-screen {
+    flex-direction: row;
+    align-self: flex-start;
+    gap: var(--rak-space-4);
+  }
 }
 
-.compare-players__picker {
+// Even halves, so which one is chosen is the only thing telling them apart.
+.compare-players__scopes {
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  gap: var(--rak-space-2);
+}
+
+.compare-players__pickers {
   display: flex;
   flex-direction: column;
   gap: var(--rak-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 // The combobox, and the remove button beside it once there are more than two.
 .compare-players__field {
   display: flex;
-  align-items: center;
   gap: var(--rak-space-2);
 
   > :first-child {
@@ -41,31 +61,20 @@
   }
 }
 
+// The remove key's face and the edge it stands on span the combobox exactly,
+// short of the touch target. WCAG 2.2 AA asks 24px.
+.compare-players__remove {
+  min-height: 0;
+  margin-bottom: var(--rak-key-lift);
+  // Square around the 24px icon on the 36px face. `aspect-ratio` cannot read a
+  // stretched height.
+  &.--icon {
+    padding-inline: 6px;
+  }
+}
+
 .compare-players__add {
   align-self: flex-start;
-}
-
-// Which games the table shows, drawn as the settings dialog's choices are.
-.compare-players__scope {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rak-space-2);
-}
-
-.compare-players__choices {
-  display: flex;
-  gap: var(--rak-space-2);
-  max-width: 16rem;
-}
-
-.compare-players__choice {
-  flex: 1 1 0;
-}
-
-.compare-players__label {
-  @include micro-label;
-
-  font-size: var(--rak-text-xs);
 }
 
 .compare-players__standing {
@@ -79,20 +88,12 @@
   }
 }
 
+// One line of `analysis__standing`, for the prompt.
 .compare-players__skeleton-bar {
   @include skeleton-surface;
 
   display: block;
 
-  // `DialogCombobox.scss`'s search box: a line of its input, the 3px padding on
-  // both it and its box, and the field's 1px border. Keep in sync with it.
-  &.--field {
-    height: calc(1lh + 4 * 3px + 2px);
-    font-size: var(--rak-text-md);
-    line-height: var(--rak-line-height);
-  }
-
-  // One line of `analysis__standing`.
   &.--standing {
     width: 12rem;
     height: 1lh;

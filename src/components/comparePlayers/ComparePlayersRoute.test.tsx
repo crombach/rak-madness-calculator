@@ -48,11 +48,24 @@ function compareScores() {
   ]);
 }
 
+/** Opens the dialog the pickers are in, unless it is open already. */
+async function openDialog(user: ReturnType<typeof mountApp>) {
+  if (screen.queryByRole("dialog") != null) return;
+  await user.click(
+    await screen.findByRole("button", { name: "Choose players" }),
+  );
+}
+
+async function closeDialog(user: ReturnType<typeof mountApp>) {
+  await user.click(screen.getByRole("button", { name: "Close" }));
+}
+
 async function choose(
   user: ReturnType<typeof mountApp>,
   picker: string,
   name: string,
 ) {
+  await openDialog(user);
   await user.click(await screen.findByRole("combobox", { name: picker }));
   await user.click(await screen.findByRole("option", { name }));
 }
@@ -83,14 +96,14 @@ describe("the compare players route", () => {
     mountApp(COMPARE_PATH);
 
     expect(
-      await screen.findByText("Pick two players to compare"),
+      await screen.findByText("Choose two players to compare"),
     ).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 
   it("starts on the reader's own player", async () => {
     localStorage.setItem(PLAYER_NAME_KEY, "carol");
-    mountApp(COMPARE_PATH);
+    await openDialog(mountApp(COMPARE_PATH));
 
     expect(
       await screen.findByRole("combobox", { name: "Player 1" }),
@@ -101,6 +114,7 @@ describe("the compare players route", () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Carol");
+    await closeDialog(user);
 
     const table = await screen.findByRole("table", {
       name: "Picks where Alice and Carol differ",
@@ -121,15 +135,13 @@ describe("the compare players route", () => {
       "Pro Score ATS",
       "Total Score",
     ]);
-    expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveValue(
-      "Carol",
-    );
   });
 
   it("shows each player's MNF points pick among the tiebreakers", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Carol");
+    await closeDialog(user);
 
     const table = await screen.findByRole("table");
     expect(within(table).getByRole("cell", { name: "45" })).toBeInTheDocument();
@@ -140,6 +152,7 @@ describe("the compare players route", () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Carol");
+    await closeDialog(user);
 
     const ranks = within(await screen.findByRole("table"))
       .getAllByRole("row")
@@ -165,6 +178,7 @@ describe("the compare players route", () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Bob");
+    await closeDialog(user);
 
     expect(
       await screen.findByText("They picked every game the same"),
@@ -172,41 +186,43 @@ describe("the compare players route", () => {
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 
-  it("shows the open games first and the decided ones on request", async () => {
+  it("shows the finished games they split beside the open ones", async () => {
     getPlayerScoresMock.mockResolvedValue(
       week([
         player({
           name: "Cal",
           total: 1,
-          pro: [pick("KC", "yes"), pick("SF")],
+          pro: [pick("KC", "yes"), pick("SF"), pick("BUF")],
         }),
-        player({ name: "Dee", pro: [pick("DEN", "no"), pick("LAR")] }),
+        player({
+          name: "Dee",
+          pro: [pick("DEN", "no"), pick("LAR"), pick("BUF")],
+        }),
       ]),
     );
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Cal");
     await choose(user, "Player 2", "Dee");
-    const headers = () =>
-      within(screen.getByRole("table"))
-        .getAllByRole("columnheader")
-        .map((header) => header.textContent);
+    await closeDialog(user);
 
-    expect(await screen.findByRole("table")).toBeInTheDocument();
-    expect(headers()).not.toContain("P1");
-    expect(headers()).toContain("P2");
-
-    await user.click(screen.getByRole("button", { name: "Show more" }));
-
-    expect(headers()).toContain("P1");
-    expect(headers()).toContain("P2");
+    const headers = within(await screen.findByRole("table"))
+      .getAllByRole("columnheader")
+      .map((header) => header.textContent);
+    expect(headers).toEqual(expect.arrayContaining(["P1", "P2"]));
+    expect(headers).not.toContain("P3");
   });
 
   it("shows every game once the reader picks All", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Carol");
+    await closeDialog(user);
 
     await user.click(screen.getByRole("button", { name: "All" }));
+    expect(screen.getByRole("button", { name: "All" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
 
     const table = await screen.findByRole("table", {
       name: "Picks of Alice and Carol",
@@ -215,10 +231,6 @@ describe("the compare players route", () => {
       .getAllByRole("columnheader")
       .map((header) => header.textContent);
     expect(headers).toEqual(expect.arrayContaining(["C1", "C2", "P1", "P2"]));
-    expect(screen.getByRole("button", { name: "All" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
   });
 
   it("adds a third player to the table", async () => {
@@ -227,6 +239,7 @@ describe("the compare players route", () => {
     await choose(user, "Player 2", "Carol");
     await user.click(screen.getByRole("button", { name: "Add player" }));
     await choose(user, "Player 3", "Bob");
+    await closeDialog(user);
 
     expect(
       await screen.findByRole("table", {
@@ -257,6 +270,7 @@ describe("the compare players route", () => {
 
   it("disables Add player once every player has a picker", async () => {
     const user = mountApp(COMPARE_PATH);
+    await openDialog(user);
     const add = await screen.findByRole("button", { name: "Add player" });
 
     await user.click(add);
@@ -273,6 +287,7 @@ describe("the compare players route", () => {
       ),
     );
     const user = mountApp(COMPARE_PATH);
+    await openDialog(user);
     const add = await screen.findByRole("button", { name: "Add player" });
 
     for (let added = 0; added < 6; added++) await user.click(add);
@@ -296,7 +311,7 @@ describe("the compare players route", () => {
       COMPARED_PLAYERS_KEY,
       JSON.stringify(["Bob", "Gone", "Alice", "Carol"]),
     );
-    mountApp(COMPARE_PATH);
+    await openDialog(mountApp(COMPARE_PATH));
 
     expect(
       await screen.findByRole("combobox", { name: "Player 1" }),

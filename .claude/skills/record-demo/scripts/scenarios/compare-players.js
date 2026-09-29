@@ -20,6 +20,9 @@ const OPEN_LIST = process.env.COMPARE_OPEN === "1";
 /** Set to add Ann in a third picker. */
 const ADD_THIRD = process.env.COMPARE_ADD === "1";
 
+/** Set to end with the dialog still open over the page. */
+const KEEP_DIALOG = process.env.COMPARE_DIALOG === "1";
+
 /** Set to end with the table on every game. */
 const SHOW_ALL = process.env.COMPARE_ALL === "1";
 
@@ -71,7 +74,7 @@ function events() {
   };
 }
 
-/** Opens Compare Players on the reader, then picks the rival unless `COMPARE_OPEN` is set. */
+/** Opens the dialog on the reader, then picks the rival unless `COMPARE_OPEN` is set. */
 export default async function run({ page, context, baseUrl }) {
   await registerAppMocks(context, {
     season: SEASON,
@@ -91,6 +94,9 @@ export default async function run({ page, context, baseUrl }) {
     [THEME_KEY, THEME, PLAYER_NAME_KEY, MY_NAME, EXPERIMENTAL_FEATURES_KEY],
   );
   await page.goto(path);
+  const choose = page.getByRole("button", { name: "Choose players" });
+  await choose.waitFor({ timeout: 10000 });
+  await choose.click();
   const versus = page.getByRole("combobox", { name: "Player 2" });
   await versus.waitFor({ timeout: 10000 });
   await versus.click();
@@ -101,6 +107,9 @@ export default async function run({ page, context, baseUrl }) {
     await page.getByRole("combobox", { name: "Player 3" }).click();
     await page.getByRole("option", { name: "Ann" }).click();
   }
+  if (KEEP_DIALOG) return;
+  await page.getByRole("button", { name: "Close" }).click();
+  await page.getByRole("dialog").waitFor({ state: "detached" });
   if (SHOW_ALL) {
     await page.getByRole("button", { name: "All" }).click();
     // The lamp fades over to the new choice.
