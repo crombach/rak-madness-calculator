@@ -159,17 +159,15 @@ function useWraps<T extends HTMLElement>(): [RefObject<T | null>, boolean] {
 }
 
 /** The reader's own pick on the game where they have one, else the pool's line. */
-export function SpreadLine({
+function SpreadLine({
   spread,
   myPick,
-  className,
 }: {
   spread?: GameSpread;
   myPick?: string;
-  className?: string;
 }) {
   return (
-    <p className={getClasses("game-status__spread", className)}>
+    <p className="game-status__spread">
       {myPick != null ? MY_PICK_LABEL : SPREAD_LABEL}:{" "}
       <span className="game-status__spread-value">
         {myPick ??
@@ -200,14 +198,11 @@ function Game({
   gamecastHref,
   myPick,
   split,
-  brief,
 }: {
   result: LeagueResult;
   spread?: GameSpread;
   myPick?: string;
   split?: PickSplit;
-  /** Leaves out the spread line. */
-  brief: boolean;
   /** What a side wears beside its name, or nothing where the marks are dropped. */
   logo?: (side: GameSide) => ReactNode;
   /** ESPN's page for the game. */
@@ -215,8 +210,6 @@ function Game({
 }) {
   const [scoreline, fit] = useScorelineFit(result.id);
   const [lead, wrapped] = useWraps<HTMLDivElement>();
-  // The card's band already holds the pick, so its split sits under the scores.
-  const splitInline = !brief;
   // The link rides with the place, not the kickoff, so it holds the strip's end
   // when the halves stack. A game ESPN sent no address for still carries it.
   const placeParts = [
@@ -269,15 +262,13 @@ function Game({
   );
   return (
     <>
-      {!brief && (
-        <div
-          className={getClasses("game-status__lead", { "--wrapped": wrapped })}
-          ref={lead}
-        >
-          <SpreadLine spread={spread} myPick={myPick} />
-          {splitInline && splitLine}
-        </div>
-      )}
+      <div
+        className={getClasses("game-status__lead", { "--wrapped": wrapped })}
+        ref={lead}
+      >
+        <SpreadLine spread={spread} myPick={myPick} />
+        {splitLine}
+      </div>
       <div
         className={getClasses("game-status__scoreline", {
           "--short-names": fit >= SHORT_NAMES,
@@ -288,7 +279,6 @@ function Game({
         <Scoreline result={result} spread={spread} outcomeOf={outcomeOf} />
         <Side homeAway={HomeAway.HOME} {...sideProps(result.home)} />
       </div>
-      {!splitInline && splitLine}
       {/* Under the scoreline rather than over it. The game is what the dialog was
           opened for, and when and where it is played is the footnote. */}
       <div className="game-status__meta">
@@ -313,7 +303,6 @@ export default function GameStatusSummary({
   result,
   myPick,
   players,
-  brief = false,
 }: {
   game?: WeekGame;
   /** The game as last fetched, where a fresher one than the week's has arrived. */
@@ -322,8 +311,6 @@ export default function GameStatusSummary({
   myPick?: string;
   /** Everyone in the pool, for how many picked each side. */
   players?: ReadonlyArray<PlayerScore>;
-  /** No spread line, which the caller draws. The split goes under the scores. */
-  brief?: boolean;
 }) {
   // Which game's marks failed to load, rather than a flag, so moving to another
   // game asks about its marks instead of inheriting a verdict on the last one's.
@@ -354,7 +341,6 @@ export default function GameStatusSummary({
         gamecastHref={gamecastUrl(game.league, shown.id)}
         myPick={myPick}
         split={players != null ? pickSplit(players, game, shown) : undefined}
-        brief={brief}
         logo={
           logos
             ? (side) => (

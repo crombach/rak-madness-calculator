@@ -100,7 +100,17 @@ describe("LiveGames", () => {
     mount(scores);
     expect(
       cards().map((card) => within(card).getByRole("heading").textContent),
-    ).toEqual(["LiveP1KC @ BUF", "DelayedP3DAL @ PHI"]);
+    ).toEqual(["P1KC @ BUF", "P3DAL @ PHI"]);
+  });
+
+  it("marks each card as the dialog's search marks its game", () => {
+    mount(scores);
+    expect(
+      cards().map(
+        (card) =>
+          within(card).getByRole("img", { name: /Live|Delayed/ }).textContent,
+      ),
+    ).toEqual(["LIVE", "DLAY"]);
   });
 
   it("draws the busy bar only while a live game's league is fetched", () => {
@@ -140,7 +150,7 @@ describe("LiveGames", () => {
     const [first] = cards();
     const myPick = within(first).getByText(/Your Pick/);
     expect(myPick).toHaveTextContent("Your Pick: KC -3");
-    expect(myPick.parentElement).toHaveClass("live-games__header");
+    expect(myPick.parentElement).toHaveClass("game-status__lead");
     expect(within(first).getAllByText(/Your Pick/)).toHaveLength(1);
     expect(
       first.querySelector(".game-status__team-name.--picked"),
@@ -160,7 +170,7 @@ describe("LiveGames", () => {
     const [first] = cards();
     expect(within(first).getByText(/Spread/)).toHaveTextContent(/^Spread: /);
     expect(within(first).getByText(/Spread/).parentElement).toHaveClass(
-      "live-games__header",
+      "game-status__lead",
     );
     expect(screen.queryByText(/Your Pick/)).toBeNull();
   });

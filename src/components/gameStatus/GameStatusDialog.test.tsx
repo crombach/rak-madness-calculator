@@ -182,6 +182,21 @@ describe("GameStatusDialog", () => {
     localStorage.clear();
   });
 
+  it("sets the chosen game's column as a game ID over the input, until it takes the focus", async () => {
+    render(dialog("P1", true, scores, () => Promise.resolve(undefined)));
+    const input = screen.getByRole("combobox", { name: "Game" });
+    const value = await screen.findByText("P1", {
+      selector: ".dialog__input-value .game-status__option-label",
+    });
+    expect(value.nextElementSibling).toHaveTextContent("KC @ BUF");
+    expect(input).toHaveClass("--overlaid");
+
+    act(() => input.focus());
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    fireEvent.change(input, { target: { value: "B" } });
+    expect(document.querySelector(".dialog__input-value")).toBeNull();
+  });
+
   it("offers the chosen game when the list opens from the keyboard", async () => {
     render(dialog("P1", true, scores, () => Promise.resolve(undefined)));
     const input = screen.getByRole("combobox", { name: "Game" });

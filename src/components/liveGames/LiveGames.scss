@@ -1,4 +1,3 @@
-@use "../../styles/a11y" as *;
 @use "../../styles/breakpoints" as *;
 @use "../../styles/label" as *;
 @use "../../styles/picks" as *;
@@ -80,8 +79,8 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   }
 }
 
-// The band. The pick keeps to the heading's line, at its end. A pair too wide for
-// one line puts the pick on a line of its own, still at the end.
+// The band. The mark keeps to the heading's line, at its end, as it sits at the
+// end of the dialog's search.
 .live-games__header {
   display: flex;
   flex-wrap: wrap;
@@ -92,19 +91,12 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   box-shadow: var(--rak-shadow-band-header);
   color: var(--rak-on-solid);
 
-  .live-games__name,
-  .game-status__spread-value {
+  .live-games__name {
     color: var(--rak-on-solid);
   }
 
-  // Its label set as the game ID across the band is. Nested to outrank
-  // `.game-status__spread`, whose stylesheet can load after this one.
-  .live-games__pick {
-    @include pick-type;
-    @include pick-label;
-
+  .game-status__mark {
     margin-inline-start: auto;
-    text-align: end;
   }
 }
 
@@ -143,31 +135,27 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   font-size: var(--rak-text-xs);
 }
 
-.live-games__sr-only {
-  @include visually-hidden;
-}
-
 // A real card drawn from a stand-in game, so it takes a loaded card's size. Its
 // band keeps its fill, and each block under it becomes a fill with its text hidden.
 .live-games.--loading .live-games__game {
   .live-games__header > *,
+  .game-status__lead > *,
   .game-status__scoreline > *,
-  .game-status__split > *,
   .game-status__meta > * {
     visibility: hidden;
   }
 
+  .game-status__lead,
   .game-status__scoreline,
-  .game-status__split,
   .game-status__meta {
     @include skeleton-surface;
 
     color: transparent;
   }
 
-  .game-status__split {
+  // As wide as its own line, so the fill never wraps what it covers.
+  .game-status__lead {
     align-self: center;
-    width: 60%;
   }
 
   .game-status__meta {

@@ -11,8 +11,8 @@ scoreboard each.
 - `LiveGames`: `useLiveWeek` polls every open league, a busy bar under the
   caption while a live one is fetched. Sections Today, Tomorrow and Upcoming
   follow Live.
-- `LiveGameCard`: a brief `GameStatusSummary` banded with its `HEADING_MARK`,
-  label and `SpreadLine`.
+- `LiveGameCard`: a `GameStatusSummary` banded with its label, name and
+  `GameMark`.
 - `kickoffDay`: a kickoff's day in the reader's time zone.
 - `LiveGamesSkeleton`: `LiveGameCard` on a stand-in game, text hidden under
   fills. Also while the week loads.
