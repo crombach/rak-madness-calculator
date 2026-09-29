@@ -13,7 +13,7 @@
 }
 
 // The hover and press fills of a tappable cell. A lit column takes the hover
-// fill on touch too, since a tap lights it where a finger has no hover. Kept
+// fill on touch too, since a press lights it where a finger has no hover. Kept
 // before the press fill, so a pressed cell in a lit column still darkens.
 @mixin cell-interactive-fill {
   &.--column-lit {
