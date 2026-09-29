@@ -1,20 +1,16 @@
 import { useMemo, useState } from "react";
 import { isMyPlayer, useSettings } from "../../context/SettingsContext";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
-import getClasses from "../../utils/getClasses";
-import matching from "../../utils/matching";
 import plural from "../../utils/plural";
 import differingGames from "../../utils/scoring/differingGames";
-import DialogCombobox from "../dialog/DialogCombobox";
 import {
   PlayerOption,
   playerOptions,
 } from "../playerAnalysis/PlayerAnalysisDialog";
+import PlayerCombobox from "../playerAnalysis/PlayerCombobox";
 import PicksTable from "../table/picks/PicksTable";
-import PlayerStatusIcon from "../table/playerName/PlayerStatusIcon";
 // For `analysis__standing`, which this page shares with the analysis dialog.
 import "../playerAnalysis/AnalysisSummary.scss";
-import "../playerAnalysis/PlayerAnalysisDialog.scss";
 import "./HeadToHead.scss";
 
 function PlayerPicker({
@@ -34,33 +30,13 @@ function PlayerPicker({
       <span className="head-to-head__label" aria-hidden="true">
         {label}
       </span>
-      <DialogCombobox<PlayerOption>
+      <PlayerCombobox
         ariaLabel={label}
-        placeholder="Search players..."
-        emptyMessage="No matching players"
-        items={options}
-        filteredItems={matching(options, query, (option) => option.name)}
+        options={options}
         value={value}
         onValueChange={onValueChange}
         query={query}
         onQueryChange={setQuery}
-        itemToStringLabel={(option) => option.name}
-        itemKey={(option) => option.id}
-        optionClassName={(option) =>
-          getClasses("player-analysis__option", {
-            "--knocked-out": option.isKnockedOut,
-            "--name-conflict": option.hasNameConflict,
-          })
-        }
-        renderOption={(option) => (
-          <>
-            <span className="player-analysis__option-name">{option.name}</span>
-            <PlayerStatusIcon
-              isKnockedOut={option.isKnockedOut}
-              hasNameConflict={option.hasNameConflict}
-            />
-          </>
-        )}
       />
     </div>
   );
