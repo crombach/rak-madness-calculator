@@ -132,14 +132,17 @@ describe("NavMenu", () => {
       expect(screen.queryByRole("menuitem")).not.toBeInTheDocument();
     });
 
-    it("drops Swing Games once the week has a winner", async () => {
+    it("disables Swing Games once the week has a winner", async () => {
       mockIsWeekWon.mockReturnValue(true);
       const user = mount();
       await user.click(trigger());
 
-      const items = await screen.findAllByRole("menuitem");
+      const item = await screen.findByRole("menuitem", {
+        name: /Swing Games/,
+      });
 
-      expect(items.map((item) => item.textContent)).toEqual(["Home"]);
+      expect(item).toHaveAttribute("data-disabled");
+      expect(item).toHaveAccessibleDescription("Week already won");
     });
 
     it("shows no menu with experimental features off", () => {

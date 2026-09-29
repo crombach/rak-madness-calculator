@@ -14,7 +14,7 @@ import "./NavMenu.scss";
 
 type Week = number | string | undefined;
 
-/** What an item's visibility and enabled rules can read. */
+/** What an item's enabled rule can read. */
 type NavContext = {
   isWeekWon: boolean;
   swingGames: ReturnType<typeof useSwingGames>;
@@ -24,8 +24,6 @@ type NavItem = {
   label: string;
   icon: ReactNode;
   path: (season: Week, week: Week) => string;
-  /** Left out for an item that always shows. */
-  hidden?: (context: NavContext) => boolean;
   /** A reason to show and disable the item for, or undefined to leave it enabled. */
   disabledReason?: (context: NavContext) => string | undefined;
 };
@@ -36,9 +34,9 @@ const ITEMS: Array<NavItem> = [
     label: "Swing Games",
     icon: <SwapVertIcon />,
     path: (season, week) => resultsPath(season, week, "Swing Games"),
-    hidden: ({ isWeekWon }) => isWeekWon,
-    disabledReason: ({ swingGames }) => {
+    disabledReason: ({ isWeekWon, swingGames }) => {
       if (swingGames == null) return "Scores still loading";
+      if (isWeekWon) return "Week already won";
       if (swingGames.games.length === 0) return "No game knocks anyone out";
       return undefined;
     },
@@ -72,7 +70,7 @@ export default function NavMenu({
   if (!experimentalFeatures) return null;
 
   const context: NavContext = { isWeekWon, swingGames };
-  const links = ITEMS.filter((item) => !item.hidden?.(context)).map((item) => {
+  const links = ITEMS.map((item) => {
     const path = item.path(season, week);
     return {
       ...item,

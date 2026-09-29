@@ -223,10 +223,11 @@ export default function ResultsFrame({
           <GameStatusContextProvider showGameStatus={showGameStatus}>
             {isReady ? (
               children
-            ) : scoresView == null ? (
+            ) : view === "Swing Games" ? (
               <SwingGamesSkeleton />
             ) : (
-              <SkeletonTable view={scoresView} />
+              // A page with no table has no wireframe to stand in for it.
+              scoresView != null && <SkeletonTable view={scoresView} />
             )}
           </GameStatusContextProvider>
         </PlayerAnalysisContextProvider>
