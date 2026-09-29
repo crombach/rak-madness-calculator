@@ -293,6 +293,74 @@ describe("PicksTable, game status", () => {
   });
 });
 
+describe("PicksTable, column hover", () => {
+  const HOVERED = "--column-hover";
+
+  function cellOf(text: string) {
+    return screen.getByText(text).closest("td");
+  }
+
+  function headingOf(label: string) {
+    return screen.getByRole("columnheader", { name: label });
+  }
+
+  it("lights every cell of the column under the pointer, heading included", async () => {
+    const { user } = renderPicks();
+
+    await user.hover(screen.getByText("MICH"));
+
+    expect(cellOf("MICH")).toHaveClass(HOVERED);
+    expect(cellOf("C1 pick")).toHaveClass(HOVERED);
+    expect(headingOf("C1")).toHaveClass(HOVERED);
+    expect(cellOf("OSU")).not.toHaveClass(HOVERED);
+    expect(headingOf("P1")).not.toHaveClass(HOVERED);
+  });
+
+  it("lights the column from its heading too", async () => {
+    const { user } = renderPicks();
+
+    await user.hover(headingOf("P2"));
+
+    expect(cellOf("KC")).toHaveClass(HOVERED);
+  });
+
+  it("moves to the column the pointer moves to", async () => {
+    const { user } = renderPicks();
+
+    await user.hover(screen.getByText("MICH"));
+    await user.hover(screen.getByText("OSU"));
+
+    expect(cellOf("MICH")).not.toHaveClass(HOVERED);
+    expect(cellOf("OSU")).toHaveClass(HOVERED);
+  });
+
+  it("lights nothing once the pointer is on a cell outside a game", async () => {
+    const { user } = renderPicks();
+
+    await user.hover(screen.getByText("MICH"));
+    await user.hover(screen.getByRole("columnheader", { name: "Player" }));
+
+    expect(document.querySelector(`.${HOVERED}`)).toBeNull();
+  });
+
+  it("lights nothing once the pointer leaves the table", async () => {
+    const { user } = renderPicks();
+
+    await user.hover(screen.getByText("MICH"));
+    await user.unhover(screen.getByRole("table"));
+
+    expect(document.querySelector(`.${HOVERED}`)).toBeNull();
+  });
+
+  it("lights nothing for a touch, which has no hover", async () => {
+    const { user } = renderPicks();
+
+    await user.pointer({ keys: "[TouchA]", target: screen.getByText("MICH") });
+
+    expect(document.querySelector(`.${HOVERED}`)).toBeNull();
+  });
+});
+
 describe("PicksTable, a refresh's changes", () => {
   it("wipes a pick a refresh just resolved, carrying the status it left", () => {
     mockScoreChanges.mockReturnValue({

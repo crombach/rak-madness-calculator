@@ -193,7 +193,8 @@
         }
 
         @include can-hover {
-          &:hover {
+          &:hover,
+          &.--column-hover {
             @include cell-darkened(var(--rak-hover-strength));
           }
         }
@@ -304,9 +305,12 @@
       cursor: pointer;
       transition: background-color 150ms;
 
-      // Both steps are named in `index.scss`, beside the stripe they clear.
+      // Both steps are named in `index.scss`, beside the stripe they clear. A
+      // game cell also lights with the rest of its column, which `PicksTable`
+      // marks, since any cell of it opens the same game.
       @include can-hover {
-        &:hover {
+        &:hover,
+        &.--column-hover {
           @include cell-darkened(var(--rak-hover-strength));
         }
       }

@@ -1,4 +1,4 @@
-import { ReactNode, useRef } from "react";
+import { PointerEventHandler, ReactNode, useRef } from "react";
 import useFillerRows, { FILLER_ROW_CLASS } from "../../hooks/useFillerRows";
 import "./Table.scss";
 import getClasses from "../../utils/getClasses";
@@ -25,6 +25,8 @@ export default function TableShell({
   busy = false,
   ariaHidden = false,
   standInRows = 0,
+  onPointerOver,
+  onPointerLeave,
   children,
 }: {
   /** What the table shows, read by a screen reader alone: visually hidden. */
@@ -51,6 +53,8 @@ export default function TableShell({
    * Left unset, the filler only makes up what the real rows do not reach.
    */
   standInRows?: number;
+  onPointerOver?: PointerEventHandler<HTMLTableElement>;
+  onPointerLeave?: PointerEventHandler<HTMLTableElement>;
   children?: ReactNode;
 }) {
   const tableRef = useRef<HTMLTableElement>(null);
@@ -65,6 +69,8 @@ export default function TableShell({
       cellSpacing="0"
       aria-busy={busy || undefined}
       aria-hidden={ariaHidden || undefined}
+      onPointerOver={onPointerOver}
+      onPointerLeave={onPointerLeave}
     >
       {caption != null && (
         <caption className="table__caption">{caption}</caption>

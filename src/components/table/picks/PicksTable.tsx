@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { PointerEvent, memo, useState } from "react";
 import { useScoreChanges } from "../../../context/AppDataContext";
 import { useShowGameStatus } from "../../../context/GameStatusContext";
 import { GameStatus } from "../../../types/ESPN";
@@ -8,6 +8,7 @@ import {
   RakMadnessScores,
   Status,
 } from "../../../types/RakMadnessScores";
+import getClasses from "../../../utils/getClasses";
 import repeatedNames from "../../../utils/scoring/repeatedNames";
 import {
   leagueLabels,
@@ -29,6 +30,9 @@ const FIXED_COLUMN_COUNT = 5;
 /** MNF Points Pick, MNF Points Distance, and Pro Score ATS. */
 const TIEBREAKER_COLUMN_COUNT = 3;
 
+/** Marks every cell of the column the pointer is over, heading included. */
+const COLUMN_HOVER_CLASS = "--column-hover";
+
 /**
  * A pick's status, in words, for the fill color a sighted reader gets instead.
  * Keyed by `fillStatus` rather than the scored status, so a cell says what it was
@@ -44,11 +48,13 @@ const PICK_STATUS_LABEL: Partial<Record<Status, string>> = {
 function leagueHeaders({
   labels,
   statusByLabel,
+  hoveredGame,
   onClick,
 }: {
   labels: Array<string>;
   /** Where each column's game stands, for the headings a mark is drawn on. */
   statusByLabel: Map<string, GameStatus>;
+  hoveredGame?: string;
   onClick: (gameLabel: string) => void;
 }) {
   return labels.map((header) => {
@@ -57,7 +63,14 @@ function leagueHeaders({
     return (
       // The class is what gives a game's column its width, which the wireframe gives
       // the same column before there is a game in it.
-      <th key={header} className={PICK_COL_CLASS} scope="col">
+      <th
+        key={header}
+        className={getClasses(PICK_COL_CLASS, {
+          [COLUMN_HOVER_CLASS]: header === hoveredGame,
+        })}
+        scope="col"
+        data-game={header}
+      >
         {/* Opens the same game every cell under this heading opens, which is the
             one row of the column a reader with no pick of their own can reach. */}
         <button
@@ -123,6 +136,7 @@ function PickCells({
   labels,
   isShown,
   pickChanges,
+  hoveredGame,
   onClick,
 }: {
   /** The row these cells belong to, which two players can share a name in. */
@@ -132,6 +146,7 @@ function PickCells({
   /** Whether a game's column is drawn, by its label. */
   isShown: (gameLabel: string) => boolean;
   pickChanges: Map<string, Status>;
+  hoveredGame?: string;
   onClick: (gameLabel: string) => void;
 }) {
   return (
@@ -141,7 +156,10 @@ function PickCells({
           isShown(labels[index]) && (
             <td
               key={pickChangeKey(playerId, labels[index])}
-              className={`table__pick --${fillStatus(result)}`}
+              className={getClasses("table__pick", `--${fillStatus(result)}`, {
+                [COLUMN_HOVER_CLASS]: labels[index] === hoveredGame,
+              })}
+              data-game={labels[index]}
             >
               <PickCell
                 result={result}
@@ -176,6 +194,16 @@ function PicksTable({
 }) {
   const showGameStatus = useShowGameStatus();
   const { picks: pickChanges } = useScoreChanges();
+  const [hoveredGame, setHoveredGame] = useState<string>();
+
+  // One handler for the whole table. Every cell of a game's column opens the
+  // same game, so the whole column answers to the pointer, not just the cell.
+  // A touch has no hover to show.
+  function trackHover(event: PointerEvent<HTMLTableElement>) {
+    if (event.pointerType === "touch") return;
+    const cell = (event.target as Element).closest<HTMLElement>("[data-game]");
+    setHoveredGame(cell?.dataset.game);
+  }
 
   if (scores == null) {
     return null;
@@ -205,6 +233,8 @@ function PicksTable({
     <TableShell
       caption={caption}
       columnCount={columnCount}
+      onPointerOver={trackHover}
+      onPointerLeave={() => setHoveredGame(undefined)}
       header={
         <>
           <th scope="col">Rank</th>
@@ -214,12 +244,14 @@ function PicksTable({
           {leagueHeaders({
             labels: shownCollege,
             statusByLabel: statuses,
+            hoveredGame,
             onClick: showGameStatus,
           })}
           <th scope="col">College Score</th>
           {leagueHeaders({
             labels: shownPro,
             statusByLabel: statuses,
+            hoveredGame,
             onClick: showGameStatus,
           })}
           <th scope="col">Pro Score</th>
@@ -249,6 +281,7 @@ function PicksTable({
               labels={collegeLabels}
               isShown={isShown}
               pickChanges={pickChanges}
+              hoveredGame={hoveredGame}
               onClick={showGameStatus}
             />
             <td>{player.score.college}</td>
@@ -258,6 +291,7 @@ function PicksTable({
               labels={proLabels}
               isShown={isShown}
               pickChanges={pickChanges}
+              hoveredGame={hoveredGame}
               onClick={showGameStatus}
             />
             <td>{player.score.pro}</td>
