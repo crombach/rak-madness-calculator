@@ -1,6 +1,6 @@
 import { Drawer } from "@base-ui/react/drawer";
 import { Menu } from "@base-ui/react/menu";
-import { ReactNode, useId, useState } from "react";
+import { ReactNode, useId, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 import {
   useAppData,
@@ -182,18 +182,24 @@ function NavPopup({
   disabled: boolean;
 }) {
   const [open, setOpen] = useOpenUntilNavigated();
+  // The key's face sinks under a press. Anchored to the key, the popup rides
+  // that travel in the browsers that report it, so it hangs off a box that stays.
+  const anchorRef = useRef<HTMLSpanElement>(null);
   return (
     <Menu.Root open={open} onOpenChange={setOpen}>
-      <Menu.Trigger
-        className={TRIGGER_CLASSES}
-        aria-label="Menu"
-        disabled={disabled}
-      >
-        <MenuIcon />
-      </Menu.Trigger>
+      <span ref={anchorRef} className="nav-menu__anchor">
+        <Menu.Trigger
+          className={TRIGGER_CLASSES}
+          aria-label="Menu"
+          disabled={disabled}
+        >
+          <MenuIcon />
+        </Menu.Trigger>
+      </span>
       <Menu.Portal>
         <Menu.Positioner
           className="nav-menu__positioner"
+          anchor={anchorRef}
           align="end"
           sideOffset={4}
         >

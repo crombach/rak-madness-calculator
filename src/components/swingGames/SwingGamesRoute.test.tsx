@@ -149,9 +149,9 @@ describe("the swing games route", () => {
     mountApp(SWINGS_PATH);
     await screen.findByText("KC at DEN");
 
-    const divider = screen.getByRole("button", {
-      name: "Menu",
-    }).previousElementSibling;
+    const divider = screen
+      .getByRole("button", { name: "Menu" })
+      .closest(".nav-menu__anchor")?.previousElementSibling;
     expect(divider).toHaveClass("navbar__divider");
     expect(divider?.previousElementSibling).toContainElement(
       screen.getByRole("button", { name: "Picks" }),
