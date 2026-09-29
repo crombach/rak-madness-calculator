@@ -206,7 +206,7 @@ function Game({
   spread?: GameSpread;
   myPick?: string;
   split?: PickSplit;
-  /** Leaves out the strip under the scoreline, and the spread line. */
+  /** Leaves out the spread line. */
   brief: boolean;
   /** What a side wears beside its name, or nothing where the marks are dropped. */
   logo?: (side: GameSide) => ReactNode;
@@ -291,12 +291,10 @@ function Game({
       {!splitInline && splitLine}
       {/* Under the scoreline rather than over it. The game is what the dialog was
           opened for, and when and where it is played is the footnote. */}
-      {!brief && (
-        <div className="game-status__meta">
-          <MetaGroup parts={kickoffParts(result.date)} />
-          <MetaGroup parts={placeParts} />
-        </div>
-      )}
+      <div className="game-status__meta">
+        <MetaGroup parts={kickoffParts(result.date)} />
+        <MetaGroup parts={placeParts} />
+      </div>
     </>
   );
 }
@@ -324,8 +322,7 @@ export default function GameStatusSummary({
   myPick?: string;
   /** Everyone in the pool, for how many picked each side. */
   players?: ReadonlyArray<PlayerScore>;
-  /** A scoreboard alone: no kickoff, place or Gamecast link. The caller draws the
-   *  `SpreadLine`. */
+  /** No spread line, which the caller draws. The split goes under the scores. */
   brief?: boolean;
 }) {
   // Which game's marks failed to load, rather than a flag, so moving to another

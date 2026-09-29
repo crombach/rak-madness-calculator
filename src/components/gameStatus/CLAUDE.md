@@ -7,7 +7,7 @@ How a game in the week is going, opened from a pick cell.
   `useLiveGame` polls its league.
 - `GameStatusSummary`: `SpreadLine`, both sides, `pickSplit`, kickoff, town,
   Gamecast link.
-  `brief` drops the line and that strip.
+  `brief` drops the spread line.
 - `Scoreline`: the two scores, the state over, the down or outcome under.
   `outcomeClasses` colors a side and its score alike.
 - `gameStatusText`: the strings both read.

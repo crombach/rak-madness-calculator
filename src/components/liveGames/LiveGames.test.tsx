@@ -124,11 +124,14 @@ describe("LiveGames", () => {
     );
   });
 
-  it("shows each as a scoreboard with its records, without the strip under it", () => {
+  it("shows each as a scoreboard with its records and the dialog's strip under it", () => {
     mount(scores);
     expect(screen.getByText("4-1")).toHaveClass("game-status__record");
-    expect(screen.queryByRole("link", { name: "Gamecast" })).toBeNull();
-    expect(document.querySelector(".game-status__meta")).toBeNull();
+    for (const card of cards()) {
+      expect(
+        within(card).getByRole("link", { name: "Gamecast" }),
+      ).toBeInTheDocument();
+    }
   });
 
   it("says the reader's own pick in place of the pool's line, and marks the side", () => {
@@ -206,15 +209,11 @@ describe("LiveGames", () => {
     expect(labelsIn("Today")).toEqual(["P4", "P2"]);
     expect(labelsIn("Tomorrow")).toEqual(["P5"]);
     expect(labelsIn("Upcoming")).toEqual(["P6"]);
-    // A day's own heading says the date, so its cards say the time alone.
-    const [today] = cards("Today");
-    expect(today.querySelector(".live-games__kickoff")).not.toHaveTextContent(
-      "2024",
-    );
     const [later] = cards("Upcoming");
-    expect(later.querySelector(".live-games__kickoff")).toHaveTextContent(
+    expect(later.querySelector(".game-status__meta")).toHaveTextContent(
       "Oct 10, 2024",
     );
+    expect(document.querySelector(".live-games__kickoff")).toBeNull();
     vi.useRealTimers();
   });
 

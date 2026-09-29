@@ -19,6 +19,7 @@ export default function LiveGamesSkeleton() {
               <span className="live-games__skeleton-body">
                 <span className="live-games__skeleton-bar --scoreline" />
                 <span className="live-games__skeleton-bar --split" />
+                <span className="live-games__skeleton-bar --meta" />
               </span>
             </div>
           ))}

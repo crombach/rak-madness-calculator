@@ -143,15 +143,6 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   font-size: var(--rak-text-xs);
 }
 
-// Under the scoreboard, where the dialog says the kickoff.
-.live-games__kickoff {
-  margin: 0;
-  padding: 0 var(--rak-space-4) var(--rak-space-4);
-  color: var(--rak-text-secondary);
-  font-size: var(--rak-text-sm);
-  text-align: center;
-}
-
 .live-games__sr-only {
   @include visually-hidden;
 }
@@ -197,5 +188,19 @@ $skeleton-scoreline-roomy: 109.2px;
     align-self: center;
     width: 60%;
     height: calc(var(--rak-text-sm) * var(--rak-line-height));
+  }
+
+  // The kickoff and place strip, two lines until `.game-status__meta` sets them
+  // on one from `wide-screen` up.
+  &.--meta {
+    align-self: center;
+    width: 80%;
+    height: calc(
+      2 * var(--rak-text-sm) * var(--rak-line-height) + var(--rak-space-1)
+    );
+
+    @include wide-screen {
+      height: calc(var(--rak-text-sm) * var(--rak-line-height));
+    }
   }
 }

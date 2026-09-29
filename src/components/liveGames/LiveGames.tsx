@@ -8,7 +8,6 @@ import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
 import GameStatusSummary, { SpreadLine } from "../gameStatus/GameStatusSummary";
-import { kickoffParts } from "../gameStatus/gameStatusText";
 import { HEADING_MARK } from "../table/picks/headingMark";
 import kickoffDay, { KickoffDay } from "./kickoffDay";
 import { LIVE_TITLE } from "./LiveGamesSkeleton";
@@ -23,27 +22,21 @@ const LIVE_STATUSES: ReadonlySet<GameStatus> = new Set([
 ]);
 
 const FETCHING_LABEL = "Fetching the games";
-const KICKOFF_SEPARATOR = " · ";
-
-/** Each day's section, in page order, and whether its kickoffs need their date. */
-const DAYS: ReadonlyArray<{ day: KickoffDay; title: string; dated: boolean }> =
-  [
-    { day: KickoffDay.TODAY, title: "Today", dated: false },
-    { day: KickoffDay.TOMORROW, title: "Tomorrow", dated: false },
-    { day: KickoffDay.LATER, title: "Upcoming", dated: true },
-  ];
+/** Each day's section, in page order. */
+const DAYS: ReadonlyArray<{ day: KickoffDay; title: string }> = [
+  { day: KickoffDay.TODAY, title: "Today" },
+  { day: KickoffDay.TOMORROW, title: "Tomorrow" },
+  { day: KickoffDay.LATER, title: "Upcoming" },
+];
 
 function LiveGame({
   game,
   result,
   scores,
-  kickoff,
 }: {
   game: WeekGame;
   result: LeagueResult;
   scores: RakMadnessScores;
-  /** When a game not started yet kicks off. */
-  kickoff?: string;
 }) {
   const heading = HEADING_MARK[result.status];
   const myPick = useMyPick(scores, game);
@@ -69,7 +62,6 @@ function LiveGame({
         players={scores.scores}
         brief
       />
-      {kickoff != null && <p className="live-games__kickoff">{kickoff}</p>}
     </li>
   );
 }
@@ -151,7 +143,7 @@ export default function LiveGames({
         )}
       </Section>
       {scores != null &&
-        DAYS.map(({ day, title, dated }) => {
+        DAYS.map(({ day, title }) => {
           const games = upcoming.filter(
             ({ result }) => kickoffDay(result.date, now) === day,
           );
@@ -159,20 +151,14 @@ export default function LiveGames({
           return (
             <Section key={day} title={title}>
               <ul className="live-games__list">
-                {games.map(({ game, result }) => {
-                  const [date, time] = kickoffParts(result.date);
-                  return (
-                    <LiveGame
-                      key={game.label}
-                      game={game}
-                      result={result}
-                      scores={scores}
-                      kickoff={
-                        dated ? [date, time].join(KICKOFF_SEPARATOR) : time
-                      }
-                    />
-                  );
-                })}
+                {games.map(({ game, result }) => (
+                  <LiveGame
+                    key={game.label}
+                    game={game}
+                    result={result}
+                    scores={scores}
+                  />
+                ))}
               </ul>
             </Section>
           );

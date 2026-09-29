@@ -194,12 +194,12 @@ describe("GameStatusSummary, the pool's line on the game", () => {
 });
 
 describe("GameStatusSummary, brief", () => {
-  it("keeps the records and leaves out the spread line and the strip under the scoreline", () => {
+  it("keeps the records and the strip under the scoreline, and leaves out the spread line", () => {
     render(<GameStatusSummary game={game(result())} result={result()} brief />);
     expect(screen.getByText("4-1")).toBeInTheDocument();
     expect(screen.queryByText(/Spread/)).toBeNull();
-    expect(screen.queryByRole("link", { name: "Gamecast" })).toBeNull();
-    expect(document.querySelector(".game-status__meta")).toBeNull();
+    expect(screen.getByRole("link", { name: "Gamecast" })).toBeInTheDocument();
+    expect(document.querySelector(".game-status__meta")).not.toBeNull();
   });
 });
 
