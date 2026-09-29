@@ -38,7 +38,7 @@ const SPREAD_LABEL = "Spread";
 /** Said in the line's place where the reader has a pick on the game. */
 const MY_PICK_LABEL = "Your Pick";
 
-/** Read out beside the side the reader picked, for the underline marking it. */
+/** Read out beside the side the reader picked, to a screen reader alone. */
 const PICKED_SIDE_LABEL = "Your pick";
 
 /** Said in its place for a game the picks put no line on. */

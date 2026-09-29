@@ -19,9 +19,8 @@ $progress-height: 2px;
     width: 40%;
     height: 100%;
     background-color: var(--rak-progress-fill);
-    // The app's one sweep speed, the same `_skeleton.scss` times its sheen to.
-    // The curve is this bar's own. A sheen crosses at a constant rate, and a
-    // progress bar eases at each end of its run.
+    // The sweep speed `_skeleton.scss` times its sheen to. Eased at each end, where
+    // a sheen crosses at a constant rate.
     animation: progress-sweep var(--rak-duration-loop) ease-in-out infinite;
   }
 
