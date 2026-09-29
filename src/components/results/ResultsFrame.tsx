@@ -12,6 +12,7 @@ import { useIsWeekSettled } from "../../context/AppDataContext";
 import { errorToast, useToastActions } from "../../context/ToastContext";
 import { GameStatusContextProvider } from "../../context/GameStatusContext";
 import { PlayerAnalysisContextProvider } from "../../context/PlayerAnalysisContext";
+import { scoringFailedMessage } from "../../hooks/usePlayerScores";
 import useWarmTeamLogos from "../../hooks/useWarmTeamLogos";
 import { League } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
@@ -252,9 +253,7 @@ export default function ResultsFrame({
               children
             ) : hasFailed ? (
               <div className="results-failure">
-                <EmptyState>
-                  {`The scores for week ${weekParam} could not be loaded.`}
-                </EmptyState>
+                <EmptyState>{scoringFailedMessage(weekParam ?? "")}</EmptyState>
                 <div className="results-failure__actions">
                   <Button onClick={onRefresh} busy={isRefreshing}>
                     Retry

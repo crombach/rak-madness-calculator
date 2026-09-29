@@ -135,14 +135,12 @@ describe("the app, a week that fails to load", () => {
     const user = mountApp(`/${SEASON}/${CURRENT_WEEK}/scoreboard`);
 
     const retry = await screen.findByRole("button", { name: "Retry" });
+    // Once in the toast and once in the page's place.
     expect(
-      screen.getByText(`Failed to calculate scores for week ${CURRENT_WEEK}.`),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        `The scores for week ${CURRENT_WEEK} could not be loaded.`,
+      screen.getAllByText(
+        `Failed to calculate scores for week ${CURRENT_WEEK}.`,
       ),
-    ).toBeInTheDocument();
+    ).toHaveLength(2);
 
     await user.click(retry);
 

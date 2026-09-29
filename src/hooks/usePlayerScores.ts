@@ -38,9 +38,14 @@ export const WIPE_LIFETIME_MS = 350;
 /** The season and week a scoring attempt has finished, however it turned out. */
 type LastAttempt = { season: number; weekNumber: number };
 
+/** What a failed scoring pass says, in its toast and on the page it left empty. */
+export function scoringFailedMessage(weekNumber: number | string): string {
+  return `Failed to calculate scores for week ${weekNumber}.`;
+}
+
 /** Scoring threw on picks the app already had, which every path can hit. */
 function scoringFailed(weekNumber: number): Toast {
-  return errorToast(`Failed to calculate scores for week ${weekNumber}.`);
+  return errorToast(scoringFailedMessage(weekNumber));
 }
 
 /** A refresh that could not reach the sheet. The scores on screen still stand. */
