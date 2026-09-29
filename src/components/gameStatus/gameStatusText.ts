@@ -92,6 +92,41 @@ export function kickoffParts(date: Date): Array<string> {
   ];
 }
 
+export const MINUTE_MS = 60_000;
+const HOUR_MINUTES = 60;
+const DAY_MINUTES = 24 * HOUR_MINUTES;
+const KICKING_OFF = "Kicking off";
+
+/**
+ * How many of the reader's calendar days from `now` to `date`, in their own time
+ * zone. Zero for later today, and below zero for a day already gone.
+ */
+export function calendarDaysUntil(date: Date, now: Date): number {
+  const midnight = (day: Date) =>
+    Date.UTC(day.getFullYear(), day.getMonth(), day.getDate());
+  return Math.round(
+    (midnight(date) - midnight(now)) / (DAY_MINUTES * MINUTE_MS),
+  );
+}
+
+/**
+ * How long until kickoff, for under a game's scores before it starts. Hours and
+ * minutes on the day, rounded up to the minute so a kickoff seconds away is never
+ * said as now. Tomorrow by name, and the days alone past it.
+ */
+export function countdownText(kickoff: Date, now: Date): string {
+  const left = kickoff.getTime() - now.getTime();
+  if (left <= 0) return KICKING_OFF;
+  const days = calendarDaysUntil(kickoff, now);
+  if (days === 1) return "Kicks off tomorrow";
+  if (days > 1) return `Kicks off in ${days}d`;
+  const total = Math.ceil(left / MINUTE_MS);
+  const hours = Math.floor(total / HOUR_MINUTES);
+  const minutes = total % HOUR_MINUTES;
+  const parts = [hours > 0 && `${hours}h`, minutes > 0 && `${minutes}m`];
+  return `Kicks off in ${parts.filter(Boolean).join(" ")}`;
+}
+
 /** `OT` for the first period past regulation, `2OT` for the next, and so on. */
 function overtimeLabel(period: number): string {
   const overtime = period - REGULATION_PERIODS;

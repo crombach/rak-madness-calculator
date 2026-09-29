@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { GameStatus, HomeAway } from "../../types/ESPN";
 import { LeagueResult } from "../../types/LeagueResult";
 import { League } from "../../types/League";
@@ -129,6 +129,21 @@ describe("GameStatusSummary, the game it is given", () => {
 
     expect(document.querySelector(".game-status")).not.toBeNull();
     expect(logos()).toEqual([]);
+  });
+
+  it("counts down to kickoff under the scores, a minute at a time", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(KICKOFF.getTime() - 2 * 60_000));
+    try {
+      const pregame = result({ status: GameStatus.UPCOMING });
+      render(<GameStatusSummary game={game(pregame)} />);
+      expect(screen.getByText("Kicks off in 2m")).toBeInTheDocument();
+
+      await act(() => vi.advanceTimersByTimeAsync(60_000));
+      expect(screen.getByText("Kicks off in 1m")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("says so where ESPN listed no game for the column", () => {
