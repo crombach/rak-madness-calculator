@@ -211,7 +211,7 @@ $bar-height: 2px;
     left: 50%;
     right: auto;
     bottom: auto;
-    width: min(640px, calc(100vw - 32px));
+    width: min(var(--rak-scoreboard-width), calc(100vw - 32px));
     max-height: min(680px, calc(var(--rak-viewport-height, 100dvh) - 64px));
     // No keyboard to stand over and no home indicator to clear. A centered
     // window is off both edges already. The body still carries it.

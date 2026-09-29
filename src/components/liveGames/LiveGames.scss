@@ -13,27 +13,40 @@
   color: var(--rak-text);
 }
 
+$divider: var(--rak-border-width-hairline);
+$column-max: calc(var(--rak-scoreboard-width) + 2 * var(--rak-space-4));
+// Two columns of 512px, each game's padding included, so no scoreboard in them
+// is narrower than 480px. The `32px` is the page padding, twice `--rak-space-4`.
+$two-columns-from: 2 * 512px + 1px + 32px;
+
+// Each game's shadow fills the one-pixel gap as the divider, so an empty cell
+// draws none. Pulled out over the page's padding, which clips the shadows on the
+// outer edge and puts each game's own padding at the page gutter.
 .live-games__list {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-content: start;
+  align-self: center;
+  gap: $divider;
+  width: calc(100% + 2 * var(--rak-space-4));
+  max-width: $column-max;
+  margin-block: calc(-1 * var(--rak-space-4));
   padding: 0;
+  overflow: hidden;
   list-style: none;
+
+  @container (min-width: #{$two-columns-from}) {
+    grid-template-columns: 1fr 1fr;
+    max-width: calc(2 * #{$column-max} + #{$divider});
+  }
 }
 
 .live-games__game {
   display: flex;
   flex-direction: column;
   gap: var(--rak-space-2);
-  padding-block: var(--rak-space-4);
-
-  &:first-child {
-    padding-block-start: 0;
-  }
-
-  & + & {
-    border-top: var(--rak-border-width-hairline) solid var(--rak-panel-border);
-  }
+  padding: var(--rak-space-4);
+  box-shadow: 0 0 0 $divider var(--rak-panel-border);
 }
 
 // The pick keeps to the heading's line, at its end. A pair too wide for one line
