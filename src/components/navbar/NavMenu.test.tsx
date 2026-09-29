@@ -162,10 +162,17 @@ describe("NavMenu", () => {
     });
 
     it.each([
-      ["while scores load", undefined, ""],
-      ["with fewer than two players", { scores: [{}] }, "Needs two players"],
-    ])("disables Head to Head %s", async (_, scores, reason) => {
+      ["while scores load", undefined, false, "Scores still loading"],
+      [
+        "with fewer than two players",
+        { scores: [{}] },
+        false,
+        "Needs two players",
+      ],
+      ["with no reason once the week is settled", { scores: [{}] }, true, ""],
+    ])("disables Head to Head %s", async (_, scores, isSettled, reason) => {
       mockAppData.mockReturnValue({ scores });
+      mockIsWeekSettled.mockReturnValue(isSettled);
       const user = mount();
       await user.click(trigger());
 

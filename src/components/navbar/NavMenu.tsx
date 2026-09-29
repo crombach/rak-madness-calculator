@@ -67,10 +67,13 @@ const PAGES: Array<NavItem> = [
     label: RESULTS_PAGE.headToHead,
     icon: <CompareArrowsIcon />,
     path: (season, week) => resultsPath(season, week, RESULTS_PAGE.headToHead),
-    // Scores still loading, as for Swing Games.
-    disabled: ({ playerCount }) => playerCount == null,
-    disabledReason: ({ playerCount }) =>
-      playerCount != null && playerCount < 2 ? "Needs two players" : undefined,
+    disabled: ({ playerCount }) => playerCount == null || playerCount < 2,
+    disabledReason: ({ isWeekSettled, playerCount }) => {
+      if (isWeekSettled) return undefined;
+      if (playerCount == null) return "Scores still loading";
+      if (playerCount < 2) return "Needs two players";
+      return undefined;
+    },
   },
   {
     label: RESULTS_PAGE.liveGames,
