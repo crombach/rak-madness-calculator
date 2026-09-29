@@ -7,9 +7,9 @@ import { LeagueResult } from "../../types/LeagueResult";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
-import kickoffDay, { KickoffDay } from "./kickoffDay";
+import kickoffDay from "./kickoffDay";
 import GameCard from "./GameCard";
-import { LIVE_TITLE } from "./GamesSkeleton";
+import { COMPLETED_TITLE, DAYS, LIVE_TITLE } from "./sectionTitles";
 import "./Games.scss";
 
 const LEAGUES: ReadonlyArray<League> = [League.COLLEGE, League.PRO];
@@ -21,13 +21,6 @@ const LIVE_STATUSES: ReadonlySet<GameStatus> = new Set([
 ]);
 
 const FETCHING_LABEL = "Fetching the games";
-/** Each day's section, in page order. */
-const DAYS: ReadonlyArray<{ day: KickoffDay; title: string }> = [
-  { day: KickoffDay.TODAY, title: "Today" },
-  { day: KickoffDay.TOMORROW, title: "Tomorrow" },
-  { day: KickoffDay.LATER, title: "Upcoming" },
-];
-const COMPLETED_TITLE = "Completed";
 
 function PoolGame({
   game,
@@ -63,7 +56,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 /**
  * Every game of the week, each as the Game Status dialog shows it. The ones being
  * played first, then those to come by the reader's own calendar day, then the
- * finished ones, latest kickoff first. A section with no game is left out.
+ * finished ones in table order. A section with no game is left out.
  */
 export default function Games({
   scores,
@@ -94,9 +87,9 @@ export default function Games({
   const upcoming = current
     .filter(({ result }) => result.status === GameStatus.UPCOMING)
     .sort((a, b) => a.result.date.getTime() - b.result.date.getTime());
-  const completed = current
-    .filter(({ result }) => result.status === GameStatus.FINAL)
-    .sort((a, b) => b.result.date.getTime() - a.result.date.getTime());
+  const completed = current.filter(
+    ({ result }) => result.status === GameStatus.FINAL,
+  );
 
   const sections = [
     { title: LIVE_TITLE, games: live },

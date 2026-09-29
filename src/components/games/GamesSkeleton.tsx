@@ -4,13 +4,11 @@ import { GameSide, LeagueResult } from "../../types/LeagueResult";
 import { WeekGame } from "../../types/WeekGame";
 import rangeWithPrefix from "../../utils/rangeWithPrefix";
 import GameCard from "./GameCard";
+import { SECTION_TITLES } from "./sectionTitles";
 import "./Games.scss";
 
-// Here rather than in `Games`, so the skeleton never pulls in the page's chunk.
-export const LIVE_TITLE = "Live";
-
-// Enough to fill a tall screen at either column count.
-const GAME_COUNT = 8;
+// One row at the two-column width.
+const GAMES_PER_SECTION = 2;
 
 function standInSide(abbreviation: string): GameSide {
   return {
@@ -50,23 +48,25 @@ const STAND_IN: WeekGame = {
   result: STAND_IN_RESULT,
 };
 
-/** A wireframe of the Live section, for while the week or the page loads. */
+/** A wireframe of every section, for while the week or the page loads. */
 export default function GamesSkeleton() {
   return (
     <div className="games --loading" aria-hidden="true" inert>
-      <div className="games__section">
-        <span className="games__section-title">{LIVE_TITLE}</span>
-        <ul className="games__list">
-          {rangeWithPrefix(GAME_COUNT, "G").map((key) => (
-            <GameCard
-              key={key}
-              game={STAND_IN}
-              result={STAND_IN_RESULT}
-              players={[]}
-            />
-          ))}
-        </ul>
-      </div>
+      {SECTION_TITLES.map((title) => (
+        <div key={title} className="games__section">
+          <span className="games__section-title">{title}</span>
+          <ul className="games__list">
+            {rangeWithPrefix(GAMES_PER_SECTION, "G").map((key) => (
+              <GameCard
+                key={key}
+                game={STAND_IN}
+                result={STAND_IN_RESULT}
+                players={[]}
+              />
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
   );
 }

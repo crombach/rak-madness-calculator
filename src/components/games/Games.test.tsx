@@ -234,7 +234,7 @@ describe("Games", () => {
     vi.useRealTimers();
   });
 
-  it("lists the finished games last, latest kickoff first", () => {
+  it("lists the finished games last, in table order", () => {
     const final = (id: string, home: string, away: string, date: Date) => ({
       ...finalGame({ home, away, homeScore: 21, awayScore: 14 }),
       id,
@@ -247,12 +247,12 @@ describe("Games", () => {
         column(
           "P4",
           League.PRO,
-          final("405", "NE", "MIA", new Date(2024, 9, 6, 13)),
+          final("405", "NE", "MIA", new Date(2024, 9, 7, 17)),
         ),
         column(
           "P5",
           League.PRO,
-          final("406", "SF", "LAR", new Date(2024, 9, 7, 17)),
+          final("406", "SF", "LAR", new Date(2024, 9, 6, 13)),
         ),
       ],
     });
@@ -260,7 +260,7 @@ describe("Games", () => {
     expect(
       screen.getAllByRole("heading", { level: 2 }).at(-1),
     ).toHaveTextContent("Completed");
-    expect(labelsIn("Completed")).toEqual(["P5", "P4", "C1"]);
+    expect(labelsIn("Completed")).toEqual(["C1", "P4", "P5"]);
   });
 
   it("leaves out Completed while no game is final", () => {
