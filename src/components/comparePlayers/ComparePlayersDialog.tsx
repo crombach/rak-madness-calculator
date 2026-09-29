@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { RefObject, useRef, useState } from "react";
 import Button from "../button/Button";
 import DialogShell from "../dialog/DialogShell";
 import { AddIcon, DeleteIcon } from "../icon/Icon";
@@ -31,8 +31,9 @@ function PlayerPicker({
   focusOnMount?: boolean;
 }) {
   const [query, setQuery] = useState(value?.name ?? "");
+  const fieldRef = useRef<HTMLLIElement>(null);
   return (
-    <li className="compare-players__field">
+    <li ref={fieldRef} className="compare-players__field">
       <PlayerCombobox
         ariaLabel={label}
         options={options}
@@ -47,7 +48,15 @@ function PlayerPicker({
         iconOnly
         ariaLabel={`Remove ${label}`}
         disabled={!canRemove}
-        onClick={onRemove}
+        onClick={() => {
+          // The key goes with its picker, so focus moves to the picker that takes
+          // its place, or the one before it at the end of the list.
+          const field = fieldRef.current;
+          const neighbor =
+            field?.nextElementSibling ?? field?.previousElementSibling;
+          neighbor?.querySelector("input")?.focus();
+          onRemove();
+        }}
       >
         <DeleteIcon />
       </Button>
@@ -66,6 +75,7 @@ export default function ComparePlayersDialog({
   onAdd,
   onRemove,
   addedKey,
+  finalFocus,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -77,12 +87,14 @@ export default function ComparePlayersDialog({
   onRemove: (key: number) => void;
   /** The picker "Add Player" made last, which takes the focus as it mounts. */
   addedKey?: number;
+  finalFocus?: RefObject<HTMLElement | null>;
 }) {
   return (
     <DialogShell
       open={open}
       onOpenChange={onOpenChange}
       title="Compare Players"
+      finalFocus={finalFocus}
     >
       <div className="settings">
         <section className="settings__section">

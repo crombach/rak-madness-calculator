@@ -296,6 +296,81 @@ describe("the compare players route", () => {
     for (const remove of screen.getAllByRole("button", { name: /Remove/ })) {
       expect(remove).toBeDisabled();
     }
+    expect(
+      JSON.parse(localStorage.getItem(COMPARED_PLAYERS_KEY) ?? ""),
+    ).toEqual(["Alice", "Bob"]);
+  });
+
+  it("moves focus to the picker that takes a removed one's place", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Carol");
+    await user.click(screen.getByRole("button", { name: "Add Player" }));
+    await choose(user, "Player 3", "Bob");
+
+    await user.click(screen.getByRole("button", { name: "Remove Player 2" }));
+
+    expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveFocus();
+  });
+
+  it("returns focus to Choose Players from the dialog the page opened", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await screen.findByRole("dialog", { name: "Compare Players" });
+
+    await closeDialog(user);
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Choose Players" }),
+      ).toHaveFocus(),
+    );
+  });
+
+  it("focuses an added picker once, not again on reopen", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Carol");
+    await user.click(screen.getByRole("button", { name: "Add Player" }));
+    await closeDialog(user);
+
+    await user.click(screen.getByRole("button", { name: "Choose Players" }));
+
+    expect(
+      await screen.findByRole("combobox", { name: "Player 3" }),
+    ).not.toHaveFocus();
+  });
+
+  it("holds a saved scope with no table and no message until two are chosen", async () => {
+    localStorage.setItem(GAME_SCOPE_KEY, "different");
+    const user = mountApp(COMPARE_PATH);
+    await screen.findByRole("dialog", { name: "Compare Players" });
+    await closeDialog(user);
+
+    expect(screen.getByRole("button", { name: "Different" })).toBeDisabled();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+  });
+
+  it("says so when the players picked every game differently", async () => {
+    getPlayerScoresMock.mockResolvedValue(
+      week([
+        player({ name: "Alice", pro: [pick("KC -3"), pick("BUF")] }),
+        player({ name: "Carol", pro: [pick("DEN 3"), pick("NYJ")] }),
+      ]),
+    );
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Carol"]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    await screen.findByRole("table");
+
+    await showGames(user, "Same");
+
+    expect(
+      await screen.findByText("They picked every game differently"),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 
   it("focuses the picker Add Player makes", async () => {

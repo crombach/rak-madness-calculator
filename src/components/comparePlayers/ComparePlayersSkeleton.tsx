@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { Ref, useId } from "react";
 import doNothing from "../../utils/doNothing";
 import Button from "../button/Button";
 import { RESULTS_PAGE } from "../results/resultsPath";
@@ -24,11 +24,13 @@ export default function ComparePlayersSkeleton() {
 /** Opens the dialog. Here, so the wireframe draws the same button. */
 export function ChooseButton({
   onClick = doNothing,
+  ref,
 }: {
   onClick?: () => void;
+  ref?: Ref<HTMLButtonElement>;
 }) {
   return (
-    <Button className="compare-players__choose" onClick={onClick}>
+    <Button className="compare-players__choose" onClick={onClick} ref={ref}>
       Choose Players
     </Button>
   );

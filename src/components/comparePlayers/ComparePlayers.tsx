@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { isMyPlayer, useSettings } from "../../context/SettingsContext";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import differingGames, { sameGames } from "../../utils/scoring/differingGames";
@@ -84,6 +84,7 @@ export default function ComparePlayers({
   );
   const [scope, setScope] = useState(readGameScope);
   const [addedKey, setAddedKey] = useState<number>();
+  const chooseRef = useRef<HTMLButtonElement>(null);
   const chosen = useMemo(() => playersIn(slots, scores), [slots, scores]);
   // Saved only on the reader's own change, so a week missing the saved names
   // leaves them for a week that has them.
@@ -92,21 +93,17 @@ export default function ComparePlayers({
     writeComparedPlayers(playersIn(next, scores).map((player) => player.name));
   };
 
-  useEffect(() => {
-    writeGameScope(scope);
-  }, [scope]);
-
   const players = useMemo(
     () => new Set(chosen.map((player) => player.id)),
     [chosen],
   );
+  const isReady = chosen.length >= MIN_PICKERS;
   // Undefined shows every game.
   const games = useMemo(() => {
-    if (chosen.length < MIN_PICKERS || scope === "all") return undefined;
+    if (!isReady || scope === "all") return undefined;
     return scope === "different" ? differingGames(chosen) : sameGames(chosen);
-  }, [chosen, scope]);
+  }, [isReady, chosen, scope]);
   const names = NAMES.format(chosen.map((player) => player.name));
-  const isReady = chosen.length >= MIN_PICKERS;
   const captions: Record<GameScope, string> = {
     all: `Picks of ${names}`,
     different: `Picks where ${names} differ`,
@@ -117,8 +114,15 @@ export default function ComparePlayers({
     <>
       <div className="compare-players">
         <div className="compare-players__controls">
-          <ChooseButton onClick={() => setIsOpen(true)} />
-          <GamesToggle scope={scope} onChange={setScope} disabled={!isReady} />
+          <ChooseButton ref={chooseRef} onClick={() => setIsOpen(true)} />
+          <GamesToggle
+            scope={scope}
+            onChange={(next) => {
+              setScope(next);
+              writeGameScope(next);
+            }}
+            disabled={!isReady}
+          />
         </div>
         <div role="status" className="compare-players__standing">
           {scope !== "all" && games?.size === 0 && (
@@ -140,7 +144,12 @@ export default function ComparePlayers({
       )}
       <ComparePlayersDialog
         open={isOpen}
-        onOpenChange={setIsOpen}
+        onOpenChange={(open) => {
+          setIsOpen(open);
+          // Focus goes to the picker Add Player made once, not on every reopen.
+          if (!open) setAddedKey(undefined);
+        }}
+        finalFocus={chooseRef}
         options={options}
         slots={slots}
         canAdd={slots.length < Math.min(MAX_PICKERS, options.length)}

@@ -16,5 +16,6 @@ export default function ComparePlayersRoute() {
       />
     );
   }
-  return <ComparePlayers scores={scores} />;
+  // A new week seeds the pickers afresh from that week's rows.
+  return <ComparePlayers key={`${season}-${week}`} scores={scores} />;
 }
