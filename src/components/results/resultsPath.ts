@@ -17,7 +17,7 @@ const SEGMENTS: Record<ResultsPage, string> = {
   [RESULTS_PAGE.swingGames]: "swings",
 };
 
-/** How a caption names a week, as in "2026 Season · Week 3". */
+/** How a week reads as text, as in "2026 Season · Week 3". */
 export function weekName(
   season: number | string,
   week: number | string,
