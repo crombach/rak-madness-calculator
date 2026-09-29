@@ -235,6 +235,10 @@
   --rak-glass-fill: #262626;
   --rak-glass-ink: #fff;
   --rak-glass-unlit: rgb(255 255 255 / 12%);
+  // A score lit for the side that scored the point, or cost it. The dark mode 400
+  // steps, which read on the glass where the light ones do not.
+  --rak-glass-scored: #4ade80;
+  --rak-glass-missed: #f87171;
 
   // Semantic ramps. One ramp per meaning, whatever draws it: 100 is a soft fill
   // behind text, 300 fills a table cell, 500 and up are solid fills and text.
@@ -724,8 +728,8 @@ html {
   // black.
   --rak-case: #373737;
 
-  --rak-success-400: #4ade80;
-  --rak-danger-400: #f87171;
+  --rak-success-400: var(--rak-glass-scored);
+  --rak-danger-400: var(--rak-glass-missed);
   --rak-gold-700: #e8b84b;
   --rak-knocked-out-on-light: #ffb069;
   --rak-in-contention-on-light: #74c6f5;
