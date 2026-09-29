@@ -193,7 +193,8 @@
         }
 
         @include can-hover {
-          &:hover {
+          &:hover,
+          &.--column-hover {
             @include cell-darkened(var(--rak-hover-strength));
           }
         }
@@ -306,7 +307,8 @@
 
       // Both steps are named in `index.scss`, beside the stripe they clear.
       @include can-hover {
-        &:hover {
+        &:hover,
+        &.--column-hover {
           @include cell-darkened(var(--rak-hover-strength));
         }
       }

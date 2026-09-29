@@ -8,7 +8,7 @@ description: Gate a work-in-progress feature behind the Experimental Features se
 `experimentalFeatures` from `useSettings()` in `src/context/SettingsContext.tsx` gates every work-in-progress feature. Any reader can turn it on in the settings dialog. Off by default.
 
 - Never add a per-feature flag or a second setting. Every gated feature reads this one value.
-- Never move `Footer.tsx`'s `SETTINGS_CHANGED_AT` for gating or releasing a feature. The dialog did not change.
+- Never move `useSettingsSeen.ts`'s `SETTINGS_CHANGED_AT` for gating or releasing a feature. The dialog did not change.
 
 ## Gate a feature
 

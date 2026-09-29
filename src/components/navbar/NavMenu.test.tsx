@@ -13,6 +13,7 @@ import {
   SettingsContextProvider,
 } from "../../context/SettingsContext";
 import { SwingGame } from "../../utils/scoring/getSwingGames";
+import { SETTINGS_SEEN_KEY } from "../settings/useSettingsSeen";
 import NavMenu from "./NavMenu";
 
 vi.mock("../../context/AppDataContext", () => ({
@@ -42,11 +43,11 @@ function Landed() {
 }
 
 function mount({
-  disabled = false,
+  pagesDisabled = false,
   hasWeek = true,
   at = "/",
 }: {
-  disabled?: boolean;
+  pagesDisabled?: boolean;
   hasWeek?: boolean;
   at?: string;
 } = {}) {
@@ -57,7 +58,7 @@ function mount({
         <NavMenu
           season={SEASON}
           week={hasWeek ? WEEK : undefined}
-          disabled={disabled}
+          pagesDisabled={pagesDisabled}
         />
       </SettingsContextProvider>
       <Routes>
@@ -74,6 +75,7 @@ function trigger() {
 
 describe("NavMenu", () => {
   beforeEach(() => {
+    localStorage.clear();
     // Swing Games gates on this opt-in too, beside `isWeekWon`.
     localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
     mockIsWeekSettled.mockReturnValue(false);
@@ -89,7 +91,7 @@ describe("NavMenu", () => {
   });
 
   describe("at wide-screen", () => {
-    it("lists Home first, then the pages alphabetically", async () => {
+    it("lists Home first, then the pages alphabetically, then Settings", async () => {
       const user = mount();
       await user.click(trigger());
 
@@ -97,10 +99,124 @@ describe("NavMenu", () => {
 
       expect(items.map((item) => item.textContent)).toEqual([
         "Home",
+        "All Games",
         "Compare Players",
-        "Games",
         "Swing Games",
+        "Settings",
       ]);
+    });
+
+    it("offers only Home and Settings with experimental features off", async () => {
+      localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
+      const user = mount();
+      await user.click(trigger());
+
+      const items = await screen.findAllByRole("menuitem");
+
+      expect(items.map((item) => item.textContent)).toEqual([
+        "Home",
+        "Settings",
+      ]);
+    });
+
+    it("disables the pages but not Home or Settings when told to", async () => {
+      const user = mount({ pagesDisabled: true });
+      await user.click(trigger());
+
+      const items = await screen.findAllByRole("menuitem");
+
+      expect(
+        items
+          .filter((item) => !item.hasAttribute("data-disabled"))
+          .map((item) => item.textContent),
+      ).toEqual(["Home", "Settings"]);
+    });
+
+    it("gives the pages no reason when told to disable them", async () => {
+      mockAppData.mockReturnValue({ scores: { scores: [{}] } });
+      mockSwingGames.mockReturnValue({ games: [] });
+      const user = mount({ pagesDisabled: true });
+      await user.click(trigger());
+
+      expect(
+        await screen.findByRole("menuitem", { name: "Swing Games" }),
+      ).not.toHaveAccessibleDescription();
+    });
+
+    it("opens the settings over the page and closes the menu", async () => {
+      const user = mount();
+      await user.click(trigger());
+
+      await user.click(
+        await screen.findByRole("menuitem", { name: "Settings" }),
+      );
+
+      expect(
+        await screen.findByRole("dialog", { name: "Settings" }),
+      ).toBeInTheDocument();
+      await waitFor(() =>
+        expect(screen.queryByRole("menu")).not.toBeInTheDocument(),
+      );
+    });
+
+    it("pulses Settings at a reader who has never opened them", async () => {
+      const user = mount();
+      await user.click(trigger());
+
+      expect(
+        await screen.findByRole("menuitem", { name: "Settings" }),
+      ).toHaveClass("nav-menu__settings--unseen");
+    });
+
+    it("stops pulsing as the settings open, and stamps the moment", async () => {
+      const user = mount();
+      await user.click(trigger());
+      await user.click(
+        await screen.findByRole("menuitem", { name: "Settings" }),
+      );
+      await screen.findByRole("dialog", { name: "Settings" });
+
+      expect(
+        Date.parse(localStorage.getItem(SETTINGS_SEEN_KEY) ?? ""),
+      ).not.toBeNaN();
+      await user.keyboard("{Escape}");
+      await waitFor(() =>
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+      );
+      await user.click(trigger());
+      expect(
+        await screen.findByRole("menuitem", { name: "Settings" }),
+      ).not.toHaveClass("nav-menu__settings--unseen");
+    });
+
+    it("leaves Settings quiet for a reader who has opened them since", async () => {
+      localStorage.setItem(SETTINGS_SEEN_KEY, new Date().toISOString());
+      const user = mount();
+      await user.click(trigger());
+
+      expect(
+        await screen.findByRole("menuitem", { name: "Settings" }),
+      ).not.toHaveClass("nav-menu__settings--unseen");
+    });
+
+    it("pulses again at a reader whose last look predates the settings' own", async () => {
+      localStorage.setItem(SETTINGS_SEEN_KEY, "2020-01-01T00:00:00.000Z");
+      const user = mount();
+      await user.click(trigger());
+
+      expect(
+        await screen.findByRole("menuitem", { name: "Settings" }),
+      ).toHaveClass("nav-menu__settings--unseen");
+    });
+
+    it("treats a stamp it cannot read as never having looked", async () => {
+      localStorage.setItem(SETTINGS_SEEN_KEY, "true");
+      const user = mount();
+      await user.click(trigger());
+
+      expect(
+        await screen.findByRole("menuitem", { name: "Settings" }),
+      ).toHaveClass("nav-menu__settings--unseen");
     });
 
     it("marks the page it is on as current", async () => {
@@ -187,7 +303,9 @@ describe("NavMenu", () => {
     it("goes to the games page on a click", async () => {
       const user = mount();
       await user.click(trigger());
-      await user.click(await screen.findByRole("menuitem", { name: "Games" }));
+      await user.click(
+        await screen.findByRole("menuitem", { name: "All Games" }),
+      );
 
       expect(await screen.findByTestId("landed")).toHaveTextContent(GAMES_PATH);
     });
@@ -197,7 +315,7 @@ describe("NavMenu", () => {
       const user = mount();
       await user.click(trigger());
 
-      const item = await screen.findByRole("menuitem", { name: "Games" });
+      const item = await screen.findByRole("menuitem", { name: "All Games" });
 
       expect(item).toHaveAttribute("data-disabled");
       expect(item).toHaveAccessibleDescription("");
@@ -214,7 +332,7 @@ describe("NavMenu", () => {
       expect(item).toHaveAttribute("data-disabled");
       expect(item).not.toHaveAccessibleDescription();
       expect(
-        screen.getByRole("menuitem", { name: "Games" }),
+        screen.getByRole("menuitem", { name: "All Games" }),
       ).not.toHaveAttribute("data-disabled");
     });
 
@@ -229,15 +347,6 @@ describe("NavMenu", () => {
 
       expect(item).toHaveAttribute("data-disabled");
       expect(item).toHaveAccessibleDescription("Week is decided");
-    });
-
-    it("shows no menu with experimental features off", () => {
-      localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
-      mount();
-
-      expect(
-        screen.queryByRole("button", { name: "Menu" }),
-      ).not.toBeInTheDocument();
     });
 
     it("disables Swing Games while scores load", async () => {
@@ -345,7 +454,10 @@ describe("NavMenu", () => {
         within(drawer)
           .getAllByRole("link")
           .map((link) => link.textContent),
-      ).toEqual(["Home", "Compare Players", "Games", "Swing Games"]);
+      ).toEqual(["Home", "All Games", "Compare Players", "Swing Games"]);
+      expect(
+        within(drawer).getByRole("button", { name: "Settings" }),
+      ).toBeInTheDocument();
       expect(within(drawer).queryAllByRole("combobox")).toHaveLength(0);
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });
@@ -447,6 +559,31 @@ describe("NavMenu", () => {
       await waitFor(() =>
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
       );
+    });
+
+    it("closes the drawer and opens the settings on a tap of Settings", async () => {
+      const { user, drawer } = await openDrawer();
+
+      await user.click(
+        within(drawer).getByRole("button", { name: "Settings" }),
+      );
+
+      expect(
+        await screen.findByRole("dialog", { name: "Settings" }),
+      ).toBeInTheDocument();
+      await waitFor(() =>
+        expect(
+          screen.queryByRole("dialog", { name: "Menu" }),
+        ).not.toBeInTheDocument(),
+      );
+    });
+
+    it("pulses Settings in the drawer at a reader who has never opened them", async () => {
+      const { drawer } = await openDrawer();
+
+      expect(
+        within(drawer).getByRole("button", { name: "Settings" }),
+      ).toHaveClass("nav-menu__settings--unseen");
     });
 
     it("returns focus to the trigger on Escape", async () => {

@@ -35,9 +35,8 @@ One `package.json`, but two TypeScript roots. The root `tsconfig.json` excludes 
 ## Coupled, not safe
 
 - `src/components/results/` — imports `gameStatus/`, `navbar/`, `pageLayout/`, `playerAnalysis/`, and `table/`. `src/components/home/HomePage.tsx` imports `results/resultsPath`, and `src/App.tsx` imports four of its route files.
-- `src/components/settings/` — `footer/` imports it, so the theme and own-name dialog and the bottom links bar move together.
-- `src/components/footer/` — imports `settings/`, and `home/HomePage.tsx` imports it. It sits between the two, so it belongs to whichever agent holds `settings/`.
-- `src/components/navbar/` — three `.tsx` and `.scss` pairs (`Navbar`, `ScoresNavbar`, `LogoButton`), not one. `pageLayout/` and `table/` both import it.
+- `src/components/settings/` — `navbar/NavMenu.tsx` imports its dialog and `useSettingsSeen`, so the settings and the menu's Settings item move together.
+- `src/components/navbar/` — four `.tsx` and `.scss` pairs (`Navbar`, `ScoresNavbar`, `NavMenu`, `LogoButton`), not one. `NavMenu` imports `settings/`. `pageLayout/` and `table/` both import it.
 - `src/components/table/` — imports `table/playerName/`, and `playerAnalysis/` and `results/` import `table/`.
 - `src/components/pageLayout/` — imported by `home/` and `results/`.
 - `src/components/gameStatus/` and `src/components/playerAnalysis/` — each a dialog over `dialog/`, and `results/` mounts both.

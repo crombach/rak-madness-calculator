@@ -29,8 +29,8 @@ function events() {
 const PULSE_HOLD = 5000;
 
 /**
- * The footer's Settings control pulsing at a reader who has never opened it, and
- * going quiet the moment they do.
+ * The menu's Settings item pulsing at a reader who has never opened it, and going
+ * quiet the moment they do.
  *
  * The theme comes from `$PULSE_THEME`, since the pulse has a color in each and one
  * clip cannot hold both. Run it twice.
@@ -56,10 +56,14 @@ export default async function run({ page, context, baseUrl }) {
     [THEME_KEY, theme, SETTINGS_SEEN_KEY],
   );
   await page.goto(`${baseUrl}/`);
-  // A toast stands over the footer, and the settings button is under it.
-  await page.addStyleTag({ content: ".toaster { display: none !important; }" });
 
-  const settings = page.getByRole("button", { name: "Settings" });
+  const menu = page.getByRole("button", { name: "Menu" });
+  await menu.waitFor({ timeout: 20000 });
+  await menu.click();
+  // A menu item in the wide popup, a plain button in the phone drawer.
+  const settings = page
+    .getByRole("menuitem", { name: "Settings" })
+    .or(page.getByRole("button", { name: "Settings" }));
   await settings.waitFor({ timeout: 20000 });
   await page.waitForTimeout(PULSE_HOLD);
 
@@ -67,7 +71,9 @@ export default async function run({ page, context, baseUrl }) {
   await page.locator(".dialog__popup").waitFor({ timeout: 20000 });
   await page.waitForTimeout(1500);
 
-  // Back to the footer, where the control is now the same gray as its neighbors.
+  // Back to the menu, where the item now reads like its neighbors.
   await page.keyboard.press("Escape");
+  await page.waitForTimeout(500);
+  await menu.click();
   await page.waitForTimeout(2500);
 }

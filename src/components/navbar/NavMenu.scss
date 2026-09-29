@@ -80,6 +80,13 @@
     var(--rak-nav-ink) 70%,
     transparent
   );
+  // `--rak-attention-ink` is set for a light surface. On this fill the lamp's
+  // palest blue, lifted toward white, clears 4.5:1 in both themes.
+  --rak-menu-row-attention-ink: color-mix(
+    in srgb,
+    var(--rak-info-200) 70%,
+    white
+  );
 
   min-width: 12rem;
   background-color: var(--rak-nav-fill);
@@ -212,6 +219,48 @@
   border-radius: var(--rak-radius-xs);
 
   @include focus-ring;
+}
+
+// The Settings row is a `<button>` among links.
+button.nav-drawer__item {
+  width: 100%;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+// A reader who has not opened the settings since they last gained something
+// gets the lamp's blue breathed through the label and the gear together.
+//
+// The halo is `drop-shadow` rather than `text-shadow`, which reaches the glyphs
+// and the icon's own path. Both ends of the run are one shadow, since a filter
+// list interpolates only against a list the same length. The ends leave out
+// `color`, so each surface's own row ink is where the pulse rests.
+@keyframes rak-settings-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    color: var(--rak-menu-row-attention-ink, var(--rak-attention-ink));
+    filter: drop-shadow(0 0 4px var(--rak-attention-glow));
+  }
+}
+
+.nav-menu__settings--unseen {
+  // Twice the loop the sheens run at, a breath rather than a blink.
+  animation: rak-settings-pulse calc(var(--rak-duration-loop) * 2)
+    var(--rak-ease-standard) infinite;
+
+  // Held lit rather than stopped. The global guard in `index.scss` only makes an
+  // animation instant, which would leave no mark at all.
+  @include reduced-motion {
+    animation: none;
+    color: var(--rak-menu-row-attention-ink, var(--rak-attention-ink));
+    filter: drop-shadow(0 0 4px var(--rak-attention-glow));
+  }
 }
 
 // A disabled item with a reason, in the popup or the drawer. A grid, so the reason

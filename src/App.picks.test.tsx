@@ -336,16 +336,19 @@ describe("the app, automatic picks fetch", () => {
   });
 
   it("scores nothing and offers nothing when no picks were fetched", async () => {
-    // The Menu button only renders with this on.
+    // The menu only lists its pages with this on.
     localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
-    await mountLoadedApp();
+    const user = await mountLoadedApp();
     await waitFor(() => {
       expect(screen.getByText("Missing Picks")).toBeInTheDocument();
     });
     expect(getPlayerScoresMock).not.toHaveBeenCalled();
     expect(screen.getByText("View Results")).toBeDisabled();
     expect(screen.getByText("Export Results")).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Menu" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "Menu" }));
+    expect(
+      await screen.findByRole("menuitem", { name: "All Games" }),
+    ).toHaveAttribute("data-disabled");
   });
 
   it("re-fetches when the week changes", async () => {

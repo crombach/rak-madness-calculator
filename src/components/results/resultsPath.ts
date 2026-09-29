@@ -3,7 +3,7 @@ export const RESULTS_PAGE = {
   scoreboard: "Scoreboard",
   picks: "Picks",
   swingGames: "Swing Games",
-  games: "Games",
+  games: "All Games",
   comparePlayers: "Compare Players",
 } as const;
 
