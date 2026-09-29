@@ -122,14 +122,13 @@
     color: var(--rak-glass-unlit);
   }
 
-  // On the plate beside the glass rather than lit in it, since the display face
-  // has no β. The button's own gap sets it off from the glass, and this padding
-  // keeps it off the far edge, since the plate carries none.
+  // Carved into the bar beside the button rather than lit in its glass, since
+  // the display face has no β. The navbar's own gap sets it off from the button.
   &__beta {
     // The name's segments fill its whole em, and Chakra Petch's β inks 0.933 of
     // one, ascender to descender, so this scale makes the two stand as tall.
     --beta-scale: 1.072;
-    padding-inline-end: var(--rak-space-2);
+    flex-shrink: 0;
     color: var(--rak-nav-carve-ink);
     // Dark above and lit below reads as a cut, the reverse of a raised key.
     text-shadow:
