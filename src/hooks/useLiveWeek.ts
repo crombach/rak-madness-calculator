@@ -101,6 +101,9 @@ function byId(results: LeagueResults | undefined): Map<string, LeagueResult> {
  * when the view opens is never fetched at all. The leagues still due on a tick are
  * asked in one call, so one rescore answers for all of them.
  *
+ * `holdForKickoff` false asks every league not yet over on every tick, as a refresh
+ * would, kickoffs or not.
+ *
  * `restartOn` asks again at once when it changes, rather than on the next tick. The
  * dialog passes the watched game, so moving to another game fetches it straight
  * away.
@@ -115,6 +118,7 @@ export default function useLiveWeek({
   games,
   onPoll,
   restartOn,
+  holdForKickoff = true,
 }: {
   active: boolean;
   leagues: ReadonlyArray<League>;
@@ -123,6 +127,7 @@ export default function useLiveWeek({
     leagues: ReadonlyArray<League>,
   ) => Promise<LeagueResults | undefined>;
   restartOn?: string;
+  holdForKickoff?: boolean;
 }): { fetched?: Map<string, LeagueResult> } {
   // Read inside the tick rather than from the deps below. A pass that rescores
   // replaces every game, and with `games` in the deps that would tear the poll
@@ -171,6 +176,7 @@ export default function useLiveWeek({
         // clock cannot carry the poll more than `POLL_MS` past the kickoff.
         const now = Date.now();
         const due = open.filter((league) => {
+          if (!holdForKickoff) return true;
           const kickoff = kickoffs.get(league);
           return kickoff == null || now >= kickoff;
         });
@@ -230,7 +236,7 @@ export default function useLiveWeek({
       stop();
       window.clearTimeout(timer);
     };
-  }, [active, leagueList, restartOn]);
+  }, [active, leagueList, restartOn, holdForKickoff]);
 
   // Stamped with the scoring pass it was fetched against, so an answer that landed
   // for the week before this one is never handed back for it.

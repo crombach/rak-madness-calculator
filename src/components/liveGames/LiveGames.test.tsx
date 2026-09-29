@@ -82,10 +82,16 @@ function mount(
   );
 }
 
-const cards = () =>
-  screen
+/** The cards under one section's heading, the Live one unless named. */
+const cards = (section = "Live") =>
+  within(screen.getByRole("region", { name: section }))
     .queryAllByRole("listitem")
     .filter((item) => item.classList.contains("live-games__game"));
+
+const labelsIn = (section: string) =>
+  cards(section).map(
+    (card) => card.querySelector(".live-games__label")?.textContent,
+  );
 
 beforeEach(() => localStorage.clear());
 
@@ -156,25 +162,70 @@ describe("LiveGames", () => {
     expect(screen.queryByText(/Your Pick/)).toBeNull();
   });
 
-  it("lists the games not started yet under Up next, by kickoff", () => {
-    const later = {
-      ...upcomingGame({ home: "NE", away: "MIA" }),
-      id: "405",
-      date: new Date(proUpcoming.date.getTime() + 3_600_000),
-    };
+  it("sorts the games not started yet into today, tomorrow and upcoming, each as a card by kickoff", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2024, 9, 6, 9, 0));
+    const at = (id: string, home: string, away: string, date: Date) => ({
+      ...upcomingGame({ home, away }),
+      id,
+      date,
+    });
     mount({
       ...scores,
       games: [
-        ...(scores.games ?? []),
-        column("P4", League.PRO, later),
+        ...(scores.games ?? []).filter(({ label }) => label !== "P2"),
+        column(
+          "P2",
+          League.PRO,
+          at("402", "LV", "DEN", new Date(2024, 9, 6, 16)),
+        ),
+        column(
+          "P4",
+          League.PRO,
+          at("405", "NE", "MIA", new Date(2024, 9, 6, 13)),
+        ),
+        column(
+          "P5",
+          League.PRO,
+          at("406", "SF", "LAR", new Date(2024, 9, 7, 17)),
+        ),
+        column(
+          "P6",
+          League.PRO,
+          at("407", "GB", "NYJ", new Date(2024, 9, 10, 17)),
+        ),
       ].reverse(),
     });
-    const next = screen.getByRole("region", { name: "Up next" });
+
     expect(
-      within(next)
-        .getAllByRole("listitem")
-        .map((item) => item.firstChild?.textContent),
-    ).toEqual(["P2", "P4"]);
+      screen
+        .getAllByRole("heading", { level: 2 })
+        .map((heading) => heading.textContent),
+    ).toEqual(["Live", "Today", "Tomorrow", "Upcoming"]);
+    expect(labelsIn("Live")).toEqual(["P3", "P1"]);
+    expect(labelsIn("Today")).toEqual(["P4", "P2"]);
+    expect(labelsIn("Tomorrow")).toEqual(["P5"]);
+    expect(labelsIn("Upcoming")).toEqual(["P6"]);
+    // A day's own heading says the date, so its cards say the time alone.
+    const [today] = cards("Today");
+    expect(today.querySelector(".live-games__kickoff")).not.toHaveTextContent(
+      "2024",
+    );
+    const [later] = cards("Upcoming");
+    expect(later.querySelector(".live-games__kickoff")).toHaveTextContent(
+      "Oct 10, 2024",
+    );
+    vi.useRealTimers();
+  });
+
+  it("leaves out a day with no game to start", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(proUpcoming.date);
+    mount(scores);
+    expect(labelsIn("Today")).toEqual(["P2"]);
+    expect(screen.queryByRole("region", { name: "Tomorrow" })).toBeNull();
+    expect(screen.queryByRole("region", { name: "Upcoming" })).toBeNull();
+    vi.useRealTimers();
   });
 
   it("says so when nothing is being played", () => {
@@ -183,6 +234,26 @@ describe("LiveGames", () => {
       "No games are live right now",
     );
     expect(screen.queryByRole("list")).toBeNull();
+  });
+
+  it("asks on every tick for a league with nothing kicked off, as a refresh would", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(proUpcoming.date.getTime() - 3_600_000));
+    const onPoll = vi
+      .fn<
+        (leagues: ReadonlyArray<League>) => Promise<LeagueResults | undefined>
+      >()
+      .mockResolvedValue(weekOf("pro", proUpcoming));
+    mount(
+      { ...scores, games: [column("P2", League.PRO, proUpcoming)] },
+      onPoll,
+    );
+    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(POLL_MS * 2);
+
+    expect(onPoll).toHaveBeenCalledTimes(3);
+    expect(onPoll).toHaveBeenLastCalledWith([League.PRO]);
+    vi.useRealTimers();
   });
 
   it("polls every twenty seconds, and drops a game once it is final", async () => {

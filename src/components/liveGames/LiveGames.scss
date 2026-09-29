@@ -45,9 +45,7 @@ $card-max: calc(
 // and the page padding either side, all three `--rak-space-4`.
 $two-columns-from: 2 * 516px + 3 * 16px;
 
-.live-games__empty,
-.live-games__list,
-.live-games__next {
+.live-games__section {
   width: 100%;
   max-width: $card-max;
 
@@ -130,14 +128,14 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   color: var(--rak-text-secondary);
 }
 
-.live-games__next {
+.live-games__section {
   display: flex;
   flex-direction: column;
   gap: var(--rak-space-2);
 }
 
 // Set as `.analysis__section-title` sets a section's name.
-.live-games__next-title {
+.live-games__section-title {
   @include micro-label;
 
   margin: 0;
@@ -145,28 +143,13 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   font-size: var(--rak-text-xs);
 }
 
-.live-games__next-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.live-games__next-game {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--rak-space-2);
-  padding-block: var(--rak-space-2);
-  font-size: var(--rak-text-sm);
-
-  & + & {
-    border-top: var(--rak-border-width-hairline) solid var(--rak-panel-border);
-  }
-}
-
+// Under the scoreboard, where the dialog says the kickoff.
 .live-games__kickoff {
-  margin-inline-start: auto;
+  margin: 0;
+  padding: 0 var(--rak-space-4) var(--rak-space-4);
   color: var(--rak-text-secondary);
+  font-size: var(--rak-text-sm);
+  text-align: center;
 }
 
 .live-games__sr-only {

@@ -1,3 +1,4 @@
+import { ReactNode, useId } from "react";
 import useLiveWeek from "../../hooks/useLiveWeek";
 import useMyPick from "../../hooks/useMyPick";
 import { GameStatus } from "../../types/ESPN";
@@ -9,6 +10,8 @@ import { LeagueResults } from "../../utils/scoring/leagueResults";
 import GameStatusSummary, { SpreadLine } from "../gameStatus/GameStatusSummary";
 import { kickoffParts } from "../gameStatus/gameStatusText";
 import { HEADING_MARK } from "../table/picks/headingMark";
+import kickoffDay, { KickoffDay } from "./kickoffDay";
+import { LIVE_TITLE } from "./LiveGamesSkeleton";
 import "./LiveGames.scss";
 
 const LEAGUES: ReadonlyArray<League> = [League.COLLEGE, League.PRO];
@@ -20,30 +23,39 @@ const LIVE_STATUSES: ReadonlySet<GameStatus> = new Set([
 ]);
 
 const FETCHING_LABEL = "Fetching the games";
-const NEXT_TITLE = "Up next";
-const NEXT_ID = "live-games-next";
 const KICKOFF_SEPARATOR = " · ";
+
+/** Each day's section, in page order, and whether its kickoffs need their date. */
+const DAYS: ReadonlyArray<{ day: KickoffDay; title: string; dated: boolean }> =
+  [
+    { day: KickoffDay.TODAY, title: "Today", dated: false },
+    { day: KickoffDay.TOMORROW, title: "Tomorrow", dated: false },
+    { day: KickoffDay.LATER, title: "Upcoming", dated: true },
+  ];
 
 function LiveGame({
   game,
   result,
   scores,
+  kickoff,
 }: {
   game: WeekGame;
   result: LeagueResult;
   scores: RakMadnessScores;
+  /** When a game not started yet kicks off. */
+  kickoff?: string;
 }) {
   const heading = HEADING_MARK[result.status];
   const myPick = useMyPick(scores, game);
   return (
     <li className="live-games__game">
       <div className="live-games__header">
-        <h2 className="live-games__heading">
+        <h3 className="live-games__heading">
           {heading?.mark}
           <span className="live-games__sr-only">{heading?.word}</span>
           <span className="live-games__label">{game.label}</span>
           <span className="live-games__name">{game.name}</span>
-        </h2>
+        </h3>
         <SpreadLine
           spread={game.spread}
           myPick={myPick}
@@ -57,11 +69,27 @@ function LiveGame({
         players={scores.scores}
         brief
       />
+      {kickoff != null && <p className="live-games__kickoff">{kickoff}</p>}
     </li>
   );
 }
 
-/** Every game of the week being played now, each as the Game Status dialog shows it. */
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  const id = useId();
+  return (
+    <section className="live-games__section" aria-labelledby={id}>
+      <h2 id={id} className="live-games__section-title">
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+/**
+ * Every game of the week not over, each as the Game Status dialog shows it. The
+ * ones being played first, then the rest by the reader's own calendar day.
+ */
 export default function LiveGames({
   scores,
   onPoll,
@@ -79,6 +107,7 @@ export default function LiveGames({
     leagues: LEAGUES,
     games: scores?.games,
     onPoll,
+    holdForKickoff: false,
   });
   const current = (scores?.games ?? []).flatMap((game) =>
     game.result == null
@@ -86,6 +115,7 @@ export default function LiveGames({
       : [{ game, result: fetched?.get(game.result.id) ?? game.result }],
   );
   const live = current.filter(({ result }) => LIVE_STATUSES.has(result.status));
+  const now = new Date();
   const upcoming = current
     .filter(({ result }) => result.status === GameStatus.UPCOMING)
     .sort((a, b) => a.result.date.getTime() - b.result.date.getTime());
@@ -102,40 +132,51 @@ export default function LiveGames({
           aria-label={FETCHING_LABEL}
         />
       )}
-      {scores == null || live.length === 0 ? (
-        <p className="game-status__missing live-games__empty" role="status">
-          No games are live right now
-        </p>
-      ) : (
-        <ul className="live-games__list">
-          {live.map(({ game, result }) => (
-            <LiveGame
-              key={game.label}
-              game={game}
-              result={result}
-              scores={scores}
-            />
-          ))}
-        </ul>
-      )}
-      {upcoming.length > 0 && (
-        <section className="live-games__next" aria-labelledby={NEXT_ID}>
-          <h2 id={NEXT_ID} className="live-games__next-title">
-            {NEXT_TITLE}
-          </h2>
-          <ul className="live-games__next-list">
-            {upcoming.map(({ game, result }) => (
-              <li key={game.label} className="live-games__next-game">
-                <span className="live-games__label">{game.label}</span>
-                <span className="live-games__name">{game.name}</span>
-                <span className="live-games__kickoff">
-                  {kickoffParts(result.date).join(KICKOFF_SEPARATOR)}
-                </span>
-              </li>
+      <Section title={LIVE_TITLE}>
+        {scores == null || live.length === 0 ? (
+          <p className="game-status__missing live-games__empty" role="status">
+            No games are live right now
+          </p>
+        ) : (
+          <ul className="live-games__list">
+            {live.map(({ game, result }) => (
+              <LiveGame
+                key={game.label}
+                game={game}
+                result={result}
+                scores={scores}
+              />
             ))}
           </ul>
-        </section>
-      )}
+        )}
+      </Section>
+      {scores != null &&
+        DAYS.map(({ day, title, dated }) => {
+          const games = upcoming.filter(
+            ({ result }) => kickoffDay(result.date, now) === day,
+          );
+          if (games.length === 0) return null;
+          return (
+            <Section key={day} title={title}>
+              <ul className="live-games__list">
+                {games.map(({ game, result }) => {
+                  const [date, time] = kickoffParts(result.date);
+                  return (
+                    <LiveGame
+                      key={game.label}
+                      game={game}
+                      result={result}
+                      scores={scores}
+                      kickoff={
+                        dated ? [date, time].join(KICKOFF_SEPARATOR) : time
+                      }
+                    />
+                  );
+                })}
+              </ul>
+            </Section>
+          );
+        })}
     </div>
   );
 }
