@@ -77,20 +77,6 @@ describe("ScoresTable", () => {
     ]);
   });
 
-  it("marks every header cell with its column scope", () => {
-    mountTable(bothPlayers);
-    screen
-      .getAllByRole("columnheader")
-      .forEach((header) => expect(header).toHaveAttribute("scope", "col"));
-  });
-
-  it("names the table for a screen reader", () => {
-    mountTable(bothPlayers);
-    expect(screen.getByRole("table")).toHaveAccessibleName(
-      "Player rankings for the week, by total score",
-    );
-  });
-
   it("renders one row per player, in the order given", () => {
     mountTable(bothPlayers);
     const names = screen
@@ -106,6 +92,20 @@ describe("ScoresTable", () => {
       (cell.querySelector(".player-name__name") ?? cell).textContent?.trim(),
     );
     expect(texts).toEqual(["1", "Alice", "41", "0", "1", "2", "1", "3"]);
+  });
+
+  it("marks every header cell with its column scope", () => {
+    mountTable(bothPlayers);
+    screen
+      .getAllByRole("columnheader")
+      .forEach((header) => expect(header).toHaveAttribute("scope", "col"));
+  });
+
+  it("names the table for a screen reader", () => {
+    mountTable(bothPlayers);
+    expect(screen.getByRole("table")).toHaveAccessibleName(
+      "Player rankings for the week, by total score",
+    );
   });
 
   it("shows N/A when a player has no tiebreaker pick", () => {
@@ -136,12 +136,29 @@ describe("ScoresTable", () => {
     expect(showPlayerAnalysis).toHaveBeenCalledWith("Bob");
   });
 
-  // `PlayerName` draws this for both tables, so only one of them checks it.
-  it("announces a player's status for a screen reader", () => {
+  it.each([
+    [
+      undefined,
+      "announces a player's status for a screen reader",
+      "Still in contention",
+      "Knocked out",
+    ],
+    [
+      "  alice ",
+      "announces the reader's own row for a screen reader",
+      "Your row",
+      "not Your row",
+    ],
+  ])("with name %s, %s", (name, _description, aliceExpected, bobExpected) => {
+    if (name) saveMyName(name);
     mountTable(bothPlayers);
     const [alice, bob] = screen.getAllByRole("button");
-    expect(alice).toHaveTextContent("Still in contention");
-    expect(bob).toHaveTextContent("Knocked out");
+    expect(alice).toHaveTextContent(aliceExpected);
+    if (bobExpected === "Knocked out" || bobExpected === "Your row") {
+      expect(bob).toHaveTextContent(bobExpected);
+    } else {
+      expect(bob).not.toHaveTextContent("Your row");
+    }
   });
 
   it("marks the reader's own row, whatever case they saved their name in", () => {
@@ -158,13 +175,5 @@ describe("ScoresTable", () => {
     screen.getAllByRole("button").forEach((cellButton) => {
       expect(cellButton.closest("td")?.className).not.toContain("--mine");
     });
-  });
-
-  it("announces the reader's own row for a screen reader", () => {
-    saveMyName("Alice");
-    mountTable(bothPlayers);
-    const [alice, bob] = screen.getAllByRole("button");
-    expect(alice).toHaveTextContent("Your row");
-    expect(bob).not.toHaveTextContent("Your row");
   });
 });

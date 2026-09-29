@@ -1,4 +1,3 @@
-@use "../../styles/a11y" as *;
 @use "../../styles/skeleton" as *;
 
 // A bar across the cell it is drawn in, on the line a real value would sit on.
@@ -14,10 +13,6 @@
   right: var(--rak-table-cell-padding-x);
   height: 0.7rem;
   transform: translateY(-50%);
-}
-
-.skeleton__status {
-  @include visually-hidden;
 }
 
 .table.--skeleton {

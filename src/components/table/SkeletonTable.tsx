@@ -1,6 +1,7 @@
 import { memo } from "react";
 import rangeWithPrefix from "../../utils/rangeWithPrefix";
 import { RESULTS_PAGE, ScoresView } from "../results/resultsPath";
+import SkeletonStatus from "../pageLayout/SkeletonStatus";
 import TableShell, { PICK_COL_CLASS, PLAYER_COL_CLASS } from "./TableShell";
 import "./SkeletonTable.scss";
 
@@ -127,11 +128,7 @@ function SkeletonTable({
         A screen reader has nothing to read out of the wireframe below, hidden
         entirely, so this says what it stands in for instead.
       */}
-      {loading && (
-        <span className="skeleton__status" role="status">
-          Loading {view.toLowerCase()} results
-        </span>
-      )}
+      {loading && <SkeletonStatus page={view} />}
       <TableShell
         className="--skeleton"
         columnCount={columns.length}

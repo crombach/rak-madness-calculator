@@ -71,11 +71,12 @@ function expand(hex: string): string {
 describe("PICK_STATUS_FILL", () => {
   // The export writes bare hex for xlsx and the stylesheet needs a CSS color, so the
   // value is written twice on purpose. This is what stops the two drifting apart.
-  it("fills a status with the same color the browser draws it in", () => {
-    const tokens = tokenValues();
-
-    Object.entries(TOKEN_FOR_STATUS).forEach(([status, token]) => {
+  it.each(Object.entries(TOKEN_FOR_STATUS))(
+    "fills %p with the color the browser draws it in",
+    (status, token) => {
+      const tokens = tokenValues();
       const declared = tokens.get(token);
+
       expect(
         declared,
         `${token} is not declared in src/index.scss`,
@@ -84,8 +85,8 @@ describe("PICK_STATUS_FILL", () => {
         PICK_STATUS_FILL[status as Status].rgb.toLowerCase(),
         `${status} should match ${token}`,
       ).toBe(expand(declared as string));
-    });
-  });
+    },
+  );
 
   it("covers every status a pick can have", () => {
     expect(Object.keys(PICK_STATUS_FILL).sort()).toEqual(
@@ -95,11 +96,12 @@ describe("PICK_STATUS_FILL", () => {
 });
 
 describe("PLAYER_STATUS_FILL", () => {
-  it("fills a row status with the same color the browser draws it in", () => {
-    const tokens = tokenValues();
-
-    Object.entries(TOKEN_FOR_ROW_STATUS).forEach(([rowStatus, token]) => {
+  it.each(Object.entries(TOKEN_FOR_ROW_STATUS))(
+    "fills %p with the color the browser draws it in",
+    (rowStatus, token) => {
+      const tokens = tokenValues();
       const declared = tokens.get(token);
+
       expect(
         declared,
         `${token} is not declared in src/index.scss`,
@@ -108,8 +110,8 @@ describe("PLAYER_STATUS_FILL", () => {
         PLAYER_STATUS_FILL[rowStatus as PlayerRowStatus].rgb.toLowerCase(),
         `${rowStatus} should match ${token}`,
       ).toBe(expand(declared as string));
-    });
-  });
+    },
+  );
 
   it("covers every row status a name cell can have", () => {
     expect(Object.keys(PLAYER_STATUS_FILL).sort()).toEqual(

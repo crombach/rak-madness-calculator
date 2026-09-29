@@ -1,11 +1,17 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import { useAppData } from "../context/AppDataContext";
+import {
+  useCalendar,
+  useScores,
+  useScoringStatus,
+} from "../context/AppDataContext";
 import { Toast, useToastActions } from "../context/ToastContext";
 import { WeekInfo } from "../types/League";
 
 type GuardResult =
-  { status: "loading"; week?: WeekInfo } | { status: "ready"; week: WeekInfo };
+  | { status: "loading"; week?: WeekInfo }
+  | { status: "failed"; week: WeekInfo }
+  | { status: "ready"; week: WeekInfo };
 
 type Redirect = { header: string; message: string } | "silent";
 
@@ -35,9 +41,9 @@ export default function useWeekRouteGuard(
     findWeek,
     selectedWeek,
     setSelectedWeek,
-    scores,
-    attemptedFor,
-  } = useAppData();
+  } = useCalendar();
+  const scores = useScores();
+  const { attemptedFor, failedFor } = useScoringStatus();
 
   const seasonNumber = Number(seasonParam);
   const isKnownSeason = SEASON_PATTERN.test(seasonParam ?? "");
@@ -88,6 +94,13 @@ export default function useWeekRouteGuard(
     // Scores from the week before this one are still on hand until the new ones
     // land, and week 5 of one season is not week 5 of another.
     result = { status: "loading", week };
+  } else if (
+    scores == null &&
+    failedFor?.season === seasonNumber &&
+    failedFor.weekNumber === weekNumber
+  ) {
+    // The toast has said why. The page stays, so a retry can end the wait.
+    result = { status: "failed", week };
   } else if (!scores?.scores.length) {
     result = { status: "loading", week };
     redirect = {

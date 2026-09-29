@@ -10,27 +10,8 @@ import getPlayerAnalysis, {
 import DialogShell from "../dialog/DialogShell";
 import AnalysisSummary from "./AnalysisSummary";
 import PlayerCombobox from "./PlayerCombobox";
+import { PlayerOption, playerOptions } from "./playerOptions";
 import "./PlayerAnalysisDialog.scss";
-
-export type PlayerOption = {
-  /** The row this entry is, since two of them can carry one name. */
-  id: string;
-  name: string;
-  isKnockedOut: boolean;
-  /** Whether another row of the week was entered under this same name. */
-  hasNameConflict: boolean;
-};
-
-export function playerOptions(scores?: RakMadnessScores): Array<PlayerOption> {
-  const players = scores?.scores ?? [];
-  const repeated = repeatedNames(players);
-  return players.map((player) => ({
-    id: player.id,
-    name: player.name,
-    isKnockedOut: player.status.isKnockedOut,
-    hasNameConflict: repeated.has(player.name),
-  }));
-}
 
 /**
  * Where a player stands in the week on screen, and what they still have to do to

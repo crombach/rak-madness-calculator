@@ -15,3 +15,15 @@
   letter-spacing: var(--rak-label-tracking);
   text-transform: uppercase;
 }
+
+/**
+ * The heading over a block or a list, set in `micro-label` at the `sm` or `xs` step
+ * and in `--rak-text-secondary`, the one ink every such heading takes.
+ */
+@mixin section-title($size: sm) {
+  @include micro-label;
+
+  margin: 0;
+  color: var(--rak-text-secondary);
+  font-size: var(--rak-text-#{$size});
+}

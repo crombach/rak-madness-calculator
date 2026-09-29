@@ -1,17 +1,18 @@
 import { ChangeEventHandler, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
-import { useAppData } from "../../context/AppDataContext";
+import {
+  useCalendar,
+  useScores,
+  useScoringStatus,
+} from "../../context/AppDataContext";
 import useExportScores from "../../hooks/useExportScores";
 import { WeekInfo } from "../../types/League";
-import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import Button from "../button/Button";
 import Footer from "../footer/Footer";
 import LabeledSelect from "./LabeledSelect";
-import LogoButton, { APP_NAME } from "../navbar/LogoButton";
-import NavMenu from "../navbar/NavMenu";
-import ScoresNavbar from "../navbar/ScoresNavbar";
-import PageLayout from "../pageLayout/PageLayout";
+import AppNavbar from "../navbar/AppNavbar";
+import { APP_NAME } from "../navbar/LogoButton";
 import resultsPath, { RESULTS_PAGE } from "../results/resultsPath";
 import "./HomePage.scss";
 
@@ -29,10 +30,9 @@ export default function HomePage() {
     requestedSeason,
     setSelectedSeason,
     isWeeksLoading,
-    scores,
-    isScoresLoading,
-    scoreLocalFile,
-  } = useAppData();
+  } = useCalendar();
+  const scores = useScores();
+  const { isScoresLoading, scoreLocalFile } = useScoringStatus();
   const { exportResults, isExportLoading } = useExportScores(
     scores,
     selectedWeek,
@@ -59,33 +59,20 @@ export default function HomePage() {
   const hasNoScoresYet = !selectedWeek || isBusy || !scores;
 
   return (
-    <PageLayout
+    <AppNavbar
       title={APP_NAME}
-      navbarLeft={<LogoButton onClick={() => navigate("/")} />}
-      navbarRight={
-        // Shown here too, disabled until there is a week to switch between, so
-        // the navbar looks the same before its own routes exist as it does on
-        // them. No live refresh: there is no week open yet to poll a game
-        // against.
-        <>
-          <ScoresNavbar
-            view={null}
-            disabled={hasNoScoresYet}
-            noWeekYet={hasNoScoresYet}
-            isWeekLive={false}
-            onViewChange={(view) =>
-              navigate(resultsPath(loadedSeason, selectedWeek?.value, view))
-            }
-            onRefresh={doNothing}
-            isRefreshing={false}
-          />
-          <NavMenu
-            season={loadedSeason}
-            week={selectedWeek?.value}
-            pagesDisabled={hasNoScoresYet}
-          />
-        </>
+      view={null}
+      // Shown here too, disabled until there is a week to switch between. No live
+      // refresh: there is no week open yet to poll a game against.
+      disabled={hasNoScoresYet}
+      noWeekYet={hasNoScoresYet}
+      isWeekLive={false}
+      onViewChange={(view) =>
+        navigate(resultsPath(loadedSeason, selectedWeek?.value, view))
       }
+      season={loadedSeason}
+      week={selectedWeek?.value}
+      pagesDisabled={hasNoScoresYet}
     >
       {/*
         Only the first load hides the controls. Switching seasons disables them
@@ -178,6 +165,6 @@ export default function HomePage() {
           <Footer />
         </>
       )}
-    </PageLayout>
+    </AppNavbar>
   );
 }

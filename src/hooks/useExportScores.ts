@@ -20,7 +20,7 @@ export default function useExportScores(
   const { showToast } = useToastActions();
   const [isExportLoading, setExportLoading] = useState(false);
   // The workbook fills a name cell the way the tables do, so a reader who turned
-  // the standings off does not get them back in the file.
+  // player status off does not get it back in the file.
   const showStatus = useShowPlayerStatus();
 
   const exportResults = useCallback(() => {

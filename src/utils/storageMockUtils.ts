@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { it, vi } from "vitest";
 
 // Shared localStorage failure mocks for cache tests: a write that throws quota
 // exhaustion, and every Storage method blocked outright.
@@ -24,4 +24,16 @@ export function blockAllStorageMethods() {
       .spyOn(Storage.prototype, "length", "get")
       .mockImplementation(blocked),
   };
+}
+
+/** Shared test for blocked storage methods across cache implementations. */
+export function storageContractSuite(
+  readFn: () => unknown,
+  writeFn: () => void,
+) {
+  it("misses rather than throws when every localStorage method throws", () => {
+    blockAllStorageMethods();
+    expect(() => readFn()).not.toThrow();
+    expect(() => writeFn()).not.toThrow();
+  });
 }

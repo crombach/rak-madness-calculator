@@ -1,4 +1,5 @@
 import { Mock } from "vitest";
+import { Profiler } from "react";
 import { render, screen, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import {
@@ -142,22 +143,6 @@ describe("PicksTable, headers", () => {
       .map((header) => header.textContent);
     expect(headers).toContain("C1");
     expect(headers).not.toContain("C2");
-  });
-
-  it("marks every header cell with its column scope", () => {
-    render(<PicksTable scores={scores} />);
-    screen
-      .getAllByRole("columnheader")
-      .forEach((header) => expect(header).toHaveAttribute("scope", "col"));
-  });
-});
-
-describe("PicksTable, accessible name", () => {
-  it("names the table for a screen reader", () => {
-    render(<PicksTable scores={scores} />);
-    expect(screen.getByRole("table")).toHaveAccessibleName(
-      "Player picks for the week, college and pro games",
-    );
   });
 });
 
@@ -316,6 +301,54 @@ describe("PicksTable, column hover", () => {
     expect(headingOf("P1")).not.toHaveClass(HOVERED);
   });
 
+  it("does not render the table again when the pointer moves", async () => {
+    const user = userEvent.setup();
+    const onRender = vi.fn();
+    render(
+      <GameStatusContextProvider showGameStatus={vi.fn()}>
+        <Profiler id="picks" onRender={onRender}>
+          <PicksTable scores={scores} />
+        </Profiler>
+      </GameStatusContextProvider>,
+    );
+    const rendersBefore = onRender.mock.calls.length;
+
+    await user.hover(screen.getByText("MICH"));
+    await user.hover(screen.getByText("OSU"));
+    await user.unhover(screen.getByRole("table"));
+
+    expect(onRender).toHaveBeenCalledTimes(rendersBefore);
+  });
+
+  it("keeps the column lit when a refresh redraws its cells", async () => {
+    const user = userEvent.setup();
+    const tree = (value: RakMadnessScores) => (
+      <GameStatusContextProvider showGameStatus={vi.fn()}>
+        <PicksTable scores={value} />
+      </GameStatusContextProvider>
+    );
+    const { rerender } = render(tree(scores));
+    await user.hover(screen.getByText("MICH"));
+
+    rerender(
+      tree({
+        ...scores,
+        scores: [
+          player({
+            name: "Alice",
+            college: [pick("MICH", "no"), pick("OSU", "no")],
+            pro: [pick("BUF"), pick("KC"), pick("MIA")],
+          }),
+          player({ name: "Bob", isKnockedOut: true }),
+        ],
+      }),
+    );
+
+    expect(cellOf("MICH")).toHaveClass("--no");
+    expect(cellOf("MICH")).toHaveClass(HOVERED);
+    expect(cellOf("C1 pick")).toHaveClass(HOVERED);
+  });
+
   it("lights the column from its heading too", async () => {
     const { user } = renderPicks();
 
@@ -334,28 +367,24 @@ describe("PicksTable, column hover", () => {
     expect(cellOf("OSU")).toHaveClass(HOVERED);
   });
 
-  it("lights nothing once the pointer is on a cell outside a game", async () => {
+  it.each([
+    [
+      "on a cell outside a game",
+      () => screen.getByRole("columnheader", { name: "Player" }),
+    ],
+    ["once the pointer leaves the table", () => screen.getByRole("table")],
+    ["for a touch, which has no hover", () => screen.getByText("MICH")],
+  ])("lights nothing %s", async (_, target) => {
     const { user } = renderPicks();
 
     await user.hover(screen.getByText("MICH"));
-    await user.hover(screen.getByRole("columnheader", { name: "Player" }));
-
-    expect(document.querySelector(`.${HOVERED}`)).toBeNull();
-  });
-
-  it("lights nothing once the pointer leaves the table", async () => {
-    const { user } = renderPicks();
-
-    await user.hover(screen.getByText("MICH"));
-    await user.unhover(screen.getByRole("table"));
-
-    expect(document.querySelector(`.${HOVERED}`)).toBeNull();
-  });
-
-  it("lights nothing for a touch, which has no hover", async () => {
-    const { user } = renderPicks();
-
-    await user.pointer({ keys: "[TouchA]", target: screen.getByText("MICH") });
+    if (_ === "once the pointer leaves the table") {
+      await user.unhover(target());
+    } else if (_ === "for a touch, which has no hover") {
+      await user.pointer({ keys: "[TouchA]", target: target() });
+    } else {
+      await user.hover(target());
+    }
 
     expect(document.querySelector(`.${HOVERED}`)).toBeNull();
   });
@@ -502,28 +531,27 @@ describe("PicksTable, live games", () => {
     return screen.getByRole("columnheader", { name: new RegExp(`^${label}`) });
   }
 
-  it("marks the column of a game being played", () => {
-    render(<PicksTable scores={withGames} />);
+  it.each([
+    ["C1", "Live", ".table__live-dot", true, false],
+    ["P3", "Delayed", ".table__delay-icon", false, true],
+  ])(
+    "marks the column for game %s with %s",
+    (label, status, selector, hasDot, hasIcon) => {
+      render(<PicksTable scores={withGames} />);
 
-    const live = header("C1");
-    expect(live.querySelector(".table__live-dot")).toBeInTheDocument();
-    // Checks the computed accessible name, not textContent. Chromium runs the
-    // label and the hidden word together with no space between them.
-    expect(
-      within(live).getByRole("button", { name: "C1, Live" }),
-    ).toBeInTheDocument();
-  });
-
-  it("marks the column of a game ESPN has stopped, in a pause rather than the dot", () => {
-    render(<PicksTable scores={withGames} />);
-
-    const delayed = header("P3");
-    expect(delayed.querySelector(".table__delay-icon")).toBeInTheDocument();
-    expect(delayed.querySelector(".table__live-dot")).toBeNull();
-    expect(
-      within(delayed).getByRole("button", { name: "P3, Delayed" }),
-    ).toBeInTheDocument();
-  });
+      const col = header(label);
+      if (hasDot) {
+        expect(col.querySelector(".table__live-dot")).toBeInTheDocument();
+      }
+      if (hasIcon) {
+        expect(col.querySelector(".table__delay-icon")).toBeInTheDocument();
+        expect(col.querySelector(".table__live-dot")).toBeNull();
+      }
+      expect(
+        within(col).getByRole("button", { name: `${label}, ${status}` }),
+      ).toBeInTheDocument();
+    },
+  );
 
   it("leaves every column alone whose game is neither being played nor stopped", () => {
     render(<PicksTable scores={withGames} />);

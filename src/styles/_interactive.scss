@@ -1,0 +1,35 @@
+@use "breakpoints" as *;
+
+/**
+ * The fill an interactive surface takes under a pointer and under a finger.
+ * Hover only under `can-hover`, so touch never holds a selection the app does
+ * not have. The press fill defaults to the hover fill.
+ *
+ * `$also-hovered` and `$also-pressed` are selector suffixes, such as
+ * `.--column-hover` or `[data-highlighted]`, that take the same fill.
+ */
+@mixin interactive-fill(
+  $hover,
+  $press: $hover,
+  $also-hovered: null,
+  $also-pressed: null
+) {
+  @include can-hover {
+    &:hover {
+      background-color: $hover;
+    }
+    @if $also-hovered {
+      &#{$also-hovered} {
+        background-color: $hover;
+      }
+    }
+  }
+  &:active {
+    background-color: $press;
+  }
+  @if $also-pressed {
+    &#{$also-pressed} {
+      background-color: $press;
+    }
+  }
+}

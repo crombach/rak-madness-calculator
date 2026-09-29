@@ -1,21 +1,20 @@
 import { Accordion } from "@base-ui/react/accordion";
 import { useMemo, useRef, useState } from "react";
-import { Navigate } from "react-router";
 import { useSwingGames } from "../../context/AppDataContext";
 import { useShowGameStatus } from "../../context/GameStatusContext";
 import { useShowPlayerAnalysis } from "../../context/PlayerAnalysisContext";
 import { isMyPlayer, useSettings } from "../../context/SettingsContext";
-import { GameStatus } from "../../types/ESPN";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
+import { WeekGame } from "../../types/WeekGame";
 import { SwingGame, SwingSide } from "../../utils/scoring/getSwingGames";
 import Button from "../button/Button";
+import GameMark, {
+  PlayerCountMark,
+  gameMarkLabel,
+} from "../gameStatus/GameMark";
 import { ExpandMoreIcon } from "../icon/Icon";
 import plural, { verbFor } from "../../utils/plural";
-import resultsPath, { RESULTS_PAGE } from "../results/resultsPath";
-import { HEADING_MARK, statusByLabel } from "../table/picks/headingMark";
-// For `analysis__more` and `analysis__standing`, which this page shares with the
-// analysis dialog.
-import "../playerAnalysis/AnalysisSummary.scss";
+import ExperimentalGate from "../results/ExperimentalGate";
 import useGridColumns from "./useGridColumns";
 import "./SwingGames.scss";
 
@@ -64,7 +63,7 @@ function Side({ side }: { side: SwingSide }) {
       </ul>
       {folded > 0 && (
         <Button
-          className="analysis__more"
+          className="swing-games__more"
           variant="soft"
           size="sm"
           ariaExpanded={isExpanded}
@@ -77,14 +76,16 @@ function Side({ side }: { side: SwingSide }) {
   );
 }
 
-function Game({ game, status }: { game: SwingGame; status?: GameStatus }) {
+function Game({ game, weekGame }: { game: SwingGame; weekGame?: WeekGame }) {
   const showGameStatus = useShowGameStatus();
-  const heading = status != null ? HEADING_MARK[status] : undefined;
-  const players = plural(
-    game.sides.reduce((count, side) => count + side.players.length, 0),
-    "player",
+  const count = game.sides.reduce(
+    (total, side) => total + side.players.length,
+    0,
   );
+  const players = plural(count, "player");
   const gameName = `${game.label} ${game.name}`;
+  const status = weekGame?.result?.status;
+  const markLabel = weekGame && gameMarkLabel(weekGame, status);
 
   return (
     <Accordion.Item
@@ -98,24 +99,24 @@ function Game({ game, status }: { game: SwingGame; status?: GameStatus }) {
         <button
           type="button"
           className="swing-games__game"
-          aria-label={[`Game Status for ${gameName}`, heading?.word]
+          aria-label={[`Game Status for ${gameName}`, markLabel]
             .filter((part) => part != null)
             .join(", ")}
           onClick={() => showGameStatus(game.label)}
         >
-          <span className="swing-games__game-name">
-            {heading?.mark}
-            <span className="swing-games__game-label">{game.label}</span>{" "}
-            <span className="swing-games__game-matchup">{game.name}</span>
-          </span>
+          <span className="swing-games__game-label">{game.label}</span>{" "}
+          <span className="swing-games__game-matchup">{game.name}</span>
         </button>
+        {/* The count and the mark sit at the band's end, the mark where All Games
+            has it. Inside the toggle, so a tap beside them still folds the game. */}
         <Accordion.Trigger
           className="swing-games__toggle"
-          aria-label={`${gameName}, ${players}`}
+          aria-label={[gameName, players, markLabel]
+            .filter((part) => part != null)
+            .join(", ")}
         >
-          <span className="analysis__standing swing-games__count">
-            {players}
-          </span>
+          <PlayerCountMark count={count} />
+          {weekGame && <GameMark game={weekGame} status={status} />}
           <span className="swing-games__chevron">
             <ExpandMoreIcon />
           </span>
@@ -132,48 +133,38 @@ function Game({ game, status }: { game: SwingGame; status?: GameStatus }) {
 }
 
 /** Each open game, with who it knocks out whichever way it falls. */
-export default function SwingGames({
-  scores,
-  season,
-  week,
-}: {
-  scores?: RakMadnessScores;
-  season?: string;
-  week?: string;
-}) {
+export default function SwingGames({ scores }: { scores?: RakMadnessScores }) {
   const swings = useSwingGames();
-  const { experimentalFeatures } = useSettings();
-  const statuses = useMemo(() => statusByLabel(scores?.games), [scores]);
+  const weekGames = useMemo(
+    () => new Map(scores?.games?.map((game) => [game.label, game])),
+    [scores],
+  );
   // The folded ones rather than the open ones, so a game a refresh brings in
   // starts open.
   const [closed, setClosed] = useState<ReadonlySet<string>>(new Set());
 
   if (swings == null) return null;
 
-  // A won week, one no single game decides, or a reader who has not opted into
-  // experimental features, has nothing to show here.
-  if (!experimentalFeatures || swings.games.length === 0) {
-    return (
-      <Navigate
-        replace
-        to={resultsPath(season, week, RESULTS_PAGE.scoreboard)}
-      />
-    );
-  }
-
   const labels = swings.games.map((game) => game.label);
   return (
-    <Accordion.Root
-      className="swing-games"
-      multiple
-      value={labels.filter((label) => !closed.has(label))}
-      onValueChange={(open: Array<string>) =>
-        setClosed(new Set(labels.filter((label) => !open.includes(label))))
-      }
-    >
-      {swings.games.map((game) => (
-        <Game key={game.label} game={game} status={statuses.get(game.label)} />
-      ))}
-    </Accordion.Root>
+    // A won week, or one no single game decides, has nothing to show here.
+    <ExperimentalGate closed={swings.games.length === 0}>
+      <Accordion.Root
+        className="swing-games"
+        multiple
+        value={labels.filter((label) => !closed.has(label))}
+        onValueChange={(open: Array<string>) =>
+          setClosed(new Set(labels.filter((label) => !open.includes(label))))
+        }
+      >
+        {swings.games.map((game) => (
+          <Game
+            key={game.label}
+            game={game}
+            weekGame={weekGames.get(game.label)}
+          />
+        ))}
+      </Accordion.Root>
+    </ExperimentalGate>
   );
 }

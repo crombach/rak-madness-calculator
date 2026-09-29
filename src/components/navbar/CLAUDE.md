@@ -1,5 +1,7 @@
 # navbar
 
+- `AppNavbar`: `PageLayout` with the logo, `ScoresNavbar` and `NavMenu`, for
+  the home page and `ResultsFrame`.
 - `Navbar`: `<header>` with `left`/`right` `ReactNode` slots, solid primary fill.
   `.navbar__divider` marks a group split, reused by `ScoresNavbar` and `NavMenu`.
 - `ScoresNavbar`: the results routes' scoreboard/picks switch, led by a live
@@ -9,7 +11,7 @@
   when opted in, then Settings opening `SettingsDialog`. A wide-screen popup, a
   drawer below it. `ITEMS` disables, never hides, an item. Its reason sits
   under its name.
-- `LogoButton`: `APP_NAME`, which it exports, as a target that goes home, used
-  by the results frame and the home page too, set in `--rak-font-display`.
+- `LogoButton`: `APP_NAME`, which it exports, as a target that goes home, set
+  in `--rak-font-display`.
 
 Nothing here opens the player analysis. A player's name does, in either table.

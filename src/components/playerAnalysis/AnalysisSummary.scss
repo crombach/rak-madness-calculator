@@ -1,18 +1,13 @@
+@use "../../styles/fold" as *;
 @use "../../styles/label" as *;
+@use "../../styles/layout" as *;
 @use "../../styles/picks" as *;
-
-// Flex column plus its own gap, the shape most of this sheet's blocks share.
-@mixin stacked($gap) {
-  display: flex;
-  flex-direction: column;
-  gap: $gap;
-}
 
 .analysis {
   // What a pick chip sets its text in by, which a line under one indents by to
   // stand under that text rather than under the chip.
-  --rak-pick-inset: 8px;
-  --rak-pick-gap: 6px;
+  --rak-pick-inset: var(--rak-space-2);
+  --rak-pick-gap: var(--rak-space-1-5);
   // What a block holds its contents off its own rule by. A pool has no box, so
   // its chips carry this themselves and every block's text starts at one x.
   --rak-block-inset: 10px;
@@ -78,27 +73,9 @@
 }
 
 // Every label this dialog names a block with, over a section or over a column.
-// `micro-label` leaves the ink to the caller, since a label reads against the
-// surface under it, and the surface under these is the dialog itself. The two
-// below take the ink their standing asks for.
 .analysis__standing,
 .analysis__section-title {
-  @include micro-label;
-
-  margin: 0;
-  font-size: var(--rak-text-xs);
-}
-
-// The structure of the answer, which a reader picks the block they want out of.
-// Full ink, so the blocks are found at a glance rather than read for.
-.analysis__section-title {
-  color: var(--rak-text);
-}
-
-// A line over the answer rather than a part of it, so it stays a step back from
-// the titles below it.
-.analysis__standing {
-  color: var(--rak-analysis-label);
+  @include section-title(xs);
 }
 
 // Columns rather than a wrapping row, so the same game sits at the same x down
@@ -245,12 +222,10 @@
   // are. A step quieter than that title in ink, since the title names the block
   // and these only name what is in it.
   thead th {
-    @include micro-label;
+    @include section-title(xs);
 
     padding-block-end: var(--rak-space-3);
-    color: var(--rak-analysis-label);
     font-family: var(--rak-font-body);
-    font-size: var(--rak-text-xs);
   }
 
   // Only as wide as the number, which pushes the games to the opposite edge and
@@ -265,11 +240,11 @@
 
   // Between rows alone, so the head and the end rows' own padding keep the ends
   // clear.
-  // One step off the fill behind it rather than `--rak-divider`, which is a light
-  // rule for a light surface and has no dark mode to draw on this one.
+  // The soft divider rather than the strong one, which is a light rule for a light
+  // surface and has no dark mode to draw on this one.
   tbody tr + tr > * {
     border-block-start: var(--rak-border-width-hairline) solid
-      var(--rak-fill-muted);
+      var(--rak-divider-soft);
   }
 }
 
@@ -288,12 +263,8 @@
   font-weight: var(--rak-weight-semibold);
 }
 
-// A soft button takes the color around it, so the gold is set here rather than by
-// the color prop, which only paints a solid fill.
 .analysis__more {
-  align-self: flex-start;
-  color: var(--rak-gold-700);
-  font-weight: var(--rak-weight-bold);
+  @include fold-toggle;
 }
 
 // The answer itself wherever it is a sentence rather than a block: why a player is
@@ -346,7 +317,8 @@
 .analysis__divider {
   margin: 0;
   padding-block-start: var(--rak-space-4);
-  border-block-start: var(--rak-border-width-hairline) solid var(--rak-divider);
+  border-block-start: var(--rak-border-width-hairline) solid
+    var(--rak-divider-strong);
   color: var(--rak-text);
   // Set at the body's own size, since full ink and the rule already hold it over
   // the labels under it. The weight a heading draws by default is set off here

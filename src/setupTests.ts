@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import { configure } from "@testing-library/dom";
-import { vi } from "vitest";
+import { afterEach, vi } from "vitest";
 
 // The app suites mount the whole app and wait on several chained promises, which
 // takes longer than the 1s default on a loaded CI runner. Raised here rather than
@@ -42,3 +42,30 @@ window.matchMedia = (media: string): MediaQueryList =>
     vi.advanceTimersByTime(ms);
   },
 };
+
+// Unstub all globals (fetch, matchMedia, etc.) after each test for cleanup.
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+/** A `matchMedia` whose answer the test can change, which jsdom's stub cannot. */
+export function stubMatchMedia(matches: boolean) {
+  const listeners = new Set<() => void>();
+  const list = {
+    matches,
+    addEventListener: (_: string, listener: () => void) => {
+      listeners.add(listener);
+    },
+    removeEventListener: (_: string, listener: () => void) => {
+      listeners.delete(listener);
+    },
+  };
+  vi.stubGlobal("matchMedia", () => list);
+  return {
+    listeners,
+    answer(next: boolean) {
+      list.matches = next;
+      listeners.forEach((listener) => listener());
+    },
+  };
+}

@@ -1,5 +1,6 @@
 @use "../../styles/breakpoints" as *;
 @use "../../styles/label" as *;
+@use "../../styles/page" as *;
 @use "../../styles/picks" as *;
 @use "../../styles/progress" as *;
 @use "../../styles/skeleton" as *;
@@ -10,18 +11,13 @@
   overflow-y: hidden;
 }
 
-// `100cqi` is the scrolling box `PageLayout.scss` declares the container on, so a
-// phone gets the whole screen and never a sideways scroll.
 .games {
+  @include page-body;
+
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--rak-space-4);
   flex: 1;
-  width: 100cqi;
-  padding: var(--rak-space-4);
-  background-color: var(--rak-surface);
-  color: var(--rak-text);
 
   &.--loading .games__game {
     @include skeleton-sheen;
@@ -74,11 +70,10 @@ $two-columns-from: 2 * 516px + 3 * 16px;
 }
 
 .games__game {
+  @include game-card-frame;
+
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  border: var(--rak-border-width) solid var(--rak-panel-border);
-  border-radius: var(--rak-radius-sm);
 
   .game-status {
     padding: var(--rak-space-4);
@@ -88,22 +83,11 @@ $two-columns-from: 2 * 516px + 3 * 16px;
 // The band. The mark keeps to the heading's line, at its end, as it sits at the
 // end of the dialog's search.
 .games__header {
-  display: flex;
+  @include game-card-band;
+
   flex-wrap: wrap;
-  align-items: center;
   gap: var(--rak-space-2);
   padding: var(--rak-space-2) var(--rak-space-3);
-  background-color: var(--rak-band-card);
-  box-shadow: var(--rak-shadow-band-header);
-  color: var(--rak-on-solid);
-
-  .games__name {
-    color: var(--rak-on-solid);
-  }
-
-  .game-status__mark {
-    margin-inline-start: auto;
-  }
 }
 
 .games__heading {
@@ -111,19 +95,16 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   align-items: center;
   gap: var(--rak-space-2);
   margin: 0;
-  font-size: var(--rak-text-sm);
+  font-size: inherit;
   font-weight: normal;
 }
 
 .games__label {
-  @include pick-type;
-  @include pick-label;
+  @include game-card-label;
 }
 
 .games__name {
-  @include pick-face;
-
-  color: var(--rak-text-secondary);
+  @include game-card-name;
 }
 
 .games__section {
@@ -132,14 +113,9 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   gap: var(--rak-space-2);
 }
 
-// Set as `.analysis__section-title` sets a section's name, a step larger. Each one
-// heads a list of full cards rather than a few lines.
+// Each one heads a list of full cards rather than a few lines.
 .games__section-title {
-  @include micro-label;
-
-  margin: 0;
-  color: var(--rak-analysis-label);
-  font-size: var(--rak-text-sm);
+  @include section-title(sm);
 }
 
 // A fill the size of a title, sized from the stand-in title it never shows.

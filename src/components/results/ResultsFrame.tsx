@@ -1,5 +1,6 @@
 import {
   PropsWithChildren,
+  ReactNode,
   Suspense,
   lazy,
   useCallback,
@@ -11,6 +12,7 @@ import { useIsWeekSettled } from "../../context/AppDataContext";
 import { errorToast, useToastActions } from "../../context/ToastContext";
 import { GameStatusContextProvider } from "../../context/GameStatusContext";
 import { PlayerAnalysisContextProvider } from "../../context/PlayerAnalysisContext";
+import { scoringFailedMessage } from "../../hooks/usePlayerScores";
 import useWarmTeamLogos from "../../hooks/useWarmTeamLogos";
 import { League } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
@@ -20,15 +22,21 @@ import { LeagueResults } from "../../utils/scoring/leagueResults";
 import { useSettings } from "../../context/SettingsContext";
 import ComparePlayersSkeleton from "../comparePlayers/ComparePlayersSkeleton";
 import GamesSkeleton from "../games/GamesSkeleton";
-import loadGamesRoute from "../games/loadGamesRoute";
-import LogoButton, { APP_NAME } from "../navbar/LogoButton";
-import NavMenu from "../navbar/NavMenu";
-import ScoresNavbar from "../navbar/ScoresNavbar";
-import PageLayout from "../pageLayout/PageLayout";
+import { preloadGamesRoute } from "../games/GamesPage";
+import Button from "../button/Button";
+import AppNavbar from "../navbar/AppNavbar";
+import EmptyState from "../pageLayout/EmptyState";
+import { APP_NAME } from "../navbar/LogoButton";
 import SwingGamesSkeleton from "../swingGames/SwingGamesSkeleton";
 import SkeletonTable from "../table/SkeletonTable";
 import DialogLoadBoundary from "./DialogLoadBoundary";
-import { RESULTS_PAGE, ResultsPage, ScoresView, weekName } from "./resultsPath";
+import {
+  RESULTS_PAGE,
+  ResultsPage,
+  ScoresView,
+  isScoresView,
+  weekName,
+} from "./resultsPath";
 import "./ResultsFrame.scss";
 
 /*
@@ -45,6 +53,15 @@ const loadPlayerAnalysisDialog = () =>
 const loadGameStatusDialog = () => import("../gameStatus/GameStatusDialog");
 const PlayerAnalysisDialog = lazy(loadPlayerAnalysisDialog);
 const GameStatusDialog = lazy(loadGameStatusDialog);
+
+/** The wireframe each page stands as while its week loads. */
+const SKELETONS: Record<ResultsPage, ReactNode> = {
+  [RESULTS_PAGE.scoreboard]: <SkeletonTable view={RESULTS_PAGE.scoreboard} />,
+  [RESULTS_PAGE.picks]: <SkeletonTable view={RESULTS_PAGE.picks} />,
+  [RESULTS_PAGE.swingGames]: <SwingGamesSkeleton />,
+  [RESULTS_PAGE.games]: <GamesSkeleton />,
+  [RESULTS_PAGE.comparePlayers]: <ComparePlayersSkeleton />,
+};
 
 /** What the caption is sized from on a route that does not know the week yet. */
 const CAPTION_STAND_IN = "Scoreboard · 0000 Season · Week 00";
@@ -70,6 +87,7 @@ type Opened =
 export default function ResultsFrame({
   view,
   isReady = false,
+  hasFailed = false,
   onViewChange = doNothing,
   onRefresh = doNothing,
   onPoll,
@@ -81,6 +99,8 @@ export default function ResultsFrame({
   view: ResultsPage;
   /** Left false by a route that has nothing to show and never will. */
   isReady?: boolean;
+  /** Set where the week could not be scored. Shown in place of the wireframe. */
+  hasFailed?: boolean;
   onViewChange?: (view: ScoresView) => void;
   onRefresh?: () => void;
   /** Pulls one league, and rescores the week where anything in it moved. */
@@ -93,17 +113,12 @@ export default function ResultsFrame({
   /** What the player analysis is worked out from. Absent while a week loads. */
   scores?: RakMadnessScores;
 }>) {
-  const navigate = useNavigate();
   // Absent on the redirect routes, which render this frame before they know which
   // week they are headed for.
   const { season: seasonParam, week: weekParam } = useParams();
+  const navigate = useNavigate();
   const hasWeek = Boolean(seasonParam && weekParam);
-  const scoresView: ScoresView | null =
-    view === RESULTS_PAGE.swingGames ||
-    view === RESULTS_PAGE.games ||
-    view === RESULTS_PAGE.comparePlayers
-      ? null
-      : view;
+  const scoresView: ScoresView | null = isScoresView(view) ? view : null;
   // Once every game is final there is nothing left to fetch, so the refresh button
   // and the divider beside it go rather than sit there doing nothing.
   const isWeekSettled = useIsWeekSettled();
@@ -167,7 +182,7 @@ export default function ResultsFrame({
   // Fetched ahead too, so the menu's link lands on the page rather than on a
   // frame of wireframe while its chunk arrives.
   useEffect(() => {
-    if (experimentalFeatures) loadGamesRoute().catch(doNothing);
+    if (experimentalFeatures) preloadGamesRoute().catch(doNothing);
   }, [experimentalFeatures]);
 
   // Stable, so the memoized tables below do not re-render for a dialog opening.
@@ -186,7 +201,7 @@ export default function ResultsFrame({
   }, []);
 
   return (
-    <PageLayout
+    <AppNavbar
       title={
         hasWeek
           ? `${seasonParam} Week ${weekParam} ${view}`
@@ -199,26 +214,17 @@ export default function ResultsFrame({
       // This matches the refresh button beside it exactly. Both gate on the
       // same live week, and only once there is a table to pull on.
       pull={isReady && canRefresh ? { onRefresh, isRefreshing } : undefined}
-      navbarLeft={<LogoButton onClick={() => navigate("/")} />}
-      navbarRight={
-        // Rendered while the week loads, so the navbar's shape won't shift under
-        // the pointer once it lands. Disabled until there's anything to switch to.
-        <>
-          <ScoresNavbar
-            view={scoresView}
-            disabled={!isReady}
-            isWeekLive={canRefresh}
-            onViewChange={onViewChange}
-            onRefresh={onRefresh}
-            isRefreshing={isRefreshing}
-          />
-          <NavMenu
-            season={seasonParam}
-            week={weekParam}
-            pagesDisabled={!hasWeek}
-          />
-        </>
-      }
+      // Rendered while the week loads too, so the navbar's shape won't shift under
+      // the pointer once it lands. Disabled until there's anything to switch to.
+      view={scoresView}
+      disabled={!isReady}
+      isWeekLive={canRefresh}
+      onViewChange={onViewChange}
+      onRefresh={onRefresh}
+      isRefreshing={isRefreshing}
+      season={seasonParam}
+      week={weekParam}
+      pagesDisabled={!hasWeek}
     >
       <div className="results-scores">
         {/*
@@ -245,15 +251,18 @@ export default function ResultsFrame({
           <GameStatusContextProvider showGameStatus={showGameStatus}>
             {isReady ? (
               children
-            ) : view === RESULTS_PAGE.swingGames ? (
-              <SwingGamesSkeleton />
-            ) : view === RESULTS_PAGE.games ? (
-              <GamesSkeleton />
-            ) : view === RESULTS_PAGE.comparePlayers ? (
-              <ComparePlayersSkeleton />
+            ) : hasFailed ? (
+              <div className="results-failure">
+                <EmptyState>{scoringFailedMessage(weekParam ?? "")}</EmptyState>
+                <div className="results-failure__actions">
+                  <Button onClick={onRefresh} busy={isRefreshing}>
+                    Retry
+                  </Button>
+                  <Button onClick={() => navigate("/")}>Home</Button>
+                </div>
+              </div>
             ) : (
-              // A page with no table has no wireframe to stand in for it.
-              scoresView != null && <SkeletonTable view={scoresView} />
+              SKELETONS[view]
             )}
           </GameStatusContextProvider>
         </PlayerAnalysisContextProvider>
@@ -288,6 +297,6 @@ export default function ResultsFrame({
           </Suspense>
         </DialogLoadBoundary>
       )}
-    </PageLayout>
+    </AppNavbar>
   );
 }

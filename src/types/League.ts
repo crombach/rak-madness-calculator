@@ -21,6 +21,7 @@ export enum SeasonType {
  * and `loadedSeason`.
  */
 export type WeekInfo = {
+  /** The week's number, the `weekNumber` a URL segment resolves to. */
   value: number;
   label: string;
   startDate: Date;

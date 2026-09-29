@@ -93,7 +93,7 @@ function pickCell(result: PickResult) {
  */
 function rowStatusOf(
   player: PlayerScore,
-  repeated: Set<string>,
+  repeated: ReadonlySet<string>,
   showStatus: boolean,
 ): PlayerRowStatus {
   if (repeated.has(player.name)) return "nameConflict";
@@ -150,9 +150,8 @@ function normalCell({
 /**
  * A tab's name, which Excel refuses past 31 characters.
  *
- * The pool's own name is left off. `Rak Madness 2025 Week 5 Results` is exactly 31
- * and week 10 is over it, and the workbook it is a tab of is already named after
- * the pool.
+ * The pool's own name is left off. `Rak Madness 2025 Week 5 Scoreboard` is 34,
+ * over it, and the workbook it is a tab of is already named after the pool.
  */
 function sheetName(season: number, weekNumber: number, view: string): string {
   return `${season} Week ${weekNumber} ${view}`;
@@ -169,7 +168,7 @@ export default async function buildSpreadsheetBuffer(
   {
     season,
     weekNumber,
-    // Whether the week's standings are settled enough to say, which the caller
+    // Whether the week's ranking is settled enough to say, which the caller
     // reads off `useShowPlayerStatus` so the workbook says what the screen does.
     // A shared name is marked either way, since that is the sheet and not the week.
     showStatus = false,
@@ -218,7 +217,7 @@ export default async function buildSpreadsheetBuffer(
   XLSX.utils.book_append_sheet(
     workbook,
     resultsSheet,
-    sheetName(season, weekNumber, "Results"),
+    sheetName(season, weekNumber, "Scoreboard"),
   );
 
   const firstPlayer = scoresObject.scores[0];

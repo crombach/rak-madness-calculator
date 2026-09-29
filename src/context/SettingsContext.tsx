@@ -77,17 +77,52 @@ const SettingsContext = createContext<Settings>({
   setExperimentalFeatures: doNothing,
 });
 
-function storedTheme(): Theme {
-  const saved = readSetting(THEME_SETTING);
-  return saved === "light" || saved === "dark" ? saved : DEFAULT_THEME;
-}
+/** How a setting is read off its stored string and written back as one. */
+type Codec<T> = {
+  read: (stored: string | undefined) => T;
+  write: (value: T) => string;
+};
+
+const THEME_CODEC: Codec<Theme> = {
+  read: (saved) =>
+    saved === "light" || saved === "dark" ? saved : DEFAULT_THEME,
+  write: (theme) => (theme === DEFAULT_THEME ? "" : theme),
+};
+
+const PLAYER_NAME_CODEC: Codec<string> = {
+  read: (saved) => saved ?? "",
+  write: (name) => name,
+};
 
 /**
  * On unless it was turned off, which is what the app did before it could be told.
  * Anything else stored reads as on, the same way an unparseable theme does.
  */
-function storedLiveAnalysis(): boolean {
-  return readSetting(LIVE_ANALYSIS_SETTING) !== LIVE_ANALYSIS_OFF;
+const LIVE_ANALYSIS_CODEC: Codec<boolean> = {
+  read: (saved) => saved !== LIVE_ANALYSIS_OFF,
+  write: (enabled) => (enabled ? "" : LIVE_ANALYSIS_OFF),
+};
+
+const EXPERIMENTAL_FEATURES_CODEC: Codec<boolean> = {
+  read: (saved) => saved === EXPERIMENTAL_FEATURES_ON,
+  write: (enabled) => (enabled ? EXPERIMENTAL_FEATURES_ON : ""),
+};
+
+/** A setting held in state, read once from storage and written through on every change. */
+function useStoredSetting<T>(
+  key: string,
+  codec: Codec<T>,
+): [T, (next: T) => void] {
+  const [value, setValue] = useState<T>(() => codec.read(readSetting(key)));
+  const set = useCallback(
+    (next: T) => {
+      setValue(next);
+      writeSetting(key, codec.write(next));
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [key],
+  );
+  return [value, set];
 }
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
@@ -160,17 +195,19 @@ function applyThemeColor(theme: Theme): void {
 }
 
 export function SettingsContextProvider({ children }: PropsWithChildren) {
-  const [theme, setThemeState] = useState<Theme>(storedTheme);
-  const [playerName, setPlayerNameState] = useState<string>(
-    () => readSetting(PLAYER_NAME_SETTING) ?? "",
+  const [theme, setTheme] = useStoredSetting(THEME_SETTING, THEME_CODEC);
+  const [playerName, setPlayerName] = useStoredSetting(
+    PLAYER_NAME_SETTING,
+    PLAYER_NAME_CODEC,
   );
-  const [liveAnalysis, setLiveAnalysisState] =
-    useState<boolean>(storedLiveAnalysis);
-  const [experimentalFeatures, setExperimentalFeaturesState] =
-    useState<boolean>(
-      () =>
-        readSetting(EXPERIMENTAL_FEATURES_SETTING) === EXPERIMENTAL_FEATURES_ON,
-    );
+  const [liveAnalysis, setLiveAnalysis] = useStoredSetting(
+    LIVE_ANALYSIS_SETTING,
+    LIVE_ANALYSIS_CODEC,
+  );
+  const [experimentalFeatures, setExperimentalFeatures] = useStoredSetting(
+    EXPERIMENTAL_FEATURES_SETTING,
+    EXPERIMENTAL_FEATURES_CODEC,
+  );
 
   useEffect(() => {
     applyTheme(theme);
@@ -192,29 +229,6 @@ export function SettingsContextProvider({ children }: PropsWithChildren) {
     dark.addEventListener("change", follow);
     return () => dark.removeEventListener("change", follow);
   }, [theme]);
-
-  const setTheme = useCallback((next: Theme) => {
-    setThemeState(next);
-    writeSetting(THEME_SETTING, next === DEFAULT_THEME ? "" : next);
-  }, []);
-
-  const setPlayerName = useCallback((next: string) => {
-    setPlayerNameState(next);
-    writeSetting(PLAYER_NAME_SETTING, next);
-  }, []);
-
-  const setLiveAnalysis = useCallback((next: boolean) => {
-    setLiveAnalysisState(next);
-    writeSetting(LIVE_ANALYSIS_SETTING, next ? "" : LIVE_ANALYSIS_OFF);
-  }, []);
-
-  const setExperimentalFeatures = useCallback((next: boolean) => {
-    setExperimentalFeaturesState(next);
-    writeSetting(
-      EXPERIMENTAL_FEATURES_SETTING,
-      next ? EXPERIMENTAL_FEATURES_ON : "",
-    );
-  }, []);
 
   const value = useMemo(
     () => ({

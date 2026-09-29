@@ -10,6 +10,8 @@ built app.
 `index.html` at the repo root is the HTML shell Vite builds from. Before the
 first paint it sets `data-theme` from storage and preloads the logo's face.
 
+Naming: [`glossary` skill](.claude/skills/glossary/SKILL.md) fixes one name per concept.
+
 ## Subdirectories
 
 - [`functions/`](functions/CLAUDE.md) — the picks routes, on Pages and R2

@@ -1,5 +1,8 @@
 import { PlayerScore } from "../../types/RakMadnessScores";
 
+/** Keyed by the rows array, which a refresh replaces rather than edits. */
+const cache = new WeakMap<Array<PlayerScore>, ReadonlySet<string>>();
+
 /**
  * The names more than one row of the week was entered under.
  *
@@ -10,7 +13,9 @@ import { PlayerScore } from "../../types/RakMadnessScores";
  */
 export default function repeatedNames(
   players: Array<PlayerScore>,
-): Set<string> {
+): ReadonlySet<string> {
+  const cached = cache.get(players);
+  if (cached != null) return cached;
   const seen = new Set<string>();
   const repeated = new Set<string>();
   players.forEach((player) => {
@@ -20,5 +25,6 @@ export default function repeatedNames(
     }
     seen.add(player.name);
   });
+  cache.set(players, repeated);
   return repeated;
 }

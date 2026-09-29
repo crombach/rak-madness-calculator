@@ -2,7 +2,7 @@ import getClasses from "../../utils/getClasses";
 import matching from "../../utils/matching";
 import DialogCombobox from "../dialog/DialogCombobox";
 import PlayerStatusIcon from "../table/playerName/PlayerStatusIcon";
-import type { PlayerOption } from "./PlayerAnalysisDialog";
+import type { PlayerOption } from "./playerOptions";
 import "./PlayerAnalysisDialog.scss";
 
 /** A search over the week's players, each entry marked the way the tables mark them. */

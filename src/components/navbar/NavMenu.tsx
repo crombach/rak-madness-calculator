@@ -3,7 +3,7 @@ import { Menu } from "@base-ui/react/menu";
 import { ReactNode, useId, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 import {
-  useAppData,
+  useScores,
   useIsWeekSettled,
   useIsWeekWon,
   useSwingGames,
@@ -61,7 +61,7 @@ const PAGES: Array<NavItem> = [
       isWeekSettled || swingGames == null,
     disabledReason: ({ isWeekSettled, isWeekWon, swingGames }) => {
       if (isWeekSettled) return undefined;
-      if (isWeekWon) return "Week is decided";
+      if (isWeekWon) return "Week complete";
       if (swingGames?.games.length === 0) return "No game knocks anyone out";
       return undefined;
     },
@@ -120,7 +120,7 @@ export default function NavMenu({
   const isWeekSettled = useIsWeekSettled();
   const isWeekWon = useIsWeekWon();
   const swingGames = useSwingGames();
-  const playerCount = useAppData().scores?.scores.length;
+  const playerCount = useScores()?.scores.length;
   const { experimentalFeatures } = useSettings();
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [hasSeenSettings, markSettingsSeen] = useSettingsSeen();

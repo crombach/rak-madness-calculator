@@ -1,7 +1,13 @@
 import { ReactNode } from "react";
 import { GameStatus } from "../../types/ESPN";
 import { WeekGame } from "../../types/WeekGame";
-import { CheckIcon, EventIcon, PauseIcon, WarningIcon } from "../icon/Icon";
+import {
+  CheckIcon,
+  EventIcon,
+  GroupIcon,
+  PauseIcon,
+  WarningIcon,
+} from "../icon/Icon";
 import "./GameMark.scss";
 
 /** What one mark is. It says the state in the shape, the word and the label. */
@@ -57,6 +63,11 @@ function markFor(game: WeekGame, status?: GameStatus): Mark {
   };
 }
 
+/** What a game's mark says to a screen reader, for a control that names it. */
+export function gameMarkLabel(game: WeekGame, status?: GameStatus): string {
+  return markFor(game, status).label;
+}
+
 /**
  * Where a game stands, in one mark.
  *
@@ -84,6 +95,18 @@ export default function GameMark({
     >
       <span className="game-status__mark-icon">{icon}</span>
       <span className="game-status__mark-word">{word}</span>
+    </span>
+  );
+}
+
+/** A count of players in a mark's pill, to stand beside a game's own mark. */
+export function PlayerCountMark({ count }: { count: number }) {
+  return (
+    <span className="game-status__mark --count">
+      <span className="game-status__mark-icon">
+        <GroupIcon />
+      </span>
+      <span className="game-status__mark-word">{count}</span>
     </span>
   );
 }

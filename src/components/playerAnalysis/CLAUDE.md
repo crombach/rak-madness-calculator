@@ -5,6 +5,8 @@ their name in either table.
 
 - `PlayerAnalysisDialog`: `DialogShell` over a `PlayerCombobox`. Its input
   carries `PlayerStatusIcon`. `useArrival` takes a name handed in from a table.
+- `playerOptions`: `PlayerOption` and the week's options, shared with Compare
+  Players.
 - `PlayerCombobox`: `DialogCombobox` over the week's players, `matching` the
   typed letters, entries carrying `PlayerStatusIcon`. Compare Players uses it too.
 - `PlayerAnalysisDialog.scss`: the status hues alone. Everything else about the look

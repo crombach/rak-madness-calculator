@@ -1,10 +1,10 @@
 # context
 
 - `AppDataContext`: the season list, week list, picks, and scores, held above the
-  routes, season and week derived from the pathname. Publishes
-  `WeekOutcomeContext`, whether the week is over or already won, and
-  `ScoreChangesContext`, what the last refresh changed for the tables to flash,
-  separately.
+  routes, season and week from the pathname. Read by `useCalendar`, `useScores`,
+  and `useScoringStatus` (flags, refresh), so a poll's flags skip the tables.
+  `WeekOutcomeContext` and `ScoreChangesContext` split off likewise.
+  `useSwingGames` loads `getSwingGames` on first use.
 - `SettingsContext`: the theme, the reader's name, live analysis, and the
   experimental opt-in, from `settingsStore`. Writes `data-theme` for
   `index.scss`, and answers `useIsMyPlayer`.

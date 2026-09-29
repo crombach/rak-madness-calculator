@@ -49,6 +49,6 @@ $-max-rows: 5;
   // A rule between rows rather than around them, so a long list reads down
   // without a line closing the popup off from its own edge.
   & + & {
-    border-top: var(--rak-border-width-hairline) solid var(--rak-divider);
+    border-top: var(--rak-border-width-hairline) solid var(--rak-divider-strong);
   }
 }

@@ -1,8 +1,9 @@
 import { act, renderHook, screen, waitFor } from "@testing-library/react";
 import { PropsWithChildren } from "react";
-import { MockedFunction } from "vitest";
+import { MockedFunction, vi } from "vitest";
 import Toaster from "../components/toaster/Toaster";
 import { ToastContextProvider } from "../context/ToastContext";
+import { stubFetch } from "../appTestFixtures";
 import { notFoundResponse, spreadsheetResponse } from "../responseTestFixtures";
 import { League, WeekInfo } from "../types/League";
 import { RakMadnessScores, Status } from "../types/RakMadnessScores";
@@ -94,9 +95,11 @@ function toastingWrapper({ children }: PropsWithChildren<object>) {
 beforeEach(() => {
   localStorage.clear();
   // A fresh Response per call, because a body can only be read once.
-  global.fetch = vi.fn(async () =>
-    Promise.resolve(spreadsheetResponse()),
-  ) as unknown as typeof fetch;
+  stubFetch(
+    vi.fn(async () =>
+      Promise.resolve(spreadsheetResponse()),
+    ) as unknown as typeof fetch,
+  );
   // A different score every fetch, so the move gate lets every pass through. The
   // gate itself is covered by the cases that pin this to one answer.
   let fetches = 0;
@@ -109,9 +112,11 @@ describe("usePlayerScores", () => {
   it("scores this browser's cached upload when the API has no picks", async () => {
     // What lets a results URL survive a reload after a local upload.
     writeCachedPicks(SEASON, 5, new ArrayBuffer(8));
-    global.fetch = vi.fn(async () =>
-      Promise.resolve(notFoundResponse()),
-    ) as unknown as typeof fetch;
+    stubFetch(
+      vi.fn(async () =>
+        Promise.resolve(notFoundResponse()),
+      ) as unknown as typeof fetch,
+    );
     getPlayerScoresMock.mockResolvedValue(scoresFor(5));
 
     const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
@@ -128,9 +133,11 @@ describe("usePlayerScores", () => {
   });
 
   it("gives up when the API has no picks and nothing is cached", async () => {
-    global.fetch = vi.fn(async () =>
-      Promise.resolve(notFoundResponse()),
-    ) as unknown as typeof fetch;
+    stubFetch(
+      vi.fn(async () =>
+        Promise.resolve(notFoundResponse()),
+      ) as unknown as typeof fetch,
+    );
 
     const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
       wrapper,
@@ -421,12 +428,14 @@ describe("usePlayerScores, refresh", () => {
     const scoringCallsBefore = getPlayerScoresMock.mock.calls.length;
 
     let releaseSheet: () => void = () => {};
-    global.fetch = vi.fn(
-      async () =>
-        new Promise((resolve) => {
-          releaseSheet = () => resolve(spreadsheetResponse());
-        }),
-    ) as unknown as typeof fetch;
+    stubFetch(
+      vi.fn(
+        async () =>
+          new Promise((resolve) => {
+            releaseSheet = () => resolve(spreadsheetResponse());
+          }),
+      ) as unknown as typeof fetch,
+    );
 
     let asked: Promise<unknown> | undefined;
     await act(async () => {
@@ -459,12 +468,14 @@ describe("usePlayerScores, refresh", () => {
     await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
 
     let releaseSheet: () => void = () => {};
-    global.fetch = vi.fn(
-      async () =>
-        new Promise((resolve) => {
-          releaseSheet = () => resolve(spreadsheetResponse());
-        }),
-    ) as unknown as typeof fetch;
+    stubFetch(
+      vi.fn(
+        async () =>
+          new Promise((resolve) => {
+            releaseSheet = () => resolve(spreadsheetResponse());
+          }),
+      ) as unknown as typeof fetch,
+    );
 
     let passes: Promise<unknown> | undefined;
     await act(async () => {
@@ -565,9 +576,11 @@ describe("usePlayerScores, refresh", () => {
     await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
 
     localStorage.clear();
-    global.fetch = vi.fn(async () =>
-      Promise.reject(new Error("offline")),
-    ) as unknown as typeof fetch;
+    stubFetch(
+      vi.fn(async () =>
+        Promise.reject(new Error("offline")),
+      ) as unknown as typeof fetch,
+    );
 
     await act(async () => {
       await result.current.refresh();

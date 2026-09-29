@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { errorToast, useToastActions } from "../context/ToastContext";
 import { League, WeekInfo } from "../types/League";
 import getLeagueInfo from "../utils/getLeagueInfo";
-import latestOnly from "../utils/latestOnly";
+import useLatestAsync from "./useLatestAsync";
 
 type LeagueWeeksOptions = {
   /** The week a results URL names. */
@@ -11,6 +11,15 @@ type LeagueWeeksOptions = {
   enabled?: boolean;
   /** The weeks the season has picks for, newest first. */
   picksWeeks?: Array<number>;
+};
+
+/** What one calendar lookup found, and the week it opens on. */
+type Calendar = {
+  weeks: Array<WeekInfo>;
+  currentWeekNumber?: number;
+  defaultWeekNumber?: number;
+  loadedSeason: number;
+  openingWeek?: WeekInfo;
 };
 
 /**
@@ -49,13 +58,6 @@ export default function useLeagueWeeks({
 }: LeagueWeeksOptions) {
   const { showToast } = useToastActions();
 
-  const [weeks, setWeeks] = useState<Array<WeekInfo>>();
-  const [currentWeekNumber, setCurrentWeekNumber] = useState<number>();
-  const [defaultWeekNumber, setDefaultWeekNumber] = useState<number>();
-  const [loadedSeason, setLoadedSeason] = useState<number>();
-  const [selectedWeek, setSelectedWeek] = useState<WeekInfo>();
-  const [isCalendarLoading, setLoading] = useState(true);
-
   // Read when the calendar lands, not depended on, so a week change skips
   // refetching, since the URL moves it and the schedule stays the same either way.
   const initialWeekNumberRef = useRef(initialWeekNumber);
@@ -67,48 +69,53 @@ export default function useLeagueWeeks({
     picksWeeksRef.current = picksWeeks;
   }, [initialWeekNumber, picksWeeks]);
 
-  useEffect(() => {
-    if (!enabled) return;
-    // A season switched away from mid-lookup must not land. `loadedSeason` would
-    // name one nobody asked for and loop forever, with no lookup queued to end it.
-    return latestOnly(async (isCurrent) => {
-      const proLeagueInfo = await getLeagueInfo(League.PRO, season);
-      if (!isCurrent()) return;
-      if (proLeagueInfo == null) {
-        // The season that was asked for, even though nothing came back for it.
-        // Everything the season we came from told us goes, or its weeks would
-        // answer for a season nobody has the schedule of, and a week of it would
-        // be scored against this one.
-        setLoadedSeason(season);
-        setWeeks(undefined);
-        setCurrentWeekNumber(undefined);
-        setDefaultWeekNumber(undefined);
-        setSelectedWeek(undefined);
-        setLoading(false);
-        showToast(errorToast("Failed to load the pro schedule."));
-        return;
-      }
-      const calendarWeeks = proLeagueInfo.activeCalendar.weeks;
-      const { activeWeek } = proLeagueInfo;
-      const findWeek = (value?: number) =>
-        calendarWeeks.find((week) => week.value === value);
+  const loadCalendar = useCallback(async (): Promise<Calendar> => {
+    const proLeagueInfo = await getLeagueInfo(League.PRO, season);
+    if (proLeagueInfo == null) {
+      throw new Error(`No pro schedule for season ${season ?? "running now"}`);
+    }
+    const calendarWeeks = proLeagueInfo.activeCalendar.weeks;
+    const { activeWeek } = proLeagueInfo;
+    const findWeek = (value?: number) =>
+      calendarWeeks.find((week) => week.value === value);
 
-      const picksWeek =
-        activeWeek == null
-          ? undefined
-          : (picksWeeksRef.current ?? [])
-              .map((value) => findWeek(value))
-              .find((week) => week != null && week.value <= activeWeek.value);
-      const defaultWeek = picksWeek ?? activeWeek;
+    const picksWeek =
+      activeWeek == null
+        ? undefined
+        : (picksWeeksRef.current ?? [])
+            .map((value) => findWeek(value))
+            .find((week) => week != null && week.value <= activeWeek.value);
+    const defaultWeek = picksWeek ?? activeWeek;
+    return {
+      weeks: calendarWeeks,
+      currentWeekNumber: activeWeek?.value,
+      defaultWeekNumber: defaultWeek?.value,
+      loadedSeason: proLeagueInfo.season,
+      openingWeek: findWeek(initialWeekNumberRef.current) ?? defaultWeek,
+    };
+  }, [season]);
 
-      setWeeks(calendarWeeks);
-      setCurrentWeekNumber(activeWeek?.value);
-      setDefaultWeekNumber(defaultWeek?.value);
-      setLoadedSeason(proLeagueInfo.season);
-      setSelectedWeek(findWeek(initialWeekNumberRef.current) ?? defaultWeek);
-      setLoading(false);
-    });
-  }, [showToast, season, enabled]);
+  // A failed schedule is said aloud, since every week page waits on it.
+  const { data: calendar, status } = useLatestAsync(
+    enabled ? loadCalendar : undefined,
+    () => showToast(errorToast("Failed to load the pro schedule.")),
+  );
+  const weeks = calendar?.weeks;
+  const currentWeekNumber = calendar?.currentWeekNumber;
+  const defaultWeekNumber = calendar?.defaultWeekNumber;
+  // The season that was asked for where the lookup failed. Everything the season
+  // we came from told us goes, or its weeks would answer for a season nobody has
+  // the schedule of, and a week of it would be scored against this one.
+  const loadedSeason = status === "error" ? season : calendar?.loadedSeason;
+  const isCalendarLoading = status !== "success" && status !== "error";
+
+  // The reader's choice until the next calendar lands, which opens on its own week.
+  const [selectedWeek, setSelectedWeek] = useState<WeekInfo>();
+  const [landedCalendar, setLandedCalendar] = useState(calendar);
+  if (calendar !== landedCalendar) {
+    setLandedCalendar(calendar);
+    setSelectedWeek(calendar?.openingWeek);
+  }
 
   // Derived rather than a flag set when the season changes, so the switch counts
   // as loading from the render that asks for it. `loadedSeason` is the season the

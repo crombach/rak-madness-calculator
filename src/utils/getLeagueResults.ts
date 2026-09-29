@@ -16,6 +16,7 @@ import {
   readCachedResults,
   writeCachedResults,
 } from "./espnCache";
+import espnScoreboardUrl from "./espnScoreboardUrl";
 import { getRegularSeasonWeekCount } from "./getLeagueInfo";
 import { findMatchup, indexResults } from "./scoring/resultsIndex";
 
@@ -84,12 +85,19 @@ async function getLeagueEvents(
   // Build final request URL. `dates` is the year the season started in, not the
   // calendar year its games fall in, so `dates=2025&week=18` is the January 2026
   // game it should be. Left off, ESPN answers with the season running now.
-  const seasonParam = season != null ? `&dates=${season}` : "";
-  const baseRequestUrl = `https://site.api.espn.com/apis/site/v2/sports/football/${league}/scoreboard?week=${adjustedWeekNumber}&seasontype=${seasonType}${seasonParam}`;
+  const requestParams = {
+    week: adjustedWeekNumber,
+    seasontype: seasonType,
+    dates: season,
+  };
 
   if (league === League.COLLEGE) {
     const collegePromises = COLLEGE_GROUPS.map((groupId: number) => {
-      const requestUrl = `${baseRequestUrl}&limit=400&groups=${groupId}`;
+      const requestUrl = espnScoreboardUrl(league, {
+        ...requestParams,
+        limit: 400,
+        groups: groupId,
+      });
       return fetchEspnEvents(requestUrl).then((events) => {
         // ESPN jams the entire college postseason into one week. Events before
         // the given NFL week are dropped. Events after are kept, because a
@@ -112,7 +120,7 @@ async function getLeagueEvents(
       .map((dated) => dated.event);
   }
 
-  return fetchEspnEvents(baseRequestUrl);
+  return fetchEspnEvents(espnScoreboardUrl(league, requestParams));
 }
 
 /** The season record, which ESPN sends beside the home and road splits. */

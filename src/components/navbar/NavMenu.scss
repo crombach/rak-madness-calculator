@@ -1,5 +1,6 @@
 @use "../../styles/a11y" as *;
 @use "../../styles/breakpoints" as *;
+@use "../../styles/interactive" as *;
 @use "../../styles/focus" as *;
 @use "../../styles/label" as *;
 @use "../../styles/listbox" as *;
@@ -26,16 +27,10 @@
   font-size: var(--rak-text-md);
   text-decoration: none;
 
-  &:active,
-  &[data-highlighted] {
-    background-color: var(--rak-menu-row-hover, var(--rak-fill-subtle));
-  }
-
-  @include can-hover {
-    &:hover {
-      background-color: var(--rak-menu-row-hover, var(--rak-fill-subtle));
-    }
-  }
+  @include interactive-fill(
+    var(--rak-menu-row-hover, var(--rak-fill-subtle)),
+    $also-pressed: "[data-highlighted]"
+  );
 
   &[aria-current="page"] {
     background-color: var(--rak-menu-row-current, var(--rak-selected-fill));

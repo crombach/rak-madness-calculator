@@ -12,14 +12,18 @@ import {
   openWeekScores,
   getPlayerScoresMock,
   buildSpreadsheetBufferMock,
+  mountApp,
   mountLoadedApp,
+  spreadsheetResponse,
   uploadSpreadsheet,
   resultsCaption,
   setUpAppTest,
 } from "./appTestFixtures";
 
+let fetchMock: ReturnType<typeof setUpAppTest>;
+
 beforeEach(() => {
-  setUpAppTest();
+  fetchMock = setUpAppTest();
 });
 
 afterEach(() => {
@@ -121,6 +125,37 @@ describe("the app, results views", () => {
     // A refresh reuses the workbook already in memory, so a transient failure has
     // nothing to fall back to but what was already on screen.
     expect(screen.getByText("MNF Points Pick")).toBeInTheDocument();
+  });
+});
+
+describe("the app, a week that fails to load", () => {
+  it("offers a retry in place of the page, and scores the week on it", async () => {
+    fetchMock.mockImplementation(async () => spreadsheetResponse());
+    getPlayerScoresMock.mockRejectedValueOnce(new Error("ESPN is down"));
+    const user = mountApp(`/${SEASON}/${CURRENT_WEEK}/scoreboard`);
+
+    const retry = await screen.findByRole("button", { name: "Retry" });
+    // Once in the toast and once in the page's place.
+    expect(
+      screen.getAllByText(
+        `Failed to calculate scores for week ${CURRENT_WEEK}.`,
+      ),
+    ).toHaveLength(2);
+
+    await user.click(retry);
+
+    expect(await screen.findByText("MNF Points Pick")).toBeInTheDocument();
+    expect(getPlayerScoresMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("offers the home page beside the retry", async () => {
+    fetchMock.mockImplementation(async () => spreadsheetResponse());
+    getPlayerScoresMock.mockRejectedValueOnce(new Error("ESPN is down"));
+    const user = mountApp(`/${SEASON}/${CURRENT_WEEK}/scoreboard`);
+
+    await user.click(await screen.findByRole("button", { name: "Home" }));
+
+    expect(await screen.findByText("View Results")).toBeInTheDocument();
   });
 });
 

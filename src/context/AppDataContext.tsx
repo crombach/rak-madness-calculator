@@ -3,6 +3,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -12,17 +13,16 @@ import useLeagueWeeks from "../hooks/useLeagueWeeks";
 import usePicksSeasons from "../hooks/usePicksSeasons";
 import usePlayerScores from "../hooks/usePlayerScores";
 import { WeekInfo } from "../types/League";
+import { prefetchStoredPicks } from "../utils/loadStoredPicks";
 import { RakMadnessScores } from "../types/RakMadnessScores";
-import getSwingGames, {
-  NO_SWINGS,
-  SwingGames,
-} from "../utils/scoring/getSwingGames";
+import { NO_SWINGS, SwingGames } from "../utils/scoring/swingGameTypes";
+import cachedImport from "../utils/cachedImport";
 import isWeekSettled, { isWeekWon } from "../utils/scoring/isWeekSettled";
 import { NO_SCORE_CHANGES, ScoreChanges } from "../utils/scoring/scoreChanges";
 import { useSettings } from "./SettingsContext";
 
-type AppData = ReturnType<typeof useLeagueWeeks> &
-  Omit<ReturnType<typeof usePlayerScores>, "scoreChanges"> &
+/** The season and week lists, and which of each is selected. */
+type Calendar = ReturnType<typeof useLeagueWeeks> &
   ReturnType<typeof usePicksSeasons> & {
     /**
      * The `WeekInfo` for a week number, or undefined if the season has no such
@@ -40,22 +40,37 @@ type AppData = ReturnType<typeof useLeagueWeeks> &
     requestedSeason?: number;
     /**
      * The seasons that can be chosen, newest first. The ones with picks in the
-     * database, plus the season running now whether or not it has any.
+     * picks store, plus the season running now whether or not it has any.
      */
     selectableSeasons: Array<number>;
   };
 
-const AppDataContext = createContext<AppData | undefined>(undefined);
+/** The flags and actions of the scoring pass, which change far more than the scores do. */
+type ScoringStatus = Omit<
+  ReturnType<typeof usePlayerScores>,
+  "scores" | "scoreChanges"
+>;
+
+/*
+  Three contexts rather than one, so a consumer re-renders only for what it reads.
+  The scoring flags change on every refresh and every twenty-second poll, and a
+  table that reads `scores` has no use for them. `WeekOutcomeContext` and
+  `ScoreChangesContext` below split off further for the same reason.
+*/
+const CalendarContext = createContext<Calendar | undefined>(undefined);
+const ScoresContext = createContext<RakMadnessScores | undefined>(undefined);
+const ScoringStatusContext = createContext<ScoringStatus | undefined>(
+  undefined,
+);
 
 /**
  * How the week on screen stands. `isSettled` is every game settled, so whoever is
  * left standing has won. `isWon` is a winner known, games left or not, so the one
  * left standing wears the trophy.
  *
- * Its own context rather than a field on `AppData`, because every player cell
- * reads it. On `AppData` they would each re-render on every loading flag the app
- * data carries, which is the same reason the toast list and its actions are
- * split. Both false with no provider above, so a table can still be rendered on its
+ * Its own context rather than a field on `ScoringStatus`, because every player
+ * cell reads it. There they would each re-render on every loading flag, which is
+ * the same reason the toast list and its actions are split. Both false with no provider above, so a table can still be rendered on its
  * own with scores handed straight to it.
  */
 type WeekOutcome = { isSettled: boolean; isWon: boolean };
@@ -67,8 +82,8 @@ const WeekOutcomeContext = createContext<WeekOutcome>(NO_OUTCOME);
 /**
  * What the most recent scoring attempt changed, so a table can flash only the
  * cells that moved. Its own context for the same reason `WeekOutcomeContext` is.
- * Every pick and player cell reads it, and `AppData` re-renders on every loading
- * flag it carries.
+ * Every pick and player cell reads it, and `ScoringStatus` changes on every loading
+ * flag.
  */
 const ScoreChangesContext = createContext<ScoreChanges>(NO_SCORE_CHANGES);
 
@@ -96,6 +111,15 @@ export function AppDataContextProvider({
 }: PropsWithChildren<object>) {
   const { pathname } = useLocation();
   const route = routeFromPath(pathname);
+
+  // The week a results URL opens on is known before the calendar arrives, so its
+  // picks load beside the calendar rather than after it. Startup only.
+  const [startRoute] = useState(route);
+  useEffect(() => {
+    if (startRoute.season != null && startRoute.weekNumber != null) {
+      prefetchStoredPicks(startRoute.season, startRoute.weekNumber);
+    }
+  }, [startRoute]);
   // Undefined until a URL or the picker names one, which asks ESPN for the season
   // running now. `loadedSeason` then says which one that was.
   const [selectedSeason, setSelectedSeason] = useState(route.season);
@@ -135,7 +159,18 @@ export function AppDataContextProvider({
     [weeks],
   );
 
-  const { scores, scoreChanges } = playerScores;
+  const {
+    scores,
+    scoreChanges,
+    attemptedFor,
+    failedFor,
+    isScoresLoading,
+    isRefreshing,
+    fetchingLeagues,
+    scoreLocalFile,
+    refresh,
+    rescore,
+  } = playerScores;
   const weekOutcome = useMemo(
     () =>
       scores == null
@@ -145,8 +180,8 @@ export function AppDataContextProvider({
   );
 
   // The seasons with picks, plus the one running now whether or not it has any.
-  // That season's weeks are scored from a spreadsheet the user uploads until its
-  // picks reach the database, and leaving it out puts the week they are holding
+  // That season's weeks are scored from a spreadsheet the reader uploads until its
+  // picks reach the picks store, and leaving it out puts the week they are holding
   // out of reach. Falling back to the season the week list describes keeps the
   // picker usable where neither could be fetched, which is every `make run`, so
   // long as that season has a week behind it to score.
@@ -166,43 +201,75 @@ export function AppDataContextProvider({
     return [...offered].sort((a, b) => b - a);
   }, [picksSeasons.seasons, currentSeason, loadedSeason, currentWeekNumber]);
 
-  const value = useMemo(
+  const calendar = useMemo(
     () => ({
       ...leagueWeeks,
-      ...playerScores,
       ...picksSeasons,
       findWeek,
       setSelectedSeason,
       requestedSeason,
       selectableSeasons,
     }),
+    [leagueWeeks, picksSeasons, findWeek, requestedSeason, selectableSeasons],
+  );
+  const status = useMemo(
+    () => ({
+      attemptedFor,
+      failedFor,
+      isScoresLoading,
+      isRefreshing,
+      fetchingLeagues,
+      scoreLocalFile,
+      refresh,
+      rescore,
+    }),
     [
-      leagueWeeks,
-      playerScores,
-      picksSeasons,
-      findWeek,
-      requestedSeason,
-      selectableSeasons,
+      attemptedFor,
+      failedFor,
+      isScoresLoading,
+      isRefreshing,
+      fetchingLeagues,
+      scoreLocalFile,
+      refresh,
+      rescore,
     ],
   );
 
   return (
-    <AppDataContext.Provider value={value}>
-      <WeekOutcomeContext.Provider value={weekOutcome}>
-        <ScoreChangesContext.Provider value={scoreChanges}>
-          {children}
-        </ScoreChangesContext.Provider>
-      </WeekOutcomeContext.Provider>
-    </AppDataContext.Provider>
+    <CalendarContext.Provider value={calendar}>
+      <ScoringStatusContext.Provider value={status}>
+        <ScoresContext.Provider value={scores}>
+          <WeekOutcomeContext.Provider value={weekOutcome}>
+            <ScoreChangesContext.Provider value={scoreChanges}>
+              {children}
+            </ScoreChangesContext.Provider>
+          </WeekOutcomeContext.Provider>
+        </ScoresContext.Provider>
+      </ScoringStatusContext.Provider>
+    </CalendarContext.Provider>
   );
 }
 
-export function useAppData(): AppData {
-  const value = useContext(AppDataContext);
+function useRequired<T>(value: T | undefined, hook: string): T {
   if (value == null) {
-    throw new Error("useAppData needs an AppDataContextProvider above it");
+    throw new Error(`${hook} needs an AppDataContextProvider above it`);
   }
   return value;
+}
+
+/** The weeks, the seasons, and which of each is selected. */
+export function useCalendar(): Calendar {
+  return useRequired(useContext(CalendarContext), "useCalendar");
+}
+
+/** The week's scores. Changes when they do, not when a loading flag does. */
+export function useScores(): RakMadnessScores | undefined {
+  return useContext(ScoresContext);
+}
+
+/** Whether the week is loading or refreshing, and the actions that score it. */
+export function useScoringStatus(): ScoringStatus {
+  return useRequired(useContext(ScoringStatusContext), "useScoringStatus");
 }
 
 export function useIsWeekSettled(): boolean {
@@ -221,21 +288,49 @@ export function useScoreChanges(): ScoreChanges {
 const swingGamesByScores = new WeakMap<RakMadnessScores, SwingGames>();
 
 /**
- * The week's swing games, or undefined while its scores load. Skips the work and
- * answers empty, the same as a decided week, while the reader has not opted into
- * experimental features.
+ * Loaded on first use. `getSwingGames` pulls in all of `getPlayerAnalysis`, which
+ * the routes would otherwise carry in the chunk every one of them waits on.
+ */
+const loadGetSwingGames = cachedImport(
+  () => import("../utils/scoring/getSwingGames"),
+);
+
+/**
+ * The week's swing games, or undefined while its scores or the code that reads
+ * them load. Skips the work and answers empty, the same as a decided week, while
+ * the reader has not opted into experimental features.
  */
 export function useSwingGames(): SwingGames | undefined {
-  const { scores } = useAppData();
+  const scores = useScores();
   const { experimentalFeatures } = useSettings();
+  const [getSwingGames, setGetSwingGames] =
+    useState<(scores: RakMadnessScores) => SwingGames>();
+  const isNeeded = scores != null && experimentalFeatures;
+
+  // Asks again on each new set of scores until the code arrives, so one failed
+  // download costs one poll rather than the page.
+  useEffect(() => {
+    if (!isNeeded || getSwingGames != null) return;
+    let isCurrent = true;
+    loadGetSwingGames().then(
+      (module) => {
+        if (isCurrent) setGetSwingGames(() => module.default);
+      },
+      (error) => console.warn("Could not load the swing games", error),
+    );
+    return () => {
+      isCurrent = false;
+    };
+  }, [isNeeded, scores, getSwingGames]);
+
   return useMemo(() => {
     if (scores == null) return undefined;
     if (!experimentalFeatures) return NO_SWINGS;
     let swings = swingGamesByScores.get(scores);
-    if (swings == null) {
+    if (swings == null && getSwingGames != null) {
       swings = getSwingGames(scores);
       swingGamesByScores.set(scores, swings);
     }
     return swings;
-  }, [scores, experimentalFeatures]);
+  }, [scores, experimentalFeatures, getSwingGames]);
 }

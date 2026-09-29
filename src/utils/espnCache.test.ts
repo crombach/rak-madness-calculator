@@ -10,10 +10,7 @@ import {
   writeCachedCalendar,
   writeCachedResults,
 } from "./espnCache";
-import {
-  blockAllStorageMethods,
-  mockRejectedSetItem,
-} from "./storageMockUtils";
+import { storageContractSuite, mockRejectedSetItem } from "./storageMockUtils";
 
 const SEASON = 2025;
 const BUF_KC = "BUF|KC";
@@ -175,14 +172,8 @@ describe("espnCache, storage that will not have it", () => {
     expect(readCachedResults(SEASON, 4, League.PRO)).toEqual({});
   });
 
-  it("misses rather than throws when every localStorage method throws", () => {
-    blockAllStorageMethods();
-
-    expect(readCachedResults(SEASON, 3, League.PRO)).toEqual({});
-    expect(() =>
-      writeCachedResults(SEASON, 3, League.PRO, { [BUF_KC]: game() }),
-    ).not.toThrow();
-    expect(readCachedCalendar(League.PRO, 2022)).toBeUndefined();
-    expect(() => writeCachedCalendar(League.PRO, 2022, {})).not.toThrow();
-  });
+  storageContractSuite(
+    () => readCachedResults(SEASON, 3, League.PRO),
+    () => writeCachedResults(SEASON, 3, League.PRO, { [BUF_KC]: game() }),
+  );
 });

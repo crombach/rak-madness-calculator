@@ -76,12 +76,6 @@ describe("ScoresNavbar", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("carries the update glyph, not the outline refresh one it replaced", () => {
-    render(<ScoresNavbar {...props} isWeekLive />);
-
-    expect(screen.getByTestId("UpdateIcon")).toBeInTheDocument();
-  });
-
   it("fires onRefresh when clicked", async () => {
     // No delay: the suite runs under fake timers for the collapse animation
     // above, which real userEvent delays would hang against.

@@ -4,29 +4,9 @@ import { isWeekWon } from "./isWeekSettled";
 import { formatPickDisplay } from "./parsePick";
 import remainingGames from "./remainingGames";
 import repeatedNames from "./repeatedNames";
+import { NO_SWINGS, SwingGame, SwingGames, SwingSide } from "./swingGameTypes";
 
-/** One team in a game, and the players who are out if it fails to cover. */
-export type SwingSide = {
-  team: string;
-  /** The first of these players' cells, as the tables show it. */
-  pick: string;
-  /** In standings order. */
-  players: Array<string>;
-};
-
-export type SwingGame = {
-  label: string;
-  name: string;
-  /** Most players first. */
-  sides: Array<SwingSide>;
-};
-
-export type SwingGames = {
-  /** In column order, college then pro, the way the tables lay them out. */
-  games: Array<SwingGame>;
-};
-
-export const NO_SWINGS: SwingGames = { games: [] };
+export type { SwingGame, SwingGames, SwingSide };
 
 /**
  * Each open game, with the players it knocks out whichever way it falls.

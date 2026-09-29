@@ -1,5 +1,6 @@
 import { League, LeagueInfo, SeasonType } from "../types/League";
 import { readCachedCalendar, writeCachedCalendar } from "./espnCache";
+import espnScoreboardUrl from "./espnScoreboardUrl";
 
 type WeekEntry = {
   label: string;
@@ -76,19 +77,45 @@ export default function getLeagueInfo(
 ): Promise<LeagueInfo | null> {
   // A request for whichever season is running is keyed apart from one for a named
   // season, so each answers once and then drops.
-  const key = `${league}:${season ?? "current"}`;
+  const key = `${league}:${season ?? CURRENT}`;
+  // Only a named season is read back. Whichever season is running now is what an
+  // unnamed one asks about, and that moves.
+  const resolved = season != null ? answers.get(key) : undefined;
+  if (resolved != null && Date.now() - resolved.at < ANSWER_LIFETIME_MS) {
+    return Promise.resolve(resolved.info);
+  }
   const inFlight = requests.get(key);
   if (inFlight != null) {
     return inFlight;
   }
-  const request = fetchLeagueInfo(league, season).finally(() =>
-    requests.delete(key),
-  );
+  const request = fetchLeagueInfo(league, season)
+    .then((info) => {
+      if (info != null) {
+        // Under the season the response names, so an unnamed lookup answers for the
+        // named one that follows it.
+        answers.set(`${league}:${info.season}`, { info, at: Date.now() });
+      }
+      return info;
+    })
+    .finally(() => requests.delete(key));
   requests.set(key, request);
   return request;
 }
 
+const CURRENT = "current";
+/**
+ * Long enough that the hooks asking at startup share one answer, short enough that
+ * `activeWeek`, which is read off the clock when the answer is built, stays right.
+ */
+const ANSWER_LIFETIME_MS = 5 * 60 * 1000;
+
 const requests = new Map<string, Promise<LeagueInfo | null>>();
+const answers = new Map<string, { info: LeagueInfo; at: number }>();
+
+/** Forgets every answer held, so a test starts from a cold cache. */
+export function clearLeagueInfoAnswers(): void {
+  answers.clear();
+}
 
 async function fetchLeagueInfo(
   league: League,
@@ -104,11 +131,7 @@ async function fetchLeagueInfo(
     }
   }
 
-  const response = await fetch(
-    `https://site.api.espn.com/apis/site/v2/sports/football/${league}/scoreboard${
-      season != null ? `?dates=${season}` : ""
-    }`,
-  );
+  const response = await fetch(espnScoreboardUrl(league, { dates: season }));
   if (!response.ok) {
     console.error(
       `Error fetching league info from scoreboard endpoint for league ${league}`,

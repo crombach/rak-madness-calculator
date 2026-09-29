@@ -41,16 +41,24 @@ function BackButton() {
   );
 }
 
-/** The toggle's `aria-label`: the game, then its player count. */
-function bandName(game: string, count: number) {
-  return `${game}, ${plural(count, "player")}`;
+/** The toggle's `aria-label`: the game, its player count, then its mark's label. */
+function bandName(game: string, count: number, status = "Not listed by ESPN") {
+  return `${game}, ${plural(count, "player")}, ${status}`;
 }
 
-/** The game button's `aria-label`: opens Game Status, plus the live/delayed word. */
-function gameButtonName(game: string, status?: string) {
-  return [`Game Status for ${game}`, status]
-    .filter((part) => part != null)
-    .join(", ");
+/**
+ * The game button's `aria-label`: opens Game Status, then its mark's label. A game
+ * with no ESPN result, as most fixtures here are, reads as unlisted.
+ */
+function gameButtonName(game: string, status = "Not listed by ESPN") {
+  return `Game Status for ${game}, ${status}`;
+}
+
+/** The mark in a game's band, found from its game button. */
+function bandMark(gameButton: HTMLElement) {
+  return gameButton
+    .closest(".swing-games__title")
+    ?.querySelector(".game-status__mark:not(.--count)");
 }
 
 /** A side's heading, as its lowercase text reads under the CSS caps. */
@@ -463,7 +471,7 @@ describe("the swing games route", () => {
       const heading = await screen.findByRole("button", {
         name: gameButtonName("P1 KC at DEN", "Live"),
       });
-      expect(heading.querySelector(".table__live-dot")).toBeInTheDocument();
+      expect(bandMark(heading)).toHaveClass("--live");
     });
 
     it("pauses a game ESPN has stopped, and says so", async () => {
@@ -477,19 +485,17 @@ describe("the swing games route", () => {
       const heading = await screen.findByRole("button", {
         name: gameButtonName("P1 KC at DEN", "Delayed"),
       });
-      expect(heading.querySelector(".table__delay-icon")).toBeInTheDocument();
-      expect(heading.querySelector(".table__live-dot")).toBeNull();
+      expect(bandMark(heading)).toHaveClass("--delayed");
     });
 
-    it("marks nothing on a game yet to start", async () => {
+    it("marks a game yet to start as upcoming", async () => {
       getPlayerScoresMock.mockResolvedValue(withResult(upcomingGame(teams)));
       mountApp(SWINGS_PATH);
 
       const heading = await screen.findByRole("button", {
-        name: gameButtonName("P1 KC at DEN"),
+        name: gameButtonName("P1 KC at DEN", "Yet to kick off"),
       });
-      expect(heading.querySelector(".table__live-dot")).toBeNull();
-      expect(heading.querySelector(".table__delay-icon")).toBeNull();
+      expect(bandMark(heading)).toHaveClass("--upcoming");
     });
   });
 

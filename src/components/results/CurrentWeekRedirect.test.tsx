@@ -1,13 +1,14 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router";
 import { Mock } from "vitest";
-import { useAppData } from "../../context/AppDataContext";
+import { useCalendar } from "../../context/AppDataContext";
 import { SEASON } from "../../weekFixtures";
 import CurrentWeekRedirect from "./CurrentWeekRedirect";
 import { RESULTS_PAGE, ScoresView } from "./resultsPath";
 
 vi.mock("../../context/AppDataContext", () => ({
-  useAppData: vi.fn(),
+  useCalendar: vi.fn(),
+  useScores: vi.fn(() => undefined),
   useIsWeekSettled: vi.fn(() => false),
   useIsWeekWon: vi.fn(() => false),
   useSwingGames: vi.fn(() => undefined),
@@ -25,7 +26,7 @@ function Landed() {
 }
 
 function mount(view: ScoresView, appData: Record<string, unknown>): void {
-  (useAppData as Mock).mockReturnValue({
+  (useCalendar as Mock).mockReturnValue({
     loadedSeason: SEASON,
     currentWeekNumber: CURRENT_WEEK,
     defaultWeekNumber: CURRENT_WEEK,

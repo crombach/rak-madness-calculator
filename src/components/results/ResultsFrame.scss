@@ -1,5 +1,7 @@
 @use "../../styles/breakpoints" as *;
 @use "../../styles/label" as *;
+@use "../../styles/layout" as *;
+@use "../../styles/page" as *;
 @use "../../styles/skeleton" as *;
 
 .results-scores {
@@ -32,6 +34,21 @@
   // bezel holding it: lit along its top edge and shadowed along its bottom. Inset,
   // so it costs no room and nothing inside the frame moves.
   box-shadow: var(--rak-bezel);
+}
+
+// A page body, since there is no table to frame. Grows to fill the frame below
+// the caption.
+.results-failure {
+  @include page-body;
+  @include stacked(var(--rak-space-4));
+
+  flex: 1;
+  align-items: center;
+}
+
+.results-failure__actions {
+  display: flex;
+  gap: var(--rak-space-2);
 }
 
 /**

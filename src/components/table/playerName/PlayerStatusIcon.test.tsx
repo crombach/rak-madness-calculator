@@ -20,17 +20,18 @@ describe("PlayerStatusIcon", () => {
     expect(screen.getByTestId("SkullOutlinedIcon")).toBeInTheDocument();
   });
 
-  it("smiles while the week is still being played", () => {
+  it("renders the appropriate icon based on knock-out status and week outcome", () => {
     mockIsWeekWon.mockReturnValue(false);
-    render(<PlayerStatusIcon isKnockedOut={false} />);
+    const { rerender } = render(<PlayerStatusIcon isKnockedOut={false} />);
     expect(
       screen.getByTestId("SentimentVerySatisfiedOutlinedIcon"),
     ).toBeInTheDocument();
-  });
 
-  it("crowns whoever is left standing once the week is won", () => {
+    rerender(<PlayerStatusIcon isKnockedOut />);
+    expect(screen.getByTestId("SkullOutlinedIcon")).toBeInTheDocument();
+
     mockIsWeekWon.mockReturnValue(true);
-    render(<PlayerStatusIcon isKnockedOut={false} />);
+    rerender(<PlayerStatusIcon isKnockedOut={false} />);
     expect(screen.getByTestId("EmojiEventsOutlinedIcon")).toBeInTheDocument();
   });
 });

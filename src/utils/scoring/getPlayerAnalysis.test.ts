@@ -32,7 +32,10 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
     expect(getPlayerAnalysis(scores, "Nobody")).toBeUndefined();
   });
 
-  it("gives a knocked out player the reason they already carry", () => {
+  it.each([
+    [getPlayerAnalysis, "getPlayerAnalysis"],
+    [getSettledAnalysis, "getSettledAnalysis"],
+  ])("gives a knocked out player the reason they already carry (%s)", (fn) => {
     const scores = week([
       player({ name: "Alice", total: 5 }),
       player({
@@ -44,7 +47,7 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
     scores.scores[1].status.explanation =
       "Knocked out on Total Score by Alice.";
 
-    expect(getPlayerAnalysis(scores, "Bob")).toEqual({
+    expect(fn(scores, "Bob")).toEqual({
       kind: "knockedOut",
       playerName: "Bob",
       explanation: "Knocked out on Total Score by Alice.",
@@ -96,7 +99,10 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
     });
   });
 
-  it("clinches once every rival left is knocked out", () => {
+  it.each([
+    [getPlayerAnalysis, "getPlayerAnalysis"],
+    [getSettledAnalysis, "getSettledAnalysis"],
+  ])("clinches once every rival left is knocked out (%s)", (fn) => {
     const scores = week([
       player({ name: "Alice", total: 5, pro: [pick("KC -3")] }),
       player({
@@ -107,7 +113,7 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
       }),
     ]);
 
-    expect(getPlayerAnalysis(scores, "Alice")).toEqual({
+    expect(fn(scores, "Alice")).toEqual({
       kind: "clinched",
       playerName: "Alice",
       sharedWith: [],
@@ -220,21 +226,6 @@ describe("getPlayerAnalysis, whether there is anything to work out", () => {
 // What the dialog asks before it puts a progress bar up, so a week that needs no
 // search never stands one over an answer that is already there.
 describe("getSettledAnalysis, the answers that need no search", () => {
-  it("gives a knocked out player their reason", () => {
-    const scores = week([
-      player({ name: "Alice", total: 5 }),
-      player({ name: "Bob", total: 0, isKnockedOut: true }),
-    ]);
-    scores.scores[1].status.explanation =
-      "Knocked out on Total Score by Alice.";
-
-    expect(getSettledAnalysis(scores, "Bob")).toEqual({
-      kind: "knockedOut",
-      playerName: "Bob",
-      explanation: "Knocked out on Total Score by Alice.",
-    });
-  });
-
   // A week whose games are all in clinches off the knockouts, so the bar never
   // runs over an answer they already gave.
   it("clinches a week whose games are all played", () => {
@@ -245,25 +236,6 @@ describe("getSettledAnalysis, the answers that need no search", () => {
       ],
       41,
     );
-
-    expect(getSettledAnalysis(scores, "Alice")).toEqual({
-      kind: "clinched",
-      playerName: "Alice",
-      sharedWith: [],
-      canBeTied: false,
-    });
-  });
-
-  it("clinches once every rival left is knocked out", () => {
-    const scores = week([
-      player({ name: "Alice", total: 5, pro: [pick("KC -3")] }),
-      player({
-        name: "Bob",
-        total: 0,
-        pro: [pick("DEN +3")],
-        isKnockedOut: true,
-      }),
-    ]);
 
     expect(getSettledAnalysis(scores, "Alice")).toEqual({
       kind: "clinched",
