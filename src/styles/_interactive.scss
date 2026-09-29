@@ -5,23 +5,13 @@
  * Hover only under `can-hover`, so touch never holds a selection the app does
  * not have. The press fill defaults to the hover fill.
  *
- * `$also-hovered` and `$also-pressed` are selector suffixes, such as
- * `.--column-hover` or `[data-highlighted]`, that take the same fill.
+ * `$also-pressed` is a selector suffix, such as `[data-highlighted]`, that
+ * takes the press fill.
  */
-@mixin interactive-fill(
-  $hover,
-  $press: $hover,
-  $also-hovered: null,
-  $also-pressed: null
-) {
+@mixin interactive-fill($hover, $press: $hover, $also-pressed: null) {
   @include can-hover {
     &:hover {
       background-color: $hover;
-    }
-    @if $also-hovered {
-      &#{$also-hovered} {
-        background-color: $hover;
-      }
     }
   }
   &:active {

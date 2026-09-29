@@ -30,8 +30,8 @@ const FIXED_COLUMN_COUNT = 5;
 /** MNF Points Pick, MNF Points Distance, and Pro Score ATS. */
 const TIEBREAKER_COLUMN_COUNT = 3;
 
-/** Marks every cell of the column the pointer is over, heading included. */
-const COLUMN_HOVER_CLASS = "--column-hover";
+/** Marks every cell of the lit column, heading included. */
+const COLUMN_LIT_CLASS = "--column-lit";
 
 /**
  * Lights the cells of one game's column and unlights the rest, on the DOM. A
@@ -40,7 +40,7 @@ const COLUMN_HOVER_CLASS = "--column-hover";
  */
 function litColumn(table: HTMLTableElement, game: string | undefined) {
   table.querySelectorAll<HTMLElement>("[data-game]").forEach((cell) => {
-    cell.classList.toggle(COLUMN_HOVER_CLASS, cell.dataset.game === game);
+    cell.classList.toggle(COLUMN_LIT_CLASS, cell.dataset.game === game);
   });
 }
 
@@ -208,6 +208,16 @@ function PicksTable({
   // answers to the pointer, not just the cell.
   function trackHover(event: PointerEvent<HTMLTableElement>) {
     if (event.pointerType === "touch") return;
+    lightTarget(event);
+  }
+
+  // A finger lights the column it taps and holds it until the next tap. A
+  // scroll cancels the touch rather than lifting it, so a fling lights nothing.
+  function trackTap(event: PointerEvent<HTMLTableElement>) {
+    if (event.pointerType === "touch") lightTarget(event);
+  }
+
+  function lightTarget(event: PointerEvent<HTMLTableElement>) {
     const cell = (event.target as Element).closest<HTMLElement>("[data-game]");
     hover(event.currentTarget, cell?.dataset.game);
   }
@@ -246,7 +256,11 @@ function PicksTable({
       caption={caption}
       columnCount={columnCount}
       onPointerOver={trackHover}
-      onPointerLeave={(event) => hover(event.currentTarget, undefined)}
+      onPointerUp={trackTap}
+      onPointerLeave={(event) => {
+        if (event.pointerType !== "touch")
+          hover(event.currentTarget, undefined);
+      }}
       header={
         <>
           <th scope="col">Rank</th>

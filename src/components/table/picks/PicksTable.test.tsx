@@ -279,7 +279,7 @@ describe("PicksTable, game status", () => {
 });
 
 describe("PicksTable, column hover", () => {
-  const HOVERED = "--column-hover";
+  const HOVERED = "--column-lit";
 
   function cellOf(text: string) {
     return screen.getByText(text).closest("td");
@@ -373,20 +373,62 @@ describe("PicksTable, column hover", () => {
       () => screen.getByRole("columnheader", { name: "Player" }),
     ],
     ["once the pointer leaves the table", () => screen.getByRole("table")],
-    ["for a touch, which has no hover", () => screen.getByText("MICH")],
   ])("lights nothing %s", async (_, target) => {
     const { user } = renderPicks();
 
     await user.hover(screen.getByText("MICH"));
     if (_ === "once the pointer leaves the table") {
       await user.unhover(target());
-    } else if (_ === "for a touch, which has no hover") {
-      await user.pointer({ keys: "[TouchA]", target: target() });
     } else {
       await user.hover(target());
     }
 
     expect(document.querySelector(`.${HOVERED}`)).toBeNull();
+  });
+});
+
+describe("PicksTable, column tap", () => {
+  const LIT = "--column-lit";
+
+  function tap(user: ReturnType<typeof userEvent.setup>, target: Element) {
+    return user.pointer({ keys: "[TouchA]", target });
+  }
+
+  it("lights the tapped column and keeps it once the finger lifts", async () => {
+    const { user } = renderPicks();
+
+    await tap(user, screen.getByText("MICH"));
+
+    expect(screen.getByText("C1 pick").closest("td")).toHaveClass(LIT);
+    expect(screen.getByRole("columnheader", { name: "C1" })).toHaveClass(LIT);
+    expect(screen.getByText("OSU").closest("td")).not.toHaveClass(LIT);
+  });
+
+  it("moves to the next column tapped", async () => {
+    const { user } = renderPicks();
+
+    await tap(user, screen.getByText("MICH"));
+    await tap(user, screen.getByRole("columnheader", { name: "P2" }));
+
+    expect(screen.getByText("MICH").closest("td")).not.toHaveClass(LIT);
+    expect(screen.getByText("KC").closest("td")).toHaveClass(LIT);
+  });
+
+  it("clears on a tap outside a game", async () => {
+    const { user } = renderPicks();
+
+    await tap(user, screen.getByText("MICH"));
+    await tap(user, screen.getByRole("columnheader", { name: "Player" }));
+
+    expect(document.querySelector(`.${LIT}`)).toBeNull();
+  });
+
+  it("lights nothing for a finger that lands without lifting, as a scroll does", async () => {
+    const { user } = renderPicks();
+
+    await user.pointer({ keys: "[TouchA>]", target: screen.getByText("MICH") });
+
+    expect(document.querySelector(`.${LIT}`)).toBeNull();
   });
 });
 
