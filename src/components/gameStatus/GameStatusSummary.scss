@@ -103,6 +103,8 @@
 
 .game-status__split-team {
   @include pick-face;
+
+  color: var(--rak-text);
 }
 
 // A `meta-dot` and its margins.
