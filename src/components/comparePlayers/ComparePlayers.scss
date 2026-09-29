@@ -1,4 +1,5 @@
 @use "../../styles/breakpoints" as *;
+@use "../../styles/label" as *;
 
 // Pinned to the screen's left edge while a wide table pans under it.
 .compare-players {
@@ -16,7 +17,7 @@
 }
 
 // Choose Players over the game scope, each the full width, until there is room to
-// set them side by side.
+// set them side by side as one toolbar, split the way the navbar splits its keys.
 .compare-players__controls {
   display: flex;
   flex-direction: column;
@@ -26,8 +27,42 @@
   @include wide-screen {
     flex-direction: row;
     align-self: flex-start;
+    align-items: center;
     gap: var(--rak-space-4);
   }
+}
+
+.compare-players__games {
+  @include wide-screen {
+    display: flex;
+    align-items: center;
+    gap: var(--rak-space-4);
+  }
+}
+
+// The phone stacks the groups, which parts them without a rule or a name.
+.compare-players__divider,
+.compare-players__games-label {
+  display: none;
+
+  @include wide-screen {
+    display: block;
+  }
+}
+
+// `.navbar__divider`'s rule, in the ink it takes against this surface.
+.compare-players__divider {
+  width: var(--rak-border-width);
+  height: var(--rak-icon-md);
+  background-color: var(--rak-on-solid);
+}
+
+// `.settings__label`, which names the same kind of choice in the settings dialog.
+.compare-players__games-label {
+  @include micro-label;
+
+  font-size: var(--rak-text-sm);
+  color: var(--rak-text-secondary);
 }
 
 // Even halves, so which one is chosen is the only thing telling them apart.

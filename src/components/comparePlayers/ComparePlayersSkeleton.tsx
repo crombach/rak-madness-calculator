@@ -1,3 +1,4 @@
+import { useId } from "react";
 import doNothing from "../../utils/doNothing";
 import Button from "../button/Button";
 import { RESULTS_PAGE } from "../results/resultsPath";
@@ -49,18 +50,29 @@ export function GamesToggle({
   onChange?: (scope: GameScope) => void;
   disabled?: boolean;
 }) {
+  const labelId = useId();
   return (
-    <div className="compare-players__scopes" role="group" aria-label="Games">
-      {GAME_SCOPES.map((value) => (
-        <Button
-          key={value}
-          disabled={disabled}
-          selected={scope === value}
-          onClick={() => onChange(value)}
-        >
-          {SCOPE_LABELS[value]}
-        </Button>
-      ))}
+    <div className="compare-players__games">
+      <span className="compare-players__divider" />
+      <span id={labelId} className="compare-players__games-label">
+        Games
+      </span>
+      <div
+        className="compare-players__scopes"
+        role="group"
+        aria-labelledby={labelId}
+      >
+        {GAME_SCOPES.map((value) => (
+          <Button
+            key={value}
+            disabled={disabled}
+            selected={scope === value}
+            onClick={() => onChange(value)}
+          >
+            {SCOPE_LABELS[value]}
+          </Button>
+        ))}
+      </div>
     </div>
   );
 }
