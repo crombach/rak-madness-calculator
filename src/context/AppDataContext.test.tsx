@@ -3,15 +3,19 @@ import { Profiler } from "react";
 import { MemoryRouter } from "react-router";
 import { RakMadnessScores } from "../types/RakMadnessScores";
 import { NO_SCORE_CHANGES } from "../utils/scoring/scoreChanges";
+import { writeSettledWeek } from "../utils/settledWeeksCache";
 import {
   AppDataContextProvider,
   useCalendar,
+  useIsWeekSettled,
   useScores,
   useScoringStatus,
 } from "./AppDataContext";
 
 const SCORES = { scores: [] } as unknown as RakMadnessScores;
 const NO_OP = () => {};
+
+let heldScores: RakMadnessScores | undefined;
 
 let setRefreshing: (value: boolean) => void;
 
@@ -23,7 +27,7 @@ vi.mock("../hooks/usePlayerScores", async () => {
       setRefreshing = set;
       return useMemo(
         () => ({
-          scores: SCORES,
+          scores: heldScores,
           scoreChanges: NO_SCORE_CHANGES,
           attemptedFor: undefined,
           isScoresLoading: false,
@@ -70,6 +74,32 @@ function Reader({ hook }: { hook: () => unknown }) {
 }
 
 describe("AppDataContextProvider", () => {
+  beforeEach(() => {
+    heldScores = SCORES;
+    localStorage.clear();
+  });
+
+  it.each([
+    { recorded: true, expected: true },
+    { recorded: false, expected: false },
+  ])(
+    "reads a week recorded settled $recorded as settled $expected before its scores load",
+    ({ recorded, expected }) => {
+      heldScores = undefined;
+      writeSettledWeek(2024, 5, recorded);
+      let isSettled: boolean | undefined;
+      render(
+        <MemoryRouter initialEntries={["/2024/5"]}>
+          <AppDataContextProvider>
+            <Reader hook={() => (isSettled = useIsWeekSettled())} />
+          </AppDataContextProvider>
+        </MemoryRouter>,
+      );
+
+      expect(isSettled).toBe(expected);
+    },
+  );
+
   it("re-renders only the consumers of what changed", () => {
     render(
       <MemoryRouter>

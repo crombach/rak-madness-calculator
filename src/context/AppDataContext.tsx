@@ -18,6 +18,7 @@ import { RakMadnessScores } from "../types/RakMadnessScores";
 import { NO_SWINGS, SwingGames } from "../utils/scoring/swingGameTypes";
 import cachedImport from "../utils/cachedImport";
 import isWeekSettled, { isWeekWon } from "../utils/scoring/isWeekSettled";
+import { readSettledWeek } from "../utils/settledWeeksCache";
 import { NO_SCORE_CHANGES, ScoreChanges } from "../utils/scoring/scoreChanges";
 import { useSettings } from "./SettingsContext";
 
@@ -76,6 +77,8 @@ const ScoringStatusContext = createContext<ScoringStatus | undefined>(
 type WeekOutcome = { isSettled: boolean; isWon: boolean };
 
 const NO_OUTCOME: WeekOutcome = { isSettled: false, isWon: false };
+
+const SETTLED_OUTCOME: WeekOutcome = { isSettled: true, isWon: true };
 
 const WeekOutcomeContext = createContext<WeekOutcome>(NO_OUTCOME);
 
@@ -171,13 +174,19 @@ export function AppDataContextProvider({
     refresh,
     rescore,
   } = playerScores;
-  const weekOutcome = useMemo(
-    () =>
-      scores == null
-        ? NO_OUTCOME
-        : { isSettled: isWeekSettled(scores), isWon: isWeekWon(scores) },
-    [scores],
-  );
+  // Until the week's scores arrive, a week this browser saw settled is taken as
+  // still settled, so its results open without the refresh controls.
+  const { season: routeSeason, weekNumber: routeWeekNumber } = route;
+  const weekOutcome = useMemo(() => {
+    if (scores != null) {
+      return { isSettled: isWeekSettled(scores), isWon: isWeekWon(scores) };
+    }
+    return routeSeason != null &&
+      routeWeekNumber != null &&
+      readSettledWeek(routeSeason, routeWeekNumber)
+      ? SETTLED_OUTCOME
+      : NO_OUTCOME;
+  }, [scores, routeSeason, routeWeekNumber]);
 
   // The seasons with picks, plus the one running now whether or not it has any.
   // That season's weeks are scored from a spreadsheet the reader uploads until its
