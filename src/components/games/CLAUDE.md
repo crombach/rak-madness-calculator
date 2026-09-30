@@ -1,6 +1,6 @@
 # games
 
-The `/:season/:week/all-games` route: every game of the week, one scoreboard
+The `/:season/:week/games` route: every game of the week, one scoreboard
 each.
 
 - `GamesPage`: `lazyPreloadable` over `GamesRoute`, mounted by `App.tsx`.

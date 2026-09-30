@@ -40,7 +40,7 @@ export default function App() {
         <Route path="scoreboard" element={<ScoreboardRoute />} />
         <Route path="picks" element={<PicksRoute />} />
         <Route path="swings" element={<SwingGamesPage />} />
-        <Route path="all-games" element={<GamesPage />} />
+        <Route path="games" element={<GamesPage />} />
         <Route path="compare" element={<ComparePlayersPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
