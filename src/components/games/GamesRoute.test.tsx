@@ -15,7 +15,7 @@ import {
 } from "../../appTestFixtures";
 import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
 
-const GAMES_PATH = `/${SEASON}/${CURRENT_WEEK}/all-games`;
+const GAMES_PATH = `/${SEASON}/${CURRENT_WEEK}/games`;
 
 beforeEach(() => {
   setUpAppTest().mockResolvedValue(spreadsheetResponse());

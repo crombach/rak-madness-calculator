@@ -40,7 +40,7 @@ export const PAGES: Record<ResultsPage, PageInfo> = {
     isMenuOnly: true,
   },
   [RESULTS_PAGE.games]: {
-    segment: "all-games",
+    segment: "games",
     isTable: false,
     isMenuOnly: true,
   },

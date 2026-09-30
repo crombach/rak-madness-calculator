@@ -310,6 +310,14 @@ export function GroupIcon() {
   );
 }
 
+export function MailIcon() {
+  return (
+    <Icon name="MailIcon">
+      <path d="M80-160v-640h800v640H80Zm400-280 320-200v-80L480-520 160-720v80l320 200Z" />
+    </Icon>
+  );
+}
+
 export function GitHubIcon() {
   return (
     <Icon name="GitHubIcon" viewBox="0 0 24 24">

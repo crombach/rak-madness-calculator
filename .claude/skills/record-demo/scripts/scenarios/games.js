@@ -101,7 +101,7 @@ export default async function run({ page, context, baseUrl }) {
   if (SPREAD_DAYS) {
     await page.clock.setFixedTime(new Date(DAYS_NOW));
   }
-  const path = `${baseUrl}/${SEASON}/${WEEK}/all-games`;
+  const path = `${baseUrl}/${SEASON}/${WEEK}/games`;
   await page.goto(path);
   await page.evaluate(
     ([themeKey, theme, nameKey, name, flagKey]) => {
