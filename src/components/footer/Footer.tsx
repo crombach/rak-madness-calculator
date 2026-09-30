@@ -1,5 +1,7 @@
-import { EmojiEventsIcon, GitHubIcon } from "../icon/Icon";
+import { EmojiEventsIcon, GitHubIcon, MailIcon } from "../icon/Icon";
 import "./Footer.scss";
+
+const SUGGESTIONS_MAILTO = "mailto:rakulator@gmail.com";
 
 export default function Footer() {
   return (
@@ -22,6 +24,11 @@ export default function Footer() {
       >
         <GitHubIcon />
         GitHub
+      </a>
+      |
+      <a className="footer__link" href={SUGGESTIONS_MAILTO}>
+        <MailIcon />
+        Suggestions
       </a>
     </div>
   );

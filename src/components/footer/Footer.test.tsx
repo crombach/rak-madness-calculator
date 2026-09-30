@@ -8,7 +8,10 @@ function mountFooter() {
 describe("Footer", () => {
   it("offers the standings and the repo links with correct hrefs and attributes", () => {
     mountFooter();
-    const leaving = screen.getAllByRole("link");
+    const leaving = [
+      screen.getByRole("link", { name: "Standings" }),
+      screen.getByRole("link", { name: "GitHub" }),
+    ];
 
     expect(leaving.map((link) => link.getAttribute("href"))).toEqual([
       "https://rakmadness.net/standings-pickem",
@@ -18,7 +21,13 @@ describe("Footer", () => {
       expect(link).toHaveAttribute("target", "_blank");
       expect(link).toHaveAttribute("rel", "noreferrer");
     });
-    expect(screen.getByRole("link", { name: "Standings" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "GitHub" })).toBeInTheDocument();
+  });
+
+  it("offers a suggestions link that opens a mail to the app's inbox", () => {
+    mountFooter();
+    const suggestions = screen.getByRole("link", { name: "Suggestions" });
+
+    expect(suggestions).toHaveAttribute("href", "mailto:rakulator@gmail.com");
+    expect(suggestions).not.toHaveAttribute("target");
   });
 });
