@@ -1,5 +1,6 @@
 import { Accordion } from "@base-ui/react/accordion";
 import { useMemo, useRef, useState } from "react";
+import { Navigate, useParams } from "react-router";
 import { useSwingGames } from "../../context/AppDataContext";
 import { useShowGameStatus } from "../../context/GameStatusContext";
 import { useShowPlayerAnalysis } from "../../context/PlayerAnalysisContext";
@@ -14,7 +15,7 @@ import GameMark, {
 } from "../gameStatus/GameMark";
 import { ExpandMoreIcon } from "../icon/Icon";
 import plural from "../../utils/plural";
-import ExperimentalGate from "../results/ExperimentalGate";
+import resultsPath, { RESULTS_PAGE } from "../results/resultsPath";
 import useGridColumns from "./useGridColumns";
 import "./SwingGames.scss";
 
@@ -134,6 +135,7 @@ function Game({ game, weekGame }: { game: SwingGame; weekGame?: WeekGame }) {
 
 /** Each open game, with who it knocks out whichever way it falls. */
 export default function SwingGames({ scores }: { scores?: RakMadnessScores }) {
+  const { season, week } = useParams();
   const swings = useSwingGames();
   const weekGames = useMemo(
     () => new Map(scores?.games?.map((game) => [game.label, game])),
@@ -144,27 +146,33 @@ export default function SwingGames({ scores }: { scores?: RakMadnessScores }) {
   const [closed, setClosed] = useState<ReadonlySet<string>>(new Set());
 
   if (swings == null) return null;
+  // A won week, or one no single game decides, has nothing to show here.
+  if (swings.games.length === 0) {
+    return (
+      <Navigate
+        replace
+        to={resultsPath(season, week, RESULTS_PAGE.scoreboard)}
+      />
+    );
+  }
 
   const labels = swings.games.map((game) => game.label);
   return (
-    // A won week, or one no single game decides, has nothing to show here.
-    <ExperimentalGate closed={swings.games.length === 0}>
-      <Accordion.Root
-        className="swing-games"
-        multiple
-        value={labels.filter((label) => !closed.has(label))}
-        onValueChange={(open: Array<string>) =>
-          setClosed(new Set(labels.filter((label) => !open.includes(label))))
-        }
-      >
-        {swings.games.map((game) => (
-          <Game
-            key={game.label}
-            game={game}
-            weekGame={weekGames.get(game.label)}
-          />
-        ))}
-      </Accordion.Root>
-    </ExperimentalGate>
+    <Accordion.Root
+      className="swing-games"
+      multiple
+      value={labels.filter((label) => !closed.has(label))}
+      onValueChange={(open: Array<string>) =>
+        setClosed(new Set(labels.filter((label) => !open.includes(label))))
+      }
+    >
+      {swings.games.map((game) => (
+        <Game
+          key={game.label}
+          game={game}
+          weekGame={weekGames.get(game.label)}
+        />
+      ))}
+    </Accordion.Root>
   );
 }
