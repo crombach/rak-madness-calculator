@@ -1,7 +1,7 @@
 @use "../../styles/picks" as *;
 
 // The picks table's cell in small: its face, weight, inks and fills. An open game's
-// pick takes a rule rather than a fill, so it stays apart from a `count-chip` beside it.
+// pick takes a rule rather than a fill, so it stays apart from a `CountBadge` beside it.
 .pick-badge {
   @include pick-type;
 

@@ -86,13 +86,6 @@
   white-space: nowrap;
 }
 
-// The weight of the pick badge beside it, not the line's own.
-.game-status__picks-count {
-  @include count-chip;
-
-  font-weight: normal;
-}
-
 // A comma would sit between two numbers, as in `-3, 1 DEN`. Drawn rather than
 // typed, since a `|` glyph's height and weight are the font's, and this face
 // drops it below the baseline.

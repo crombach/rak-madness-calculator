@@ -19,6 +19,7 @@ a touch phone: Playwright `isMobile` and `hasTouch`, no hover, no refresh button
 
 - [`components/button/`](components/button/CLAUDE.md) — shared button, Base UI's primitive
 - [`components/comparePlayers/`](components/comparePlayers/CLAUDE.md) — players' picks side by side
+- [`components/countBadge/`](components/countBadge/CLAUDE.md) — a count beside the word it counts
 - [`components/dialog/`](components/dialog/CLAUDE.md) — the shared dialog shell and its search
 - [`components/footer/`](components/footer/CLAUDE.md) — bottom links bar
 - [`components/games/`](components/games/CLAUDE.md) — every game of the week, live ones first

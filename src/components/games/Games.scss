@@ -119,10 +119,6 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   @include section-title(sm);
 }
 
-.games__section-count {
-  @include count-chip;
-}
-
 .games__sr-only {
   @include visually-hidden;
 }

@@ -18,7 +18,7 @@ const SHEET_NAME_LIMIT = 31;
 
 // Fill colors that pickCell assigns per pick status.
 const FILL_BY_STATUS = {
-  yes: "9CFF99",
+  yes: "BBF7D0",
   no: "FF9999",
   error: "FFDC52",
   incomplete: "FFFFFF",

@@ -1,4 +1,5 @@
 import plural from "../../utils/plural";
+import CountBadge from "../countBadge/CountBadge";
 
 const COUNTED_NOUN = "game";
 
@@ -19,10 +20,10 @@ export default function SectionTitle({
   return (
     <h2 className="games__section-title">
       <span id={id}>{title}</span>{" "}
-      <span className="games__section-count">
+      <CountBadge>
         <span aria-hidden="true">{count}</span>
         <span className="games__sr-only">{plural(count, COUNTED_NOUN)}</span>
-      </span>
+      </CountBadge>
     </h2>
   );
 }

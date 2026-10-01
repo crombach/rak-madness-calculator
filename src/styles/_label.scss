@@ -27,17 +27,3 @@
   color: var(--rak-text-secondary);
   font-size: var(--rak-text-#{$size});
 }
-
-/**
- * A count set in a small fill, so it stands apart from the words beside it by
- * shape rather than by color. Next to text of the same ink, a bare `1 KC` reads as
- * one word. The ink matches the Swing Games player count pill.
- */
-@mixin count-chip {
-  display: inline-block;
-  padding: 0.1em var(--rak-space-1);
-  border-radius: var(--rak-radius-sm);
-  background: var(--rak-count-chip-bg);
-  color: var(--rak-mark-count-text);
-  line-height: var(--rak-line-height-tight);
-}

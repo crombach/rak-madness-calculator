@@ -8,6 +8,7 @@ import observeResize from "../../utils/observeResize";
 import parsePick from "../../utils/scoring/parsePick";
 import pickSplit, { PickSplit } from "../../utils/scoring/pickSplit";
 import { gamecastUrl, kickoffParts, scoringTeam } from "./gameStatusText";
+import CountBadge from "../countBadge/CountBadge";
 import PickBadge from "../pickBadge/PickBadge";
 import Scoreline, { outcomeClasses, SideOutcome } from "./Scoreline";
 import useScorelineFit, { MARKS_OFF, SHORT_NAMES } from "./useScorelineFit";
@@ -238,7 +239,7 @@ function Game({
     <span className="game-status__picks-side">
       {count != null && (
         <>
-          <span className="game-status__picks-count">{count}</span>
+          <CountBadge>{count}</CountBadge>
           <span className="game-status__sr-only"> picked</span>{" "}
         </>
       )}

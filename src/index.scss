@@ -258,14 +258,12 @@
   // The table's fills are steps on these rather than a palette of their own, so
   // a wrong pick and a failure are the same red.
   //
-  // 400 is the one step that reads on the app's white and on the dark a readout
-  // is sunk into, which is what lets the game dialog draw a side's name and its
-  // score in the same color. No step can clear 4.5:1 on both, so it is set at the
-  // dark end of what does on white: 4.6:1 there, and 3.2:1 on the glass, which the
-  // score clears as large text at every size it is set.
+  // 400 is text on the app's white, such as a side's name in the game dialog.
+  // Success 300 and 400 share the glass green's hue, so a pick's fill, the name
+  // and the score beside it read as one green. 400 is 5.0:1 on white.
   --rak-success-100: #e3fbe3;
-  --rak-success-300: #9cff99;
-  --rak-success-400: #1f871f;
+  --rak-success-300: #bbf7d0;
+  --rak-success-400: #15803d;
   --rak-success-500: #1f7a1f;
   --rak-success-600: #136c13;
   --rak-success-700: #0a470a;
