@@ -166,6 +166,14 @@ describe("the swing games route", () => {
     );
   });
 
+  it("explains what each side lists", async () => {
+    mountApp(SWINGS_PATH);
+
+    expect(
+      await screen.findByText(/Open games that can knock players out\./),
+    ).toBeInTheDocument();
+  });
+
   it("shows each side of a game with the players it knocks out", async () => {
     mountApp(SWINGS_PATH);
 
