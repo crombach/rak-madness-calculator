@@ -36,15 +36,18 @@ const BASE_COLUMNS = 2;
 
 /**
  * A side's players, the reader first so a fold never hides them. Each is ruled in
- * the tables' hue for whether they can still win.
+ * the tables' hue for whether they can still win. Only an open game's names open
+ * Player Analysis.
  */
 function Side({
   heading,
   players: ranked,
+  isFinal,
   knockedOut,
 }: {
   heading: ReactNode;
   players: Array<string>;
+  isFinal: boolean;
   knockedOut: ReadonlySet<string>;
 }) {
   const showPlayerAnalysis = useShowPlayerAnalysis();
@@ -66,18 +69,24 @@ function Side({
       </h4>
       <ul ref={grid} className="knockouts__players">
         {shown.map((name) => {
+          const className = getClasses("knockouts__player", {
+            "--mine": isMyPlayer(name, playerName),
+            "--knocked-out": knockedOut.has(name),
+          });
+          const label = <span className="knockouts__player-name">{name}</span>;
           return (
             <li key={name}>
-              <button
-                type="button"
-                className={getClasses("knockouts__player", {
-                  "--mine": isMyPlayer(name, playerName),
-                  "--knocked-out": knockedOut.has(name),
-                })}
-                onClick={() => showPlayerAnalysis(name)}
-              >
-                <span className="knockouts__player-name">{name}</span>
-              </button>
+              {isFinal ? (
+                <div className={className}>{label}</div>
+              ) : (
+                <button
+                  type="button"
+                  className={className}
+                  onClick={() => showPlayerAnalysis(name)}
+                >
+                  {label}
+                </button>
+              )}
             </li>
           );
         })}
@@ -156,6 +165,7 @@ export default function KnockoutCard({
               </>
             }
             players={side.players}
+            isFinal={game.isFinal}
             knockedOut={knockedOut}
           />
         ))}
@@ -164,6 +174,7 @@ export default function KnockoutCard({
             key={tier.tiebreaker}
             heading={`${KNOCKED_OUT} ${TIEBREAKER_NAMES[tier.tiebreaker]}`}
             players={tier.players}
+            isFinal
             knockedOut={knockedOut}
           />
         ))}

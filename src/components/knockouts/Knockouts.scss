@@ -177,7 +177,6 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 
 .knockouts__player {
   @include ruled-block($rule-alive);
-  @include focus-ring;
 
   display: flex;
   flex-direction: column;
@@ -186,23 +185,10 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
   min-width: 0;
   min-height: var(--rak-touch-target);
   padding: var(--rak-space-2) var(--rak-space-3);
-  border-block: 0;
-  border-inline-end: 0;
   color: var(--rak-text);
   @include player-name-face;
   font-size: var(--rak-text-cells);
   text-align: start;
-  cursor: pointer;
-  transition: background-color var(--rak-duration-fast) var(--rak-ease-standard);
-
-  @include interactive-fill(
-    var(--rak-fill-muted),
-    color-mix(
-      in srgb,
-      var(--rak-fill-muted) var(--rak-press-strength),
-      var(--rak-text)
-    )
-  );
 
   // In the orange the tables fill a knocked out player's name with.
   &.--knocked-out {
@@ -215,6 +201,25 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 
     border-inline-start-color: var(--rak-my-row-accent);
   }
+}
+
+// An open game's name, which opens Player Analysis. A final game's is a plain box.
+button.knockouts__player {
+  @include focus-ring;
+
+  border-block: 0;
+  border-inline-end: 0;
+  cursor: pointer;
+  transition: background-color var(--rak-duration-fast) var(--rak-ease-standard);
+
+  @include interactive-fill(
+    var(--rak-fill-muted),
+    color-mix(
+      in srgb,
+      var(--rak-fill-muted) var(--rak-press-strength),
+      var(--rak-text)
+    )
+  );
 }
 
 .knockouts__player-name {

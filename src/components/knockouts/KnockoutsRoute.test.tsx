@@ -371,11 +371,9 @@ describe("the knockouts route", () => {
         level: 4,
         name: "1 knocked out on DEN",
       });
-      const bob = within(heading.parentElement as HTMLElement).getByRole(
-        "button",
-        { name: "Bob" },
-      );
-      expect(bob).toHaveClass("--knocked-out");
+      const side = within(heading.parentElement as HTMLElement);
+      expect(side.queryByRole("button", { name: "Bob" })).toBeNull();
+      expect(side.getByText("Bob").parentElement).toHaveClass("--knocked-out");
       for (const carol of screen.getAllByRole("button", { name: "Carol" })) {
         expect(carol).not.toHaveClass("--knocked-out");
       }

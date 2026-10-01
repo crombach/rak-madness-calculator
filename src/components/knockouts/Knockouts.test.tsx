@@ -144,11 +144,11 @@ describe("Knockouts", () => {
     expect(headings.map((it) => it.textContent)).toEqual([
       "2 knocked out on MNF Points",
     ]);
+    const side = within(headings[0].parentElement as HTMLElement);
     expect(
-      within(headings[0].parentElement as HTMLElement)
-        .getAllByRole("button")
-        .map((button) => button.textContent),
+      side.getAllByRole("listitem").map((item) => item.textContent),
     ).toEqual(["Will Ferguson", "RunningBach"]);
+    expect(side.queryByRole("button")).toBeNull();
   });
 
   it("heads a College Score side by its tier, not the pick", () => {
@@ -177,11 +177,12 @@ describe("Knockouts", () => {
     );
     render(page(scores));
 
-    expect(
-      screen.getAllByRole("heading", { level: 4 }).map((it) => it.textContent),
-    ).toEqual(["1 knocked out on College Score"]);
-    expect(screen.getByRole("button", { name: "Bob" })).toHaveTextContent(
-      /^Bob$/,
-    );
+    const headings = screen.getAllByRole("heading", { level: 4 });
+    expect(headings.map((it) => it.textContent)).toEqual([
+      "1 knocked out on College Score",
+    ]);
+    const side = within(headings[0].parentElement as HTMLElement);
+    expect(side.getByRole("listitem")).toHaveTextContent(/^Bob$/);
+    expect(side.queryByRole("button")).toBeNull();
   });
 });

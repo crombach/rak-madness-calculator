@@ -10,7 +10,7 @@ with the players it knocked out.
   game to show, settled or not, redirects to the scoreboard with `replace`.
   Its games are grouped by `gameSections`, as on Games.
 - `KnockoutCard`: one game to a row. Its band opens `useGameStatus`. Each side
-  lists its players, a name opening `usePlayerAnalysis`. The sides sit beside
+  lists its players. An open game's names open `usePlayerAnalysis`. The sides sit beside
   each other once both fit. A pick side keeps those behind on total. A
   tiebreaker knockout goes under its tier's side, whatever the pick did.
 - `KnockoutsSkeleton`: `KnockoutCard`s on a stand-in game, text hidden under
