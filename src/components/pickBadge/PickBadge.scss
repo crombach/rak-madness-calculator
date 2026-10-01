@@ -4,17 +4,9 @@
 // cell is regular, since a badge this size thins out against its fill. An open
 // game's pick takes `--rak-count-chip-bg` under `--rak-text`.
 .pick-badge {
-  @include pick-type;
+  @include badge;
 
-  display: inline-block;
-  padding: 0.1em var(--rak-space-1);
-  border-radius: var(--rak-radius-sm);
-  background-color: var(--rak-count-chip-bg);
   color: var(--rak-text);
-  font-weight: var(--rak-weight-semibold);
-  line-height: var(--rak-line-height-tight);
-  letter-spacing: normal;
-  text-transform: none;
   white-space: nowrap;
 
   &.--scored {
