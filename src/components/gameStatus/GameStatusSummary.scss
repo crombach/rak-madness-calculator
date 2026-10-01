@@ -5,19 +5,22 @@
 @use "../../styles/picks" as *;
 @use "../../styles/text" as *;
 
-// Which side's score took the point and which one cost it, lit in the glass's own
-// pair, since the glass is dark in both modes. The names stay plain: the pick badges
-// carry the table's fills, and one green and one red per mode is all the dialog shows.
+// Which side a player had to pick to score the point, and which one cost them it,
+// in the two hues the picks table fills a cell with, the 400 step. A score lit on the
+// glass takes the glass's own pair, since the glass is dark in both modes.
 //
 // Neither side is marked where nobody scored, and the sentence under the scores names
 // the side in words, so nothing here rests on the hue alone.
-@mixin outcome {
+@mixin outcome(
+  $scored: var(--rak-success-400),
+  $missed: var(--rak-danger-400)
+) {
   &.--scored {
-    color: var(--rak-glass-scored);
+    color: $scored;
   }
 
   &.--missed {
-    color: var(--rak-glass-missed);
+    color: $missed;
   }
 }
 
@@ -327,6 +330,8 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
   font-size: var(--rak-text-lg);
   font-weight: var(--rak-weight-semibold);
   line-height: var(--rak-line-height-tight);
+
+  @include outcome;
 }
 
 .game-status__sr-only {
@@ -412,7 +417,7 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
     text-align: left;
   }
 
-  @include outcome;
+  @include outcome(var(--rak-glass-scored), var(--rak-glass-missed));
 }
 
 // Two digits wide whether the side has one or two, so a score going from 7 to 14

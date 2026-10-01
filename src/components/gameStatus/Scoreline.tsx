@@ -68,8 +68,8 @@ const SCORE_CELLS = 2;
 export type SideOutcome = "scored" | "missed";
 
 /**
- * How a side finished, as the two names the stylesheet's `outcome` mixin colors on a
- * score, and `PickBadge` fills on a pick.
+ * How a side finished, as the two names the stylesheet's `outcome` mixin colors. Both
+ * a score and the name beside it wear them, so the pair is the one hue.
  */
 export function outcomeClasses(outcome?: SideOutcome): Record<string, boolean> {
   return {

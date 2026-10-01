@@ -338,14 +338,17 @@ describe("GameStatusSummary, which side took the point", () => {
     // Buffalo won by ten, at home.
     const played = result(over);
     render(<GameStatusSummary game={game(played, spread)} result={played} />);
-    const teamOf = (pick: string) => pick.split(" ")[0];
     const textOf = (selector: string) =>
       [...document.querySelectorAll(selector)].map(
         (el) => el.textContent ?? "",
       );
     return {
-      scored: textOf(".game-status__picks .pick-badge.--scored").map(teamOf),
-      missed: textOf(".game-status__picks .pick-badge.--missed").map(teamOf),
+      scored: textOf(
+        ".game-status__team-name.--scored .game-status__name-short",
+      ),
+      missed: textOf(
+        ".game-status__team-name.--missed .game-status__name-short",
+      ),
       scores: [
         ...document.querySelectorAll(
           ".game-status__score.--scored .game-status__points",
