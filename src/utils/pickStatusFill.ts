@@ -9,8 +9,8 @@ import { Status } from "../types/RakMadnessScores";
  * beside this file is what holds them together.
  */
 export const PICK_STATUS_FILL: Record<Status, { rgb: string }> = {
-  yes: { rgb: "A1E9A3" },
-  no: { rgb: "FEC4BF" },
+  yes: { rgb: "8DE390" },
+  no: { rgb: "FFABA5" },
   unscoreable: { rgb: "F7E04F" },
   incomplete: { rgb: "FFFFFF" },
 };
