@@ -27,3 +27,17 @@
   color: var(--rak-text-secondary);
   font-size: var(--rak-text-#{$size});
 }
+
+/**
+ * A count set in a small fill, so it stands apart from the words beside it by
+ * shape rather than by color. Next to text of the same ink, as a pick count is
+ * before its game is decided, a bare `1 KC` reads as one word.
+ */
+@mixin count-chip {
+  display: inline-block;
+  padding: 0.1em var(--rak-space-1);
+  border-radius: var(--rak-radius-sm);
+  background: var(--rak-fill-muted);
+  color: var(--rak-text);
+  line-height: var(--rak-line-height-tight);
+}

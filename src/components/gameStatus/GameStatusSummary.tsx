@@ -31,7 +31,7 @@ const SIDE_LABEL: Record<"hosted" | "neutral", Record<HomeAway, string>> = {
 };
 
 /** Each side's pool count and its line, over the scoreline. */
-const POOL_LABEL = "All Picks";
+const POOL_LABEL = "Pool";
 
 /** The reader's own pick, ahead of the pool's. */
 const MY_PICK_LABEL = "Your Pick";

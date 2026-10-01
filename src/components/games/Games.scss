@@ -1,3 +1,4 @@
+@use "../../styles/a11y" as *;
 @use "../../styles/breakpoints" as *;
 @use "../../styles/label" as *;
 @use "../../styles/page" as *;
@@ -118,13 +119,23 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   @include section-title(sm);
 }
 
-// A fill the size of a title, sized from the stand-in title it never shows.
+.games__section-count {
+  @include count-chip;
+}
+
+.games__sr-only {
+  @include visually-hidden;
+}
+
+// A fill the size of a title and its count, drawn from a stand-in it hides.
 .games.--loading .games__section-title {
-  @include skeleton-reserve;
   @include skeleton-surface;
 
-  display: block;
   width: fit-content;
+
+  > * {
+    visibility: hidden;
+  }
 }
 
 // A real card drawn from a stand-in game, so it takes a loaded card's size. Its

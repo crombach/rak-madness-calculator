@@ -181,7 +181,7 @@ describe("GameStatusSummary, the game it is given", () => {
 });
 
 describe("GameStatusSummary, the pool and the reader's pick", () => {
-  const poolLine = () => screen.getByText(/^All Picks:/);
+  const poolLine = () => screen.getByText(/^Pool:/);
 
   it("gives each side the line it plays to", () => {
     render(
@@ -190,12 +190,12 @@ describe("GameStatusSummary, the pool and the reader's pick", () => {
         result={result()}
       />,
     );
-    expect(poolLine()).toHaveTextContent("All Picks: KC +3.5, BUF -3.5");
+    expect(poolLine()).toHaveTextContent("Pool: KC +3.5, BUF -3.5");
   });
 
   it("names the sides alone where the picks put no line on the game", () => {
     render(<GameStatusSummary game={game(result())} result={result()} />);
-    expect(poolLine()).toHaveTextContent("All Picks: KC, BUF");
+    expect(poolLine()).toHaveTextContent("Pool: KC, BUF");
   });
 
   it("splits the sides with a rule a screen reader hears as a comma", () => {
@@ -230,7 +230,7 @@ describe("GameStatusSummary, the pool and the reader's pick", () => {
     );
     const lead = document.querySelector(".game-status__lead");
     expect(lead?.firstElementChild).toHaveTextContent(/^Your Pick:/);
-    expect(lead?.lastElementChild).toHaveTextContent(/^All Picks:/);
+    expect(lead?.lastElementChild).toHaveTextContent(/^Pool:/);
   });
 
   it("says no pick and marks no side for a reader with no pick", () => {

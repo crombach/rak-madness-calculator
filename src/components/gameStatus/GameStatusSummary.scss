@@ -85,10 +85,8 @@
   white-space: nowrap;
 }
 
-// The main text color, which the team beside it also takes until the game is
-// over, so each count reads with the team it counts.
 .game-status__picks-count {
-  color: var(--rak-text);
+  @include count-chip;
 }
 
 // A comma would sit between two numbers, as in `-3, 1 DEN`. Drawn rather than

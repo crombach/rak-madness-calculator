@@ -164,7 +164,7 @@ describe("Games", () => {
   it("says no pick and marks no side with no name set", () => {
     mount(scores);
     const [first] = cards();
-    expect(within(first).getByText(/^All Picks:/)).toBeInTheDocument();
+    expect(within(first).getByText(/^Pool:/)).toBeInTheDocument();
     expect(within(first).queryByText(/^Your Pick:/)).toBeNull();
     expect(first.querySelector(".--picked")).toBeNull();
   });
@@ -207,7 +207,7 @@ describe("Games", () => {
     expect(
       screen
         .getAllByRole("heading", { level: 2 })
-        .map((heading) => heading.textContent),
+        .map((heading) => heading.querySelector("[id]")?.textContent),
     ).toEqual(["Live", "Today", "Tomorrow", "Upcoming", "Completed"]);
     expect(labelsIn("Live")).toEqual(["P3", "P1"]);
     expect(labelsIn("Today")).toEqual(["P4", "P2"]);
@@ -260,6 +260,17 @@ describe("Games", () => {
     expect(labelsIn("Completed")).toEqual(["C1", "P4", "P5"]);
   });
 
+  it("counts each section's games beside its title", () => {
+    mount(scores);
+    expect(
+      screen.getByRole("heading", { name: "Live 2 games" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Completed 1 game" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Live" })).toBeInTheDocument();
+  });
+
   it("leaves out Completed while no game is final", () => {
     mount({
       ...scores,
@@ -273,7 +284,7 @@ describe("Games", () => {
     expect(
       screen
         .getAllByRole("heading", { level: 2 })
-        .map((heading) => heading.textContent),
+        .map((heading) => heading.querySelector("[id]")?.textContent),
     ).toEqual(["Completed"]);
     expect(labelsIn("Completed")).toEqual(["C1"]);
   });
