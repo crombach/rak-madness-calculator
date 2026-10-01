@@ -7,10 +7,10 @@
 - `ScoresNavbar`: the results routes' scoreboard/picks switch, led by a live
   week's refresh. Clearing `isWeekLive` fades refresh and its divider out,
   then unmounts them.
-- `NavMenu`: the hamburger every page mounts. `ITEMS`, less Compare Players
-  without the opt-in, then Settings opening `SettingsDialog`. A wide-screen popup, a
-  drawer below it. `ITEMS` disables, never hides, an item. Its reason sits
-  under its name.
+- `NavMenu`: the hamburger every page mounts. Every `ITEMS` entry, then Settings
+  opening `SettingsDialog`. Compare Players shows only with the opt-in. A
+  wide-screen popup, a drawer below it. An item that does not apply is disabled,
+  never hidden. Its reason sits under its name.
 - `LogoButton`: `APP_NAME`, which it exports, as a target that goes home, set
   in `--rak-font-display`.
 
