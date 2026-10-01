@@ -91,6 +91,13 @@
   color: var(--rak-text);
 }
 
+// Lighter than the bold picks either side, so it reads as a divider rather than
+// as part of a pick. A comma would sit between two numbers, as in `-3, 1 DEN`.
+.game-status__picks-divider {
+  margin-inline: var(--rak-space-1);
+  font-weight: normal;
+}
+
 .game-status__picks-team {
   @include pick-face;
   @include outcome;

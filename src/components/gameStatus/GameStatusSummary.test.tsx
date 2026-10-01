@@ -190,12 +190,20 @@ describe("GameStatusSummary, the pool and the reader's pick", () => {
         result={result()}
       />,
     );
-    expect(poolLine()).toHaveTextContent("All Picks: KC +3.5, BUF -3.5");
+    expect(poolLine()).toHaveTextContent("All Picks: KC +3.5, | BUF -3.5");
   });
 
   it("names the sides alone where the picks put no line on the game", () => {
     render(<GameStatusSummary game={game(result())} result={result()} />);
-    expect(poolLine()).toHaveTextContent("All Picks: KC, BUF");
+    expect(poolLine()).toHaveTextContent("All Picks: KC, | BUF");
+  });
+
+  it("splits the sides with a pipe a screen reader hears as a comma", () => {
+    render(<GameStatusSummary game={game(result())} result={result()} />);
+    const pipe = poolLine().querySelector(".game-status__picks-divider");
+    expect(pipe).toHaveTextContent("|");
+    expect(pipe).toHaveAttribute("aria-hidden", "true");
+    expect(pipe?.previousElementSibling).toHaveClass("game-status__sr-only");
   });
 
   it("says the reader's own pick beside the pool's, and marks the side it names", () => {
