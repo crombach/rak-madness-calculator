@@ -11,6 +11,8 @@ a touch phone: Playwright `isMobile` and `hasTouch`, no hover, no refresh button
   and a `dark-tokens` mixin the OS or a saved `data-theme` applies. Its comment
   explains `<html>`'s overflow. Base UI is unstyled, so tokens plus SCSS carry
   the whole look.
+- `components/pickBadge/`: `PickBadge`, a pick outside the tables, filled as
+  its picks table cell is.
 - `setupTests.ts`: Vitest setup. jest-dom, a raised `asyncUtilTimeout`,
   `ResizeObserver` and `matchMedia` stubs, and the `jest` global shim
   `@testing-library/dom` needs to drive fake timers.

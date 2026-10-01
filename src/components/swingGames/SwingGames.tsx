@@ -9,6 +9,7 @@ import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
 import { SwingGame, SwingSide } from "../../utils/scoring/getSwingGames";
 import Button from "../button/Button";
+import PickBadge from "../pickBadge/PickBadge";
 import GameMark, {
   PlayerCountMark,
   gameMarkLabel,
@@ -43,7 +44,7 @@ function Side({ side }: { side: SwingSide }) {
     <div className="swing-games__side">
       <h4 className="swing-games__must-win">
         <span className="swing-games__count">{side.players.length}</span> must
-        win <span className="swing-games__pick">{side.pick}</span>
+        win <PickBadge pick={side.pick} />
       </h4>
       <ul ref={grid} className="swing-games__players">
         {shown.map((name) => (

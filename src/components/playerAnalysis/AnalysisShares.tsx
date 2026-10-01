@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PickShares } from "../../types/PlayerAnalysis";
 import plural, { verbFor } from "../../utils/plural";
 import Button from "../button/Button";
+import PickBadge from "../pickBadge/PickBadge";
 import { Section } from "./analysisParts";
 import { MondayNightPoints } from "./mondayNight";
 import "./AnalysisSummary.scss";
@@ -151,7 +152,7 @@ export default function AnalysisShares({
               <th scope="row">
                 <span className="analysis__share-pick">
                   <span className="analysis__pick-label">{share.label}</span>
-                  <span className="analysis__pick-team">{share.pick}</span>
+                  <PickBadge pick={share.pick} />
                 </span>
               </th>
               <td className="analysis__share">

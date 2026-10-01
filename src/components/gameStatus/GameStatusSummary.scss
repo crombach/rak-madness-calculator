@@ -101,13 +101,6 @@
   vertical-align: -0.1em;
 }
 
-.game-status__picks-team {
-  @include pick-face;
-  @include outcome;
-
-  color: var(--rak-text);
-}
-
 // A `meta-dot` and its margins.
 $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
 

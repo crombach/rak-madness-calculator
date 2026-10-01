@@ -167,14 +167,6 @@ $section-min: calc(
   @include count-chip;
 }
 
-.swing-games__pick {
-  @include pick-face;
-
-  color: var(--rak-text);
-  letter-spacing: normal;
-  text-transform: none;
-}
-
 .swing-games__more {
   @include fold-toggle;
 }

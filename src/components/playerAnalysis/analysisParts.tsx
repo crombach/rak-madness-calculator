@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { RemainingPick } from "../../types/PlayerAnalysis";
+import PickBadge from "../pickBadge/PickBadge";
 import "./AnalysisSummary.scss";
 
 export function Section({
@@ -40,7 +41,7 @@ export function Picks({
       {games.map((game) => (
         <li key={game.label} className="analysis__pick">
           <span className="analysis__pick-label">{game.label}</span>
-          <span className="analysis__pick-team">{game.pick}</span>
+          <PickBadge pick={game.pick} />
         </li>
       ))}
     </ul>

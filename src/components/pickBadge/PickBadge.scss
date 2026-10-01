@@ -1,0 +1,31 @@
+@use "../../styles/picks" as *;
+
+// The picks table's cell in small: its face, weight, inks and fills. An open game's
+// pick takes a rule rather than a fill, so it stays apart from a `count-chip` beside it.
+.pick-badge {
+  @include pick-type;
+
+  display: inline-block;
+  padding: 0.1em var(--rak-space-1);
+  border: var(--rak-border-width-hairline) solid var(--rak-border);
+  border-radius: var(--rak-radius-sm);
+  background-color: var(--rak-surface);
+  color: var(--rak-text);
+  font-weight: normal;
+  line-height: var(--rak-line-height-tight);
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+
+  &.--scored {
+    border-color: var(--rak-success-300);
+    background-color: var(--rak-success-300);
+    color: var(--rak-text-on-pale);
+  }
+
+  &.--missed {
+    border-color: var(--rak-danger-300);
+    background-color: var(--rak-danger-300);
+    color: var(--rak-text-on-pale);
+  }
+}
