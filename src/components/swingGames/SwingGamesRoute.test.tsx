@@ -147,7 +147,7 @@ describe("the swing games route", () => {
     ).toBeInTheDocument();
     await screen.findByText("KC at DEN");
     expect(
-      screen.getByText(`Swing Games · ${SEASON} Season · Week ${CURRENT_WEEK}`),
+      screen.getByText(`Swing Games • ${SEASON} Season • Week ${CURRENT_WEEK}`),
     ).toBeInTheDocument();
     expect(screen.queryAllByRole("button", { pressed: true })).toHaveLength(0);
     expect(screen.getByRole("button", { name: "Scoreboard" })).toBeEnabled();

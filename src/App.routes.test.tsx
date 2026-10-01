@@ -121,7 +121,7 @@ describe("the app: the URL decides which week is fetched, and what shows while i
   it("names the week over the wireframe, and does not change when the scores land", async () => {
     mountScoreboard(`/${SEASON}/${CURRENT_WEEK}/scoreboard`);
 
-    const expected = `Scoreboard · ${SEASON} Season · Week ${CURRENT_WEEK}`;
+    const expected = `Scoreboard • ${SEASON} Season • Week ${CURRENT_WEEK}`;
     expect(resultsCaption()).toHaveTextContent(expected);
 
     await screen.findByText("MNF Points Pick");

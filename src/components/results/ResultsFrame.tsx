@@ -18,6 +18,7 @@ import { League } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
+import SEPARATOR from "../../utils/separator";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
 import ComparePlayersSkeleton from "../comparePlayers/ComparePlayersSkeleton";
 import GamesSkeleton from "../games/GamesSkeleton";
@@ -63,7 +64,7 @@ const SKELETONS: Record<ResultsPage, ReactNode> = {
 };
 
 /** What the caption is sized from on a route that does not know the week yet. */
-const CAPTION_STAND_IN = "Scoreboard · 0000 Season · Week 00";
+const CAPTION_STAND_IN = `Scoreboard${SEPARATOR}0000 Season${SEPARATOR}Week 00`;
 
 /**
  * What the tables have opened, which is one thing at a time.
@@ -241,7 +242,7 @@ export default function ResultsFrame({
         >
           {seasonParam && weekParam && (
             <span className="results-caption__text">
-              {`${view} · ${weekName(seasonParam, weekParam)}`}
+              {`${view}${SEPARATOR}${weekName(seasonParam, weekParam)}`}
             </span>
           )}
         </p>

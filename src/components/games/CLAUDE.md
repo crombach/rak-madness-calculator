@@ -12,5 +12,6 @@ each.
 - `GameCard`: a `GameStatusSummary` banded with its label, name and `GameMark`.
 - `kickoffDay`: a kickoff's day in the reader's time zone.
 - `sectionTitles`: each section's title, apart from `Games` for the skeleton.
-- `GamesSkeleton`: one section under a blank title, `GameCard`s on a stand-in
-  game, text hidden under fills. Also while the week loads.
+- `SectionTitle`: a section's heading, its game count in a chip.
+- `GamesSkeleton`: one section under a blank title and count, `GameCard`s on a
+  stand-in game, text hidden under fills. Also while the week loads.

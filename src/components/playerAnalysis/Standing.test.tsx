@@ -43,13 +43,13 @@ describe("Standing", () => {
   it("counts the player picked back to the leader", () => {
     render(<Standing scores={scores} playerName="Alice" />);
 
-    expect(standingText()).toBe("2 points behind · 1 game remaining");
+    expect(standingText()).toBe("2 points behind • 1 game remaining");
   });
 
   it("ties the player picked to the lead where they hold it", () => {
     render(<Standing scores={scores} playerName="Rak" />);
 
-    expect(standingText()).toBe("Tied for the lead · 1 game remaining");
+    expect(standingText()).toBe("Tied for the lead • 1 game remaining");
   });
 
   /** The same week with nothing left open, which is a week that has a winner. */
@@ -65,7 +65,7 @@ describe("Standing", () => {
   it("calls the player picked the winner rather than tied for the lead", () => {
     render(<Standing scores={finished(scores)} playerName="Rak" />);
 
-    expect(standingText()).toBe("Winner · Week complete");
+    expect(standingText()).toBe("Winner • Week complete");
   });
 
   it("ties the player picked for the win where the top is shared", () => {
@@ -74,7 +74,7 @@ describe("Standing", () => {
     };
     render(<Standing scores={finished(tied)} playerName="Rak" />);
 
-    expect(standingText()).toBe("Tied for the win · Week complete");
+    expect(standingText()).toBe("Tied for the win • Week complete");
   });
 
   /** Level on points, told apart by the Monday night tiebreaker. */
@@ -97,13 +97,13 @@ describe("Standing", () => {
     render(<Standing scores={separatedWeek} playerName="Rak" />);
 
     // Level on points with Bill, so only the tiebreaker makes this one winner.
-    expect(standingText()).toBe("Winner · Week complete");
+    expect(standingText()).toBe("Winner • Week complete");
   });
 
   it("says the player picked lost the tiebreaker rather than tied for the win", () => {
     render(<Standing scores={separatedWeek} playerName="Bill" />);
 
-    expect(standingText()).toBe("Loses the tiebreaker to Rak · Week complete");
+    expect(standingText()).toBe("Loses the tiebreaker to Rak • Week complete");
   });
 
   it("calls a clinched player the winner even where games remain", () => {
@@ -120,7 +120,7 @@ describe("Standing", () => {
       />,
     );
 
-    expect(standingText()).toBe("Winner · 1 game remaining");
+    expect(standingText()).toBe("Winner • 1 game remaining");
   });
 
   it("ties a clinched player for the win where the top is shared", () => {
@@ -140,7 +140,7 @@ describe("Standing", () => {
       />,
     );
 
-    expect(standingText()).toBe("Tied for the win · 1 game remaining");
+    expect(standingText()).toBe("Tied for the win • 1 game remaining");
   });
 
   it("ignores a clinch that answers for a different player", () => {
@@ -157,7 +157,7 @@ describe("Standing", () => {
       />,
     );
 
-    expect(standingText()).toBe("Tied for the lead · 1 game remaining");
+    expect(standingText()).toBe("Tied for the lead • 1 game remaining");
   });
 
   /** The same week with one player out of it. */
@@ -176,7 +176,7 @@ describe("Standing", () => {
       <Standing scores={knockedOut(scores, "Alice")} playerName="Alice" />,
     );
 
-    expect(standingText()).toBe("Knocked out · 1 game remaining");
+    expect(standingText()).toBe("Knocked out • 1 game remaining");
   });
 
   it("marks a knockout, and leaves every standing a live player reads to the base hue", () => {
@@ -221,7 +221,7 @@ describe("Standing", () => {
 
     // Not the winner: a week with a hole in it has no result to state yet.
     expect(standingText()).toBe(
-      "Tied for the lead · 1 game could not be scored",
+      "Tied for the lead • 1 game could not be scored",
     );
   });
 
@@ -244,7 +244,7 @@ describe("Standing", () => {
     };
     render(<Standing scores={blank} playerName="Rak" />);
 
-    expect(standingText()).toBe("Winner · Week complete");
+    expect(standingText()).toBe("Winner • Week complete");
   });
 
   it("says no game has been played rather than ranking anyone", () => {
@@ -257,6 +257,6 @@ describe("Standing", () => {
     };
     render(<Standing scores={fresh} playerName="Rak" />);
 
-    expect(standingText()).toBe("No finished games · 2 games remaining");
+    expect(standingText()).toBe("No finished games • 2 games remaining");
   });
 });

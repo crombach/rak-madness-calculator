@@ -1,5 +1,8 @@
 // Mixins only, so this emits no CSS of its own however many files pull it in.
 
+/** The glyph `SEPARATOR` in `src/utils/separator.ts` spaces, for a `content` value. */
+$separator: "•";
+
 /**
  * One line, cut short with an ellipsis where it runs out of room.
  *

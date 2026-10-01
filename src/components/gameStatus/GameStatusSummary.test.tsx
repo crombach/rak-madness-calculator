@@ -198,6 +198,13 @@ describe("GameStatusSummary, the pool and the reader's pick", () => {
     expect(poolLine()).toHaveTextContent("Pool: KC, BUF");
   });
 
+  it("splits the sides with a rule a screen reader hears as a comma", () => {
+    render(<GameStatusSummary game={game(result())} result={result()} />);
+    const rule = poolLine().querySelector(".game-status__picks-divider");
+    expect(rule).toHaveAttribute("aria-hidden", "true");
+    expect(rule?.previousElementSibling).toHaveClass("game-status__sr-only");
+  });
+
   it("says the reader's own pick beside the pool's, and marks the side it names", () => {
     render(
       <GameStatusSummary
@@ -206,7 +213,9 @@ describe("GameStatusSummary, the pool and the reader's pick", () => {
         myPick="kc +3"
       />,
     );
-    expect(screen.getByText(/^You:/)).toHaveTextContent("You: kc +3");
+    expect(screen.getByText(/^Your Pick:/)).toHaveTextContent(
+      "Your Pick: kc +3",
+    );
     const inScoreline = document.querySelector(
       ".game-status__team-name.--picked",
     );
@@ -215,9 +224,18 @@ describe("GameStatusSummary, the pool and the reader's pick", () => {
     expect(document.querySelectorAll(".--picked")).toHaveLength(1);
   });
 
+  it("puts the reader's own pick ahead of the pool's", () => {
+    render(
+      <GameStatusSummary game={game(result())} result={result()} myPick="kc" />,
+    );
+    const lead = document.querySelector(".game-status__lead");
+    expect(lead?.firstElementChild).toHaveTextContent(/^Your Pick:/);
+    expect(lead?.lastElementChild).toHaveTextContent(/^Pool:/);
+  });
+
   it("says no pick and marks no side for a reader with no pick", () => {
     render(<GameStatusSummary game={game(result())} result={result()} />);
-    expect(screen.queryByText(/^You:/)).toBeNull();
+    expect(screen.queryByText(/^Your Pick:/)).toBeNull();
     expect(document.querySelector(".--picked")).toBeNull();
   });
 });

@@ -3,6 +3,7 @@
 @use "../../styles/label" as *;
 @use "../../styles/lcd" as *;
 @use "../../styles/picks" as *;
+@use "../../styles/text" as *;
 
 // Which side a player had to pick to score the point, and which one cost them it,
 // in the two hues the picks table fills a cell with, the 400 step. A score lit on the
@@ -25,7 +26,7 @@
 
 // What separates one part of the strip under the scoreline from the next.
 @mixin meta-dot {
-  content: "·";
+  content: $separator;
   margin-inline: var(--rak-space-2);
 }
 
@@ -70,7 +71,7 @@
   }
 }
 
-// Each side's pool count and line, then the reader's own pick, over the
+// The reader's own pick, then each side's pool count and line, over the
 // scoreline they decide. Both take the gray the labels over the two names use,
 // so they read as one tier of the dialog.
 .game-status__picks,
@@ -85,10 +86,19 @@
   white-space: nowrap;
 }
 
-// The main text color, which the team beside it also takes until the game is
-// over, so each count reads with the team it counts.
 .game-status__picks-count {
-  color: var(--rak-text);
+  @include count-chip;
+}
+
+// A comma would sit between two numbers, as in `-3, 1 DEN`. Drawn rather than
+// typed, since a `|` glyph's height and weight are the font's, and this face
+// drops it below the baseline.
+.game-status__picks-divider {
+  display: inline-block;
+  height: 0.9em;
+  margin-inline: var(--rak-space-2);
+  border-inline-start: var(--rak-border-width-hairline) solid var(--rak-border);
+  vertical-align: -0.1em;
 }
 
 .game-status__picks-team {
@@ -99,29 +109,38 @@
 }
 
 // A `meta-dot` and its margins.
-$lead-dot: calc(2 * var(--rak-space-2) + 0.3em);
+$lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
 
-// The pool's picks, then the reader's, on one line where both fit. The dot
-// between them takes no room of its own, so dropping it once the line wraps
-// cannot unwrap it again.
+// The reader's pick over the pool's on a phone, two lines whatever either holds,
+// so no game's card reads differently from the next. A wider screen sets them on
+// one line with a dot between, wrapping where a narrow card cannot hold both. The
+// dot takes no room of its own, so dropping it once the line wraps cannot unwrap
+// it again.
 .game-status__lead {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: baseline;
-  gap: var(--rak-space-1) $lead-dot;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--rak-space-1);
 
-  .game-status__picks + .game-status__my-pick {
-    position: relative;
-  }
+  @include wide-screen {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    gap: var(--rak-space-1) $lead-dot;
 
-  &:not(.--wrapped) .game-status__picks + .game-status__my-pick::before {
-    content: "·";
-    position: absolute;
-    right: 100%;
-    width: $lead-dot;
-    color: var(--rak-text-secondary);
-    text-align: center;
+    .game-status__my-pick + .game-status__picks {
+      position: relative;
+    }
+
+    &:not(.--wrapped) .game-status__my-pick + .game-status__picks::before {
+      content: $separator;
+      position: absolute;
+      right: 100%;
+      width: $lead-dot;
+      color: var(--rak-text-secondary);
+      text-align: center;
+    }
   }
 }
 
@@ -130,7 +149,7 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.3em);
 //
 // One line where the dialog is wide enough to hold both halves, wrapping back to two
 // where it is not. Set apart by the space between them rather than by a glyph, since
-// each half already reads with a `·` inside it.
+// each half already reads with a `•` inside it.
 .game-status__meta {
   display: flex;
   flex-direction: column;

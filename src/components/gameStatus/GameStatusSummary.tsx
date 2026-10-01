@@ -33,8 +33,8 @@ const SIDE_LABEL: Record<"hosted" | "neutral", Record<HomeAway, string>> = {
 /** Each side's pool count and its line, over the scoreline. */
 const POOL_LABEL = "Pool";
 
-/** The reader's own pick, beside the pool's. */
-const MY_PICK_LABEL = "You";
+/** The reader's own pick, ahead of the pool's. */
+const MY_PICK_LABEL = "Your Pick";
 
 /** Read out beside the side the reader picked, to a screen reader alone. */
 const PICKED_SIDE_LABEL = "Your pick";
@@ -258,10 +258,6 @@ function Game({
         className={getClasses("game-status__lead", { "--wrapped": wrapped })}
         ref={lead}
       >
-        <p className="game-status__picks">
-          {POOL_LABEL}: {sidePicks(result.away, split?.away)},{" "}
-          {sidePicks(result.home, split?.home)}
-        </p>
         {myPick != null && (
           <p className="game-status__my-pick">
             {MY_PICK_LABEL}:{" "}
@@ -277,6 +273,12 @@ function Game({
             </span>
           </p>
         )}
+        <p className="game-status__picks">
+          {POOL_LABEL}: {sidePicks(result.away, split?.away)}
+          <span className="game-status__sr-only">, </span>
+          <span className="game-status__picks-divider" aria-hidden="true" />
+          {sidePicks(result.home, split?.home)}
+        </p>
       </div>
       <div
         className={getClasses("game-status__scoreline", {

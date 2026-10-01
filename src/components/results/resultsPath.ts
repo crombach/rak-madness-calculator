@@ -1,3 +1,5 @@
+import SEPARATOR from "../../utils/separator";
+
 /** Every results page, by the label its caption and its nav control read. */
 export const RESULTS_PAGE = {
   scoreboard: "Scoreboard",
@@ -64,12 +66,12 @@ export function isScoresView(page: ResultsPage): page is ScoresView {
   return PAGES[page].isTable;
 }
 
-/** How a week reads as text, as in "2026 Season · Week 3". */
+/** How a week reads as text, as in "2026 Season • Week 3". */
 export function weekName(
   season: number | string,
   week: number | string,
 ): string {
-  return `${season} Season · Week ${week}`;
+  return `${season} Season${SEPARATOR}Week ${week}`;
 }
 
 // `season`/`week` stay optional. A caller with no week selected yet still needs

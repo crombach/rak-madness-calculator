@@ -11,6 +11,7 @@ import { ESPN_LEAGUE, LeagueResults } from "../../utils/scoring/leagueResults";
 import EmptyState from "../pageLayout/EmptyState";
 import kickoffDay from "./kickoffDay";
 import GameCard from "./GameCard";
+import SectionTitle from "./SectionTitle";
 import { COMPLETED_TITLE, DAYS, LIVE_TITLE } from "./sectionTitles";
 import "./Games.scss";
 
@@ -46,13 +47,19 @@ function PoolGame({
   );
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({
+  title,
+  count,
+  children,
+}: {
+  title: string;
+  count: number;
+  children: ReactNode;
+}) {
   const id = useId();
   return (
     <section className="games__section" aria-labelledby={id}>
-      <h2 id={id} className="games__section-title">
-        {title}
-      </h2>
+      <SectionTitle id={id} title={title} count={count} />
       {children}
     </section>
   );
@@ -124,7 +131,7 @@ export default function Games({
       )}
       {scores != null &&
         sections.map(({ title, games }) => (
-          <Section key={title} title={title}>
+          <Section key={title} title={title} count={games.length}>
             <ul className="games__list">
               {games.map(({ game, result }) => (
                 <PoolGame

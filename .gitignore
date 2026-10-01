@@ -14,6 +14,9 @@
 # misc
 .DS_Store
 
+# Vim swap files: .swp, then .swo, .swn and on for each further session
+*.sw[a-p]
+
 # Local secrets. Vite reads .env and .env.<mode>. wrangler reads .dev.vars.
 # Ignore the whole family rather than naming modes, so a new one cannot slip in.
 .env

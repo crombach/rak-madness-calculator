@@ -6,6 +6,7 @@ import rangeWithPrefix from "../../utils/rangeWithPrefix";
 import { RESULTS_PAGE } from "../results/resultsPath";
 import SkeletonStatus from "../pageLayout/SkeletonStatus";
 import GameCard from "./GameCard";
+import SectionTitle from "./SectionTitle";
 import { COMPLETED_TITLE } from "./sectionTitles";
 import "./Games.scss";
 
@@ -61,10 +62,7 @@ export default function GamesSkeleton() {
       <SkeletonStatus page={RESULTS_PAGE.games} />
       <div className="games --loading" aria-hidden="true" inert>
         <div className="games__section">
-          <span
-            className="games__section-title"
-            data-skeleton-text={COMPLETED_TITLE}
-          />
+          <SectionTitle title={COMPLETED_TITLE} count={STAND_IN_GAMES} />
           <ul className="games__list">
             {rangeWithPrefix(STAND_IN_GAMES, "G").map((key) => (
               <GameCard

@@ -22,6 +22,7 @@ new style for something the app already renders elsewhere. UI words: `glossary` 
 | Left rule blocks                                | `ruled-block($rule)`: `$rule-required` (red, must-win), `$rule-option` (gold, routes and pools), `$rule-alive` (blue, players still in contention)                                                                            | `src/styles/_picks.scss`                                            |
 | Small tracked capitals                          | `micro-label`                                                                                                                                                                                                                 | `src/styles/_label.scss`                                            |
 | Counts ("13 players", "3 games remaining")      | `plural` and `verbFor`. Never an inline singular/plural switch                                                                                                                                                                | `src/utils/plural.ts`                                               |
+| Count beside a word ("LIVE 2", "Pool: 1 KC")    | `count-chip`, fill `--rak-count-chip-bg`, ink `--rak-mark-count-text`. Never a bare number in its neighbor's ink                                                                                                              | `src/styles/_label.scss`                                            |
 | Fold toggles                                    | Text "Show More" / "Show Fewer", `fold-toggle` mixin. Fold at whole rows                                                                                                                                                      | `src/styles/_fold.scss`                                             |
 | Bands and section headers                       | `--rak-band-header` fill, `--rak-on-solid` ink. Every card band, swing groups included, takes `--rak-band-card`                                                                                                               | `src/index.scss`                                                    |
 | Page body (not a table)                         | `page-body` mixin                                                                                                                                                                                                             | `src/styles/_page.scss`                                             |
@@ -34,6 +35,7 @@ new style for something the app already renders elsewhere. UI words: `glossary` 
 | Hover and press fill                            | `interactive-fill($hover, $press, $also-pressed)`. Hand-written `:hover`/`:active` fills are wrong                                                                                                                            | `src/styles/_interactive.scss`                                      |
 | Dialog insets                                   | `--rak-dialog-pad`, `--rak-dialog-max-height`. Section column: `dialog-column`. Flex column: `stacked($gap)`                                                                                                                  | `src/components/dialog/DialogShell.scss`, `src/styles/_layout.scss` |
 | Dividers                                        | `--rak-divider-strong` between blocks and under a dialog header. `--rak-divider-soft` between rows of one block                                                                                                               | `src/index.scss`                                                    |
+| Split between two sides of one line             | A drawn hairline rule, `.game-status__picks-divider`, hidden from a screen reader beside a hidden ", "                                                                                                                        | `src/components/gameStatus/GameStatusSummary.scss`                  |
 | Ink on a fill fixed in both themes              | `--rak-ink-fixed-light`                                                                                                                                                                                                       | `src/index.scss`                                                    |
 
 ## States and chrome
@@ -47,8 +49,9 @@ new style for something the app already renders elsewhere. UI words: `glossary` 
   is settled. Otherwise it says why, such as "Needs two players".
 - Button text in title case: "Choose Players", "Show More". Not an icon button's
   `aria-label`, which no one sees.
-- One line of separate facts splits them with `·`. The items of one list split
-  with a comma. Never a `·` inside a list.
+- One line of separate facts splits them with `SEPARATOR` (`src/utils/separator.ts`),
+  or `$separator` in a stylesheet's `content`. The items of one list split with a
+  comma. Never a separator inside a list.
 - A loading placeholder for a view one component draws is that component on
   stand-in data, its text hidden under `skeleton-surface` fills, so it takes the
   loaded size. `GamesSkeleton` is the model.
@@ -64,7 +67,7 @@ new style for something the app already renders elsewhere. UI words: `glossary` 
   Real spaces or `gap`, never a margin standing in for one. Half and 1.5 steps:
   `--rak-space-half`, `--rak-space-1-5`.
 - Page anatomy: navbar, a visually hidden `<h1>` (`.page__title`), the caption
-  `View · Week` on every results page, then the page body.
+  `View • Week` on every results page, then the page body.
 - Redirect a reader without the experimental opt-in only through `ExperimentalGate`.
 - Literal sizes allowed: `1px` hairlines, safe-area `env()`, `em` gaps that scale
   with font, `--rak-block-inset`, table row heights. Any other literal becomes a token.

@@ -48,7 +48,7 @@ describe("the results caption", () => {
 
       await waitFor(() =>
         expect(resultsCaption()).toHaveTextContent(
-          `${page} · ${weekName(SEASON, CURRENT_WEEK)}`,
+          `${page} • ${weekName(SEASON, CURRENT_WEEK)}`,
         ),
       );
       expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(page);
