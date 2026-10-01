@@ -487,12 +487,12 @@
   --rak-stripe-with: #2e2e2e;
 
   // How far a cell under the pointer is taken from the fill it carries, striped
-  // or not. Both are set well past the stripe above, so a cell darkened by the
-  // pointer is never read as the striped row below it. The pressed step is as
-  // dark as a cell goes: black text on a striped knocked-out cell still clears
-  // 5:1 there.
-  --rak-hover-strength: 82%;
-  --rak-press-strength: 75%;
+  // or not. The hover step is near the stripe above, but it darkens a column,
+  // which runs across the stripes, so the two do not read as one mark. The
+  // pressed step is as dark as a cell goes: black text on a striped knocked-out
+  // cell still clears 5:1 there.
+  --rak-hover-strength: 88%;
+  --rak-press-strength: 82%;
 
   // The status icon beside a player's name, drawn the same size wherever the
   // name is. The wireframe leaves this much room without drawing one.
