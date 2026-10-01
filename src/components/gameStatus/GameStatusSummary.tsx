@@ -275,10 +275,8 @@ function Game({
         )}
         <p className="game-status__picks">
           {POOL_LABEL}: {sidePicks(result.away, split?.away)}
-          <span className="game-status__sr-only">,</span>{" "}
-          <span className="game-status__picks-divider" aria-hidden="true">
-            |
-          </span>{" "}
+          <span className="game-status__sr-only">, </span>
+          <span className="game-status__picks-divider" aria-hidden="true" />
           {sidePicks(result.home, split?.home)}
         </p>
       </div>

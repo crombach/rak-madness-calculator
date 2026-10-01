@@ -91,11 +91,15 @@
   color: var(--rak-text);
 }
 
-// Lighter than the bold picks either side, so it reads as a divider rather than
-// as part of a pick. A comma would sit between two numbers, as in `-3, 1 DEN`.
+// A comma would sit between two numbers, as in `-3, 1 DEN`. Drawn rather than
+// typed, since a `|` glyph's height and weight are the font's, and this face
+// drops it below the baseline.
 .game-status__picks-divider {
-  margin-inline: var(--rak-space-1);
-  font-weight: normal;
+  display: inline-block;
+  height: 0.9em;
+  margin-inline: var(--rak-space-2);
+  border-inline-start: var(--rak-border-width-hairline) solid var(--rak-border);
+  vertical-align: -0.1em;
 }
 
 .game-status__picks-team {
