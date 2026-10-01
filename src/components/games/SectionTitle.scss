@@ -2,7 +2,7 @@
 @use "../../styles/label" as *;
 @use "../../styles/skeleton" as *;
 
-// Each one heads a list of full cards rather than a few lines.
+// A section title heads a list of full cards rather than a few lines.
 .section-title {
   @include section-title(sm);
 }

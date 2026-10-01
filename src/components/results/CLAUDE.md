@@ -14,6 +14,6 @@ week worth showing.
 - `ResultsFrame`: the page and wireframe both `ResultsLayout` and
   `CurrentWeekRedirect` render into, captioned by view and week. Holds both
   dialogs lazily and the table providers. A failed week gets Retry and Home. `canRefresh` arms refresh and `pull`
-  on a live week, off Games.
+  on a live week, off the card pages.
 - `DialogLoadBoundary`: catches a dialog chunk a deploy replaced.
 - `ResultsFrame.scss`: the column table and wireframe share, the caption.

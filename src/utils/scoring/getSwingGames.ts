@@ -124,8 +124,8 @@ function kickoffOf(scores: RakMadnessScores, label: string): number {
  * game's, so a player two games could each have knocked out is credited to the
  * first of them. A knockout on a game the player left blank names no side.
  *
- * A pass of the knockouts per final game rather than a must-win verdict per player
- * per game, which costs five times as much on a Sunday night.
+ * One pass of the knockouts per final game, not a must-win verdict per player per
+ * game, which is too slow on a busy Sunday.
  */
 function knockoutSides(
   scores: RakMadnessScores,

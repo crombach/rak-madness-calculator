@@ -8,7 +8,7 @@ with the players it knocked out.
   `useSwingGames` and `rescore`, mounted lazily by `App.tsx` behind `swings`.
 - `SwingGames`: polls as `Games` does, and draws its busy bar. A week with no
   swing game, won or not, redirects to the scoreboard with `replace`.
-  Games sit in All Games' `gameSections`.
+  Its games are grouped by `gameSections`, as on All Games.
 - `SwingGameCard`: one game. Its title opens `useGameStatus`, and each side
   lists its players, a name opening `usePlayerAnalysis`.
 - `SwingGamesSkeleton`: `SwingGameCard`s on a stand-in game, text hidden under

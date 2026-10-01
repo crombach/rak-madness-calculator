@@ -5,6 +5,12 @@ vi.mock("../../utils/getLeagueInfo");
 vi.mock("../../utils/readFileToBuffer");
 vi.mock("../../utils/scoring/getPlayerScores");
 vi.mock("../../utils/buildSpreadsheetBuffer");
+// The page itself, spied on, so the gate's own test can tell the page never
+// mounted rather than read a redirect the page would make on its own.
+vi.mock("./SwingGames", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./SwingGames")>();
+  return { default: vi.fn(actual.default) };
+});
 
 import {
   CURRENT_WEEK,
@@ -22,6 +28,7 @@ import {
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import plural from "../../utils/plural";
+import SwingGames from "./SwingGames";
 import {
   delayedGame,
   finalGame,
@@ -652,6 +659,7 @@ describe("the swing games route", () => {
 
     it("sends a reader without experimental features to the scoreboard in place of the page", async () => {
       localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
+      vi.mocked(SwingGames).mockClear();
       const user = mountApp(SWINGS_PATH, {
         earlier: ["/"],
         beside: <BackButton />,
@@ -663,6 +671,7 @@ describe("the swing games route", () => {
           name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
         }),
       ).toBeInTheDocument();
+      expect(SwingGames).not.toHaveBeenCalled();
 
       await user.click(screen.getByRole("button", { name: "Back" }));
 
