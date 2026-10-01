@@ -16,7 +16,10 @@ export type SwingSide = {
 export type SwingGame = {
   label: string;
   name: string;
-  /** Most players first. */
+  /**
+   * The away side first, as the game is named and as Game Status sets it. Most
+   * players first where no result says which side is away.
+   */
   sides: Array<SwingSide>;
 };
 

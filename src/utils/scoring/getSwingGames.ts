@@ -46,14 +46,16 @@ export default function getSwingGames(scores: RakMadnessScores): SwingGames {
   const games = open.flatMap((game): Array<SwingGame> => {
     const sides = sidesByLabel.get(game.label);
     if (sides == null) return [];
+    const weekGame = scores.games?.find((it) => it.label === game.label);
+    const away = weekGame?.result?.away.team.abbreviation;
+    const isAway = (side: SwingSide) => Number(side.team === away);
     return [
       {
         label: game.label,
-        name:
-          scores.games?.find((it) => it.label === game.label)?.name ??
-          game.label,
+        name: weekGame?.name ?? game.label,
         sides: [...sides.values()].sort(
-          (a, b) => b.players.length - a.players.length,
+          (a, b) =>
+            isAway(b) - isAway(a) || b.players.length - a.players.length,
         ),
       },
     ];
