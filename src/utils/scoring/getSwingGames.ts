@@ -117,7 +117,7 @@ function kickoffOf(scores: RakMadnessScores, label: string): number {
 }
 
 /**
- * Each final game that knocked someone out, with the side they lost on.
+ * Each final game that knocked someone out, with the side they picked.
  *
  * The final games are played back in kickoff order, table order among those
  * kicking off together. A player standing before a game and out after it is that
@@ -175,12 +175,16 @@ function knockoutSides(
         sides = new Map();
         sidesByLabel.set(label, sides);
       }
-      const side = sides.get(team);
+      // By team and outcome, so two spreads on one team that scored apart never
+      // share one badge.
+      const hasScored = cell.status === "yes";
+      const key = `${team} ${hasScored}`;
+      const side = sides.get(key);
       if (side == null) {
-        sides.set(team, {
+        sides.set(key, {
           team,
           pick: cell.pick,
-          hasScored: cell.status === "yes",
+          hasScored,
           players: [player.name],
         });
       } else {

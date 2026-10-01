@@ -102,4 +102,34 @@ describe("SwingGames", () => {
 
     vi.useRealTimers();
   });
+  it("says when a pick that scored still went out on the MNF Points", () => {
+    const scores = week(
+      [
+        player({
+          name: "Alice",
+          total: 5,
+          pro: [pick("KC", "yes")],
+          tiebreakerPick: 40,
+          distance: 1,
+        }),
+        player({
+          name: "Bob",
+          total: 5,
+          pro: [pick("KC", "yes")],
+          tiebreakerPick: 50,
+          distance: 9,
+          isKnockedOut: true,
+        }),
+      ],
+      41,
+    );
+    render(page(scores));
+
+    expect(
+      screen.getByRole("heading", {
+        level: 4,
+        name: "1 knocked out on MNF Points despite KC",
+      }),
+    ).toBeInTheDocument();
+  });
 });

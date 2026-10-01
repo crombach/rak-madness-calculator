@@ -19,6 +19,8 @@ import "./SwingGames.scss";
 
 const MUST_WIN = "must win";
 const KNOCKED_OUT = "knocked out on";
+// A pick that scored and still lost the week, on the MNF Points.
+const KNOCKED_OUT_ON_POINTS = "knocked out on MNF Points despite";
 
 /** How many rows of names a folded side shows. */
 const FOLDED_ROWS = 2;
@@ -55,7 +57,11 @@ function Side({
     <div className="swing-games__side">
       <h4 className="swing-games__must-win">
         <CountBadge>{side.players.length}</CountBadge>{" "}
-        {isFinal ? KNOCKED_OUT : MUST_WIN}{" "}
+        {!isFinal
+          ? MUST_WIN
+          : side.hasScored
+            ? KNOCKED_OUT_ON_POINTS
+            : KNOCKED_OUT}{" "}
         <PickBadge
           pick={side.pick}
           outcome={isFinal ? (side.hasScored ? "scored" : "missed") : undefined}
@@ -139,7 +145,7 @@ export default function SwingGameCard({
       <div className="swing-games__sides">
         {game.sides.map((side) => (
           <Side
-            key={side.team}
+            key={`${side.team} ${side.hasScored}`}
             side={side}
             isFinal={game.isFinal}
             knockedOut={knockedOut}

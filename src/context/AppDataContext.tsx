@@ -310,8 +310,8 @@ const loadGetSwingGames = cachedImport(
 
 /**
  * The week's swing games, or undefined while its scores or the code that reads
- * them load. Skips the work and answers empty, the same as a decided week, while
- * the reader has not opted into experimental features.
+ * them load. Skips the work and answers empty while the reader has not opted into
+ * experimental features.
  */
 export function useSwingGames(): SwingGames | undefined {
   const scores = useScores();

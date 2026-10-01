@@ -308,6 +308,40 @@ describe("getSwingGames", () => {
     ]);
   });
 
+  it("splits one team's knockouts by whether each pick scored", () => {
+    const scores = week(
+      [
+        player({
+          name: "Alice",
+          total: 5,
+          pro: [pick("KC -3", "yes")],
+          tiebreakerPick: 40,
+          distance: 1,
+        }),
+        player({
+          name: "Bob",
+          total: 5,
+          pro: [pick("KC -3", "yes")],
+          tiebreakerPick: 50,
+          distance: 9,
+          isKnockedOut: true,
+        }),
+        player({
+          name: "Carol",
+          total: 4,
+          pro: [pick("KC -7", "no")],
+          isKnockedOut: true,
+        }),
+      ],
+      41,
+    );
+
+    expect(getSwingGames(scores).games[0].sides).toEqual([
+      { team: "KC", pick: "KC -3", hasScored: true, players: ["Bob"] },
+      { team: "KC", pick: "KC -7", hasScored: false, players: ["Carol"] },
+    ]);
+  });
+
   it("credits a player two final games knocked out to the one that kicked off first", () => {
     // Bob, a point behind Alice, needed both P1 and P2. P2 kicked off first, and
     // once it was lost P1 could no longer knock him out.
