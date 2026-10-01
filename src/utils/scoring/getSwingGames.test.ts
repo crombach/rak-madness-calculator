@@ -4,7 +4,7 @@ import { PlayerAnalysis } from "../../types/PlayerAnalysis";
 import getPlayerAnalysis, { MAX_SEARCHED_GAMES } from "./getPlayerAnalysis";
 import getSwingGames, { SwingGames } from "./getSwingGames";
 import parsePick from "./parsePick";
-import { upcomingGame } from "./leagueResultFixtures";
+import { finalGame, upcomingGame } from "./leagueResultFixtures";
 import { pick, player, week } from "./scoringTestFixtures";
 
 describe("getSwingGames", () => {
@@ -22,6 +22,7 @@ describe("getSwingGames", () => {
         {
           label: "P1",
           name: "KC at DEN",
+          isFinal: false,
           sides: [{ team: "KC", pick: "KC", players: ["Alice", "Bob"] }],
         },
       ],
@@ -38,6 +39,7 @@ describe("getSwingGames", () => {
       {
         label: "P1",
         name: "P1",
+        isFinal: false,
         sides: [
           { team: "KC", pick: "KC -3", players: ["Alice"] },
           { team: "DEN", pick: "DEN +3", players: ["Bob"] },
@@ -87,6 +89,7 @@ describe("getSwingGames", () => {
       {
         label: "P1",
         name: "P1",
+        isFinal: false,
         sides: [{ team: "DEN", pick: "DEN", players: ["Bob"] }],
       },
     ]);
@@ -183,17 +186,98 @@ describe("getSwingGames", () => {
       {
         label: "P1",
         name: "P1",
+        isFinal: false,
         sides: [{ team: "KC", pick: "KC", players: ["Alice", "Bob"] }],
       },
       {
         label: "P2",
         name: "P2",
+        isFinal: false,
         sides: [
           { team: "SF", pick: "SF", players: ["Carol", "Alice", "Bob"] },
           { team: "LAR", pick: "LAR", players: ["Dan"] },
         ],
       },
     ]);
+  });
+
+  it("names who a final game knocked out", () => {
+    // Before P1 all three stood on 4. KC put Alice and Carol on 5, and Bob, level
+    // with Alice on every game left, can no longer pass her.
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 5,
+        pro: [pick("KC", "yes"), pick("SF"), pick("MIA")],
+      }),
+      player({
+        name: "Carol",
+        total: 5,
+        pro: [pick("KC", "yes"), pick("LAR"), pick("NYJ")],
+      }),
+      player({
+        name: "Bob",
+        total: 4,
+        pro: [pick("DEN", "no"), pick("SF"), pick("MIA")],
+        isKnockedOut: true,
+      }),
+    ]);
+
+    expect(getSwingGames(scores).games[0]).toEqual({
+      label: "P1",
+      name: "P1",
+      isFinal: true,
+      sides: [{ team: "DEN", pick: "DEN", players: ["Bob"] }],
+    });
+  });
+
+  it("credits a player two final games knocked out to the one that kicked off first", () => {
+    // Bob, a point behind Alice, needed both P1 and P2. P2 kicked off first, and
+    // once it was lost P1 could no longer knock him out.
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 6,
+        pro: [pick("KC", "yes"), pick("SF", "yes"), pick("MIA")],
+      }),
+      player({
+        name: "Carol",
+        total: 6,
+        pro: [pick("KC", "yes"), pick("SF", "yes"), pick("NYJ")],
+      }),
+      player({
+        name: "Bob",
+        total: 3,
+        pro: [pick("DEN", "no"), pick("LAR", "no"), pick("MIA")],
+        isKnockedOut: true,
+      }),
+    ]);
+    const kickedOffAt = (game: ReturnType<typeof finalGame>, at: string) => ({
+      ...game,
+      date: new Date(at),
+    });
+    scores.games = [
+      {
+        label: "P1",
+        league: League.PRO,
+        name: "KC at DEN",
+        result: kickedOffAt(
+          finalGame({ home: "DEN", away: "KC", homeScore: 10, awayScore: 20 }),
+          "2024-10-06T20:25:00Z",
+        ),
+      },
+      {
+        label: "P2",
+        league: League.PRO,
+        name: "SF at LAR",
+        result: kickedOffAt(
+          finalGame({ home: "LAR", away: "SF", homeScore: 10, awayScore: 20 }),
+          "2024-10-06T17:00:00Z",
+        ),
+      },
+    ];
+
+    expect(swingPicks(getSwingGames(scores), "Bob")).toEqual(["P2 LAR"]);
   });
 
   it("leaves out a game the search names only among the ways that tie on points", () => {
@@ -228,16 +312,19 @@ describe("getSwingGames", () => {
       {
         label: "P1",
         name: "P1",
+        isFinal: false,
         sides: [{ team: "KC", pick: "KC", players: ["Carol"] }],
       },
       {
         label: "P2",
         name: "P2",
+        isFinal: false,
         sides: [{ team: "KC", pick: "KC -3", players: ["Carol"] }],
       },
       {
         label: "P3",
         name: "P3",
+        isFinal: false,
         sides: [{ team: "DEN", pick: "DEN +3", players: ["Carol"] }],
       },
     ]);

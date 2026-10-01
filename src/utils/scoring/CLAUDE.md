@@ -35,7 +35,7 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
   the answers a week already holds, which the dialog asks before it waits,
   and `getMustWin`, the must-win games proven at n+1 verdicts, no search needed
 - `getSwingGames`: those must-win games by game instead of by player, each side
-  keyed by team, for the swing games page
+  keyed by team, plus who each final game knocked out, for the swing games page
 - `swingGameTypes`: its types and `NO_SWINGS`, outside the lazy chunk
 - `leagueResultFixtures`: test game builders, and `weekOf`, one league's week
 - `scoringTestFixtures`: player and week builders, shared by `getPlayerAnalysis`'s
