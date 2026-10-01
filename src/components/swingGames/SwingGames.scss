@@ -22,25 +22,37 @@ $section-min: calc(
     var(--rak-border-width)
 );
 
-// Two columns of games where two fit, one otherwise, in table order across
-// each row. The width `PageLayout.scss` gives its content is the only cap.
 .swing-games {
   @include page-body;
 
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+
+  &.--loading .swing-games__group {
+    @include skeleton-sheen;
+  }
+}
+
+.swing-games__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+}
+
+// Two columns of games where two fit, one otherwise, in page order across each
+// row. The width `PageLayout.scss` gives its content is the only cap.
+.swing-games__list {
   display: grid;
   grid-template-columns: repeat(
     auto-fill,
     minmax(max(#{$section-min}, (100% - var(--rak-space-4)) / 2), 1fr)
   );
   align-items: start;
-  // `flex: 1` makes the grid taller than its rows, and without this the rows
-  // stretch to fill it, which widens the gap between games past `gap`.
-  align-content: start;
-  flex: 1;
-
-  &.--loading .swing-games__group {
-    @include skeleton-sheen;
-  }
+  gap: var(--rak-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .swing-games__group {
@@ -206,6 +218,11 @@ $section-min: calc(
       var(--rak-text)
     )
   );
+
+  // In the orange the tables fill a knocked out player's name with.
+  &.--knocked-out {
+    border-inline-start-color: $rule-out;
+  }
 
   // In the blue the tables rule the reader's own row in.
   &.--mine {

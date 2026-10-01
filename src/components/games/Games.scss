@@ -1,6 +1,4 @@
-@use "../../styles/a11y" as *;
 @use "../../styles/breakpoints" as *;
-@use "../../styles/label" as *;
 @use "../../styles/page" as *;
 @use "../../styles/picks" as *;
 @use "../../styles/progress" as *;
@@ -112,26 +110,6 @@ $two-columns-from: 2 * 516px + 3 * 16px;
   display: flex;
   flex-direction: column;
   gap: var(--rak-space-2);
-}
-
-// Each one heads a list of full cards rather than a few lines.
-.games__section-title {
-  @include section-title(sm);
-}
-
-.games__sr-only {
-  @include visually-hidden;
-}
-
-// A fill the size of a title and its count, drawn from a stand-in it hides.
-.games.--loading .games__section-title {
-  @include skeleton-surface;
-
-  width: fit-content;
-
-  > * {
-    visibility: hidden;
-  }
 }
 
 // A real card drawn from a stand-in game, so it takes a loaded card's size. Its

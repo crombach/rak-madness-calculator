@@ -1,0 +1,24 @@
+@use "../../styles/a11y" as *;
+@use "../../styles/label" as *;
+@use "../../styles/skeleton" as *;
+
+// Each one heads a list of full cards rather than a few lines.
+.section-title {
+  @include section-title(sm);
+}
+
+.section-title__sr-only {
+  @include visually-hidden;
+}
+
+// Under a page's loading wireframe, a fill the size of a title and its count,
+// drawn from a stand-in it hides.
+.--loading .section-title {
+  @include skeleton-surface;
+
+  width: fit-content;
+
+  > * {
+    visibility: hidden;
+  }
+}

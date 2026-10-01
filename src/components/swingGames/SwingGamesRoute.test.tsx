@@ -21,6 +21,7 @@ import { LeagueResult } from "../../types/LeagueResult";
 import plural from "../../utils/plural";
 import {
   delayedGame,
+  finalGame,
   liveGame,
   upcomingGame,
 } from "../../utils/scoring/leagueResultFixtures";
@@ -165,7 +166,9 @@ describe("the swing games route", () => {
   it("shows each side of a game with the players it knocks out", async () => {
     mountApp(SWINGS_PATH);
 
-    const game = (await screen.findByText("KC at DEN")).closest("section");
+    const game = (await screen.findByText("KC at DEN")).closest(
+      ".swing-games__group",
+    );
     expect(game).not.toBeNull();
     const inGame = within(game as HTMLElement);
     const kc = inGame.getByRole("heading", {
@@ -276,6 +279,106 @@ describe("the swing games route", () => {
       .map((band) => band.textContent);
     expect(bands).toEqual(["P1 KC at DEN", "P2 SF at LAR"]);
     expect(screen.getByText("P1")).toHaveClass("swing-games__game-label");
+  });
+
+  describe("a week under way", () => {
+    // P1 put Alice a point clear of Carol and left Bob, level with Alice on every
+    // game after it, no way past her. Carol needs both games still to come.
+    function underWayScores() {
+      const scores = week([
+        player({
+          name: "Alice",
+          total: 6,
+          pro: [pick("KC", "yes"), pick("SF"), pick("MIA")],
+        }),
+        player({
+          name: "Carol",
+          total: 5,
+          pro: [pick("KC", "yes"), pick("LAR"), pick("NYJ")],
+        }),
+        player({
+          name: "Bob",
+          total: 4,
+          pro: [pick("DEN", "no"), pick("SF"), pick("MIA")],
+          isKnockedOut: true,
+        }),
+      ]);
+      scores.games = [
+        {
+          label: "P1",
+          league: League.PRO,
+          name: "KC at DEN",
+          result: finalGame({
+            home: "DEN",
+            away: "KC",
+            homeScore: 10,
+            awayScore: 20,
+          }),
+        },
+        {
+          label: "P2",
+          league: League.PRO,
+          name: "SF at LAR",
+          result: liveGame({
+            home: "LAR",
+            away: "SF",
+            homeScore: 7,
+            awayScore: 3,
+          }),
+        },
+        {
+          label: "P3",
+          league: League.PRO,
+          name: "MIA at NYJ",
+          result: upcomingGame({ home: "NYJ", away: "MIA" }),
+        },
+      ];
+      return scores;
+    }
+
+    it("sorts the games into the sections All Games has, live first", async () => {
+      getPlayerScoresMock.mockResolvedValue(underWayScores());
+      mountApp(SWINGS_PATH);
+      await screen.findByText("KC at DEN");
+
+      const sections = screen
+        .getAllByRole("region")
+        .filter((region) => region.classList.contains("swing-games__section"));
+      expect(
+        sections.map((section) => [
+          within(section).getByRole("heading", { level: 2 }).firstChild
+            ?.textContent,
+          within(section)
+            .getAllByRole("heading", { level: 3 })
+            .map(
+              (band) =>
+                band.querySelector(".swing-games__game-label")?.textContent,
+            ),
+        ]),
+      ).toEqual([
+        ["Live", ["P2"]],
+        ["Today", ["P3"]],
+        ["Completed", ["P1"]],
+      ]);
+    });
+
+    it("keeps a final game with the players it knocked out, ruled as out", async () => {
+      getPlayerScoresMock.mockResolvedValue(underWayScores());
+      mountApp(SWINGS_PATH);
+
+      const heading = await screen.findByRole("heading", {
+        level: 4,
+        name: "1 knocked out on DEN",
+      });
+      const bob = within(heading.parentElement as HTMLElement).getByRole(
+        "button",
+        { name: "Bob" },
+      );
+      expect(bob).toHaveClass("--knocked-out");
+      for (const carol of screen.getAllByRole("button", { name: "Carol" })) {
+        expect(carol).not.toHaveClass("--knocked-out");
+      }
+    });
   });
 
   describe("folding a game", () => {
