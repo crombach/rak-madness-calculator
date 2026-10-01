@@ -248,10 +248,12 @@
   --rak-glass-fill: #262626;
   --rak-glass-ink: #fff;
   --rak-glass-unlit: rgb(255 255 255 / 12%);
-  // A score lit for the side that scored the point, or cost it. The dark mode 400
-  // steps, which read on the glass where the light ones do not.
-  --rak-glass-scored: #4ade80;
-  --rak-glass-missed: #ff8482;
+  // A score lit for the side that scored the point, or cost it. Light mode lights
+  // it one step deeper than dark mode does, toward the 400 names beside the
+  // glass, which are a step brighter in turn. Both pairs read: 6.1:1 and 5.2:1
+  // on the glass, 4.7:1 and 5.5:1 on white. Dark mode takes its own pair below.
+  --rak-glass-scored: #35bb58;
+  --rak-glass-missed: #f66c69;
 
   // Semantic ramps. One ramp per meaning, whatever draws it: 100 is a soft fill
   // behind text, 300 fills a table cell, 500 and up are solid fills and text.
@@ -260,17 +262,17 @@
   //
   // 400 is text on the app's white, such as a side's name in the game dialog.
   // Success 300 and 400 share the glass green's hue, so a pick's fill, the name
-  // and the score beside it read as one green. 400 is 5.6:1 on white.
+  // and the score beside it read as one green.
   --rak-success-100: #e3fbe3;
   --rak-success-300: #a1e9a3;
-  --rak-success-400: #107823;
+  --rak-success-400: #018634;
   --rak-success-500: #1f7a1f;
   --rak-success-600: #136c13;
   --rak-success-700: #0a470a;
 
   --rak-danger-100: #fce4e4;
   --rak-danger-300: #fec4bf;
-  --rak-danger-400: #a83636;
+  --rak-danger-400: #bd383a;
   --rak-danger-500: #c41c1c;
   --rak-danger-600: #a51818;
   --rak-danger-700: #7d1212;
@@ -747,6 +749,10 @@ html {
   // black.
   --rak-case: #373737;
 
+  // Brighter than light mode's pair, which the dark surface lets the names take
+  // too, so a name and its score are one hex here.
+  --rak-glass-scored: #4ade80;
+  --rak-glass-missed: #ff8482;
   --rak-success-400: var(--rak-glass-scored);
   --rak-danger-400: var(--rak-glass-missed);
   --rak-gold-700: #e8b84b;
