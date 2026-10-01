@@ -3,6 +3,7 @@
 @use "../../styles/label" as *;
 @use "../../styles/lcd" as *;
 @use "../../styles/picks" as *;
+@use "../../styles/text" as *;
 
 // Which side a player had to pick to score the point, and which one cost them it,
 // in the two hues the picks table fills a cell with, the 400 step. A score lit on the
@@ -25,7 +26,7 @@
 
 // What separates one part of the strip under the scoreline from the next.
 @mixin meta-dot {
-  content: "•";
+  content: $separator;
   margin-inline: var(--rak-space-2);
 }
 
@@ -132,7 +133,7 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
     }
 
     &:not(.--wrapped) .game-status__my-pick + .game-status__picks::before {
-      content: "•";
+      content: $separator;
       position: absolute;
       right: 100%;
       width: $lead-dot;

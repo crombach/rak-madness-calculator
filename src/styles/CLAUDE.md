@@ -35,4 +35,4 @@ The `ui-style` skill maps each piece of UI to its token, mixin, or class.
 - `_picks.scss`: `pick-type`, `pick-face`, `pick-label`, and `ruled-block` with
   its `$rule-*` colors. How a pick, its game ID and a ruled block look anywhere
 - `_text.scss`: `truncate-line`, one line cut short where it runs out of room,
-  and `player-name-face` and `my-player-name`, the tables' name type
+  `player-name-face` and `my-player-name`, the tables' name type, and `$separator`
