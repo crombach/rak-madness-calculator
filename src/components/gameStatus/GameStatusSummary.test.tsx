@@ -181,7 +181,7 @@ describe("GameStatusSummary, the game it is given", () => {
 });
 
 describe("GameStatusSummary, the pool and the reader's pick", () => {
-  const poolLine = () => screen.getByText(/^Pool:/);
+  const poolLine = () => screen.getByText(/^All Picks:/);
 
   it("gives each side the line it plays to", () => {
     render(
@@ -190,12 +190,12 @@ describe("GameStatusSummary, the pool and the reader's pick", () => {
         result={result()}
       />,
     );
-    expect(poolLine()).toHaveTextContent("Pool: KC +3.5, BUF -3.5");
+    expect(poolLine()).toHaveTextContent("All Picks: KC +3.5, BUF -3.5");
   });
 
   it("names the sides alone where the picks put no line on the game", () => {
     render(<GameStatusSummary game={game(result())} result={result()} />);
-    expect(poolLine()).toHaveTextContent("Pool: KC, BUF");
+    expect(poolLine()).toHaveTextContent("All Picks: KC, BUF");
   });
 
   it("says the reader's own pick beside the pool's, and marks the side it names", () => {
@@ -206,7 +206,9 @@ describe("GameStatusSummary, the pool and the reader's pick", () => {
         myPick="kc +3"
       />,
     );
-    expect(screen.getByText(/^You:/)).toHaveTextContent("You: kc +3");
+    expect(screen.getByText(/^Your Pick:/)).toHaveTextContent(
+      "Your Pick: kc +3",
+    );
     const inScoreline = document.querySelector(
       ".game-status__team-name.--picked",
     );
@@ -215,9 +217,18 @@ describe("GameStatusSummary, the pool and the reader's pick", () => {
     expect(document.querySelectorAll(".--picked")).toHaveLength(1);
   });
 
+  it("puts the reader's own pick ahead of the pool's", () => {
+    render(
+      <GameStatusSummary game={game(result())} result={result()} myPick="kc" />,
+    );
+    const lead = document.querySelector(".game-status__lead");
+    expect(lead?.firstElementChild).toHaveTextContent(/^Your Pick:/);
+    expect(lead?.lastElementChild).toHaveTextContent(/^All Picks:/);
+  });
+
   it("says no pick and marks no side for a reader with no pick", () => {
     render(<GameStatusSummary game={game(result())} result={result()} />);
-    expect(screen.queryByText(/^You:/)).toBeNull();
+    expect(screen.queryByText(/^Your Pick:/)).toBeNull();
     expect(document.querySelector(".--picked")).toBeNull();
   });
 });

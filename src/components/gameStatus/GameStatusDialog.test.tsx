@@ -173,7 +173,9 @@ describe("GameStatusDialog", () => {
         {dialog("P1", true, withMe, () => Promise.resolve(undefined))}
       </SettingsContextProvider>,
     );
-    expect(await screen.findByText(/^You:/)).toHaveTextContent("You: KC -3");
+    expect(await screen.findByText(/^Your Pick:/)).toHaveTextContent(
+      "Your Pick: KC -3",
+    );
     expect(
       document.querySelector(".game-status__team-name.--picked"),
     ).toHaveTextContent("KC");
