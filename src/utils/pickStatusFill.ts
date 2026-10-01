@@ -9,9 +9,9 @@ import { Status } from "../types/RakMadnessScores";
  * beside this file is what holds them together.
  */
 export const PICK_STATUS_FILL: Record<Status, { rgb: string }> = {
-  yes: { rgb: "BBF7D0" },
-  no: { rgb: "FF9999" },
-  unscoreable: { rgb: "FFDC52" },
+  yes: { rgb: "B9EEBA" },
+  no: { rgb: "FFD1D4" },
+  unscoreable: { rgb: "F9E77B" },
   incomplete: { rgb: "FFFFFF" },
 };
 
@@ -31,8 +31,8 @@ export type PlayerRowStatus =
  * both say the sheet needs fixing rather than anything the week did.
  */
 export const PLAYER_STATUS_FILL: Record<PlayerRowStatus, { rgb: string }> = {
-  inContention: { rgb: "99DAFF" },
-  knockedOut: { rgb: "FFC999" },
-  nameConflict: { rgb: "FFDC52" },
+  inContention: { rgb: "BBE5FF" },
+  knockedOut: { rgb: "FFD6AD" },
+  nameConflict: { rgb: "F9E77B" },
   noStatus: { rgb: "FFFFFF" },
 };

@@ -1,13 +1,11 @@
 @use "../../styles/picks" as *;
 
-// The ink matches the Swing Games player count pill. The edge is drawn clear, to
-// hold the hairline `PickBadge` draws.
+// The ink matches the Swing Games player count pill.
 .count-badge {
   @include pick-type;
 
   display: inline-block;
   padding: 0.1em var(--rak-space-1);
-  border: var(--rak-border-width-hairline) solid transparent;
   border-radius: var(--rak-radius-sm);
   background: var(--rak-count-chip-bg);
   color: var(--rak-mark-count-text);

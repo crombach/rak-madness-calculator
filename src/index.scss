@@ -251,7 +251,7 @@
   // A score lit for the side that scored the point, or cost it. The dark mode 400
   // steps, which read on the glass where the light ones do not.
   --rak-glass-scored: #4ade80;
-  --rak-glass-missed: #f87171;
+  --rak-glass-missed: #ff8482;
 
   // Semantic ramps. One ramp per meaning, whatever draws it: 100 is a soft fill
   // behind text, 300 fills a table cell, 500 and up are solid fills and text.
@@ -260,17 +260,17 @@
   //
   // 400 is text on the app's white, such as a side's name in the game dialog.
   // Success 300 and 400 share the glass green's hue, so a pick's fill, the name
-  // and the score beside it read as one green. 400 is 5.0:1 on white.
+  // and the score beside it read as one green. 400 is 5.6:1 on white.
   --rak-success-100: #e3fbe3;
-  --rak-success-300: #bbf7d0;
-  --rak-success-400: #15803d;
+  --rak-success-300: #b9eeba;
+  --rak-success-400: #107823;
   --rak-success-500: #1f7a1f;
   --rak-success-600: #136c13;
   --rak-success-700: #0a470a;
 
   --rak-danger-100: #fce4e4;
-  --rak-danger-300: #ff9999;
-  --rak-danger-400: #d13c3c;
+  --rak-danger-300: #ffd1d4;
+  --rak-danger-400: #a83636;
   --rak-danger-500: #c41c1c;
   --rak-danger-600: #a51818;
   --rak-danger-700: #7d1212;
@@ -280,10 +280,9 @@
   // is drawn beside. A picks row opens with the player's own cell, which is the
   // orange of `--rak-knocked-out-300` once they are out, and every pick after it is
   // one of these. Ten degrees of hue apart, the two read as one fill and the row
-  // stops saying which of the two things it means. This is twenty off that orange,
-  // and darker than it by fourteen, since hue alone runs out that close to it. The
-  // two hold 41 CIELAB units apart, the green beside them 55.
-  --rak-warning-300: #ffdc52;
+  // stops saying which of the two things it means. This is over thirty off that
+  // orange, and the two hold 33 CIELAB units apart, the green beside them 36.
+  --rak-warning-300: #f9e77b;
   // Orange, six degrees round the wheel from amber and more saturated with it,
   // so the key the home page exports from reads as a color rather than as a
   // brown slab. 5.02:1 on the white ink that key is set in. The toast's warning
@@ -338,20 +337,22 @@
   // A player, by whether they can still win. 300 fills their name cell. -on-light
   // is the same hue taken far enough down to read on a white surface, which the
   // fill cannot, and is what the player analysis search draws its status icon in.
-  --rak-knocked-out-300: #ffc999;
-  --rak-knocked-out-on-light: #8a4a12;
-  --rak-in-contention-300: #99daff;
-  --rak-in-contention-on-light: #126287;
+  //
+  // The five light fills, green, red, blue, orange and gold, sit at one OKLCH
+  // lightness and chroma, so no one of them reads louder than the rest. Red leans
+  // toward crimson and orange toward amber, which holds a knocked out name 23
+  // CIELAB units off the wrong picks beside it.
+  --rak-knocked-out-300: #ffd6ad;
+  --rak-knocked-out-on-light: #8d5403;
+  --rak-in-contention-300: #bbe5ff;
+  --rak-in-contention-on-light: #056b97;
   // Not a standing, so it has no 300 of its own: a name two rows share takes the
   // unscoreable pick's fill in the tables. Only the -on-light step is its own, for
   // the search, where there is no fill behind the mark to say which mark it is.
   //
-  // The same hue as that fill, at the 30% lightness and the saturation the two
-  // steps above pair up at, which is 5.12:1 on white. The fill is more saturated
-  // than either of theirs, and taken down to this lightness at its own saturation
-  // it reaches only 4.09:1. Gold is the most luminous of the three hues, so it has
-  // the least room to spend.
-  --rak-name-conflict-on-light: #876a12;
+  // The same hue as that fill, at the OKLCH lightness and chroma the two steps
+  // above pair up at, which is 6.0:1 on white.
+  --rak-name-conflict-on-light: #716400;
 
   // The reader's own row, ruled above and below every cell, and bloomed like the
   // lamp so the two marks the reader themselves control read as one light. The
@@ -799,8 +800,8 @@ html {
   // leaves the pair a step no reader can call. That lift makes the gold the
   // lightest of the five and so the tightest pair with the ink, at 5.86:1. Raise
   // the five and the gold is what runs out of room first.
-  --rak-success-300: #12570f;
-  --rak-danger-300: #570f0f;
+  --rak-success-300: #1d4f19;
+  --rak-danger-300: #621d1b;
   --rak-knocked-out-300: #57310f;
   --rak-in-contention-300: #0f3d57;
   --rak-cell-unscoreable: #715e14;
