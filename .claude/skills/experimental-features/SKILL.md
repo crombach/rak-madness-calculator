@@ -18,7 +18,7 @@ A feature is experimental when it reads `experimentalFeatures`. No registry, no 
 
    ```tsx
    const { experimentalFeatures } = useSettings();
-   return experimentalFeatures && <Link to="swings">Swing Games</Link>;
+   return experimentalFeatures && <Link to="compare">Compare Players</Link>;
    ```
 
 2. Wrap the feature's route in `ExperimentalGate` (`src/components/results/`). A pasted URL then redirects to the scoreboard when false. Keep the route component to the gate and render the page inside it. The page's own hooks then never run while off.
