@@ -9,7 +9,7 @@ import parsePick from "../../utils/scoring/parsePick";
 import pickSplit, { PickSplit } from "../../utils/scoring/pickSplit";
 import { gamecastUrl, kickoffParts, scoringTeam } from "./gameStatusText";
 import PickBadge from "../pickBadge/PickBadge";
-import Scoreline, { outcomeClasses, SideOutcome } from "./Scoreline";
+import Scoreline, { SideOutcome } from "./Scoreline";
 import useScorelineFit, { MARKS_OFF, SHORT_NAMES } from "./useScorelineFit";
 import "./GameStatusSummary.scss";
 
@@ -81,7 +81,6 @@ function Side({
   homeAway,
   isNeutralSite,
   logo,
-  outcome,
   isPicked,
 }: {
   side: GameSide;
@@ -90,7 +89,6 @@ function Side({
   isNeutralSite: boolean;
   /** Left out where either side has no mark to draw, so neither draws one. */
   logo?: ReactNode;
-  outcome?: SideOutcome;
   /** The side the reader's own pick names. */
   isPicked: boolean;
 }) {
@@ -102,11 +100,9 @@ function Side({
           {SIDE_LABEL[isNeutralSite ? "neutral" : "hosted"][homeAway]}
         </span>
         <span
-          className={getClasses(
-            "game-status__team-name",
-            outcomeClasses(outcome),
-            { "--picked": isPicked },
-          )}
+          className={getClasses("game-status__team-name", {
+            "--picked": isPicked,
+          })}
         >
           {/* The abbreviation on a phone and the name once there is width for it.
               Both are in the page, so neither costs a measurement to choose
@@ -231,7 +227,6 @@ function Game({
     side,
     isNeutralSite: result.isNeutralSite,
     logo: fit < MARKS_OFF ? logo?.(side) : undefined,
-    outcome: outcomeOf(side),
     isPicked: isPicked(side),
   });
   const sidePicks = (side: GameSide, count?: number) => (

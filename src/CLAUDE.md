@@ -11,8 +11,6 @@ a touch phone: Playwright `isMobile` and `hasTouch`, no hover, no refresh button
   and a `dark-tokens` mixin the OS or a saved `data-theme` applies. Its comment
   explains `<html>`'s overflow. Base UI is unstyled, so tokens plus SCSS carry
   the whole look.
-- `components/pickBadge/`: `PickBadge`, a pick outside the tables, filled as
-  its picks table cell is.
 - `setupTests.ts`: Vitest setup. jest-dom, a raised `asyncUtilTimeout`,
   `ResizeObserver` and `matchMedia` stubs, and the `jest` global shim
   `@testing-library/dom` needs to drive fake timers.
@@ -29,6 +27,7 @@ a touch phone: Playwright `isMobile` and `hasTouch`, no hover, no refresh button
 - [`components/icon/`](components/icon/CLAUDE.md) — SVG icons inlined from Material Design
 - [`components/navbar/`](components/navbar/CLAUDE.md) — top nav bar, view switch, logo button
 - [`components/pageLayout/`](components/pageLayout/CLAUDE.md) — the chrome every page shares
+- [`components/pickBadge/`](components/pickBadge/CLAUDE.md) — a pick outside the tables, filled by outcome
 - [`components/playerAnalysis/`](components/playerAnalysis/CLAUDE.md) — where a player stands, and why
 - [`components/results/`](components/results/CLAUDE.md) — results routes, layout, redirect
 - [`components/settings/`](components/settings/CLAUDE.md) — theme and own name, in a dialog

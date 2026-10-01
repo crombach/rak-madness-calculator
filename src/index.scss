@@ -411,8 +411,9 @@
   --rak-mark-live-text: var(--rak-danger-600);
   --rak-mark-invalid-bg: var(--rak-warning-300);
   --rak-mark-invalid-text: var(--rak-warning-700);
-  --rak-mark-final-bg: var(--rak-success-100);
-  --rak-mark-final-text: var(--rak-success-600);
+  // A finished game's mark in the fill a scored pick takes, so the dialog shows one green.
+  --rak-mark-final-bg: var(--rak-success-300);
+  --rak-mark-final-text: var(--rak-text-on-pale);
   --rak-mark-upcoming-bg: var(--rak-neutral-100);
   --rak-mark-upcoming-text: var(--rak-neutral-700);
   // A player count beside a mark, in the upcoming mark's colors.
