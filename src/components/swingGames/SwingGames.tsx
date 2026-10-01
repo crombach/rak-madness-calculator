@@ -42,7 +42,8 @@ function Side({ side }: { side: SwingSide }) {
   return (
     <div className="swing-games__side">
       <h4 className="swing-games__needs">
-        {side.players.length} {verbFor(side.players.length, "need")}{" "}
+        <span className="swing-games__count">{side.players.length}</span>{" "}
+        {verbFor(side.players.length, "need")}{" "}
         <span className="swing-games__pick">{side.pick}</span>
       </h4>
       <ul ref={grid} className="swing-games__players">

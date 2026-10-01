@@ -171,6 +171,10 @@ $section-min: calc(
   );
 }
 
+.swing-games__count {
+  @include count-chip;
+}
+
 .swing-games__pick {
   @include pick-face;
 
