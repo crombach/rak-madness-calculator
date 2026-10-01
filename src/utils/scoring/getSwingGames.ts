@@ -12,7 +12,7 @@ import parsePick, { formatPickDisplay } from "./parsePick";
 import remainingGames from "./remainingGames";
 import repeatedNames from "./repeatedNames";
 import weekShape from "./weekShape";
-import { NO_SWINGS, SwingGame, SwingGames, SwingSide } from "./swingGameTypes";
+import { SwingGame, SwingGames, SwingSide } from "./swingGameTypes";
 
 export type { SwingGame, SwingGames, SwingSide };
 
@@ -193,11 +193,10 @@ function knockoutSides(
  * the route search, so they answer above `MAX_SEARCHED_GAMES` too.
  */
 export default function getSwingGames(scores: RakMadnessScores): SwingGames {
-  if (isWeekWon(scores)) return NO_SWINGS;
-
   const open = new Set(remainingGames(scores.scores).map((game) => game.label));
+  // A won week's open games can knock no one else out.
   const sidesByLabel = new Map([
-    ...mustWinSides(scores),
+    ...(isWeekWon(scores) ? [] : mustWinSides(scores)),
     ...knockoutSides(scores),
   ]);
 

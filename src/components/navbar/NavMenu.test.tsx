@@ -5,7 +5,6 @@ import { MemoryRouter, Route, Routes, useLocation } from "react-router";
 import {
   useScores,
   useIsWeekSettled,
-  useIsWeekWon,
   useSwingGames,
 } from "../../context/AppDataContext";
 import {
@@ -19,13 +18,11 @@ import NavMenu from "./NavMenu";
 vi.mock("../../context/AppDataContext", () => ({
   useScores: vi.fn(),
   useIsWeekSettled: vi.fn(),
-  useIsWeekWon: vi.fn(),
   useSwingGames: vi.fn(),
 }));
 
 const mockScores = useScores as Mock;
 const mockIsWeekSettled = useIsWeekSettled as Mock;
-const mockIsWeekWon = useIsWeekWon as Mock;
 const mockSwingGames = useSwingGames as Mock;
 /** Enough players to compare, as `useScores()` holds them. */
 const TWO_PLAYERS = { scores: [{}, {}] };
@@ -76,10 +73,9 @@ function trigger() {
 describe("NavMenu", () => {
   beforeEach(() => {
     localStorage.clear();
-    // Swing Games gates on this opt-in too, beside `isWeekWon`.
+    // Swing Games shows only with this opt-in.
     localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
     mockIsWeekSettled.mockReturnValue(false);
-    mockIsWeekWon.mockReturnValue(false);
     mockSwingGames.mockReturnValue({ games: [A_SWING_GAME] });
     mockScores.mockReturnValue(TWO_PLAYERS);
   });
@@ -322,9 +318,8 @@ describe("NavMenu", () => {
       expect(item).toHaveAccessibleDescription("");
     });
 
-    it("disables the pages a complete week has no use for, with no reason", async () => {
+    it("disables Swing Games on a complete week no game knocked anyone out of, with no reason", async () => {
       mockIsWeekSettled.mockReturnValue(true);
-      mockIsWeekWon.mockReturnValue(true);
       mockSwingGames.mockReturnValue({ games: [] });
       const user = mount();
       await user.click(trigger());
@@ -337,17 +332,16 @@ describe("NavMenu", () => {
       ).not.toHaveAttribute("data-disabled");
     });
 
-    it("disables Swing Games once the week has a winner, games still to play", async () => {
-      mockIsWeekWon.mockReturnValue(true);
+    it("leaves Swing Games enabled on a complete week a game knocked someone out of", async () => {
+      mockIsWeekSettled.mockReturnValue(true);
       const user = mount();
       await user.click(trigger());
 
       const item = await screen.findByRole("menuitem", {
-        name: /Swing Games/,
+        name: "Swing Games",
       });
 
-      expect(item).toHaveAttribute("data-disabled");
-      expect(item).toHaveAccessibleDescription("Week complete");
+      expect(item).not.toHaveAttribute("data-disabled");
     });
 
     it("disables Swing Games while scores load", async () => {

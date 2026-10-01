@@ -382,6 +382,45 @@ describe("the swing games route", () => {
     });
   });
 
+  it("opens a settled week on who each game knocked out", async () => {
+    const scores = week(
+      [
+        player({ name: "Alice", total: 5, pro: [pick("KC", "yes")] }),
+        player({
+          name: "Bob",
+          total: 4,
+          pro: [pick("DEN", "no")],
+          isKnockedOut: true,
+        }),
+      ],
+      41,
+    );
+    scores.games = [
+      {
+        label: "P1",
+        league: League.PRO,
+        name: "KC at DEN",
+        result: finalGame({
+          home: "DEN",
+          away: "KC",
+          homeScore: 10,
+          awayScore: 20,
+        }),
+      },
+    ];
+    getPlayerScoresMock.mockResolvedValue(scores);
+    mountApp(SWINGS_PATH);
+
+    const section = await screen.findByRole("region", { name: "Completed" });
+    expect(
+      within(section).getByRole("heading", {
+        level: 4,
+        name: "1 knocked out on DEN",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+  });
+
   it("folds a long side to two rows, then shows the rest on asking", async () => {
     stubColumns(2);
     getPlayerScoresMock.mockResolvedValue(crowdedScores());
@@ -497,7 +536,7 @@ describe("the swing games route", () => {
     }
 
     it.each([
-      ["a won week", () => decidedScores],
+      ["a decided week no game knocked anyone out of", () => decidedScores],
       ["open games no one must win", quietScores],
     ])("sends %s to the scoreboard in place of the page", async (_, make) => {
       getPlayerScoresMock.mockResolvedValue(make());

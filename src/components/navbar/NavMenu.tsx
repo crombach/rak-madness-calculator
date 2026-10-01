@@ -5,7 +5,6 @@ import { Link, useLocation } from "react-router";
 import {
   useScores,
   useIsWeekSettled,
-  useIsWeekWon,
   useSwingGames,
 } from "../../context/AppDataContext";
 import { useSettings } from "../../context/SettingsContext";
@@ -32,7 +31,6 @@ type Week = number | string | undefined;
 /** What an item's enabled rule can read. */
 type NavContext = {
   isWeekSettled: boolean;
-  isWeekWon: boolean;
   swingGames: ReturnType<typeof useSwingGames>;
   /** How many players the week has, or undefined while its scores load. */
   playerCount?: number;
@@ -75,14 +73,12 @@ const SWING_GAMES: NavItem = {
   path: (season, week) => resultsPath(season, week, RESULTS_PAGE.swingGames),
   // Scores still loading, which is soon over and needs no word. A complete
   // week needs none either.
-  disabled: ({ isWeekSettled, swingGames }) =>
-    isWeekSettled || swingGames == null,
-  disabledReason: ({ isWeekSettled, isWeekWon, swingGames }) => {
-    if (isWeekSettled) return undefined;
-    if (isWeekWon) return "Week complete";
-    if (swingGames?.games.length === 0) return "No game knocks anyone out";
-    return undefined;
-  },
+  disabled: ({ swingGames }) =>
+    swingGames == null || swingGames.games.length === 0,
+  disabledReason: ({ isWeekSettled, swingGames }) =>
+    !isWeekSettled && swingGames?.games.length === 0
+      ? "No game knocks anyone out"
+      : undefined,
 };
 
 // Home leads, then the pages. Settings renders after them, outside this list.
@@ -114,7 +110,6 @@ export default function NavMenu({
   const isNarrow = useMediaQuery(query);
   const { pathname } = useLocation();
   const isWeekSettled = useIsWeekSettled();
-  const isWeekWon = useIsWeekWon();
   const swingGames = useSwingGames();
   const playerCount = useScores()?.scores.length;
   const { experimentalFeatures } = useSettings();
@@ -123,7 +118,6 @@ export default function NavMenu({
 
   const context: NavContext = {
     isWeekSettled,
-    isWeekWon,
     swingGames,
     playerCount,
   };

@@ -95,16 +95,56 @@ describe("getSwingGames", () => {
     ]);
   });
 
-  it("answers nothing for a decided week", () => {
+  it("names who each game of a decided week knocked out", () => {
     const scores = week(
       [
         player({ name: "Alice", total: 5, pro: [pick("KC -3", "yes")] }),
-        player({ name: "Bob", total: 4, pro: [pick("DEN +3", "no")] }),
+        player({
+          name: "Bob",
+          total: 4,
+          pro: [pick("DEN +3", "no")],
+          isKnockedOut: true,
+        }),
       ],
       41,
     );
 
-    expect(getSwingGames(scores)).toEqual({ games: [] });
+    expect(getSwingGames(scores)).toEqual({
+      games: [
+        {
+          label: "P1",
+          name: "P1",
+          isFinal: true,
+          sides: [{ team: "DEN", pick: "DEN +3", players: ["Bob"] }],
+        },
+      ],
+    });
+  });
+
+  it("names who a won week's final games knocked out, and no open game", () => {
+    // KC left Bob unable to pass Alice, which won her the week with P2 to come.
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 5,
+        pro: [pick("KC", "yes"), pick("SF")],
+      }),
+      player({
+        name: "Bob",
+        total: 3,
+        pro: [pick("DEN", "no"), pick("LAR")],
+        isKnockedOut: true,
+      }),
+    ]);
+
+    expect(getSwingGames(scores).games).toEqual([
+      {
+        label: "P1",
+        name: "P1",
+        isFinal: true,
+        sides: [{ team: "DEN", pick: "DEN", players: ["Bob"] }],
+      },
+    ]);
   });
 
   it("answers nothing for a week the knockouts leave to one player", () => {

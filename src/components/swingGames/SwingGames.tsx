@@ -59,7 +59,7 @@ export default function SwingGames({
   );
 
   if (swings == null) return null;
-  // A won week, or one no single game decides, has nothing to show here.
+  // No game knocked anyone out, and none open can.
   if (swings.games.length === 0) {
     return (
       <Navigate
