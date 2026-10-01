@@ -166,16 +166,6 @@ describe("the swing games route", () => {
     );
   });
 
-  it("explains what each side lists", async () => {
-    mountApp(SWINGS_PATH);
-
-    // The skeleton shows the same line, so wait for the week first.
-    await screen.findByText("KC at DEN");
-    expect(
-      screen.getByText("Players listed under a pick are out if it misses."),
-    ).toBeInTheDocument();
-  });
-
   it("shows each side of a game with the players it knocks out", async () => {
     mountApp(SWINGS_PATH);
 

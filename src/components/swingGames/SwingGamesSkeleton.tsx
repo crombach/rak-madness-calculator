@@ -1,7 +1,6 @@
 import rangeWithPrefix from "../../utils/rangeWithPrefix";
 import { RESULTS_PAGE } from "../results/resultsPath";
 import SkeletonStatus from "../pageLayout/SkeletonStatus";
-import { SWING_GAMES_INTRO } from "./swingGamesIntro";
 import "./SwingGames.scss";
 
 const GAME_COUNT = 3;
@@ -13,7 +12,6 @@ export default function SwingGamesSkeleton() {
     <>
       <SkeletonStatus page={RESULTS_PAGE.swingGames} />
       <div className="swing-games --loading" aria-hidden="true" inert>
-        <p className="swing-games__intro">{SWING_GAMES_INTRO}</p>
         {rangeWithPrefix(GAME_COUNT, "G").map((game) => (
           <div key={game} className="swing-games__group">
             <span className="swing-games__skeleton-band" />

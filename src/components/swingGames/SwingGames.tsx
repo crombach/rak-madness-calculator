@@ -15,7 +15,6 @@ import GameMark, {
 import { ExpandMoreIcon } from "../icon/Icon";
 import plural from "../../utils/plural";
 import ExperimentalGate from "../results/ExperimentalGate";
-import { SWING_GAMES_INTRO } from "./swingGamesIntro";
 import useGridColumns from "./useGridColumns";
 import "./SwingGames.scss";
 
@@ -158,7 +157,6 @@ export default function SwingGames({ scores }: { scores?: RakMadnessScores }) {
           setClosed(new Set(labels.filter((label) => !open.includes(label))))
         }
       >
-        <p className="swing-games__intro">{SWING_GAMES_INTRO}</p>
         {swings.games.map((game) => (
           <Game
             key={game.label}

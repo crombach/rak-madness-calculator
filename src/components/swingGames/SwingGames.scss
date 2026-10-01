@@ -43,14 +43,6 @@ $section-min: calc(
   }
 }
 
-// Spans the grid, so the games still start side by side below it.
-.swing-games__intro {
-  grid-column: 1 / -1;
-  margin: 0;
-  font-size: var(--rak-text-sm);
-  color: var(--rak-text-secondary);
-}
-
 .swing-games__group {
   @include game-card-frame;
 
