@@ -15,11 +15,12 @@ import usePlayerScores from "../hooks/usePlayerScores";
 import { WeekInfo } from "../types/League";
 import { prefetchStoredPicks } from "../utils/loadStoredPicks";
 import { RakMadnessScores } from "../types/RakMadnessScores";
-import { SwingGames } from "../utils/scoring/swingGameTypes";
+import { NO_SWINGS, SwingGames } from "../utils/scoring/swingGameTypes";
 import cachedImport from "../utils/cachedImport";
 import isWeekSettled, { isWeekWon } from "../utils/scoring/isWeekSettled";
 import { readSettledWeek } from "../utils/settledWeeksCache";
 import { NO_SCORE_CHANGES, ScoreChanges } from "../utils/scoring/scoreChanges";
+import { useSettings } from "./SettingsContext";
 
 /** The season and week lists, and which of each is selected. */
 type Calendar = ReturnType<typeof useLeagueWeeks> &
@@ -309,13 +310,15 @@ const loadGetSwingGames = cachedImport(
 
 /**
  * The week's swing games, or undefined while its scores or the code that reads
- * them load.
+ * them load. Skips the work and answers empty, the same as a decided week, while
+ * the reader has not opted into experimental features.
  */
 export function useSwingGames(): SwingGames | undefined {
   const scores = useScores();
+  const { experimentalFeatures } = useSettings();
   const [getSwingGames, setGetSwingGames] =
     useState<(scores: RakMadnessScores) => SwingGames>();
-  const isNeeded = scores != null;
+  const isNeeded = scores != null && experimentalFeatures;
 
   // Asks again on each new set of scores until the code arrives, so one failed
   // download costs one poll rather than the page.
@@ -335,11 +338,12 @@ export function useSwingGames(): SwingGames | undefined {
 
   return useMemo(() => {
     if (scores == null) return undefined;
+    if (!experimentalFeatures) return NO_SWINGS;
     let swings = swingGamesByScores.get(scores);
     if (swings == null && getSwingGames != null) {
       swings = getSwingGames(scores);
       swingGamesByScores.set(scores, swings);
     }
     return swings;
-  }, [scores, getSwingGames]);
+  }, [scores, experimentalFeatures, getSwingGames]);
 }

@@ -106,7 +106,7 @@ describe("NavMenu", () => {
       ]);
     });
 
-    it("leaves out Compare Players with experimental features off", async () => {
+    it("leaves out Swing Games and Compare Players with experimental features off", async () => {
       localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
       const user = mount();
       await user.click(trigger());
@@ -116,7 +116,6 @@ describe("NavMenu", () => {
       expect(items.map((item) => item.textContent)).toEqual([
         "Home",
         "All Games",
-        "Swing Games",
         "Settings",
       ]);
     });

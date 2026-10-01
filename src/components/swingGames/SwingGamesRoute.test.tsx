@@ -15,7 +15,10 @@ import {
   setUpAppTest,
   spreadsheetResponse,
 } from "../../appTestFixtures";
-import { PLAYER_NAME_KEY } from "../../context/SettingsContext";
+import {
+  EXPERIMENTAL_FEATURES_KEY,
+  PLAYER_NAME_KEY,
+} from "../../context/SettingsContext";
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import plural from "../../utils/plural";
@@ -125,6 +128,7 @@ function playerButtons(pickName: string) {
 
 beforeEach(() => {
   setUpAppTest().mockResolvedValue(spreadsheetResponse());
+  localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
   getPlayerScoresMock.mockResolvedValue(swingScores());
 });
 
@@ -627,6 +631,27 @@ describe("the swing games route", () => {
       ["open games no one must win", quietScores],
     ])("sends %s to the scoreboard in place of the page", async (_, make) => {
       getPlayerScoresMock.mockResolvedValue(make());
+      const user = mountApp(SWINGS_PATH, {
+        earlier: ["/"],
+        beside: <BackButton />,
+      });
+
+      expect(
+        await screen.findByRole("heading", {
+          level: 1,
+          name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
+        }),
+      ).toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Back" }));
+
+      expect(
+        await screen.findByText("Use Local Spreadsheet"),
+      ).toBeInTheDocument();
+    });
+
+    it("sends a reader without experimental features to the scoreboard in place of the page", async () => {
+      localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
       const user = mountApp(SWINGS_PATH, {
         earlier: ["/"],
         beside: <BackButton />,

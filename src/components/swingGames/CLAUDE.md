@@ -4,8 +4,8 @@ The `/:season/:week/swings` route: each open game, with the players it would
 knock out on either side, grouped by which team they need, and each final game
 with the players it knocked out.
 
-- `SwingGamesRoute`: hands `SwingGames` the scores, `useSwingGames` and
-  `rescore`, mounted lazily by `App.tsx` behind the `swings` path.
+- `SwingGamesRoute`: behind `ExperimentalGate`, hands `SwingGames` the scores,
+  `useSwingGames` and `rescore`, mounted lazily by `App.tsx` behind `swings`.
 - `SwingGames`: polls as `Games` does, and draws its busy bar. A week with no
   swing game, won or not, redirects to the scoreboard with `replace`.
   Games sit in All Games' `gameSections`.
