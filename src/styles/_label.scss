@@ -30,9 +30,8 @@
 
 /**
  * A count set in a small fill, so it stands apart from the words beside it by
- * shape rather than by color. Next to text of the same ink, as a pick count is
- * before its game is decided, a bare `1 KC` reads as one word. In the ink Swing
- * Games' player count pill takes, so the app's counts read as one family.
+ * shape rather than by color. Next to text of the same ink, a bare `1 KC` reads as
+ * one word. The ink matches the Swing Games player count pill.
  */
 @mixin count-chip {
   display: inline-block;

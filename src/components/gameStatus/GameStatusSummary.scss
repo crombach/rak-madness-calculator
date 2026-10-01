@@ -112,9 +112,10 @@
 $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
 
 // The reader's pick over the pool's on a phone, two lines whatever either holds,
-// so no game's card reads differently from the next. A wider screen sets them on one line with a dot between,
-// wrapping where a narrow card cannot hold both. The dot takes no room of its own,
-// so dropping it once the line wraps cannot unwrap it again.
+// so no game's card reads differently from the next. A wider screen sets them on
+// one line with a dot between, wrapping where a narrow card cannot hold both. The
+// dot takes no room of its own, so dropping it once the line wraps cannot unwrap
+// it again.
 .game-status__lead {
   display: flex;
   flex-direction: column;
