@@ -1,3 +1,4 @@
+import { ReactNode, useId } from "react";
 import plural from "../../utils/plural";
 import CountBadge from "../countBadge/CountBadge";
 import "./SectionTitle.scss";
@@ -28,5 +29,26 @@ export default function SectionTitle({
         </span>
       </CountBadge>
     </h2>
+  );
+}
+
+/** A section of game cards on either card page, named by its `SectionTitle`. */
+export function GameSection({
+  className,
+  title,
+  count,
+  children,
+}: {
+  className: string;
+  title: string;
+  count: number;
+  children: ReactNode;
+}) {
+  const id = useId();
+  return (
+    <section className={className} aria-labelledby={id}>
+      <SectionTitle id={id} title={title} count={count} />
+      {children}
+    </section>
   );
 }

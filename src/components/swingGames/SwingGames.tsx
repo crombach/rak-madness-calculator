@@ -1,4 +1,4 @@
-import { ReactNode, useId, useMemo } from "react";
+import { useMemo } from "react";
 import { Navigate, useParams } from "react-router";
 import useLiveWeek from "../../hooks/useLiveWeek";
 import { GameStatus } from "../../types/ESPN";
@@ -11,28 +11,10 @@ import gameSections, {
   LIVE_STATUSES,
   POLLED_LEAGUES,
 } from "../games/gameSections";
-import SectionTitle from "../games/SectionTitle";
+import { GameSection } from "../games/SectionTitle";
 import resultsPath, { RESULTS_PAGE } from "../results/resultsPath";
 import SwingGameCard from "./SwingGameCard";
 import "./SwingGames.scss";
-function Section({
-  title,
-  count,
-  children,
-}: {
-  title: string;
-  count: number;
-  children: ReactNode;
-}) {
-  const id = useId();
-  return (
-    <section className="swing-games__section" aria-labelledby={id}>
-      <SectionTitle id={id} title={title} count={count} />
-      <ul className="swing-games__list">{children}</ul>
-    </section>
-  );
-}
-
 /**
  * Each open game, with who it knocks out whichever way it falls, and each final one
  * with who it knocked out, in `gameSections` as All Games has them, polled as All
@@ -123,17 +105,24 @@ export default function SwingGames({
         />
       )}
       {sections.map(({ title, cards }) => (
-        <Section key={title} title={title} count={cards.length}>
-          {cards.map(({ game, weekGame, status }) => (
-            <SwingGameCard
-              key={game.label}
-              game={game}
-              weekGame={weekGame}
-              status={status}
-              knockedOut={knockedOut}
-            />
-          ))}
-        </Section>
+        <GameSection
+          key={title}
+          className="swing-games__section"
+          title={title}
+          count={cards.length}
+        >
+          <ul className="swing-games__list">
+            {cards.map(({ game, weekGame, status }) => (
+              <SwingGameCard
+                key={game.label}
+                game={game}
+                weekGame={weekGame}
+                status={status}
+                knockedOut={knockedOut}
+              />
+            ))}
+          </ul>
+        </GameSection>
       ))}
     </div>
   );

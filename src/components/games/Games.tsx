@@ -1,4 +1,3 @@
-import { ReactNode, useId } from "react";
 import useLiveWeek from "../../hooks/useLiveWeek";
 import useMyPick from "../../hooks/useMyPick";
 import { League } from "../../types/League";
@@ -13,7 +12,7 @@ import gameSections, {
   LIVE_STATUSES,
   POLLED_LEAGUES,
 } from "./gameSections";
-import SectionTitle from "./SectionTitle";
+import { GameSection } from "./SectionTitle";
 import "./Games.scss";
 
 const NO_GAMES = "No games this week";
@@ -34,24 +33,6 @@ function PoolGame({
       myPick={useMyPick(scores, game)}
       players={scores.scores}
     />
-  );
-}
-
-function Section({
-  title,
-  count,
-  children,
-}: {
-  title: string;
-  count: number;
-  children: ReactNode;
-}) {
-  const id = useId();
-  return (
-    <section className="games__section" aria-labelledby={id}>
-      <SectionTitle id={id} title={title} count={count} />
-      {children}
-    </section>
   );
 }
 
@@ -109,7 +90,12 @@ export default function Games({
       )}
       {scores != null &&
         sections.map(({ title, cards }) => (
-          <Section key={title} title={title} count={cards.length}>
+          <GameSection
+            key={title}
+            className="games__section"
+            title={title}
+            count={cards.length}
+          >
             <ul className="games__list">
               {cards.map(({ game, result }) => (
                 <PoolGame
@@ -120,7 +106,7 @@ export default function Games({
                 />
               ))}
             </ul>
-          </Section>
+          </GameSection>
         ))}
     </div>
   );
