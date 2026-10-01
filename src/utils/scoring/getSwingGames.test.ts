@@ -115,7 +115,9 @@ describe("getSwingGames", () => {
           label: "P1",
           name: "P1",
           isFinal: true,
-          sides: [{ team: "DEN", pick: "DEN +3", players: ["Bob"] }],
+          sides: [
+            { team: "DEN", pick: "DEN +3", hasScored: false, players: ["Bob"] },
+          ],
         },
       ],
     });
@@ -142,7 +144,9 @@ describe("getSwingGames", () => {
         label: "P1",
         name: "P1",
         isFinal: true,
-        sides: [{ team: "DEN", pick: "DEN", players: ["Bob"] }],
+        sides: [
+          { team: "DEN", pick: "DEN", hasScored: false, players: ["Bob"] },
+        ],
       },
     ]);
   });
@@ -267,8 +271,41 @@ describe("getSwingGames", () => {
       label: "P1",
       name: "P1",
       isFinal: true,
-      sides: [{ team: "DEN", pick: "DEN", players: ["Bob"] }],
+      sides: [{ team: "DEN", pick: "DEN", hasScored: false, players: ["Bob"] }],
     });
+  });
+
+  it("names a player the Monday night game knocked out on the MNF Points, on the side that scored", () => {
+    // Level with Alice on KC either way, Bob went out on being further off.
+    const scores = week(
+      [
+        player({
+          name: "Alice",
+          total: 5,
+          pro: [pick("KC", "yes")],
+          tiebreakerPick: 40,
+          distance: 1,
+        }),
+        player({
+          name: "Bob",
+          total: 5,
+          pro: [pick("KC", "yes")],
+          tiebreakerPick: 50,
+          distance: 9,
+          isKnockedOut: true,
+        }),
+      ],
+      41,
+    );
+
+    expect(getSwingGames(scores).games).toEqual([
+      {
+        label: "P1",
+        name: "P1",
+        isFinal: true,
+        sides: [{ team: "KC", pick: "KC", hasScored: true, players: ["Bob"] }],
+      },
+    ]);
   });
 
   it("credits a player two final games knocked out to the one that kicked off first", () => {

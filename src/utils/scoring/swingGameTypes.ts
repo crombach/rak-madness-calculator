@@ -6,12 +6,17 @@
 
 /**
  * One team in a game, and the players who are out if it fails to cover, or who
- * went out when it did.
+ * went out on its result.
  */
 export type SwingSide = {
   team: string;
   /** The first of these players' cells, as the tables show it. */
   pick: string;
+  /**
+   * On a final game, whether the pick scored. A Monday night game can knock out a
+   * player whose pick scored, on the MNF Points.
+   */
+  hasScored?: boolean;
   /** In ranking order. */
   players: Array<string>;
 };

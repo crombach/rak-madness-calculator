@@ -56,7 +56,10 @@ function Side({
       <h4 className="swing-games__must-win">
         <CountBadge>{side.players.length}</CountBadge>{" "}
         {isFinal ? KNOCKED_OUT : MUST_WIN}{" "}
-        <PickBadge pick={side.pick} outcome={isFinal ? "missed" : undefined} />
+        <PickBadge
+          pick={side.pick}
+          outcome={isFinal ? (side.hasScored ? "scored" : "missed") : undefined}
+        />
       </h4>
       <ul ref={grid} className="swing-games__players">
         {shown.map((name) => (

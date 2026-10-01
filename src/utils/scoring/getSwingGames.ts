@@ -123,6 +123,8 @@ function kickoffOf(scores: RakMadnessScores, label: string): number {
  * kicking off together. A player standing before a game and out after it is that
  * game's, so a player two games could each have knocked out is credited to the
  * first of them. A knockout on a game the player left blank names no side.
+ * A player whose pick scored can still go out on the Monday night game, on the
+ * MNF Points, so each side says whether it scored.
  *
  * One pass of the knockouts per final game, not a must-win verdict per player per
  * game, which is too slow on a busy Sunday.
@@ -162,7 +164,7 @@ function knockoutSides(
         !before.has(player.name) ||
         after.has(player.name) ||
         repeated.has(player.name) ||
-        cell.status !== "no"
+        !hasOutcome(cell.status)
       ) {
         continue;
       }
@@ -175,7 +177,12 @@ function knockoutSides(
       }
       const side = sides.get(team);
       if (side == null) {
-        sides.set(team, { team, pick: cell.pick, players: [player.name] });
+        sides.set(team, {
+          team,
+          pick: cell.pick,
+          hasScored: cell.status === "yes",
+          players: [player.name],
+        });
       } else {
         side.players.push(player.name);
       }
