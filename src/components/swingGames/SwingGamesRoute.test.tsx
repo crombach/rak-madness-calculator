@@ -172,7 +172,7 @@ describe("the swing games route", () => {
     // The skeleton shows the same line, so wait for the week first.
     await screen.findByText("KC at DEN");
     expect(
-      screen.getByText(/Games that will knock players out\./),
+      screen.getByText(/Games that can knock players out\./),
     ).toBeInTheDocument();
   });
 
