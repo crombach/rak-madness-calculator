@@ -16,12 +16,18 @@ import weekShape from "./weekShape";
 import {
   KnockoutGame,
   KnockoutGames,
-  TiebreakerKnockout,
   KnockoutSide,
   KnockoutTiebreaker,
 } from "./knockoutTypes";
 
 export type { KnockoutGame, KnockoutGames, KnockoutSide };
+
+/** The tiers in the order `compareOnMerit` reads them. */
+const TIEBREAK_ORDER: ReadonlyArray<Tiebreaker> = [
+  "mnfPoints",
+  "college",
+  "proAgainstTheSpread",
+];
 
 type Column = { label: string; league: LeagueKey; index: number };
 
@@ -136,8 +142,9 @@ function kickoffOf(scores: RakMadnessScores, label: string): number {
  * The final games are played back in kickoff order, table order among those
  * kicking off together. A player standing before a game and out after it is that
  * game's, so a player two games could each have knocked out is credited to the
- * first of them. A knockout on a game the player left blank names no side. One
- * on a pick that scored came down to a tiebreaker, and is kept apart by tier.
+ * first of them. A knockout that came down to a tiebreaker goes under its tier,
+ * whatever the pick did. Any other is behind on total, and goes under the pick,
+ * so one on a game the player left blank names no side.
  *
  * One pass of the knockouts per final game, not a must-win verdict per player per
  * game, which is too slow on a busy Sunday.
@@ -183,20 +190,7 @@ function knockoutSides(scores: RakMadnessScores): {
         continue;
       }
       const tiebreaker = after.get(player.name)?.tiebreaker;
-      const knockout: TiebreakerKnockout | undefined = tiebreaker && {
-        tiebreaker,
-        ...(tiebreaker === "mnfPoints" && { pick: player.tiebreaker.pick }),
-      };
-      const into = (group: {
-        players: Array<string>;
-        tiebreakers?: Record<string, TiebreakerKnockout>;
-      }) => {
-        group.players.push(player.name);
-        if (knockout) {
-          group.tiebreakers = { ...group.tiebreakers, [player.name]: knockout };
-        }
-      };
-      if (cell.status === "yes" && tiebreaker) {
+      if (tiebreaker) {
         let tiers = tiebreakersByLabel.get(label);
         if (tiers == null) {
           tiers = new Map();
@@ -204,15 +198,10 @@ function knockoutSides(scores: RakMadnessScores): {
         }
         let tier = tiers.get(tiebreaker);
         if (tier == null) {
-          tier = {
-            tiebreaker,
-            ...(tiebreaker === "mnfPoints" && { total: scores.tiebreaker }),
-            players: [],
-            tiebreakers: {},
-          };
+          tier = { tiebreaker, players: [] };
           tiers.set(tiebreaker, tier);
         }
-        into(tier);
+        tier.players.push(player.name);
         continue;
       }
       const { teamAbbreviation: team } = parsePick(cell.pick);
@@ -227,7 +216,7 @@ function knockoutSides(scores: RakMadnessScores): {
         side = { team, pick: cell.pick, players: [] };
         sides.set(team, side);
       }
-      into(side);
+      side.players.push(player.name);
     }
     after = before;
   }
@@ -267,7 +256,13 @@ export default function getKnockouts(scores: RakMadnessScores): KnockoutGames {
             (a, b) =>
               isAway(b) - isAway(a) || b.players.length - a.players.length,
           ),
-          ...(tiers && { tiebreakers: [...tiers.values()] }),
+          ...(tiers && {
+            tiebreakers: [...tiers.values()].sort(
+              (a, b) =>
+                TIEBREAK_ORDER.indexOf(a.tiebreaker) -
+                TIEBREAK_ORDER.indexOf(b.tiebreaker),
+            ),
+          }),
         },
       ];
     },

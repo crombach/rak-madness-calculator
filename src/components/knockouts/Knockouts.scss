@@ -221,21 +221,6 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
   @include truncate-line;
 }
 
-// What settled a tiebreaker knockout, a line under the name it ended.
-.knockouts__player-note {
-  @include micro-label;
-  @include truncate-line;
-
-  color: var(--rak-text-secondary);
-  font-family: var(--rak-font-body);
-  font-size: var(--rak-text-xs);
-}
-
-// The Monday night total, set apart as a pick is beside the same heading.
-.knockouts__total {
-  @include badge;
-}
-
 // A real card drawn from a stand-in game, so it takes a loaded card's size. Its
 // band keeps its fill, and each block under it becomes a fill with its text hidden.
 .knockouts.--loading .knockouts__group {

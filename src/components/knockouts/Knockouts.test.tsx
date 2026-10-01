@@ -111,41 +111,47 @@ describe("Knockouts", () => {
 
     vi.useRealTimers();
   });
-  it("heads the MNF Points knockouts with the total, and gives each one's guess", () => {
+  it("puts everyone the MNF Points knocked out under one side headed by the tier, names plain", () => {
     const scores = settled(
       [
         player({
-          name: "Alice",
+          name: "Rival",
           total: 5,
           pro: [pick("KC", "yes")],
-          tiebreakerPick: 40,
-          distance: 1,
+          tiebreakerPick: 41,
+          distance: 0,
         }),
         player({
-          name: "Bob",
+          name: "Will Ferguson",
           total: 5,
           pro: [pick("KC", "yes")],
-          tiebreakerPick: 50,
-          distance: 9,
+          tiebreakerPick: 43,
+          distance: 2,
+        }),
+        player({
+          name: "RunningBach",
+          total: 5,
+          pro: [pick("DEN", "no")],
+          tiebreakerPick: 49,
+          distance: 8,
         }),
       ],
       41,
     );
     render(page(scores));
 
+    const headings = screen.getAllByRole("heading", { level: 4 });
+    expect(headings.map((it) => it.textContent)).toEqual([
+      "2 knocked out on MNF Points",
+    ]);
     expect(
-      screen.getByRole("heading", {
-        level: 4,
-        name: "1 knocked out on MNF Points 41",
-      }),
-    ).toBeInTheDocument();
-    const bob = screen.getByRole("button", {
-      name: "Bob, knocked out on MNF Points 50",
-    });
-    expect(bob).toHaveTextContent("MNF Points 50");
+      within(headings[0].parentElement as HTMLElement)
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    ).toEqual(["Will Ferguson", "RunningBach"]);
   });
 
-  it("notes the tiebreaker under a name on a side that missed", () => {
+  it("heads a College Score side by its tier, not the pick", () => {
     // Level on total and MNF Points, Bob is a college game behind.
     const scores = settled(
       [
@@ -172,12 +178,10 @@ describe("Knockouts", () => {
     render(page(scores));
 
     expect(
-      screen.getByRole("heading", { level: 4, name: "1 knocked out on BAMA" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", {
-        name: "Bob, knocked out on College Score",
-      }),
-    ).toHaveTextContent("College Score");
+      screen.getAllByRole("heading", { level: 4 }).map((it) => it.textContent),
+    ).toEqual(["1 knocked out on College Score"]);
+    expect(screen.getByRole("button", { name: "Bob" })).toHaveTextContent(
+      /^Bob$/,
+    );
   });
 });

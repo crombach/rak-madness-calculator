@@ -8,7 +8,7 @@ import { Tiebreaker } from "../../types/RakMadnessScores";
 
 /**
  * One team in a game, and the players who are out if it fails to cover, or who
- * went out on its result.
+ * went out behind on total once it failed to.
  */
 export type KnockoutSide = {
   team: string;
@@ -16,29 +16,16 @@ export type KnockoutSide = {
   pick: string;
   /** In ranking order. */
   players: Array<string>;
-  /** On a final game, each player here a tiebreaker knocked out, by name. */
-  tiebreakers?: Record<string, TiebreakerKnockout>;
-};
-
-/** What settled a knockout that came down to a tie on total. */
-export type TiebreakerKnockout = {
-  tiebreaker: Tiebreaker;
-  /** The player's MNF Points, on the `mnfPoints` tier. */
-  pick?: number;
 };
 
 /**
- * The players a final game knocked out on one tiebreaker though their pick scored,
- * so no side of the game holds them.
+ * The players a final game left level on total with a rival and knocked out on
+ * one tiebreaker, whatever their pick on it did.
  */
 export type KnockoutTiebreaker = {
   tiebreaker: Tiebreaker;
-  /** The Monday night total, on the `mnfPoints` tier. */
-  total?: number;
   /** In ranking order. */
   players: Array<string>;
-  /** Each of them, by name, where the knockout says what settled it. */
-  tiebreakers: Record<string, TiebreakerKnockout>;
 };
 
 export type KnockoutGame = {
@@ -55,7 +42,7 @@ export type KnockoutGame = {
    * players first where no result says which side is away.
    */
   sides: Array<KnockoutSide>;
-  /** On a final game, who it knocked out on a tiebreaker rather than a pick, by tier. */
+  /** On a final game, who it knocked out on a tiebreaker, in tiebreak order. */
   tiebreakers?: Array<KnockoutTiebreaker>;
 };
 

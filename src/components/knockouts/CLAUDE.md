@@ -11,8 +11,8 @@ with the players it knocked out.
   Its games are grouped by `gameSections`, as on Games.
 - `KnockoutCard`: one game to a row. Its band opens `useGameStatus`. Each side
   lists its players, a name opening `usePlayerAnalysis`. The sides sit beside
-  each other once both fit. A tiebreaker knockout names its tier under the name,
-  and a scored pick's knockouts get a side per tier.
+  each other once both fit. A pick side keeps those behind on total. A
+  tiebreaker knockout goes under its tier's side, whatever the pick did.
 - `KnockoutsSkeleton`: `KnockoutCard`s on a stand-in game, text hidden under
   fills, while the route's chunk or the week loads.
 - `useGridColumns`: how many name columns a side's grid lays out, so a fold

@@ -281,23 +281,31 @@ describe("getKnockouts", () => {
     });
   });
 
-  it("keeps a player the MNF Points knocked out on a pick that scored apart from the sides, with their guess", () => {
-    // Level with Alice on KC either way, Bob went out on being further off.
+  it("puts everyone the MNF Points knocked out under one tier side, whatever their pick did", () => {
+    // 2016 week 1, P14 DEN at KC, 41 points. All three end level on total, so the
+    // MNF Points settle it whether the pick scored or not.
     const scores = settled(
       [
         player({
-          name: "Alice",
+          name: "Rival",
           total: 5,
           pro: [pick("KC", "yes")],
-          tiebreakerPick: 40,
-          distance: 1,
+          tiebreakerPick: 41,
+          distance: 0,
         }),
         player({
-          name: "Bob",
+          name: "Will Ferguson",
           total: 5,
           pro: [pick("KC", "yes")],
-          tiebreakerPick: 50,
-          distance: 9,
+          tiebreakerPick: 43,
+          distance: 2,
+        }),
+        player({
+          name: "RunningBach",
+          total: 5,
+          pro: [pick("DEN", "no")],
+          tiebreakerPick: 49,
+          distance: 8,
         }),
       ],
       41,
@@ -312,16 +320,42 @@ describe("getKnockouts", () => {
         tiebreakers: [
           {
             tiebreaker: "mnfPoints",
-            total: 41,
-            players: ["Bob"],
-            tiebreakers: { Bob: { tiebreaker: "mnfPoints", pick: 50 } },
+            players: ["Will Ferguson", "RunningBach"],
           },
         ],
       },
     ]);
   });
 
-  it("notes the College Score on a side whose player it knocked out", () => {
+  it("keeps a pick side for a player behind on total", () => {
+    const scores = settled(
+      [
+        player({
+          name: "Alice",
+          total: 2,
+          pro: [pick("KC", "yes")],
+          tiebreakerPick: 40,
+          distance: 1,
+        }),
+        player({
+          name: "Bob",
+          total: 1,
+          pro: [pick("DEN", "no")],
+          tiebreakerPick: 41,
+          distance: 0,
+        }),
+      ],
+      41,
+    );
+
+    expect(getKnockouts(scores).games).toEqual([
+      expect.objectContaining({
+        sides: [{ team: "DEN", pick: "DEN", players: ["Bob"] }],
+      }),
+    ]);
+  });
+
+  it("puts a player the College Score knocked out under its tier, not their pick", () => {
     // Level on total and MNF Points, Bob is a college game behind.
     const scores = settled(
       [
@@ -346,32 +380,31 @@ describe("getKnockouts", () => {
       41,
     );
 
-    expect(getKnockouts(scores).games[0].sides).toEqual([
-      {
-        team: "BAMA",
-        pick: "BAMA",
-        players: ["Bob"],
-        tiebreakers: { Bob: { tiebreaker: "college" } },
-      },
-    ]);
+    expect(getKnockouts(scores).games[0]).toEqual(
+      expect.objectContaining({
+        sides: [],
+        tiebreakers: [{ tiebreaker: "college", players: ["Bob"] }],
+      }),
+    );
   });
 
-  it("notes the Pro Score ATS on a side whose player it knocked out", () => {
-    // Level on total, MNF Points, and college, Bob covered no spread.
+  it("puts a player the Pro Score ATS knocked out under its tier, whatever their pick did", () => {
+    // Level on total, MNF Points, and college. Alice's DEN missed and Bob's KC
+    // scored, but only Alice covered a spread, on SF.
     const scores = settled(
       [
         player({
           name: "Alice",
           total: 1,
           proAgainstTheSpread: 1,
-          pro: [pick("KC -3", "yes"), pick("SF", "no")],
+          pro: [pick("DEN", "no"), pick("SF -3", "yes")],
           tiebreakerPick: 40,
           distance: 1,
         }),
         player({
           name: "Bob",
           total: 1,
-          pro: [pick("DEN +3", "no"), pick("LAR", "yes")],
+          pro: [pick("KC", "yes"), pick("LAR +3", "no")],
           tiebreakerPick: 40,
           distance: 1,
         }),
@@ -381,48 +414,10 @@ describe("getKnockouts", () => {
 
     expect(getKnockouts(scores).games).toEqual([
       expect.objectContaining({
-        label: "P1",
-        sides: [
-          {
-            team: "DEN",
-            pick: "DEN +3",
-            players: ["Bob"],
-            tiebreakers: { Bob: { tiebreaker: "proAgainstTheSpread" } },
-          },
-        ],
+        label: "P2",
+        sides: [],
+        tiebreakers: [{ tiebreaker: "proAgainstTheSpread", players: ["Bob"] }],
       }),
-    ]);
-  });
-
-  it("heads a pick that scored by the tiebreaker that knocked its player out", () => {
-    // Both took KC and it scored, but only Alice's pick carried a spread.
-    const scores = settled(
-      [
-        player({
-          name: "Alice",
-          total: 1,
-          proAgainstTheSpread: 1,
-          pro: [pick("KC -3", "yes")],
-          tiebreakerPick: 40,
-          distance: 1,
-        }),
-        player({
-          name: "Bob",
-          total: 1,
-          pro: [pick("KC", "yes")],
-          tiebreakerPick: 40,
-          distance: 1,
-        }),
-      ],
-      41,
-    );
-
-    expect(getKnockouts(scores).games[0].tiebreakers).toEqual([
-      {
-        tiebreaker: "proAgainstTheSpread",
-        players: ["Bob"],
-        tiebreakers: { Bob: { tiebreaker: "proAgainstTheSpread" } },
-      },
     ]);
   });
 

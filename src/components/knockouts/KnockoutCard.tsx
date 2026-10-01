@@ -7,10 +7,7 @@ import { WeekGame } from "../../types/WeekGame";
 import getClasses from "../../utils/getClasses";
 import plural from "../../utils/plural";
 import { Tiebreaker } from "../../types/RakMadnessScores";
-import {
-  KnockoutGame,
-  TiebreakerKnockout,
-} from "../../utils/scoring/knockoutTypes";
+import { KnockoutGame } from "../../utils/scoring/knockoutTypes";
 import Button from "../button/Button";
 import CountBadge from "../countBadge/CountBadge";
 import GameMark, {
@@ -31,12 +28,6 @@ const TIEBREAKER_NAMES: Record<Tiebreaker, string> = {
   proAgainstTheSpread: "Pro Score ATS",
 };
 
-/** What settled a knockout, with the player's MNF Points where those did. */
-function knockoutNote({ tiebreaker, pick }: TiebreakerKnockout): string {
-  const name = TIEBREAKER_NAMES[tiebreaker];
-  return pick == null ? name : `${name} ${pick}`;
-}
-
 /** How many rows of names a folded side shows. */
 const FOLDED_ROWS = 2;
 
@@ -45,18 +36,15 @@ const BASE_COLUMNS = 2;
 
 /**
  * A side's players, the reader first so a fold never hides them. Each is ruled in
- * the tables' hue for whether they can still win, and one a tiebreaker knocked out
- * says which under their name.
+ * the tables' hue for whether they can still win.
  */
 function Side({
   heading,
   players: ranked,
-  tiebreakers,
   knockedOut,
 }: {
   heading: ReactNode;
   players: Array<string>;
-  tiebreakers?: Record<string, TiebreakerKnockout>;
   knockedOut: ReadonlySet<string>;
 }) {
   const showPlayerAnalysis = useShowPlayerAnalysis();
@@ -78,8 +66,6 @@ function Side({
       </h4>
       <ul ref={grid} className="knockouts__players">
         {shown.map((name) => {
-          const knockout = tiebreakers?.[name];
-          const note = knockout && knockoutNote(knockout);
           return (
             <li key={name}>
               <button
@@ -88,11 +74,9 @@ function Side({
                   "--mine": isMyPlayer(name, playerName),
                   "--knocked-out": knockedOut.has(name),
                 })}
-                aria-label={note && `${name}, ${KNOCKED_OUT} ${note}`}
                 onClick={() => showPlayerAnalysis(name)}
               >
                 <span className="knockouts__player-name">{name}</span>
-                {note && <span className="knockouts__player-note">{note}</span>}
               </button>
             </li>
           );
@@ -172,26 +156,14 @@ export default function KnockoutCard({
               </>
             }
             players={side.players}
-            tiebreakers={side.tiebreakers}
             knockedOut={knockedOut}
           />
         ))}
         {tiers.map((tier) => (
           <Side
             key={tier.tiebreaker}
-            heading={
-              <>
-                {KNOCKED_OUT} {TIEBREAKER_NAMES[tier.tiebreaker]}
-                {tier.total != null && (
-                  <>
-                    {" "}
-                    <span className="knockouts__total">{tier.total}</span>
-                  </>
-                )}
-              </>
-            }
+            heading={`${KNOCKED_OUT} ${TIEBREAKER_NAMES[tier.tiebreaker]}`}
             players={tier.players}
-            tiebreakers={tier.tiebreakers}
             knockedOut={knockedOut}
           />
         ))}
