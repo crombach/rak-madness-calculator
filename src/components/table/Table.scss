@@ -15,6 +15,9 @@
 // The hover and press fills of a tappable cell. A lit column takes the hover
 // fill on touch too, since a press lights it where a finger has no hover. Kept
 // before the press fill, so a pressed cell in a lit column still darkens.
+//
+// A game's cells open the same game, so a press darkens its whole column, through
+// `--column-pressed`, to the step the cell under the pointer takes.
 @mixin cell-interactive-fill {
   &.--column-lit {
     background-color: cell-darkened(var(--rak-hover-strength));
@@ -23,6 +26,9 @@
     cell-darkened(var(--rak-hover-strength)),
     cell-darkened(var(--rak-press-strength))
   );
+  &.--column-pressed {
+    background-color: cell-darkened(var(--rak-press-strength));
+  }
 }
 
 // A refresh changing a cell's status draws the color it held before over the

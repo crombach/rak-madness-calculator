@@ -491,8 +491,8 @@
   // pointer is never read as the striped row below it. The pressed step is as
   // dark as a cell goes: black text on a striped knocked-out cell still clears
   // 5:1 there.
-  --rak-hover-strength: 75%;
-  --rak-press-strength: 68%;
+  --rak-hover-strength: 82%;
+  --rak-press-strength: 75%;
 
   // The status icon beside a player's name, drawn the same size wherever the
   // name is. The wireframe leaves this much room without drawing one.

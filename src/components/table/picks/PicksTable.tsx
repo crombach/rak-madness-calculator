@@ -33,14 +33,20 @@ const TIEBREAKER_COLUMN_COUNT = 3;
 /** Marks every cell of the lit column, heading included. */
 const COLUMN_LIT_CLASS = "--column-lit";
 
+/** Marks every cell of the column a press holds, heading included. */
+const COLUMN_PRESSED_CLASS = "--column-pressed";
+
+/** Which column a mark is on, and the table it is in. */
+type ColumnMark = { table: HTMLTableElement; game?: string };
+
 /**
- * Lights the cells of one game's column and unlights the rest, on the DOM. A
+ * Marks the cells of one game's column and unmarks the rest, on the DOM. A
  * hover moves with the pointer, and going through state would render every cell
  * of every row each time it crossed one.
  */
-function litColumn(table: HTMLTableElement, game: string | undefined) {
-  table.querySelectorAll<HTMLElement>("[data-game]").forEach((cell) => {
-    cell.classList.toggle(COLUMN_LIT_CLASS, cell.dataset.game === game);
+function markColumn(className: string, mark: ColumnMark) {
+  mark.table.querySelectorAll<HTMLElement>("[data-game]").forEach((cell) => {
+    cell.classList.toggle(className, cell.dataset.game === mark.game);
   });
 }
 
@@ -197,11 +203,13 @@ function PicksTable({
 }) {
   const showGameStatus = useShowGameStatus();
   const { picks: pickChanges } = useScoreChanges();
-  const hovered = useRef<{ table: HTMLTableElement; game?: string }>(undefined);
+  const hovered = useRef<ColumnMark>(undefined);
+  const pressed = useRef<ColumnMark>(undefined);
 
   // A refresh that redraws a cell replaces the class the pointer put on it.
   useLayoutEffect(() => {
-    if (hovered.current) litColumn(hovered.current.table, hovered.current.game);
+    if (hovered.current) markColumn(COLUMN_LIT_CLASS, hovered.current);
+    if (pressed.current) markColumn(COLUMN_PRESSED_CLASS, pressed.current);
   });
 
   // Every cell of a game's column opens the same game, so the whole column
@@ -211,24 +219,36 @@ function PicksTable({
     lightTarget(event);
   }
 
-  // A finger lights the column it presses until it lifts. A scroll cancels the
-  // touch rather than lifting it, which puts the column out the same way.
+  // A press darkens the whole column it lands on, not just the cell, and a finger
+  // lights it too until it lifts. A scroll cancels the touch rather than lifting
+  // it, which puts the column out the same way.
   function trackPress(event: PointerEvent<HTMLTableElement>) {
+    press(event.currentTarget, gameOf(event));
     if (event.pointerType === "touch") lightTarget(event);
   }
 
   function endPress(event: PointerEvent<HTMLTableElement>) {
+    press(event.currentTarget, undefined);
     if (event.pointerType === "touch") hover(event.currentTarget, undefined);
   }
 
+  function gameOf(event: PointerEvent<HTMLTableElement>) {
+    return (event.target as Element).closest<HTMLElement>("[data-game]")
+      ?.dataset.game;
+  }
+
   function lightTarget(event: PointerEvent<HTMLTableElement>) {
-    const cell = (event.target as Element).closest<HTMLElement>("[data-game]");
-    hover(event.currentTarget, cell?.dataset.game);
+    hover(event.currentTarget, gameOf(event));
   }
 
   function hover(table: HTMLTableElement, game: string | undefined) {
     hovered.current = { table, game };
-    litColumn(table, game);
+    markColumn(COLUMN_LIT_CLASS, hovered.current);
+  }
+
+  function press(table: HTMLTableElement, game: string | undefined) {
+    pressed.current = { table, game };
+    markColumn(COLUMN_PRESSED_CLASS, pressed.current);
   }
 
   if (scores == null) {
@@ -264,6 +284,7 @@ function PicksTable({
       onPointerUp={endPress}
       onPointerCancel={endPress}
       onPointerLeave={(event) => {
+        press(event.currentTarget, undefined);
         if (event.pointerType !== "touch")
           hover(event.currentTarget, undefined);
       }}

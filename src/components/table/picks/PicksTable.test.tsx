@@ -417,6 +417,27 @@ describe("PicksTable, column press", () => {
 
     expect(document.querySelector(`.${LIT}`)).toBeNull();
   });
+
+  it.each(["MouseLeft", "TouchA"])(
+    "darkens every cell of the column a %s press holds, until it lifts",
+    async (key) => {
+      const PRESSED = "--column-pressed";
+      const { user } = renderPicks();
+      const cell = screen.getByText("MICH");
+
+      await user.pointer({ keys: `[${key}>]`, target: cell });
+
+      expect(screen.getByText("C1 pick").closest("td")).toHaveClass(PRESSED);
+      expect(screen.getByRole("columnheader", { name: "C1" })).toHaveClass(
+        PRESSED,
+      );
+      expect(screen.getByText("OSU").closest("td")).not.toHaveClass(PRESSED);
+
+      await user.pointer({ keys: `[/${key}]`, target: cell });
+
+      expect(document.querySelector(`.${PRESSED}`)).toBeNull();
+    },
+  );
 });
 
 describe("PicksTable, a refresh's changes", () => {
