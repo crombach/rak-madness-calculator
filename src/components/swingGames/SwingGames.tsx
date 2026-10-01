@@ -13,7 +13,7 @@ import GameMark, {
   gameMarkLabel,
 } from "../gameStatus/GameMark";
 import { ExpandMoreIcon } from "../icon/Icon";
-import plural, { verbFor } from "../../utils/plural";
+import plural from "../../utils/plural";
 import ExperimentalGate from "../results/ExperimentalGate";
 import { SWING_GAMES_INTRO } from "./swingGamesIntro";
 import useGridColumns from "./useGridColumns";
@@ -41,10 +41,9 @@ function Side({ side }: { side: SwingSide }) {
 
   return (
     <div className="swing-games__side">
-      <h4 className="swing-games__needs">
-        <span className="swing-games__count">{side.players.length}</span>{" "}
-        {verbFor(side.players.length, "need")}{" "}
-        <span className="swing-games__pick">{side.pick}</span>
+      <h4 className="swing-games__must-win">
+        <span className="swing-games__count">{side.players.length}</span> must
+        win <span className="swing-games__pick">{side.pick}</span>
       </h4>
       <ul ref={grid} className="swing-games__players">
         {shown.map((name) => (
