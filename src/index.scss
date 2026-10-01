@@ -248,10 +248,11 @@
   --rak-glass-fill: #262626;
   --rak-glass-ink: #fff;
   --rak-glass-unlit: rgb(255 255 255 / 12%);
-  // A score lit for the side that scored the point, or cost it. Light mode lights
-  // it one step deeper than dark mode does, toward the 400 names beside the
-  // glass, which are a step brighter in turn. Both pairs read: 6.1:1 and 5.2:1
-  // on the glass, 4.7:1 and 5.5:1 on white. Dark mode takes its own pair below.
+  // A score lit for the side that scored the point, or cost it. In light mode
+  // the digits sit a step deeper than dark mode's, and the 400 names beside the
+  // glass a step lighter than they would otherwise, so the two greens and the two
+  // reds read as one pair. The digits are 6.1:1 and 5.2:1 on the glass, the
+  // names 4.7:1 and 5.5:1 on white. Dark mode takes its own pair below.
   --rak-glass-scored: #35bb58;
   --rak-glass-missed: #f66c69;
 
@@ -340,10 +341,10 @@
   // is the same hue taken far enough down to read on a white surface, which the
   // fill cannot, and is what the player analysis search draws its status icon in.
   //
-  // Blue and orange sit at one OKLCH lightness, each as saturated as sRGB lets it
-  // get up to one chroma. Green and red sit a step deeper and stronger, since a
-  // pick's result is what the table is read for, and red that light reads as
-  // pink. Gold sits a step lighter so it reads as yellow. Orange leans toward
+  // Blue and orange share an OKLCH lightness of 0.87 and a chroma of up to 0.12,
+  // less where sRGB cannot reach it. Green and red sit deeper, near 0.83, with
+  // more chroma, since a pick's result is what the table is read for. Red at
+  // 0.87 reads as pink. Gold sits lighter so it reads as yellow. Orange leans toward
   // amber, which holds a knocked out name 27 CIELAB units off the wrong picks
   // beside it.
   --rak-knocked-out-300: #fec993;

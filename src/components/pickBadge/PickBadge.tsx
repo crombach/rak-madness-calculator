@@ -4,7 +4,7 @@ import "./PickBadge.scss";
 
 /**
  * A pick set apart from the words around it, filled the way the picks table fills
- * its cell: green where it scored, red where it missed, plain while the game is open.
+ * its cell: green where it scored, red where it missed, gray while the game is open.
  */
 export default function PickBadge({
   pick,
