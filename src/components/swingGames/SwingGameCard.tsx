@@ -1,4 +1,3 @@
-import { Accordion } from "@base-ui/react/accordion";
 import { useMemo, useRef, useState } from "react";
 import { useShowGameStatus } from "../../context/GameStatusContext";
 import { useShowPlayerAnalysis } from "../../context/PlayerAnalysisContext";
@@ -14,7 +13,6 @@ import GameMark, {
   PlayerCountMark,
   gameMarkLabel,
 } from "../gameStatus/GameMark";
-import { ExpandMoreIcon } from "../icon/Icon";
 import PickBadge from "../pickBadge/PickBadge";
 import useGridColumns from "./useGridColumns";
 import "./SwingGames.scss";
@@ -114,42 +112,28 @@ export default function SwingGameCard({
   const markLabel = weekGame && gameMarkLabel(weekGame, status);
 
   return (
-    <Accordion.Item
-      value={game.label}
-      className="swing-games__group"
-      render={<li />}
-    >
-      <Accordion.Header className="swing-games__title">
-        {/* Opens Game Status, as the picks table's own column heading does. A
-            sibling of the toggle, never inside it, so each reaches only its own. */}
+    <li className="swing-games__group">
+      <h3 className="swing-games__title">
+        {/* The whole band opens Game Status, as the picks table's own column
+            heading does. The count and the mark sit at its end, where All Games
+            has the mark. */}
         <button
           type="button"
           className="swing-games__game"
-          aria-label={[`Game Status for ${gameName}`, markLabel]
+          aria-label={[`Game Status for ${gameName}`, players, markLabel]
             .filter((part) => part != null)
             .join(", ")}
           onClick={() => showGameStatus(game.label)}
         >
           <span className="swing-games__game-label">{game.label}</span>{" "}
           <span className="swing-games__game-matchup">{game.name}</span>
-        </button>
-        {/* The count and the mark sit at the band's end, the mark where All Games
-            has it. Inside the toggle, so a tap beside them still folds the game. */}
-        <Accordion.Trigger
-          className="swing-games__toggle"
-          aria-label={[gameName, players, markLabel]
-            .filter((part) => part != null)
-            .join(", ")}
-        >
-          <PlayerCountMark count={count} />
-          {weekGame && <GameMark game={weekGame} status={status} />}
-          <span className="swing-games__chevron">
-            <ExpandMoreIcon />
+          <span className="swing-games__marks">
+            <PlayerCountMark count={count} />
+            {weekGame && <GameMark game={weekGame} status={status} />}
           </span>
-        </Accordion.Trigger>
-      </Accordion.Header>
-      {/* Mounted while folded, so a side shown in full stays so. */}
-      <Accordion.Panel keepMounted className="swing-games__panel">
+        </button>
+      </h3>
+      <div className="swing-games__sides">
         {game.sides.map((side) => (
           <Side
             key={side.team}
@@ -158,7 +142,7 @@ export default function SwingGameCard({
             knockedOut={knockedOut}
           />
         ))}
-      </Accordion.Panel>
-    </Accordion.Item>
+      </div>
+    </li>
   );
 }

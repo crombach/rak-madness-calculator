@@ -1,5 +1,4 @@
 @use "sass:math";
-@use "../../styles/breakpoints" as *;
 @use "../../styles/focus" as *;
 @use "../../styles/ink" as *;
 @use "../../styles/interactive" as *;
@@ -14,14 +13,12 @@
 // The narrowest a name box goes, which is what sets how many share a row.
 $name-box-min: 7.5rem;
 
-// The narrowest game that still fits `BASE_COLUMNS` name boxes: two boxes and
-// the gap between them, the side's padding, and the frame. 276px, which a
-// browser confirms: the names drop to one column at 274px, and the band holds a
-// matchup as long as `P16 UMASS @ STAN` on one line down to 224px.
-$section-min: calc(
-  2 * #{$name-box-min} + var(--rak-space-2) + 2 * var(--rak-space-3) + 2 *
-    var(--rak-border-width)
-);
+// Where the two sides of a game sit beside each other: two sides each wide
+// enough for `BASE_COLUMNS` name boxes, two boxes of `$name-box-min` and the gap
+// between them plus the side's padding, then the rule between the sides, the
+// frame, and the page's padding either side. Literal, since a container query
+// takes no custom property.
+$sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 
 .swing-games {
   @include page-body;
@@ -45,15 +42,10 @@ $section-min: calc(
   gap: var(--rak-space-2);
 }
 
-// Two columns of games where two fit, one otherwise, in page order across each
-// row. The width `PageLayout.scss` gives its content is the only cap.
+// One game to a row, as wide as the page, so no game stands beside a taller one.
 .swing-games__list {
-  display: grid;
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(max(#{$section-min}, (100% - var(--rak-space-4)) / 2), 1fr)
-  );
-  align-items: start;
+  display: flex;
+  flex-direction: column;
   gap: var(--rak-space-4);
   margin: 0;
   padding: 0;
@@ -67,28 +59,31 @@ $section-min: calc(
   flex-direction: column;
 }
 
-// The bar a game's heading stands on in the table, holding the two targets
-// below. One fill for both, so neither button's own hover or press reads as
-// the whole band lighting up.
 .swing-games__title {
   @include game-card-band;
 
   align-items: stretch;
   margin: 0;
+  font-weight: normal;
 }
 
-// Both band targets' own hover and press fill and inset focus ring, off the
-// soft `Button.scss` variant. Inset, since the panel's own `overflow` would
-// clip a ring drawn outside.
-@mixin band-target {
+// The whole band, one target opening Game Status, the way the picks table's own
+// column heading does. Its own hover and press fill and an inset focus ring, off
+// the soft `Button.scss` variant. Inset, since the frame's `overflow` would clip
+// a ring drawn outside.
+.swing-games__game {
   display: flex;
+  flex: 1;
   align-items: center;
+  gap: var(--rak-space-2);
   min-height: var(--rak-touch-target);
   padding: var(--rak-space-2) var(--rak-space-3);
   border: 0;
   background-color: transparent;
   color: inherit;
   font: inherit;
+  white-space: nowrap;
+  text-align: start;
   cursor: pointer;
   transition: background-color var(--rak-duration-fast) var(--rak-ease-standard);
 
@@ -100,54 +95,21 @@ $section-min: calc(
   @include interactive-fill(var(--rak-state-hover), var(--rak-state-press));
 }
 
-// Left: the mark and the game's own name, sized to its content. Opens Game
-// Status, the way the picks table's own column heading does.
-.swing-games__game {
-  @include band-target;
-
-  flex: none;
-  gap: var(--rak-space-2);
-  white-space: nowrap;
-  text-align: start;
-}
-
-// Right: the count, the mark and the chevron, filling whatever the game button does
-// not use, so a tap on the rest of the bar still folds or opens it.
-.swing-games__toggle {
-  @include band-target;
-
-  flex: 1;
-  justify-content: flex-end;
-  gap: var(--rak-space-2);
-}
-
-.swing-games__chevron {
+// The count and the mark, at the band's end.
+.swing-games__marks {
   display: flex;
-  transition: transform var(--rak-duration-medium) var(--rak-ease-standard);
-
-  .swing-games__toggle[data-panel-open] & {
-    transform: rotate(180deg);
-  }
-
-  @include reduced-motion {
-    transition: none;
-  }
+  align-items: center;
+  gap: var(--rak-space-2);
+  margin-inline-start: auto;
 }
 
-// Base UI measures the panel into `--accordion-panel-height` as it opens and
-// closes, and hands back `auto` once it is open.
-.swing-games__panel {
-  height: var(--accordion-panel-height);
-  overflow: hidden;
-  transition: height var(--rak-duration-medium) var(--rak-ease-standard);
+// The sides stacked, then beside each other once each fits its name boxes.
+.swing-games__sides {
+  display: grid;
+  grid-template-columns: 1fr;
 
-  &[data-starting-style],
-  &[data-ending-style] {
-    height: 0;
-  }
-
-  @include reduced-motion {
-    transition: none;
+  @container (min-width: #{$sides-beside-from}) {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -168,6 +130,12 @@ $section-min: calc(
   & + & {
     border-block-start: var(--rak-border-width-hairline) solid
       var(--rak-divider-soft);
+
+    @container (min-width: #{$sides-beside-from}) {
+      border-block-start: 0;
+      border-inline-start: var(--rak-border-width-hairline) solid
+        var(--rak-divider-soft);
+    }
   }
 }
 
@@ -241,7 +209,6 @@ $section-min: calc(
 // band keeps its fill, and each block under it becomes a fill with its text hidden.
 .swing-games.--loading .swing-games__group {
   .swing-games__game > *,
-  .swing-games__toggle > *,
   .swing-games__must-win > * {
     visibility: hidden;
   }

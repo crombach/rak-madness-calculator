@@ -1,5 +1,4 @@
-import { Accordion } from "@base-ui/react/accordion";
-import { ReactNode, useId, useMemo, useState } from "react";
+import { ReactNode, useId, useMemo } from "react";
 import { Navigate, useParams } from "react-router";
 import useLiveWeek from "../../hooks/useLiveWeek";
 import { GameStatus } from "../../types/ESPN";
@@ -76,9 +75,6 @@ export default function SwingGames({
       ),
     [scores],
   );
-  // The folded ones rather than the open ones, so a game a refresh brings in
-  // starts open.
-  const [closed, setClosed] = useState<ReadonlySet<string>>(new Set());
 
   if (swings == null) return null;
   // A won week, or one no single game decides, has nothing to show here.
@@ -116,16 +112,8 @@ export default function SwingGames({
         fetchingLeagues?.has(weekGame.league),
     ),
   );
-  const labels = swings.games.map((game) => game.label);
   return (
-    <Accordion.Root
-      className="swing-games"
-      multiple
-      value={labels.filter((label) => !closed.has(label))}
-      onValueChange={(open: Array<string>) =>
-        setClosed(new Set(labels.filter((label) => !open.includes(label))))
-      }
-    >
+    <div className="swing-games">
       {isFetching && (
         <span
           className="swing-games__progress --live"
@@ -147,6 +135,6 @@ export default function SwingGames({
           ))}
         </Section>
       ))}
-    </Accordion.Root>
+    </div>
   );
 }

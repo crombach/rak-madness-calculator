@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { screen, waitFor, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 
 vi.mock("../../utils/getLeagueInfo");
 vi.mock("../../utils/readFileToBuffer");
@@ -49,17 +49,16 @@ function BackButton() {
   );
 }
 
-/** The toggle's `aria-label`: the game, its player count, then its mark's label. */
-function bandName(game: string, count: number, status = "Not listed by ESPN") {
-  return `${game}, ${plural(count, "player")}, ${status}`;
-}
-
 /**
- * The game button's `aria-label`: opens Game Status, then its mark's label. A game
- * with no ESPN result, as most fixtures here are, reads as unlisted.
+ * The band's `aria-label`: opens Game Status, the player count, then its mark's
+ * label. A game with no ESPN result, as most fixtures here are, reads as unlisted.
  */
-function gameButtonName(game: string, status = "Not listed by ESPN") {
-  return `Game Status for ${game}, ${status}`;
+function gameButtonName(
+  game: string,
+  count: number,
+  status = "Not listed by ESPN",
+) {
+  return `Game Status for ${game}, ${plural(count, "player")}, ${status}`;
 }
 
 /** The mark in a game's band, found from its game button. */
@@ -242,40 +241,18 @@ describe("the swing games route", () => {
     expect(within(dialog).getByRole("combobox")).toHaveValue("Bob");
   });
 
-  it("opens the game status from the game button, leaving it open", async () => {
+  it("opens the game status from the band", async () => {
     const user = mountApp(SWINGS_PATH);
 
     await user.click(
       await screen.findByRole("button", {
-        name: gameButtonName("P1 KC at DEN"),
+        name: gameButtonName("P1 KC at DEN", 2),
       }),
     );
 
     expect(
       await screen.findByRole("dialog", { name: /Game Status/ }),
     ).toBeInTheDocument();
-    // Behind the modal dialog, which hides the page from the accessibility tree.
-    expect(
-      screen.getByRole("button", {
-        name: bandName("P1 KC at DEN", 2),
-        hidden: true,
-      }),
-    ).toHaveAttribute("aria-expanded", "true");
-  });
-
-  it("reaches the game button before the toggle, tabbing through", async () => {
-    const user = mountApp(SWINGS_PATH);
-    const gameButton = await screen.findByRole("button", {
-      name: gameButtonName("P1 KC at DEN"),
-    });
-    const toggle = screen.getByRole("button", {
-      name: bandName("P1 KC at DEN", 2),
-    });
-
-    gameButton.focus();
-    await user.tab();
-
-    expect(toggle).toHaveFocus();
   });
 
   it("lists games in column order and names each band by its column", async () => {
@@ -296,7 +273,11 @@ describe("the swing games route", () => {
 
     const bands = screen
       .getAllByRole("button", { name: /^Game Status for/ })
-      .map((band) => band.textContent);
+      .map((band) =>
+        [".swing-games__game-label", ".swing-games__game-matchup"]
+          .map((part) => band.querySelector(part)?.textContent)
+          .join(" "),
+      );
     expect(bands).toEqual(["P1 KC at DEN", "P2 SF at LAR"]);
     expect(screen.getByText("P1")).toHaveClass("swing-games__game-label");
   });
@@ -401,124 +382,6 @@ describe("the swing games route", () => {
     });
   });
 
-  describe("folding a game", () => {
-    /** Alice needs both games, so each is a swing. */
-    function twoGameScores() {
-      const scores = week([
-        player({
-          name: "Alice",
-          total: 5,
-          pro: [pick("KC -3"), pick("NYJ")],
-        }),
-        player({ name: "Bob", total: 6, pro: [pick("DEN 3"), pick("MIA")] }),
-      ]);
-      scores.games = [
-        { label: "P1", league: League.PRO, name: "KC at DEN" },
-        { label: "P2", league: League.PRO, name: "NYJ at MIA" },
-      ];
-      return scores;
-    }
-
-    it("starts every game open", async () => {
-      getPlayerScoresMock.mockResolvedValue(twoGameScores());
-      mountApp(SWINGS_PATH);
-
-      for (const name of [
-        bandName("P1 KC at DEN", 1),
-        bandName("P2 NYJ at MIA", 1),
-      ]) {
-        expect(await screen.findByRole("button", { name })).toHaveAttribute(
-          "aria-expanded",
-          "true",
-        );
-      }
-    });
-
-    it("folds a game from its band and opens it again, on its own", async () => {
-      getPlayerScoresMock.mockResolvedValue(twoGameScores());
-      const user = mountApp(SWINGS_PATH);
-      const band = await screen.findByRole("button", {
-        name: bandName("P1 KC at DEN", 1),
-      });
-
-      await user.click(band);
-
-      expect(band).toHaveAttribute("aria-expanded", "false");
-      await waitFor(() =>
-        expect(
-          screen.queryByRole("heading", { name: mustWinHeading(1, "KC -3") }),
-        ).not.toBeInTheDocument(),
-      );
-      expect(
-        screen.getByRole("heading", { name: mustWinHeading(1, "NYJ") }),
-      ).toBeInTheDocument();
-
-      await user.click(band);
-
-      expect(band).toHaveAttribute("aria-expanded", "true");
-      expect(
-        await screen.findByRole("heading", {
-          name: mustWinHeading(1, "KC -3"),
-        }),
-      ).toBeInTheDocument();
-    });
-
-    it("starts every game open again in another week", async () => {
-      // A fresh spreadsheet per fetch, since each week reads its own body.
-      vi.mocked(global.fetch).mockImplementation(() =>
-        Promise.resolve(spreadsheetResponse()),
-      );
-      getPlayerScoresMock.mockResolvedValue(twoGameScores());
-      const user = mountApp(SWINGS_PATH, {
-        earlier: [`/${SEASON}/${CURRENT_WEEK - 1}/swings`],
-        beside: <BackButton />,
-      });
-      const band = await screen.findByRole("button", {
-        name: bandName("P1 KC at DEN", 1),
-      });
-      await user.click(band);
-      expect(band).toHaveAttribute("aria-expanded", "false");
-
-      await user.click(screen.getByRole("button", { name: "Back" }));
-
-      await waitFor(() =>
-        expect(
-          screen.getByRole("button", { name: bandName("P1 KC at DEN", 1) }),
-        ).toHaveAttribute("aria-expanded", "true"),
-      );
-    });
-
-    it("folds and opens from the keyboard", async () => {
-      const user = mountApp(SWINGS_PATH);
-      const band = await screen.findByRole("button", {
-        name: bandName("P1 KC at DEN", 2),
-      });
-
-      band.focus();
-      await user.keyboard("{Enter}");
-      expect(band).toHaveAttribute("aria-expanded", "false");
-
-      await user.keyboard(" ");
-      expect(band).toHaveAttribute("aria-expanded", "true");
-    });
-
-    it("keeps a side shown in full through a fold", async () => {
-      getPlayerScoresMock.mockResolvedValue(crowdedScores());
-      const user = mountApp(SWINGS_PATH);
-      const band = await screen.findByRole("button", {
-        name: bandName("P1 KC at DEN", 10),
-      });
-
-      await user.click(screen.getByRole("button", { name: "Show More" }));
-      await user.click(band);
-      await user.click(band);
-
-      expect(
-        await screen.findByRole("button", { name: "Show Fewer" }),
-      ).toBeInTheDocument();
-    });
-  });
-
   it("folds a long side to two rows, then shows the rest on asking", async () => {
     stubColumns(2);
     getPlayerScoresMock.mockResolvedValue(crowdedScores());
@@ -592,7 +455,7 @@ describe("the swing games route", () => {
       mountApp(SWINGS_PATH);
 
       const heading = await screen.findByRole("button", {
-        name: gameButtonName("P1 KC at DEN", "Live"),
+        name: gameButtonName("P1 KC at DEN", 2, "Live"),
       });
       expect(bandMark(heading)).toHaveClass("--live");
     });
@@ -606,7 +469,7 @@ describe("the swing games route", () => {
       mountApp(SWINGS_PATH);
 
       const heading = await screen.findByRole("button", {
-        name: gameButtonName("P1 KC at DEN", "Delayed"),
+        name: gameButtonName("P1 KC at DEN", 2, "Delayed"),
       });
       expect(bandMark(heading)).toHaveClass("--delayed");
     });
@@ -616,7 +479,7 @@ describe("the swing games route", () => {
       mountApp(SWINGS_PATH);
 
       const heading = await screen.findByRole("button", {
-        name: gameButtonName("P1 KC at DEN", "Yet to kick off"),
+        name: gameButtonName("P1 KC at DEN", 2, "Yet to kick off"),
       });
       expect(bandMark(heading)).toHaveClass("--upcoming");
     });

@@ -1,4 +1,3 @@
-import { Accordion } from "@base-ui/react/accordion";
 import rangeWithPrefix from "../../utils/rangeWithPrefix";
 import { SwingGame } from "../../utils/scoring/swingGameTypes";
 import SectionTitle from "../games/SectionTitle";
@@ -9,8 +8,7 @@ import SkeletonStatus from "../pageLayout/SkeletonStatus";
 import SwingGameCard from "./SwingGameCard";
 import "./SwingGames.scss";
 
-// Two rows at the two-column width, enough to fill a tall screen, since a swing
-// game stands taller than a scoreboard.
+// Enough to fill a tall screen, one game to a row.
 const STAND_IN_GAMES = 4;
 
 /** Two rows of names, as many as a folded side shows at the narrowest width. */
@@ -37,13 +35,7 @@ export default function SwingGamesSkeleton() {
   return (
     <>
       <SkeletonStatus page={RESULTS_PAGE.swingGames} />
-      <Accordion.Root
-        className="swing-games --loading"
-        multiple
-        value={keys}
-        aria-hidden="true"
-        inert
-      >
+      <div className="swing-games --loading" aria-hidden="true" inert>
         <div className="swing-games__section">
           <SectionTitle title={COMPLETED_TITLE} count={STAND_IN_GAMES} />
           <ul className="swing-games__list">
@@ -58,7 +50,7 @@ export default function SwingGamesSkeleton() {
             ))}
           </ul>
         </div>
-      </Accordion.Root>
+      </div>
     </>
   );
 }
