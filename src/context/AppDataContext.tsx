@@ -15,7 +15,7 @@ import usePlayerScores from "../hooks/usePlayerScores";
 import { WeekInfo } from "../types/League";
 import { prefetchStoredPicks } from "../utils/loadStoredPicks";
 import { RakMadnessScores } from "../types/RakMadnessScores";
-import { NO_SWINGS, SwingGames } from "../utils/scoring/swingGameTypes";
+import { NO_KNOCKOUTS, KnockoutGames } from "../utils/scoring/knockoutTypes";
 import cachedImport from "../utils/cachedImport";
 import isWeekSettled, { isWeekWon } from "../utils/scoring/isWeekSettled";
 import { readSettledWeek } from "../utils/settledWeeksCache";
@@ -298,52 +298,52 @@ export function useScoreChanges(): ScoreChanges {
 }
 
 /** One answer per set of scores, however many callers ask for it. */
-const swingGamesByScores = new WeakMap<RakMadnessScores, SwingGames>();
+const knockoutsByScores = new WeakMap<RakMadnessScores, KnockoutGames>();
 
 /**
- * Loaded on first use. `getSwingGames` pulls in all of `getPlayerAnalysis`, which
+ * Loaded on first use. `getKnockouts` pulls in all of `getPlayerAnalysis`, which
  * the routes would otherwise carry in the chunk every one of them waits on.
  */
-const loadGetSwingGames = cachedImport(
-  () => import("../utils/scoring/getSwingGames"),
+const loadGetKnockouts = cachedImport(
+  () => import("../utils/scoring/getKnockouts"),
 );
 
 /**
- * The week's swing games, or undefined while its scores or the code that reads
+ * The week's knockouts, or undefined while its scores or the code that reads
  * them load. Skips the work and answers empty while the reader has not opted into
  * experimental features.
  */
-export function useSwingGames(): SwingGames | undefined {
+export function useKnockouts(): KnockoutGames | undefined {
   const scores = useScores();
   const { experimentalFeatures } = useSettings();
-  const [getSwingGames, setGetSwingGames] =
-    useState<(scores: RakMadnessScores) => SwingGames>();
+  const [getKnockouts, setGetKnockouts] =
+    useState<(scores: RakMadnessScores) => KnockoutGames>();
   const isNeeded = scores != null && experimentalFeatures;
 
   // Asks again on each new set of scores until the code arrives, so one failed
   // download costs one poll rather than the page.
   useEffect(() => {
-    if (!isNeeded || getSwingGames != null) return;
+    if (!isNeeded || getKnockouts != null) return;
     let isCurrent = true;
-    loadGetSwingGames().then(
+    loadGetKnockouts().then(
       (module) => {
-        if (isCurrent) setGetSwingGames(() => module.default);
+        if (isCurrent) setGetKnockouts(() => module.default);
       },
-      (error) => console.warn("Could not load the swing games", error),
+      (error) => console.warn("Could not load the knockouts", error),
     );
     return () => {
       isCurrent = false;
     };
-  }, [isNeeded, scores, getSwingGames]);
+  }, [isNeeded, scores, getKnockouts]);
 
   return useMemo(() => {
     if (scores == null) return undefined;
-    if (!experimentalFeatures) return NO_SWINGS;
-    let swings = swingGamesByScores.get(scores);
-    if (swings == null && getSwingGames != null) {
-      swings = getSwingGames(scores);
-      swingGamesByScores.set(scores, swings);
+    if (!experimentalFeatures) return NO_KNOCKOUTS;
+    let knockouts = knockoutsByScores.get(scores);
+    if (knockouts == null && getKnockouts != null) {
+      knockouts = getKnockouts(scores);
+      knockoutsByScores.set(scores, knockouts);
     }
-    return swings;
-  }, [scores, experimentalFeatures, getSwingGames]);
+    return knockouts;
+  }, [scores, experimentalFeatures, getKnockouts]);
 }

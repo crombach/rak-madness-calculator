@@ -5,7 +5,7 @@ import { POLL_MS } from "../../hooks/useLiveWeek";
 import { GameStatus } from "../../types/ESPN";
 import { League } from "../../types/League";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
-import getSwingGames from "../../utils/scoring/getSwingGames";
+import getKnockouts from "../../utils/scoring/getKnockouts";
 import {
   liveGame,
   upcomingGame,
@@ -15,7 +15,7 @@ import { LeagueResults } from "../../utils/scoring/leagueResults";
 import applyKnockouts from "../../utils/scoring/applyKnockouts";
 import comparePlayerScores from "../../utils/scoring/comparePlayerScores";
 import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
-import SwingGames from "./SwingGames";
+import Knockouts from "./Knockouts";
 
 const proLive = {
   ...liveGame({ home: "DEN", away: "KC", homeScore: 7, awayScore: 3 }),
@@ -56,9 +56,9 @@ function page(
   return (
     <MemoryRouter>
       <SettingsContextProvider>
-        <SwingGames
+        <Knockouts
           scores={scores}
-          swings={getSwingGames(scores)}
+          knockouts={getKnockouts(scores)}
           onPoll={onPoll}
           fetchingLeagues={fetchingLeagues}
         />
@@ -71,13 +71,12 @@ const labelsIn = (section: string) =>
   within(screen.getByRole("region", { name: section }))
     .getAllByRole("heading", { level: 3 })
     .map(
-      (band) =>
-        band.querySelector(".swing-games__game-label")?.textContent ?? "",
+      (band) => band.querySelector(".knockouts__game-label")?.textContent ?? "",
     );
 
 beforeEach(() => localStorage.clear());
 
-describe("SwingGames", () => {
+describe("Knockouts", () => {
   it("draws the busy bar only while a live game's league is fetched", () => {
     const scores = liveScores();
     const { rerender } = render(

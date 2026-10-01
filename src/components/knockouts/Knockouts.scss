@@ -20,30 +20,30 @@ $name-box-min: 7.5rem;
 // takes no custom property.
 $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 
-.swing-games {
+.knockouts {
   @include page-body;
 
   display: flex;
   flex-direction: column;
   flex: 1;
 
-  &.--loading .swing-games__group {
+  &.--loading .knockouts__group {
     @include skeleton-sheen;
   }
 }
 
-.swing-games__progress {
+.knockouts__progress {
   @include page-progress-bar;
 }
 
-.swing-games__section {
+.knockouts__section {
   display: flex;
   flex-direction: column;
   gap: var(--rak-space-2);
 }
 
 // One game to a row, as wide as the page, so no game stands beside a taller one.
-.swing-games__list {
+.knockouts__list {
   display: flex;
   flex-direction: column;
   gap: var(--rak-space-4);
@@ -52,14 +52,14 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
   list-style: none;
 }
 
-.swing-games__group {
+.knockouts__group {
   @include game-card-frame;
 
   display: flex;
   flex-direction: column;
 }
 
-.swing-games__title {
+.knockouts__title {
   @include game-card-band;
 
   align-items: stretch;
@@ -71,7 +71,7 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 // column heading does. Its own hover and press fill and an inset focus ring, off
 // the soft `Button.scss` variant. Inset, since the frame's `overflow` would clip
 // a ring drawn outside.
-.swing-games__game {
+.knockouts__game {
   display: flex;
   flex: 1;
   align-items: center;
@@ -98,7 +98,7 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 }
 
 // The count and the mark, at the band's end.
-.swing-games__marks {
+.knockouts__marks {
   display: flex;
   align-items: center;
   gap: var(--rak-space-2);
@@ -107,7 +107,7 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 
 // The sides stacked, then beside each other once each fits its name boxes. A
 // lone side, as on a final game, takes the whole width.
-.swing-games__sides {
+.knockouts__sides {
   display: flex;
   flex-direction: column;
 
@@ -121,16 +121,16 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
   }
 }
 
-.swing-games__game-label {
+.knockouts__game-label {
   @include game-card-label;
 }
 
-.swing-games__game-matchup {
+.knockouts__game-matchup {
   @include game-card-name;
   @include truncate-line;
 }
 
-.swing-games__side {
+.knockouts__side {
   display: flex;
   flex-direction: column;
   gap: var(--rak-space-2);
@@ -149,7 +149,7 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 }
 
 // Sized so its capitals stand as tall as the pick's, which is set in the other face.
-.swing-games__must-win {
+.knockouts__must-win {
   @include section-title(sm);
 
   font-size: calc(
@@ -157,11 +157,11 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
   );
 }
 
-.swing-games__more {
+.knockouts__more {
   @include fold-toggle;
 }
 
-.swing-games__players {
+.knockouts__players {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(#{$name-box-min}, 1fr));
   gap: var(--rak-space-2);
@@ -171,11 +171,11 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 }
 
 // Without this a long name's min-content widens the item past its track.
-.swing-games__players > li {
+.knockouts__players > li {
   min-width: 0;
 }
 
-.swing-games__player {
+.knockouts__player {
   @include ruled-block($rule-alive);
   @include focus-ring;
 
@@ -217,12 +217,12 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
   }
 }
 
-.swing-games__player-name {
+.knockouts__player-name {
   @include truncate-line;
 }
 
 // What settled a tiebreaker knockout, a line under the name it ended.
-.swing-games__player-note {
+.knockouts__player-note {
   @include micro-label;
   @include truncate-line;
 
@@ -232,26 +232,26 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 }
 
 // The Monday night total, set apart as a pick is beside the same heading.
-.swing-games__total {
+.knockouts__total {
   @include badge;
 }
 
 // A real card drawn from a stand-in game, so it takes a loaded card's size. Its
 // band keeps its fill, and each block under it becomes a fill with its text hidden.
-.swing-games.--loading .swing-games__group {
-  .swing-games__game > *,
-  .swing-games__must-win > * {
+.knockouts.--loading .knockouts__group {
+  .knockouts__game > *,
+  .knockouts__must-win > * {
     visibility: hidden;
   }
 
-  .swing-games__must-win {
+  .knockouts__must-win {
     @include skeleton-surface;
 
     width: fit-content;
     color: transparent;
   }
 
-  .swing-games__player {
+  .knockouts__player {
     @include skeleton-surface;
 
     border-color: transparent;

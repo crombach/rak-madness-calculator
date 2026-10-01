@@ -7,8 +7,8 @@ vi.mock("../../utils/scoring/getPlayerScores");
 vi.mock("../../utils/buildSpreadsheetBuffer");
 // The page itself, spied on, so the gate's own test can tell the page never
 // mounted rather than read a redirect the page would make on its own.
-vi.mock("./SwingGames", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("./SwingGames")>();
+vi.mock("./Knockouts", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./Knockouts")>();
   return { default: vi.fn(actual.default) };
 });
 
@@ -28,7 +28,7 @@ import {
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import plural from "../../utils/plural";
-import SwingGames from "./SwingGames";
+import Knockouts from "./Knockouts";
 import {
   delayedGame,
   finalGame,
@@ -37,7 +37,7 @@ import {
 } from "../../utils/scoring/leagueResultFixtures";
 import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
 
-const SWINGS_PATH = `/${SEASON}/${CURRENT_WEEK}/swings`;
+const KNOCKOUTS_PATH = `/${SEASON}/${CURRENT_WEEK}/knockouts`;
 
 /** Steps back through the router's history, as the browser's own button does. */
 function BackButton() {
@@ -64,7 +64,7 @@ function gameButtonName(
 /** The mark in a game's band, found from its game button. */
 function bandMark(gameButton: HTMLElement) {
   return gameButton
-    .closest(".swing-games__title")
+    .closest(".knockouts__title")
     ?.querySelector(".game-status__mark:not(.--count)");
 }
 
@@ -74,7 +74,7 @@ function mustWinHeading(count: number, pickText: string) {
 }
 
 /** Level on points, so each is out if their side of P1 misses. */
-function swingScores(alicePick = "KC -3", bobPick = "DEN 3") {
+function knockoutScores(alicePick = "KC -3", bobPick = "DEN 3") {
   const scores = week([
     player({ name: "Alice", total: 5, pro: [pick(alicePick)] }),
     player({ name: "Bob", total: 5, pro: [pick(bobPick)] }),
@@ -112,7 +112,7 @@ function stubColumns(count: number) {
   const real = window.getComputedStyle.bind(window);
   vi.spyOn(window, "getComputedStyle").mockImplementation((element, pseudo) => {
     const style = real(element, pseudo);
-    if (!element.classList.contains("swing-games__players")) return style;
+    if (!element.classList.contains("knockouts__players")) return style;
     return new Proxy(style, {
       get: (target, key) => {
         if (key === "gridTemplateColumns") {
@@ -135,33 +135,33 @@ function playerButtons(pickName: string) {
 beforeEach(() => {
   setUpAppTest().mockResolvedValue(spreadsheetResponse());
   localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
-  getPlayerScoresMock.mockResolvedValue(swingScores());
+  getPlayerScoresMock.mockResolvedValue(knockoutScores());
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("the swing games route", () => {
+describe("the knockouts route", () => {
   it("names the page and marks neither view as selected", async () => {
-    mountApp(SWINGS_PATH);
+    mountApp(KNOCKOUTS_PATH);
 
     expect(
       await screen.findByRole("heading", {
         level: 1,
-        name: `${SEASON} Week ${CURRENT_WEEK} Swing Games`,
+        name: `${SEASON} Week ${CURRENT_WEEK} Knockouts`,
       }),
     ).toBeInTheDocument();
     await screen.findByText("KC at DEN");
     expect(
-      screen.getByText(`Swing Games • ${SEASON} Season • Week ${CURRENT_WEEK}`),
+      screen.getByText(`Knockouts • ${SEASON} Season • Week ${CURRENT_WEEK}`),
     ).toBeInTheDocument();
     expect(screen.queryAllByRole("button", { pressed: true })).toHaveLength(0);
     expect(screen.getByRole("button", { name: "Scoreboard" })).toBeEnabled();
   });
 
   it("offers no refresh, since the page polls on its own", async () => {
-    mountApp(SWINGS_PATH);
+    mountApp(KNOCKOUTS_PATH);
     await screen.findByText("KC at DEN");
 
     expect(
@@ -170,7 +170,7 @@ describe("the swing games route", () => {
   });
 
   it("sets the menu off from the view buttons with a divider", async () => {
-    mountApp(SWINGS_PATH);
+    mountApp(KNOCKOUTS_PATH);
     await screen.findByText("KC at DEN");
 
     const divider = screen
@@ -183,10 +183,10 @@ describe("the swing games route", () => {
   });
 
   it("shows each side of a game with the players it knocks out", async () => {
-    mountApp(SWINGS_PATH);
+    mountApp(KNOCKOUTS_PATH);
 
     const game = (await screen.findByText("KC at DEN")).closest(
-      ".swing-games__group",
+      ".knockouts__group",
     );
     expect(game).not.toBeNull();
     const inGame = within(game as HTMLElement);
@@ -206,8 +206,8 @@ describe("the swing games route", () => {
   });
 
   it("names a pick with no spread by its team alone", async () => {
-    getPlayerScoresMock.mockResolvedValue(swingScores("KC", "DEN"));
-    mountApp(SWINGS_PATH);
+    getPlayerScoresMock.mockResolvedValue(knockoutScores("KC", "DEN"));
+    mountApp(KNOCKOUTS_PATH);
 
     expect(
       await screen.findByRole("heading", { name: mustWinHeading(1, "KC") }),
@@ -218,7 +218,7 @@ describe("the swing games route", () => {
   });
 
   it("opens the player analysis from a player's name", async () => {
-    const user = mountApp(SWINGS_PATH);
+    const user = mountApp(KNOCKOUTS_PATH);
 
     await user.click(await screen.findByRole("button", { name: "Alice" }));
 
@@ -229,7 +229,7 @@ describe("the swing games route", () => {
   });
 
   it("opens the player analysis from the keyboard", async () => {
-    const user = mountApp(SWINGS_PATH);
+    const user = mountApp(KNOCKOUTS_PATH);
     const bob = await screen.findByRole("button", { name: "Bob" });
 
     bob.focus();
@@ -242,7 +242,7 @@ describe("the swing games route", () => {
   });
 
   it("opens the game status from the band", async () => {
-    const user = mountApp(SWINGS_PATH);
+    const user = mountApp(KNOCKOUTS_PATH);
 
     await user.click(
       await screen.findByRole("button", {
@@ -268,18 +268,18 @@ describe("the swing games route", () => {
       { label: "P2", league: League.PRO, name: "SF at LAR" },
     ];
     getPlayerScoresMock.mockResolvedValue(scores);
-    mountApp(SWINGS_PATH);
+    mountApp(KNOCKOUTS_PATH);
     await screen.findByText("KC at DEN");
 
     const bands = screen
       .getAllByRole("button", { name: /^Game Status for/ })
       .map((band) =>
-        [".swing-games__game-label", ".swing-games__game-matchup"]
+        [".knockouts__game-label", ".knockouts__game-matchup"]
           .map((part) => band.querySelector(part)?.textContent)
           .join(" "),
       );
     expect(bands).toEqual(["P1 KC at DEN", "P2 SF at LAR"]);
-    expect(screen.getByText("P1")).toHaveClass("swing-games__game-label");
+    expect(screen.getByText("P1")).toHaveClass("knockouts__game-label");
   });
 
   describe("a week under way", () => {
@@ -337,14 +337,14 @@ describe("the swing games route", () => {
       return scores;
     }
 
-    it("sorts the games into the sections All Games has, live first", async () => {
+    it("sorts the games into the sections Games has, live first", async () => {
       getPlayerScoresMock.mockResolvedValue(underWayScores());
-      mountApp(SWINGS_PATH);
+      mountApp(KNOCKOUTS_PATH);
       await screen.findByText("KC at DEN");
 
       const sections = screen
         .getAllByRole("region")
-        .filter((region) => region.classList.contains("swing-games__section"));
+        .filter((region) => region.classList.contains("knockouts__section"));
       expect(
         sections.map((section) => [
           within(section).getByRole("heading", { level: 2 }).firstChild
@@ -353,7 +353,7 @@ describe("the swing games route", () => {
             .getAllByRole("heading", { level: 3 })
             .map(
               (band) =>
-                band.querySelector(".swing-games__game-label")?.textContent,
+                band.querySelector(".knockouts__game-label")?.textContent,
             ),
         ]),
       ).toEqual([
@@ -365,7 +365,7 @@ describe("the swing games route", () => {
 
     it("keeps a final game with the players it knocked out, ruled as out", async () => {
       getPlayerScoresMock.mockResolvedValue(underWayScores());
-      mountApp(SWINGS_PATH);
+      mountApp(KNOCKOUTS_PATH);
 
       const heading = await screen.findByRole("heading", {
         level: 4,
@@ -409,7 +409,7 @@ describe("the swing games route", () => {
       },
     ];
     getPlayerScoresMock.mockResolvedValue(scores);
-    mountApp(SWINGS_PATH);
+    mountApp(KNOCKOUTS_PATH);
 
     const section = await screen.findByRole("region", { name: "Completed" });
     expect(
@@ -424,7 +424,7 @@ describe("the swing games route", () => {
   it("folds a long side to two rows, then shows the rest on asking", async () => {
     stubColumns(2);
     getPlayerScoresMock.mockResolvedValue(crowdedScores());
-    const user = mountApp(SWINGS_PATH);
+    const user = mountApp(KNOCKOUTS_PATH);
     await screen.findByText("KC at DEN");
 
     expect(
@@ -447,7 +447,7 @@ describe("the swing games route", () => {
   it("offers no toggle for a side that fits in two rows", async () => {
     stubColumns(2);
     getPlayerScoresMock.mockResolvedValue(crowdedScores(4));
-    mountApp(SWINGS_PATH);
+    mountApp(KNOCKOUTS_PATH);
     await screen.findByText("KC at DEN");
 
     expect(playerButtons(mustWinHeading(4, "KC -3"))).toHaveLength(4);
@@ -457,7 +457,7 @@ describe("the swing games route", () => {
   it("fits more names on a screen with more columns", async () => {
     stubColumns(5);
     getPlayerScoresMock.mockResolvedValue(crowdedScores());
-    mountApp(SWINGS_PATH);
+    mountApp(KNOCKOUTS_PATH);
     await screen.findByText("KC at DEN");
 
     expect(playerButtons(mustWinHeading(9, "KC -3"))).toHaveLength(9);
@@ -467,7 +467,7 @@ describe("the swing games route", () => {
   it("puts the reader first and marks them, even in a folded side", async () => {
     localStorage.setItem(PLAYER_NAME_KEY, "  hal ");
     getPlayerScoresMock.mockResolvedValue(crowdedScores());
-    mountApp(SWINGS_PATH);
+    mountApp(KNOCKOUTS_PATH);
     await screen.findByText("KC at DEN");
 
     const shown = playerButtons(mustWinHeading(9, "KC -3"));
@@ -481,7 +481,7 @@ describe("the swing games route", () => {
 
   describe("the mark on a game's heading", () => {
     function withResult(result: LeagueResult) {
-      const scores = swingScores();
+      const scores = knockoutScores();
       scores.games = [{ ...scores.games![0], result }];
       return scores;
     }
@@ -491,7 +491,7 @@ describe("the swing games route", () => {
       getPlayerScoresMock.mockResolvedValue(
         withResult(liveGame({ ...teams, homeScore: 7, awayScore: 3 })),
       );
-      mountApp(SWINGS_PATH);
+      mountApp(KNOCKOUTS_PATH);
 
       const heading = await screen.findByRole("button", {
         name: gameButtonName("P1 KC at DEN", 2, "Live"),
@@ -505,7 +505,7 @@ describe("the swing games route", () => {
           delayedGame({ ...teams, homeScore: 7, awayScore: 3, period: 2 }),
         ),
       );
-      mountApp(SWINGS_PATH);
+      mountApp(KNOCKOUTS_PATH);
 
       const heading = await screen.findByRole("button", {
         name: gameButtonName("P1 KC at DEN", 2, "Delayed"),
@@ -515,7 +515,7 @@ describe("the swing games route", () => {
 
     it("marks a game yet to start as upcoming", async () => {
       getPlayerScoresMock.mockResolvedValue(withResult(upcomingGame(teams)));
-      mountApp(SWINGS_PATH);
+      mountApp(KNOCKOUTS_PATH);
 
       const heading = await screen.findByRole("button", {
         name: gameButtonName("P1 KC at DEN", 2, "Yet to kick off"),
@@ -540,7 +540,7 @@ describe("the swing games route", () => {
       ["open games no one must win", quietScores],
     ])("sends %s to the scoreboard in place of the page", async (_, make) => {
       getPlayerScoresMock.mockResolvedValue(make());
-      const user = mountApp(SWINGS_PATH, {
+      const user = mountApp(KNOCKOUTS_PATH, {
         earlier: ["/"],
         beside: <BackButton />,
       });
@@ -561,8 +561,8 @@ describe("the swing games route", () => {
 
     it("sends a reader without experimental features to the scoreboard in place of the page", async () => {
       localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
-      vi.mocked(SwingGames).mockClear();
-      const user = mountApp(SWINGS_PATH, {
+      vi.mocked(Knockouts).mockClear();
+      const user = mountApp(KNOCKOUTS_PATH, {
         earlier: ["/"],
         beside: <BackButton />,
       });
@@ -573,7 +573,7 @@ describe("the swing games route", () => {
           name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
         }),
       ).toBeInTheDocument();
-      expect(SwingGames).not.toHaveBeenCalled();
+      expect(Knockouts).not.toHaveBeenCalled();
 
       await user.click(screen.getByRole("button", { name: "Back" }));
 

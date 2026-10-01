@@ -7,7 +7,10 @@ import { WeekGame } from "../../types/WeekGame";
 import getClasses from "../../utils/getClasses";
 import plural from "../../utils/plural";
 import { Tiebreaker } from "../../types/RakMadnessScores";
-import { SwingGame, SwingKnockout } from "../../utils/scoring/swingGameTypes";
+import {
+  KnockoutGame,
+  TiebreakerKnockout,
+} from "../../utils/scoring/knockoutTypes";
 import Button from "../button/Button";
 import CountBadge from "../countBadge/CountBadge";
 import GameMark, {
@@ -16,7 +19,7 @@ import GameMark, {
 } from "../gameStatus/GameMark";
 import PickBadge from "../pickBadge/PickBadge";
 import useGridColumns from "./useGridColumns";
-import "./SwingGames.scss";
+import "./Knockouts.scss";
 
 const MUST_WIN = "must win";
 const KNOCKED_OUT = "knocked out on";
@@ -29,7 +32,7 @@ const TIEBREAKER_NAMES: Record<Tiebreaker, string> = {
 };
 
 /** What settled a knockout, with the player's MNF Points where those did. */
-function knockoutNote({ tiebreaker, pick }: SwingKnockout): string {
+function knockoutNote({ tiebreaker, pick }: TiebreakerKnockout): string {
   const name = TIEBREAKER_NAMES[tiebreaker];
   return pick == null ? name : `${name} ${pick}`;
 }
@@ -37,7 +40,7 @@ function knockoutNote({ tiebreaker, pick }: SwingKnockout): string {
 /** How many rows of names a folded side shows. */
 const FOLDED_ROWS = 2;
 
-/** The columns `.swing-games__players` lays out at the narrowest supported width. */
+/** The columns `.knockouts__players` lays out at the narrowest supported width. */
 const BASE_COLUMNS = 2;
 
 /**
@@ -53,7 +56,7 @@ function Side({
 }: {
   heading: ReactNode;
   players: Array<string>;
-  tiebreakers?: Record<string, SwingKnockout>;
+  tiebreakers?: Record<string, TiebreakerKnockout>;
   knockedOut: ReadonlySet<string>;
 }) {
   const showPlayerAnalysis = useShowPlayerAnalysis();
@@ -69,11 +72,11 @@ function Side({
   const shown = isExpanded ? players : players.slice(0, limit);
 
   return (
-    <div className="swing-games__side">
-      <h4 className="swing-games__must-win">
+    <div className="knockouts__side">
+      <h4 className="knockouts__must-win">
         <CountBadge>{ranked.length}</CountBadge> {heading}
       </h4>
-      <ul ref={grid} className="swing-games__players">
+      <ul ref={grid} className="knockouts__players">
         {shown.map((name) => {
           const knockout = tiebreakers?.[name];
           const note = knockout && knockoutNote(knockout);
@@ -81,17 +84,15 @@ function Side({
             <li key={name}>
               <button
                 type="button"
-                className={getClasses("swing-games__player", {
+                className={getClasses("knockouts__player", {
                   "--mine": isMyPlayer(name, playerName),
                   "--knocked-out": knockedOut.has(name),
                 })}
                 aria-label={note && `${name}, ${KNOCKED_OUT} ${note}`}
                 onClick={() => showPlayerAnalysis(name)}
               >
-                <span className="swing-games__player-name">{name}</span>
-                {note && (
-                  <span className="swing-games__player-note">{note}</span>
-                )}
+                <span className="knockouts__player-name">{name}</span>
+                {note && <span className="knockouts__player-note">{note}</span>}
               </button>
             </li>
           );
@@ -99,7 +100,7 @@ function Side({
       </ul>
       {folded > 0 && (
         <Button
-          className="swing-games__more"
+          className="knockouts__more"
           variant="soft"
           size="sm"
           ariaExpanded={isExpanded}
@@ -112,14 +113,14 @@ function Side({
   );
 }
 
-/** One swing game as a card: its band, then a side per team it knocks out. */
-export default function SwingGameCard({
+/** One knockout game as a card: its band, then a side per team it knocks out. */
+export default function KnockoutCard({
   game,
   weekGame,
   status,
   knockedOut,
 }: {
-  game: SwingGame;
+  game: KnockoutGame;
   weekGame?: WeekGame;
   /** The freshest status known, which for a polled game is not the scoring pass's. */
   status?: GameStatus;
@@ -136,28 +137,28 @@ export default function SwingGameCard({
   const markLabel = weekGame && gameMarkLabel(weekGame, status);
 
   return (
-    <li className="swing-games__group">
-      <h3 className="swing-games__title">
+    <li className="knockouts__group">
+      <h3 className="knockouts__title">
         {/* The whole band opens Game Status, as the picks table's own column
-            heading does. The count and the mark sit at its end, where All Games
+            heading does. The count and the mark sit at its end, where Games
             has the mark. */}
         <button
           type="button"
-          className="swing-games__game"
+          className="knockouts__game"
           aria-label={[`Game Status for ${gameName}`, players, markLabel]
             .filter((part) => part != null)
             .join(", ")}
           onClick={() => showGameStatus(game.label)}
         >
-          <span className="swing-games__game-label">{game.label}</span>{" "}
-          <span className="swing-games__game-matchup">{game.name}</span>
-          <span className="swing-games__marks">
+          <span className="knockouts__game-label">{game.label}</span>{" "}
+          <span className="knockouts__game-matchup">{game.name}</span>
+          <span className="knockouts__marks">
             <PlayerCountMark count={count} />
             {weekGame && <GameMark game={weekGame} status={status} />}
           </span>
         </button>
       </h3>
-      <div className="swing-games__sides">
+      <div className="knockouts__sides">
         {game.sides.map((side) => (
           <Side
             key={side.team}
@@ -184,7 +185,7 @@ export default function SwingGameCard({
                 {tier.total != null && (
                   <>
                     {" "}
-                    <span className="swing-games__total">{tier.total}</span>
+                    <span className="knockouts__total">{tier.total}</span>
                   </>
                 )}
               </>

@@ -1,28 +1,28 @@
 import {
   useScores,
   useScoringStatus,
-  useSwingGames,
+  useKnockouts,
 } from "../../context/AppDataContext";
 import ExperimentalGate from "../results/ExperimentalGate";
-import SwingGames from "./SwingGames";
+import Knockouts from "./Knockouts";
 
-function SwingGamesPage() {
+function KnockoutsPage() {
   const { rescore, fetchingLeagues } = useScoringStatus();
   return (
-    <SwingGames
+    <Knockouts
       scores={useScores()}
-      swings={useSwingGames()}
+      knockouts={useKnockouts()}
       onPoll={rescore}
       fetchingLeagues={fetchingLeagues}
     />
   );
 }
 
-// Swing Games shows only to a reader who opted in to experimental features.
-export default function SwingGamesRoute() {
+// Knockouts shows only to a reader who opted in to experimental features.
+export default function KnockoutsRoute() {
   return (
     <ExperimentalGate>
-      <SwingGamesPage />
+      <KnockoutsPage />
     </ExperimentalGate>
   );
 }

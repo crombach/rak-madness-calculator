@@ -14,14 +14,14 @@ import remainingGames from "./remainingGames";
 import repeatedNames from "./repeatedNames";
 import weekShape from "./weekShape";
 import {
-  SwingGame,
-  SwingGames,
-  SwingKnockout,
-  SwingSide,
-  SwingTiebreaker,
-} from "./swingGameTypes";
+  KnockoutGame,
+  KnockoutGames,
+  TiebreakerKnockout,
+  KnockoutSide,
+  KnockoutTiebreaker,
+} from "./knockoutTypes";
 
-export type { SwingGame, SwingGames, SwingSide };
+export type { KnockoutGame, KnockoutGames, KnockoutSide };
 
 type Column = { label: string; league: LeagueKey; index: number };
 
@@ -37,10 +37,10 @@ function columnsOf(players: Array<PlayerScore>): Array<Column> {
 /** Each side every live player must win, by game, then by team. */
 function mustWinSides(
   scores: RakMadnessScores,
-): Map<string, Map<string, SwingSide>> {
+): Map<string, Map<string, KnockoutSide>> {
   const players = scores.scores;
   const repeated = repeatedNames(players);
-  const sidesByLabel = new Map<string, Map<string, SwingSide>>();
+  const sidesByLabel = new Map<string, Map<string, KnockoutSide>>();
 
   for (const player of players) {
     if (player.status.isKnockedOut || repeated.has(player.name)) continue;
@@ -143,8 +143,8 @@ function kickoffOf(scores: RakMadnessScores, label: string): number {
  * game, which is too slow on a busy Sunday.
  */
 function knockoutSides(scores: RakMadnessScores): {
-  sidesByLabel: Map<string, Map<string, SwingSide>>;
-  tiebreakersByLabel: Map<string, Map<Tiebreaker, SwingTiebreaker>>;
+  sidesByLabel: Map<string, Map<string, KnockoutSide>>;
+  tiebreakersByLabel: Map<string, Map<Tiebreaker, KnockoutTiebreaker>>;
 } {
   const players = scores.scores;
   const { remaining, unscoreable } = weekShape(players);
@@ -163,10 +163,10 @@ function knockoutSides(scores: RakMadnessScores): {
     .map(({ column }) => column);
 
   const repeated = repeatedNames(players);
-  const sidesByLabel = new Map<string, Map<string, SwingSide>>();
+  const sidesByLabel = new Map<string, Map<string, KnockoutSide>>();
   const tiebreakersByLabel = new Map<
     string,
-    Map<Tiebreaker, SwingTiebreaker>
+    Map<Tiebreaker, KnockoutTiebreaker>
   >();
   let after = statusByName(players);
   for (let at = finals.length - 1; at >= 0; at--) {
@@ -183,13 +183,13 @@ function knockoutSides(scores: RakMadnessScores): {
         continue;
       }
       const tiebreaker = after.get(player.name)?.tiebreaker;
-      const knockout: SwingKnockout | undefined = tiebreaker && {
+      const knockout: TiebreakerKnockout | undefined = tiebreaker && {
         tiebreaker,
         ...(tiebreaker === "mnfPoints" && { pick: player.tiebreaker.pick }),
       };
       const into = (group: {
         players: Array<string>;
-        tiebreakers?: Record<string, SwingKnockout>;
+        tiebreakers?: Record<string, TiebreakerKnockout>;
       }) => {
         group.players.push(player.name);
         if (knockout) {
@@ -241,7 +241,7 @@ function knockoutSides(scores: RakMadnessScores): {
  * The open games are read off `getMustWin`, a verdict per pick per player, never
  * the route search, so they answer above `MAX_SEARCHED_GAMES` too.
  */
-export default function getSwingGames(scores: RakMadnessScores): SwingGames {
+export default function getKnockouts(scores: RakMadnessScores): KnockoutGames {
   const open = new Set(remainingGames(scores.scores).map((game) => game.label));
   // A won week's open games can knock no one else out.
   const knockouts = knockoutSides(scores);
@@ -251,13 +251,13 @@ export default function getSwingGames(scores: RakMadnessScores): SwingGames {
   ]);
 
   const games = columnsOf(scores.scores).flatMap(
-    ({ label }): Array<SwingGame> => {
-      const sides = sidesByLabel.get(label) ?? new Map<string, SwingSide>();
+    ({ label }): Array<KnockoutGame> => {
+      const sides = sidesByLabel.get(label) ?? new Map<string, KnockoutSide>();
       const tiers = knockouts.tiebreakersByLabel.get(label);
       if (sides.size === 0 && tiers == null) return [];
       const weekGame = scores.games?.find((it) => it.label === label);
       const away = weekGame?.result?.away.team.abbreviation;
-      const isAway = (side: SwingSide) => Number(side.team === away);
+      const isAway = (side: KnockoutSide) => Number(side.team === away);
       return [
         {
           label,

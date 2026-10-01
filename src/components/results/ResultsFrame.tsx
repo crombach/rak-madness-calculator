@@ -27,7 +27,7 @@ import Button from "../button/Button";
 import AppNavbar from "../navbar/AppNavbar";
 import EmptyState from "../pageLayout/EmptyState";
 import { APP_NAME } from "../navbar/LogoButton";
-import SwingGamesSkeleton from "../swingGames/SwingGamesSkeleton";
+import KnockoutsSkeleton from "../knockouts/KnockoutsSkeleton";
 import SkeletonTable from "../table/SkeletonTable";
 import DialogLoadBoundary from "./DialogLoadBoundary";
 import {
@@ -58,7 +58,7 @@ const GameStatusDialog = lazy(loadGameStatusDialog);
 const SKELETONS: Record<ResultsPage, ReactNode> = {
   [RESULTS_PAGE.scoreboard]: <SkeletonTable view={RESULTS_PAGE.scoreboard} />,
   [RESULTS_PAGE.picks]: <SkeletonTable view={RESULTS_PAGE.picks} />,
-  [RESULTS_PAGE.swingGames]: <SwingGamesSkeleton />,
+  [RESULTS_PAGE.knockouts]: <KnockoutsSkeleton />,
   [RESULTS_PAGE.games]: <GamesSkeleton />,
   [RESULTS_PAGE.comparePlayers]: <ComparePlayersSkeleton />,
 };
@@ -126,7 +126,7 @@ export default function ResultsFrame({
   const canRefresh =
     !isWeekSettled &&
     view !== RESULTS_PAGE.games &&
-    view !== RESULTS_PAGE.swingGames;
+    view !== RESULTS_PAGE.knockouts;
   const [opened, setOpened] = useState<Opened>();
   // Set once both dialogs are fetched, which mounts them closed. Each one reads
   // the week as it mounts, and `PlayerAnalysisDialog` walks every pick of every

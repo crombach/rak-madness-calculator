@@ -5,7 +5,7 @@ import { GameStatus } from "../../types/ESPN";
 import { League } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
-import { SwingGames as Swings } from "../../utils/scoring/swingGameTypes";
+import { KnockoutGames } from "../../utils/scoring/knockoutTypes";
 import gameSections, {
   FETCHING_LABEL,
   LIVE_STATUSES,
@@ -13,23 +13,23 @@ import gameSections, {
 } from "../games/gameSections";
 import { GameSection } from "../games/SectionTitle";
 import resultsPath, { RESULTS_PAGE } from "../results/resultsPath";
-import SwingGameCard from "./SwingGameCard";
-import "./SwingGames.scss";
+import KnockoutCard from "./KnockoutCard";
+import "./Knockouts.scss";
 /**
  * Each open game, with who it knocks out whichever way it falls, and each final one
- * with who it knocked out, in `gameSections` as All Games has them, polled as All
- * Games is. A game ESPN does not list has no status to read, so it waits under
+ * with who it knocked out, in `gameSections` as Games has them, polled as Games
+ * is. A game ESPN does not list has no status to read, so it waits under
  * Upcoming until it is final.
  */
-export default function SwingGames({
+export default function Knockouts({
   scores,
-  swings,
+  knockouts,
   onPoll,
   fetchingLeagues,
 }: {
   scores?: RakMadnessScores;
   /** Undefined while the scores, or the code that reads them, load. */
-  swings?: Swings;
+  knockouts?: KnockoutGames;
   /** Which leagues have a request in flight, which is what the busy bar says. */
   fetchingLeagues?: ReadonlySet<League>;
   onPoll?: (
@@ -58,9 +58,9 @@ export default function SwingGames({
     [scores],
   );
 
-  if (swings == null) return null;
+  if (knockouts == null) return null;
   // No game knocked anyone out, and none open can.
-  if (swings.games.length === 0) {
+  if (knockouts.games.length === 0) {
     return (
       <Navigate
         replace
@@ -70,7 +70,7 @@ export default function SwingGames({
   }
 
   const sections = gameSections(
-    swings.games.map((game) => {
+    knockouts.games.map((game) => {
       const weekGame = weekGames.get(game.label);
       const result =
         weekGame?.result &&
@@ -95,10 +95,10 @@ export default function SwingGames({
     ),
   );
   return (
-    <div className="swing-games">
+    <div className="knockouts">
       {isFetching && (
         <span
-          className="swing-games__progress --live"
+          className="knockouts__progress --live"
           role="progressbar"
           aria-busy="true"
           aria-label={FETCHING_LABEL}
@@ -107,13 +107,13 @@ export default function SwingGames({
       {sections.map(({ title, cards }) => (
         <GameSection
           key={title}
-          className="swing-games__section"
+          className="knockouts__section"
           title={title}
           count={cards.length}
         >
-          <ul className="swing-games__list">
+          <ul className="knockouts__list">
             {cards.map(({ game, weekGame, status }) => (
-              <SwingGameCard
+              <KnockoutCard
                 key={game.label}
                 game={game}
                 weekGame={weekGame}

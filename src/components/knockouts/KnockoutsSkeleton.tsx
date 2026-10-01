@@ -1,12 +1,12 @@
 import rangeWithPrefix from "../../utils/rangeWithPrefix";
-import { SwingGame } from "../../utils/scoring/swingGameTypes";
+import { KnockoutGame } from "../../utils/scoring/knockoutTypes";
 import SectionTitle from "../games/SectionTitle";
 import { COMPLETED_TITLE } from "../games/sectionTitles";
 import { STAND_IN, STAND_IN_RESULT } from "../games/standInGame";
 import { RESULTS_PAGE } from "../results/resultsPath";
 import SkeletonStatus from "../pageLayout/SkeletonStatus";
-import SwingGameCard from "./SwingGameCard";
-import "./SwingGames.scss";
+import KnockoutCard from "./KnockoutCard";
+import "./Knockouts.scss";
 
 // Enough to fill a tall screen, one game to a row.
 const STAND_IN_GAMES = 4;
@@ -14,7 +14,7 @@ const STAND_IN_GAMES = 4;
 /** Two rows of names, as many as a folded side shows at the narrowest width. */
 const STAND_IN_PLAYERS = rangeWithPrefix(4, "Player ");
 
-const STAND_IN_SWING: SwingGame = {
+const STAND_IN_GAME: KnockoutGame = {
   label: STAND_IN.label,
   name: STAND_IN.name,
   isFinal: false,
@@ -27,22 +27,22 @@ const STAND_IN_SWING: SwingGame = {
 const NOBODY_OUT: ReadonlySet<string> = new Set();
 
 /**
- * One section of stand-in swing games under a blank title, as `GamesSkeleton`
+ * One section of stand-in knockout games under a blank title, as `GamesSkeleton`
  * draws its own, for while the week or the page loads.
  */
-export default function SwingGamesSkeleton() {
+export default function KnockoutsSkeleton() {
   const keys = rangeWithPrefix(STAND_IN_GAMES, "G");
   return (
     <>
-      <SkeletonStatus page={RESULTS_PAGE.swingGames} />
-      <div className="swing-games --loading" aria-hidden="true" inert>
-        <div className="swing-games__section">
+      <SkeletonStatus page={RESULTS_PAGE.knockouts} />
+      <div className="knockouts --loading" aria-hidden="true" inert>
+        <div className="knockouts__section">
           <SectionTitle title={COMPLETED_TITLE} count={STAND_IN_GAMES} />
-          <ul className="swing-games__list">
+          <ul className="knockouts__list">
             {keys.map((key) => (
-              <SwingGameCard
+              <KnockoutCard
                 key={key}
-                game={{ ...STAND_IN_SWING, label: key }}
+                game={{ ...STAND_IN_GAME, label: key }}
                 weekGame={STAND_IN}
                 status={STAND_IN_RESULT.status}
                 knockedOut={NOBODY_OUT}

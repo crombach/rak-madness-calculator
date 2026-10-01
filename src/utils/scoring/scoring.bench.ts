@@ -10,7 +10,7 @@ import {
 } from "./benchFixtures";
 import getPlayerAnalysis, { MAX_SEARCHED_GAMES } from "./getPlayerAnalysis";
 import { getPlayerScores } from "./getPlayerScores";
-import getSwingGames from "./getSwingGames";
+import getKnockouts from "./getKnockouts";
 import getTiebreakerScore from "./getTiebreakerScore";
 import parsePicksWorkbook from "./parsePicksWorkbook";
 import { indexResults } from "./resultsIndex";
@@ -128,19 +128,19 @@ test("getPlayerAnalysis", async ({ bench }) => {
   );
 });
 
-test("getSwingGames", async ({ bench }) => {
+test("getKnockouts", async ({ bench }) => {
   await bench.compare(
     bench("two games open", () => {
-      getSwingGames(sundayNight.scores);
+      getKnockouts(sundayNight.scores);
     }),
     bench("at the search limit", () => {
-      getSwingGames(atSearchLimit.scores);
+      getKnockouts(atSearchLimit.scores);
     }),
     bench("above the search limit", () => {
-      getSwingGames(kickoff.scores);
+      getKnockouts(kickoff.scores);
     }),
     bench("settled", () => {
-      getSwingGames(settled.scores);
+      getKnockouts(settled.scores);
     }),
   );
 });

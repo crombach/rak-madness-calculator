@@ -12,10 +12,10 @@ import {
 } from "../lib/constants.js";
 
 /** `light` or `dark`. */
-const THEME = process.env.SWINGS_THEME ?? "light";
+const THEME = process.env.KNOCKOUTS_THEME ?? "light";
 
 /** Set to hover the first game's game button before the final screenshot. */
-const HOVER = process.env.SWINGS_HOVER === "1";
+const HOVER = process.env.KNOCKOUTS_HOVER === "1";
 
 /** The reader, a KC backer, so their name leads P1's crowded side. */
 const MY_NAME = "Dee";
@@ -33,7 +33,7 @@ const KC_BACKERS = [
 ];
 
 /**
- * Two open pro games, neither settled, so both are swings: P1 crowded on one
+ * Two open pro games, neither settled, so both are knockouts: P1 crowded on one
  * side, P2 level between its two. Every player starts at the same baseline
  * with nothing else picked, so each game decides on its own.
  */
@@ -46,7 +46,7 @@ function rows() {
   ];
 }
 
-/** P1 live and close enough to swing either way, P2 yet to start. */
+/** P1 live and close enough to go either way, P2 yet to start. */
 function events() {
   return {
     events: [
@@ -56,7 +56,7 @@ function events() {
   };
 }
 
-/** Opens the swing games page, in the given theme, ending on a game's game button hovered if asked. */
+/** Opens the knockouts page, in the given theme, ending on a game's game button hovered if asked. */
 export default async function run({ page, context, baseUrl }) {
   await registerAppMocks(context, {
     season: SEASON,
@@ -65,7 +65,7 @@ export default async function run({ page, context, baseUrl }) {
     events,
   });
 
-  await page.goto(`${baseUrl}/${SEASON}/${WEEK}/swings`);
+  await page.goto(`${baseUrl}/${SEASON}/${WEEK}/knockouts`);
   await page.evaluate(
     ([themeKey, theme, nameKey, name, flagKey]) => {
       localStorage.setItem(themeKey, theme);
@@ -74,7 +74,7 @@ export default async function run({ page, context, baseUrl }) {
     },
     [THEME_KEY, THEME, PLAYER_NAME_KEY, MY_NAME, EXPERIMENTAL_FEATURES_KEY],
   );
-  await page.goto(`${baseUrl}/${SEASON}/${WEEK}/swings`);
+  await page.goto(`${baseUrl}/${SEASON}/${WEEK}/knockouts`);
   await page.getByText("KC @ DEN").waitFor({ timeout: 10000 });
 
   if (HOVER) {

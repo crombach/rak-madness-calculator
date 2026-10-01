@@ -4,8 +4,8 @@ import SEPARATOR from "../../utils/separator";
 export const RESULTS_PAGE = {
   scoreboard: "Scoreboard",
   picks: "Picks",
-  swingGames: "Swing Games",
-  games: "All Games",
+  knockouts: "Knockouts",
+  games: "Games",
   comparePlayers: "Compare Players",
 } as const;
 
@@ -36,8 +36,8 @@ export const PAGES: Record<ResultsPage, PageInfo> = {
     isTable: true,
     isMenuOnly: false,
   },
-  [RESULTS_PAGE.swingGames]: {
-    segment: "swings",
+  [RESULTS_PAGE.knockouts]: {
+    segment: "knockouts",
     isTable: false,
     isMenuOnly: true,
   },

@@ -35,7 +35,7 @@ describe("the games route", () => {
     expect(
       await screen.findByRole("heading", {
         level: 1,
-        name: `${SEASON} Week ${CURRENT_WEEK} All Games`,
+        name: `${SEASON} Week ${CURRENT_WEEK} Games`,
       }),
     ).toBeInTheDocument();
   });
@@ -47,10 +47,10 @@ describe("the games route", () => {
     ).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Menu" }));
-    await user.click(await screen.findByText("All Games"));
+    await user.click(await screen.findByText("Games"));
     await screen.findByRole("heading", {
       level: 1,
-      name: `${SEASON} Week ${CURRENT_WEEK} All Games`,
+      name: `${SEASON} Week ${CURRENT_WEEK} Games`,
     });
 
     // Faded out over `COLLAPSE_DURATION_MS` before it unmounts.
@@ -70,7 +70,7 @@ describe("the games route", () => {
     expect(
       await screen.findByRole("heading", {
         level: 1,
-        name: `${SEASON} Week ${CURRENT_WEEK} All Games`,
+        name: `${SEASON} Week ${CURRENT_WEEK} Games`,
       }),
     ).toBeInTheDocument();
   });

@@ -16,7 +16,7 @@ const THEME = process.env.NAV_THEME ?? "light";
 /** `popup` opens the wide-screen menu. `drawer` opens the drawer, so needs `--touch`. */
 const MODE = process.env.NAV_MODE ?? "popup";
 
-/** `disabled` leaves Swing Games disabled. `enabled` leaves a game open to split. */
+/** `disabled` leaves Knockouts disabled. `enabled` leaves a game open to split. */
 const STATE = process.env.NAV_STATE ?? "disabled";
 
 /** Both players on the same side of the week's one open game, so it decides nothing. */
@@ -40,12 +40,12 @@ function enabledRows() {
   ];
 }
 
-/** Still open, so the split above is a live swing rather than a settled one. */
+/** Still open, so the split above is a live knockout rather than a settled one. */
 function enabledEvents() {
   return { events: [makeGame("P1EVT", "DEN", "KC", 0, 0, "1")] };
 }
 
-/** Opens the nav menu on a week with Swing Games in the given state and theme. */
+/** Opens the nav menu on a week with Knockouts in the given state and theme. */
 export default async function run({ page, context, baseUrl }) {
   await registerAppMocks(context, {
     season: SEASON,
@@ -72,7 +72,7 @@ export default async function run({ page, context, baseUrl }) {
   if (MODE === "drawer") await trigger.tap();
   else await trigger.click();
 
-  const item = page.getByText("Swing Games").last();
+  const item = page.getByText("Knockouts").last();
   await item.waitFor();
   // The drawer slides in, so a shot taken on sight catches it part way.
   await page.waitForFunction(

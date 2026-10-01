@@ -2,7 +2,7 @@ import { League } from "../../types/League";
 import { PlayerScore } from "../../types/RakMadnessScores";
 import { PlayerAnalysis } from "../../types/PlayerAnalysis";
 import getPlayerAnalysis, { MAX_SEARCHED_GAMES } from "./getPlayerAnalysis";
-import getSwingGames, { SwingGames } from "./getSwingGames";
+import getKnockouts, { KnockoutGames } from "./getKnockouts";
 import parsePick from "./parsePick";
 import { finalGame, upcomingGame } from "./leagueResultFixtures";
 import applyKnockouts from "./applyKnockouts";
@@ -17,7 +17,7 @@ function settled(players: Array<PlayerScore>, tiebreaker: number) {
   );
 }
 
-describe("getSwingGames", () => {
+describe("getKnockouts", () => {
   it("groups the players who need the same side of a game", () => {
     // KC ties all three, and a tie is a win for each. DEN puts Carol two clear.
     const scores = week([
@@ -27,7 +27,7 @@ describe("getSwingGames", () => {
     ]);
     scores.games = [{ label: "P1", league: League.PRO, name: "KC at DEN" }];
 
-    expect(getSwingGames(scores)).toEqual({
+    expect(getKnockouts(scores)).toEqual({
       games: [
         {
           label: "P1",
@@ -45,7 +45,7 @@ describe("getSwingGames", () => {
       player({ name: "Bob", total: 5, pro: [pick("DEN 3")] }),
     ]);
 
-    expect(getSwingGames(scores).games).toEqual([
+    expect(getKnockouts(scores).games).toEqual([
       {
         label: "P1",
         name: "P1",
@@ -73,7 +73,7 @@ describe("getSwingGames", () => {
       },
     ];
 
-    expect(getSwingGames(scores).games[0].sides).toEqual([
+    expect(getKnockouts(scores).games[0].sides).toEqual([
       { team: "KC", pick: "KC -3", players: ["Alice"] },
       { team: "DEN", pick: "DEN +3", players: ["Bob", "Carol"] },
     ]);
@@ -95,7 +95,7 @@ describe("getSwingGames", () => {
       }),
     ]);
 
-    expect(getSwingGames(scores).games).toEqual([
+    expect(getKnockouts(scores).games).toEqual([
       {
         label: "P1",
         name: "P1",
@@ -119,7 +119,7 @@ describe("getSwingGames", () => {
       41,
     );
 
-    expect(getSwingGames(scores)).toEqual({
+    expect(getKnockouts(scores)).toEqual({
       games: [
         {
           label: "P1",
@@ -147,7 +147,7 @@ describe("getSwingGames", () => {
       }),
     ]);
 
-    expect(getSwingGames(scores).games).toEqual([
+    expect(getKnockouts(scores).games).toEqual([
       {
         label: "P1",
         name: "P1",
@@ -168,7 +168,7 @@ describe("getSwingGames", () => {
       }),
     ]);
 
-    expect(getSwingGames(scores)).toEqual({ games: [] });
+    expect(getKnockouts(scores)).toEqual({ games: [] });
   });
 
   it("puts a spread written with and without a space on one side", () => {
@@ -178,7 +178,7 @@ describe("getSwingGames", () => {
       player({ name: "Bob", total: 5, pro: [pick("BUF-7")] }),
     ]);
 
-    expect(getSwingGames(scores).games[0].sides).toEqual([
+    expect(getKnockouts(scores).games[0].sides).toEqual([
       { team: "BUF", pick: "BUF -7", players: ["Alice", "Bob"] },
       { team: "MIA", pick: "MIA +7", players: ["Carol"] },
     ]);
@@ -199,7 +199,7 @@ describe("getSwingGames", () => {
       }),
     ]);
 
-    expect(getSwingGames(scores).games.map((game) => game.label)).toEqual([
+    expect(getKnockouts(scores).games.map((game) => game.label)).toEqual([
       "P1",
     ]);
   });
@@ -232,7 +232,7 @@ describe("getSwingGames", () => {
       }),
     ]);
 
-    expect(getSwingGames(scores).games).toEqual([
+    expect(getKnockouts(scores).games).toEqual([
       {
         label: "P1",
         name: "P1",
@@ -273,7 +273,7 @@ describe("getSwingGames", () => {
       }),
     ]);
 
-    expect(getSwingGames(scores).games[0]).toEqual({
+    expect(getKnockouts(scores).games[0]).toEqual({
       label: "P1",
       name: "P1",
       isFinal: true,
@@ -303,7 +303,7 @@ describe("getSwingGames", () => {
       41,
     );
 
-    expect(getSwingGames(scores).games).toEqual([
+    expect(getKnockouts(scores).games).toEqual([
       {
         label: "P1",
         name: "P1",
@@ -346,7 +346,7 @@ describe("getSwingGames", () => {
       41,
     );
 
-    expect(getSwingGames(scores).games[0].sides).toEqual([
+    expect(getKnockouts(scores).games[0].sides).toEqual([
       {
         team: "BAMA",
         pick: "BAMA",
@@ -379,7 +379,7 @@ describe("getSwingGames", () => {
       41,
     );
 
-    expect(getSwingGames(scores).games).toEqual([
+    expect(getKnockouts(scores).games).toEqual([
       expect.objectContaining({
         label: "P1",
         sides: [
@@ -417,7 +417,7 @@ describe("getSwingGames", () => {
       41,
     );
 
-    expect(getSwingGames(scores).games[0].tiebreakers).toEqual([
+    expect(getKnockouts(scores).games[0].tiebreakers).toEqual([
       {
         tiebreaker: "proAgainstTheSpread",
         players: ["Bob"],
@@ -472,7 +472,7 @@ describe("getSwingGames", () => {
       },
     ];
 
-    expect(swingPicks(getSwingGames(scores), "Bob")).toEqual(["P2 LAR"]);
+    expect(knockoutPicks(getKnockouts(scores), "Bob")).toEqual(["P2 LAR"]);
   });
 
   it("leaves out a game the search names only among the ways that tie on points", () => {
@@ -503,7 +503,7 @@ describe("getSwingGames", () => {
     const analysis = getPlayerAnalysis(scores, "Alice");
     expect(analysis?.kind === "paths" && analysis.outright).toBeTruthy();
 
-    expect(getSwingGames(scores).games).toEqual([
+    expect(getKnockouts(scores).games).toEqual([
       {
         label: "P1",
         name: "P1",
@@ -554,8 +554,8 @@ function mustWinPicks(analysis: PlayerAnalysis | undefined): Array<string> {
     .sort();
 }
 
-function swingPicks(swings: SwingGames, name: string): Array<string> {
-  return swings.games
+function knockoutPicks(knockouts: KnockoutGames, name: string): Array<string> {
+  return knockouts.games
     .flatMap((game) =>
       game.sides
         .filter((side) => side.players.includes(name))
@@ -564,13 +564,13 @@ function swingPicks(swings: SwingGames, name: string): Array<string> {
     .sort();
 }
 
-describe("getSwingGames, against getPlayerAnalysis", () => {
+describe("getKnockouts, against getPlayerAnalysis", () => {
   it.each([
     [5, 101],
     [6, 202],
   ])("names the must-win games of %i open games", (gameCount, seed) => {
     const scores = generatedWeek(gameCount, seed);
-    const swings = getSwingGames(scores);
+    const knockouts = getKnockouts(scores);
     let compared = 0;
 
     for (const { name } of scores.scores) {
@@ -578,7 +578,7 @@ describe("getSwingGames, against getPlayerAnalysis", () => {
       // The one answer whose must-win games the check is not held to.
       if (analysis?.kind === "paths" && analysis.outright != null) continue;
       const expected = mustWinPicks(analysis);
-      expect(swingPicks(swings, name)).toEqual(expected);
+      expect(knockoutPicks(knockouts, name)).toEqual(expected);
       compared += expected.length;
     }
     expect(compared).toBeGreaterThan(0);
@@ -601,14 +601,18 @@ describe("getSwingGames, against getPlayerAnalysis", () => {
         pro: [pick("DEN"), pick("DEN"), pick("DEN"), ...alike],
       }),
     ]);
-    const swings = getSwingGames(scores);
+    const knockouts = getKnockouts(scores);
 
     expect(getPlayerAnalysis(scores, "Alice")?.kind).toBe("headline");
     for (const name of ["Alice", "Bob"]) {
-      expect(swingPicks(swings, name)).toEqual(
+      expect(knockoutPicks(knockouts, name)).toEqual(
         mustWinPicks(getPlayerAnalysis(scores, name)),
       );
     }
-    expect(swingPicks(swings, "Alice")).toEqual(["P1 DEN", "P2 DEN", "P3 DEN"]);
+    expect(knockoutPicks(knockouts, "Alice")).toEqual([
+      "P1 DEN",
+      "P2 DEN",
+      "P3 DEN",
+    ]);
   });
 });

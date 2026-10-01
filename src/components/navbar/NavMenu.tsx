@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router";
 import {
   useScores,
   useIsWeekSettled,
-  useSwingGames,
+  useKnockouts,
 } from "../../context/AppDataContext";
 import { useSettings } from "../../context/SettingsContext";
 import cssMediaQuery from "../../hooks/cssMediaQuery";
@@ -31,7 +31,7 @@ type Week = number | string | undefined;
 /** What an item's enabled rule can read. */
 type NavContext = {
   isWeekSettled: boolean;
-  swingGames: ReturnType<typeof useSwingGames>;
+  knockouts: ReturnType<typeof useKnockouts>;
   /** How many players the week has, or undefined while its scores load. */
   playerCount?: number;
 };
@@ -67,22 +67,22 @@ const COMPARE_PLAYERS: NavItem = {
       : undefined,
 };
 
-const SWING_GAMES: NavItem = {
-  label: RESULTS_PAGE.swingGames,
+const KNOCKOUTS: NavItem = {
+  label: RESULTS_PAGE.knockouts,
   icon: <SwapVertIcon />,
-  path: (season, week) => resultsPath(season, week, RESULTS_PAGE.swingGames),
+  path: (season, week) => resultsPath(season, week, RESULTS_PAGE.knockouts),
   // Scores still loading, which is soon over and needs no word. A complete
   // week needs none either.
-  disabled: ({ swingGames }) =>
-    swingGames == null || swingGames.games.length === 0,
-  disabledReason: ({ isWeekSettled, swingGames }) =>
-    !isWeekSettled && swingGames?.games.length === 0
+  disabled: ({ knockouts }) =>
+    knockouts == null || knockouts.games.length === 0,
+  disabledReason: ({ isWeekSettled, knockouts }) =>
+    !isWeekSettled && knockouts?.games.length === 0
       ? "No game knocks anyone out"
       : undefined,
 };
 
 // Home leads, then the pages. Settings renders after them, outside this list.
-const ITEMS: Array<NavItem> = [HOME, GAMES, SWING_GAMES, COMPARE_PLAYERS];
+const ITEMS: Array<NavItem> = [HOME, GAMES, KNOCKOUTS, COMPARE_PLAYERS];
 
 const SETTINGS_LABEL = "Settings";
 
@@ -93,8 +93,8 @@ const TRIGGER_CLASSES = buttonClasses({ compact: true, iconOnly: true });
 
 /**
  * The hamburger every page opens beside the scoreboard/picks switch. A drawer
- * from the right edge below `wide-screen`, a popup menu at it and above. Swing
- * Games and Compare Players only with the experimental opt-in.
+ * from the right edge below `wide-screen`, a popup menu at it and above. Knockouts
+ * and Compare Players only with the experimental opt-in.
  */
 export default function NavMenu({
   season,
@@ -110,7 +110,7 @@ export default function NavMenu({
   const isNarrow = useMediaQuery(query);
   const { pathname } = useLocation();
   const isWeekSettled = useIsWeekSettled();
-  const swingGames = useSwingGames();
+  const knockouts = useKnockouts();
   const playerCount = useScores()?.scores.length;
   const { experimentalFeatures } = useSettings();
   const [isSettingsOpen, setSettingsOpen] = useState(false);
@@ -118,12 +118,12 @@ export default function NavMenu({
 
   const context: NavContext = {
     isWeekSettled,
-    swingGames,
+    knockouts,
     playerCount,
   };
   const shown = experimentalFeatures
     ? ITEMS
-    : ITEMS.filter((item) => item !== SWING_GAMES && item !== COMPARE_PLAYERS);
+    : ITEMS.filter((item) => item !== KNOCKOUTS && item !== COMPARE_PLAYERS);
   const links = shown.map((item) => {
     const path = item.path(season, week);
     const isHeldOff = pagesDisabled && item !== HOME;

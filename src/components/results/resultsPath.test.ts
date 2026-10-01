@@ -10,9 +10,9 @@ describe("resultsPath", () => {
     expect(resultsPath(season, week, page)).toBe(expected);
   });
 
-  it("builds the swing games page's target", () => {
-    expect(resultsPath(2024, 3, RESULTS_PAGE.swingGames)).toBe(
-      "/2024/3/swings",
+  it("builds the knockouts page's target", () => {
+    expect(resultsPath(2024, 3, RESULTS_PAGE.knockouts)).toBe(
+      "/2024/3/knockouts",
     );
   });
 
