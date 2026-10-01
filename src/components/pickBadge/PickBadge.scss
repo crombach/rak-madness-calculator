@@ -1,7 +1,8 @@
 @use "../../styles/picks" as *;
 
-// The picks table's cell in small: its face, weight, inks and fills. An open game's
-// pick takes the `CountBadge` gray, in full ink where the count's is gray.
+// The picks table's cell in small: its face, inks and fills. Semibold where the
+// cell is regular, since a badge this size thins out against its fill. An open
+// game's pick takes the `CountBadge` gray, in full ink where the count's is gray.
 .pick-badge {
   @include pick-type;
 
@@ -10,7 +11,7 @@
   border-radius: var(--rak-radius-sm);
   background-color: var(--rak-count-chip-bg);
   color: var(--rak-text);
-  font-weight: normal;
+  font-weight: var(--rak-weight-semibold);
   line-height: var(--rak-line-height-tight);
   letter-spacing: normal;
   text-transform: none;

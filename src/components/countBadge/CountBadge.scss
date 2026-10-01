@@ -1,6 +1,6 @@
 @use "../../styles/picks" as *;
 
-// The ink matches the Swing Games player count pill.
+// The ink matches the Swing Games player count pill. Semibold, as `PickBadge` is.
 .count-badge {
   @include pick-type;
 
@@ -9,7 +9,7 @@
   border-radius: var(--rak-radius-sm);
   background: var(--rak-count-chip-bg);
   color: var(--rak-mark-count-text);
-  font-weight: normal;
+  font-weight: var(--rak-weight-semibold);
   line-height: var(--rak-line-height-tight);
   letter-spacing: normal;
   text-transform: none;
