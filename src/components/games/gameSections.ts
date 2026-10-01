@@ -22,7 +22,7 @@ export const LIVE_STATUSES: ReadonlySet<GameStatus> = new Set([
 /** One card, with where its game stands. No `kickoff` is a game with no date. */
 export type PlacedGame<T> = { card: T; status: GameStatus; kickoff?: Date };
 
-export type GameSection<T> = { title: string; cards: Array<T> };
+export type SectionCards<T> = { title: string; cards: Array<T> };
 
 function kickoffTime({ kickoff }: PlacedGame<unknown>): number {
   return kickoff?.getTime() ?? Number.POSITIVE_INFINITY;
@@ -37,7 +37,7 @@ function kickoffTime({ kickoff }: PlacedGame<unknown>): number {
 export default function gameSections<T>(
   games: Array<PlacedGame<T>>,
   now: Date,
-): Array<GameSection<T>> {
+): Array<SectionCards<T>> {
   const live = games.filter(({ status }) => LIVE_STATUSES.has(status));
   const upcoming = games
     .filter(({ status }) => status === GameStatus.UPCOMING)

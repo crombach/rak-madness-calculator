@@ -7,8 +7,8 @@ const COUNTED_NOUN = "game";
 
 /**
  * A section's title, its game count in a chip beside it. Only the title carries
- * `id`, so the section is named without the count. Apart from `Games`, so the
- * skeletons never pull in the page's chunk. Swing Games uses it too.
+ * `id`, so the section is named without the count. Kept apart from `Games`, so a
+ * skeleton never pulls in the page's chunk.
  */
 export default function SectionTitle({
   id,

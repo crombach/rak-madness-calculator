@@ -5,7 +5,7 @@ knock out on either side, grouped by which team they need, and each final game
 with the players it knocked out.
 
 - `SwingGamesRoute`: behind `ExperimentalGate`, hands `SwingGames` the scores,
-  `useSwingGames` and `rescore`, mounted lazily by `App.tsx` behind `swings`.
+  `useSwingGames`, `rescore` and `fetchingLeagues`, mounted lazily by `App.tsx` behind `swings`.
 - `SwingGames`: polls as `Games` does, and draws its busy bar. A week with no
   swing game, won or not, redirects to the scoreboard with `replace`.
   Its games are grouped by `gameSections`, as on All Games.

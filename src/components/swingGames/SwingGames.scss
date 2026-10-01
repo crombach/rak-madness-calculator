@@ -76,6 +76,8 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
   flex: 1;
   align-items: center;
   gap: var(--rak-space-2);
+  // Lets the matchup give way on a narrow phone rather than push the marks off.
+  min-width: 0;
   min-height: var(--rak-touch-target);
   padding: var(--rak-space-2) var(--rak-space-3);
   border: 0;
@@ -119,6 +121,7 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 
 .swing-games__game-matchup {
   @include game-card-name;
+  @include truncate-line;
 }
 
 .swing-games__side {
