@@ -418,6 +418,9 @@
   // A player count beside a mark, in the upcoming mark's colors.
   --rak-mark-count-bg: var(--rak-mark-upcoming-bg);
   --rak-mark-count-text: var(--rak-mark-upcoming-text);
+  // A count chip set in running text. Darker than the count mark's fill, which
+  // sits on a band and would vanish on a white card.
+  --rak-count-chip-bg: var(--rak-fill-muted);
   // The dot for a game being played, read by the mark inside the dialog's live
   // pill and by the picks table's column heading alike, so the two are the one
   // red. A step per mode, since 1.4.11 asks 3:1 of a shape that carries meaning
@@ -818,6 +821,8 @@ html {
   --rak-mark-final-text: var(--rak-text);
   --rak-mark-upcoming-bg: #3d3d3d;
   --rak-mark-upcoming-text: var(--rak-text);
+  // Here the count mark's own fill reads on a card as well as on a band.
+  --rak-count-chip-bg: var(--rak-mark-count-bg);
 
   // The toast's own darkened fills, off the same hues as their light
   // pastel. `primary` and `neutral` are both gray chrome, so they take the
