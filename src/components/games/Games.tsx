@@ -8,11 +8,14 @@ import { WeekGame } from "../../types/WeekGame";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
 import EmptyState from "../pageLayout/EmptyState";
 import GameCard from "./GameCard";
-import gameSections, { LIVE_STATUSES, POLLED_LEAGUES } from "./gameSections";
+import gameSections, {
+  FETCHING_LABEL,
+  LIVE_STATUSES,
+  POLLED_LEAGUES,
+} from "./gameSections";
 import SectionTitle from "./SectionTitle";
 import "./Games.scss";
 
-const FETCHING_LABEL = "Fetching the games";
 const NO_GAMES = "No games this week";
 
 function PoolGame({

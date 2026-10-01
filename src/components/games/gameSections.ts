@@ -5,6 +5,9 @@ import { ESPN_LEAGUE } from "../../utils/scoring/leagueResults";
 import kickoffDay, { KickoffDay } from "./kickoffDay";
 import { COMPLETED_TITLE, DAYS, LIVE_TITLE } from "./sectionTitles";
 
+/** What a card page's busy bar is called. */
+export const FETCHING_LABEL = "Fetching the games";
+
 /** Every league a card page polls. */
 export const POLLED_LEAGUES: ReadonlyArray<League> = LEAGUE_KEYS.map(
   (key) => ESPN_LEAGUE[key],

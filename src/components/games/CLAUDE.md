@@ -17,3 +17,4 @@ each.
   pages.
 - `GamesSkeleton`: one section under a blank title and count, `GameCard`s on a
   stand-in game, text hidden under fills. Also while the week loads.
+- `standInGame`: that stand-in game, for both card pages' skeletons.

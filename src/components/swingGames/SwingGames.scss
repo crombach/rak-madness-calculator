@@ -237,26 +237,26 @@ $section-min: calc(
   }
 }
 
-// The band and its rule as the loaded page draws them, so nothing moves on arrival.
-.swing-games__skeleton-band {
-  display: block;
-  height: var(--rak-touch-target);
-  background-color: var(--rak-band-card);
-  box-shadow: var(--rak-shadow-band-header);
-}
-
-.swing-games__skeleton-bar {
-  @include skeleton-surface;
-
-  display: block;
-
-  &.--pick {
-    width: 6rem;
-    height: 1lh;
-    font-size: var(--rak-text-xs);
+// A real card drawn from a stand-in game, so it takes a loaded card's size. Its
+// band keeps its fill, and each block under it becomes a fill with its text hidden.
+.swing-games.--loading .swing-games__group {
+  .swing-games__game > *,
+  .swing-games__toggle > *,
+  .swing-games__must-win > * {
+    visibility: hidden;
   }
 
-  &.--player {
-    height: var(--rak-touch-target);
+  .swing-games__must-win {
+    @include skeleton-surface;
+
+    width: fit-content;
+    color: transparent;
+  }
+
+  .swing-games__player {
+    @include skeleton-surface;
+
+    border-color: transparent;
+    color: transparent;
   }
 }
