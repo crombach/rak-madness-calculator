@@ -150,6 +150,15 @@ describe("the swing games route", () => {
     expect(screen.getByRole("button", { name: "Scoreboard" })).toBeEnabled();
   });
 
+  it("offers no refresh, since the page polls on its own", async () => {
+    mountApp(SWINGS_PATH);
+    await screen.findByText("KC at DEN");
+
+    expect(
+      screen.queryByRole("button", { name: "Refresh" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("sets the menu off from the view buttons with a divider", async () => {
     mountApp(SWINGS_PATH);
     await screen.findByText("KC at DEN");

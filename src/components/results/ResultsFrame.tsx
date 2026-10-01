@@ -122,8 +122,11 @@ export default function ResultsFrame({
   // Once every game is final there is nothing left to fetch, so the refresh button
   // and the divider beside it go rather than sit there doing nothing.
   const isWeekSettled = useIsWeekSettled();
-  // Games polls on its own, so it offers no refresh of its own either.
-  const canRefresh = !isWeekSettled && view !== RESULTS_PAGE.games;
+  // The card pages poll on their own, so they offer no refresh of their own either.
+  const canRefresh =
+    !isWeekSettled &&
+    view !== RESULTS_PAGE.games &&
+    view !== RESULTS_PAGE.swingGames;
   const [opened, setOpened] = useState<Opened>();
   // Set once both dialogs are fetched, which mounts them closed. Each one reads
   // the week as it mounts, and `PlayerAnalysisDialog` walks every pick of every

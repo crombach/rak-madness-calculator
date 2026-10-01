@@ -1,15 +1,18 @@
 import { Accordion } from "@base-ui/react/accordion";
 import { ReactNode, useId, useMemo, useRef, useState } from "react";
 import { Navigate, useParams } from "react-router";
-import { useSwingGames } from "../../context/AppDataContext";
 import { useShowGameStatus } from "../../context/GameStatusContext";
 import { useShowPlayerAnalysis } from "../../context/PlayerAnalysisContext";
 import { isMyPlayer, useSettings } from "../../context/SettingsContext";
+import useLiveWeek from "../../hooks/useLiveWeek";
 import { GameStatus } from "../../types/ESPN";
+import { League } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
 import getClasses from "../../utils/getClasses";
 import { SwingGame, SwingSide } from "../../utils/scoring/getSwingGames";
+import { LeagueResults } from "../../utils/scoring/leagueResults";
+import { SwingGames as Swings } from "../../utils/scoring/swingGameTypes";
 import Button from "../button/Button";
 import CountBadge from "../countBadge/CountBadge";
 import PickBadge from "../pickBadge/PickBadge";
@@ -17,7 +20,10 @@ import GameMark, {
   PlayerCountMark,
   gameMarkLabel,
 } from "../gameStatus/GameMark";
-import gameSections from "../games/gameSections";
+import gameSections, {
+  LIVE_STATUSES,
+  POLLED_LEAGUES,
+} from "../games/gameSections";
 import SectionTitle from "../games/SectionTitle";
 import { ExpandMoreIcon } from "../icon/Icon";
 import plural from "../../utils/plural";
@@ -25,6 +31,7 @@ import resultsPath, { RESULTS_PAGE } from "../results/resultsPath";
 import useGridColumns from "./useGridColumns";
 import "./SwingGames.scss";
 
+const FETCHING_LABEL = "Fetching the games";
 const MUST_WIN = "must win";
 const KNOCKED_OUT = "knocked out on";
 
@@ -188,12 +195,33 @@ function Section({
 
 /**
  * Each open game, with who it knocks out whichever way it falls, and each final one
- * with who it knocked out, in `gameSections` as All Games has them. A game ESPN
- * does not list has no status to read, so it waits under Upcoming until it is final.
+ * with who it knocked out, in `gameSections` as All Games has them, polled as All
+ * Games is. A game ESPN does not list has no status to read, so it waits under
+ * Upcoming until it is final.
  */
-export default function SwingGames({ scores }: { scores?: RakMadnessScores }) {
+export default function SwingGames({
+  scores,
+  swings,
+  onPoll,
+  fetchingLeagues,
+}: {
+  scores?: RakMadnessScores;
+  /** Undefined while the scores, or the code that reads them, load. */
+  swings?: Swings;
+  /** Which leagues have a request in flight, which is what the busy bar says. */
+  fetchingLeagues?: ReadonlySet<League>;
+  onPoll?: (
+    leagues: ReadonlyArray<League>,
+  ) => Promise<LeagueResults | undefined>;
+}) {
   const { season, week } = useParams();
-  const swings = useSwingGames();
+  const { fetched } = useLiveWeek({
+    active: true,
+    leagues: POLLED_LEAGUES,
+    games: scores?.games,
+    onPoll,
+    holdForKickoff: false,
+  });
   const weekGames = useMemo(
     () => new Map(scores?.games?.map((game) => [game.label, game])),
     [scores],
@@ -225,7 +253,9 @@ export default function SwingGames({ scores }: { scores?: RakMadnessScores }) {
   const sections = gameSections(
     swings.games.map((game) => {
       const weekGame = weekGames.get(game.label);
-      const result = weekGame?.result;
+      const result =
+        weekGame?.result &&
+        (fetched?.get(weekGame.result.id) ?? weekGame.result);
       return {
         card: { game, weekGame, status: result?.status },
         status:
@@ -235,6 +265,15 @@ export default function SwingGames({ scores }: { scores?: RakMadnessScores }) {
       };
     }),
     new Date(),
+  );
+  const isFetching = sections.some(({ cards }) =>
+    cards.some(
+      ({ weekGame, status }) =>
+        status != null &&
+        LIVE_STATUSES.has(status) &&
+        weekGame != null &&
+        fetchingLeagues?.has(weekGame.league),
+    ),
   );
   const labels = swings.games.map((game) => game.label);
   return (
@@ -246,6 +285,14 @@ export default function SwingGames({ scores }: { scores?: RakMadnessScores }) {
         setClosed(new Set(labels.filter((label) => !open.includes(label))))
       }
     >
+      {isFetching && (
+        <span
+          className="swing-games__progress --live"
+          role="progressbar"
+          aria-busy="true"
+          aria-label={FETCHING_LABEL}
+        />
+      )}
       {sections.map(({ title, cards }) => (
         <Section key={title} title={title} count={cards.length}>
           {cards.map(({ game, weekGame, status }) => (
