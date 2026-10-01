@@ -7,7 +7,9 @@
   @include pick-type;
 
   display: inline-block;
-  padding: 0.1em var(--rak-space-1);
+  // A shade more above than below. Picks and counts are capitals and figures,
+  // which have no descenders, so centering the line box sets their ink high.
+  padding: 0.125em var(--rak-space-1) 0.075em;
   border-radius: var(--rak-radius-sm);
   background-color: var(--rak-count-chip-bg);
   color: var(--rak-text);
