@@ -1,5 +1,6 @@
 import { Accordion } from "@base-ui/react/accordion";
 import { useMemo, useRef, useState } from "react";
+import { Navigate, useParams } from "react-router";
 import { useSwingGames } from "../../context/AppDataContext";
 import { useShowGameStatus } from "../../context/GameStatusContext";
 import { useShowPlayerAnalysis } from "../../context/PlayerAnalysisContext";
@@ -13,8 +14,8 @@ import GameMark, {
   gameMarkLabel,
 } from "../gameStatus/GameMark";
 import { ExpandMoreIcon } from "../icon/Icon";
-import plural, { verbFor } from "../../utils/plural";
-import ExperimentalGate from "../results/ExperimentalGate";
+import plural from "../../utils/plural";
+import resultsPath, { RESULTS_PAGE } from "../results/resultsPath";
 import useGridColumns from "./useGridColumns";
 import "./SwingGames.scss";
 
@@ -40,9 +41,9 @@ function Side({ side }: { side: SwingSide }) {
 
   return (
     <div className="swing-games__side">
-      <h4 className="swing-games__needs">
-        {side.players.length} {verbFor(side.players.length, "need")}{" "}
-        <span className="swing-games__pick">{side.pick}</span>
+      <h4 className="swing-games__must-win">
+        <span className="swing-games__count">{side.players.length}</span> must
+        win <span className="swing-games__pick">{side.pick}</span>
       </h4>
       <ul ref={grid} className="swing-games__players">
         {shown.map((name) => (
@@ -134,6 +135,7 @@ function Game({ game, weekGame }: { game: SwingGame; weekGame?: WeekGame }) {
 
 /** Each open game, with who it knocks out whichever way it falls. */
 export default function SwingGames({ scores }: { scores?: RakMadnessScores }) {
+  const { season, week } = useParams();
   const swings = useSwingGames();
   const weekGames = useMemo(
     () => new Map(scores?.games?.map((game) => [game.label, game])),
@@ -144,27 +146,33 @@ export default function SwingGames({ scores }: { scores?: RakMadnessScores }) {
   const [closed, setClosed] = useState<ReadonlySet<string>>(new Set());
 
   if (swings == null) return null;
+  // A won week, or one no single game decides, has nothing to show here.
+  if (swings.games.length === 0) {
+    return (
+      <Navigate
+        replace
+        to={resultsPath(season, week, RESULTS_PAGE.scoreboard)}
+      />
+    );
+  }
 
   const labels = swings.games.map((game) => game.label);
   return (
-    // A won week, or one no single game decides, has nothing to show here.
-    <ExperimentalGate closed={swings.games.length === 0}>
-      <Accordion.Root
-        className="swing-games"
-        multiple
-        value={labels.filter((label) => !closed.has(label))}
-        onValueChange={(open: Array<string>) =>
-          setClosed(new Set(labels.filter((label) => !open.includes(label))))
-        }
-      >
-        {swings.games.map((game) => (
-          <Game
-            key={game.label}
-            game={game}
-            weekGame={weekGames.get(game.label)}
-          />
-        ))}
-      </Accordion.Root>
-    </ExperimentalGate>
+    <Accordion.Root
+      className="swing-games"
+      multiple
+      value={labels.filter((label) => !closed.has(label))}
+      onValueChange={(open: Array<string>) =>
+        setClosed(new Set(labels.filter((label) => !open.includes(label))))
+      }
+    >
+      {swings.games.map((game) => (
+        <Game
+          key={game.label}
+          game={game}
+          weekGame={weekGames.get(game.label)}
+        />
+      ))}
+    </Accordion.Root>
   );
 }

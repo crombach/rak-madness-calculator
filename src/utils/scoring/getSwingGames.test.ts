@@ -4,6 +4,7 @@ import { PlayerAnalysis } from "../../types/PlayerAnalysis";
 import getPlayerAnalysis, { MAX_SEARCHED_GAMES } from "./getPlayerAnalysis";
 import getSwingGames, { SwingGames } from "./getSwingGames";
 import parsePick from "./parsePick";
+import { upcomingGame } from "./leagueResultFixtures";
 import { pick, player, week } from "./scoringTestFixtures";
 
 describe("getSwingGames", () => {
@@ -42,6 +43,27 @@ describe("getSwingGames", () => {
           { team: "DEN", pick: "DEN +3", players: ["Bob"] },
         ],
       },
+    ]);
+  });
+
+  it("puts the away side first, as the game is named, even where home holds more", () => {
+    const scores = week([
+      player({ name: "Alice", total: 5, pro: [pick("KC -3")] }),
+      player({ name: "Bob", total: 5, pro: [pick("DEN 3")] }),
+      player({ name: "Carol", total: 5, pro: [pick("DEN 3")] }),
+    ]);
+    scores.games = [
+      {
+        label: "P1",
+        league: League.PRO,
+        name: "KC at DEN",
+        result: upcomingGame({ home: "DEN", away: "KC" }),
+      },
+    ];
+
+    expect(getSwingGames(scores).games[0].sides).toEqual([
+      { team: "KC", pick: "KC -3", players: ["Alice"] },
+      { team: "DEN", pick: "DEN +3", players: ["Bob", "Carol"] },
     ]);
   });
 

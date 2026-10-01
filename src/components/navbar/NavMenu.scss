@@ -132,13 +132,15 @@
   justify-content: flex-end;
 }
 
+$drawer-width: min(80vw, 320px);
+
 .nav-drawer__popup {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   // Tight, since the first row's own padding already sets it off from the header.
   gap: 0;
-  width: min(80vw, 320px);
+  width: $drawer-width;
   height: 100%;
   padding: calc(var(--rak-space-4) + env(safe-area-inset-top))
     calc(var(--rak-space-4) + env(safe-area-inset-right))
@@ -149,7 +151,13 @@
   border-left: var(--rak-border-width-hairline) solid var(--rak-dialog-edge);
   border-radius: var(--rak-radius-lg) 0 0 var(--rak-radius-lg);
   background-color: var(--rak-surface-raised);
-  box-shadow: var(--rak-shadow-dialog);
+  // The first shadow is a copy of the drawer's own fill, half a width to its
+  // right and over the dialog shadow. A swipe away from the edge pulls the drawer
+  // off it a little, and Base UI's inline transform outranks any clamp here, so
+  // the copy fills the gap rather than leaving the page showing through.
+  box-shadow:
+    calc(#{$drawer-width} / 2) 0 0 0 var(--rak-surface-raised),
+    var(--rak-shadow-dialog);
   color: var(--rak-text);
   transform: translateX(var(--drawer-swipe-movement-x, 0px));
   transition: transform var(--rak-duration-medium) var(--rak-ease-standard);

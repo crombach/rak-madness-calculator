@@ -15,8 +15,8 @@ import getClasses from "../../utils/getClasses";
 import { buttonClasses } from "../button/Button";
 import {
   CloseIcon,
-  GroupIcon,
   HomeIcon,
+  JoinIcon,
   MenuIcon,
   ScoreboardIcon,
   SettingsIcon,
@@ -57,7 +57,22 @@ const GAMES: NavItem = {
   disabled: ({ playerCount }) => playerCount == null,
 };
 
-const PAGES: Array<NavItem> = [
+const COMPARE_PLAYERS: NavItem = {
+  label: RESULTS_PAGE.comparePlayers,
+  icon: <JoinIcon />,
+  path: (season, week) =>
+    resultsPath(season, week, RESULTS_PAGE.comparePlayers),
+  disabled: ({ playerCount }) => playerCount == null || playerCount < 2,
+  disabledReason: ({ isWeekSettled, playerCount }) =>
+    !isWeekSettled && playerCount != null && playerCount < 2
+      ? "Needs two players"
+      : undefined,
+};
+
+// Home leads, then the pages. Settings renders after them, outside this list.
+const ITEMS: Array<NavItem> = [
+  HOME,
+  GAMES,
   {
     label: RESULTS_PAGE.swingGames,
     icon: <SwapVertIcon />,
@@ -73,25 +88,7 @@ const PAGES: Array<NavItem> = [
       return undefined;
     },
   },
-  {
-    label: RESULTS_PAGE.comparePlayers,
-    icon: <GroupIcon />,
-    path: (season, week) =>
-      resultsPath(season, week, RESULTS_PAGE.comparePlayers),
-    disabled: ({ playerCount }) => playerCount == null || playerCount < 2,
-    disabledReason: ({ isWeekSettled, playerCount }) =>
-      !isWeekSettled && playerCount != null && playerCount < 2
-        ? "Needs two players"
-        : undefined,
-  },
-  GAMES,
-];
-
-// Home leads, the rest run alphabetically. Settings renders after them, outside
-// this list.
-const ITEMS: Array<NavItem> = [
-  HOME,
-  ...[...PAGES].sort((a, b) => a.label.localeCompare(b.label)),
+  COMPARE_PLAYERS,
 ];
 
 const SETTINGS_LABEL = "Settings";
@@ -103,8 +100,8 @@ const TRIGGER_CLASSES = buttonClasses({ compact: true, iconOnly: true });
 
 /**
  * The hamburger every page opens beside the scoreboard/picks switch. A drawer
- * from the right edge below `wide-screen`, a popup menu at it and above. Only
- * Home, All Games and Settings without the experimental opt-in.
+ * from the right edge below `wide-screen`, a popup menu at it and above. Compare
+ * Players only with the experimental opt-in.
  */
 export default function NavMenu({
   season,
@@ -133,7 +130,10 @@ export default function NavMenu({
     swingGames,
     playerCount,
   };
-  const links = (experimentalFeatures ? ITEMS : [HOME, GAMES]).map((item) => {
+  const shown = experimentalFeatures
+    ? ITEMS
+    : ITEMS.filter((item) => item !== COMPARE_PLAYERS);
+  const links = shown.map((item) => {
     const path = item.path(season, week);
     const isHeldOff = pagesDisabled && item !== HOME;
     return {

@@ -15,13 +15,10 @@ import {
   setUpAppTest,
   spreadsheetResponse,
 } from "../../appTestFixtures";
-import {
-  EXPERIMENTAL_FEATURES_KEY,
-  PLAYER_NAME_KEY,
-} from "../../context/SettingsContext";
+import { PLAYER_NAME_KEY } from "../../context/SettingsContext";
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
-import plural, { verbFor } from "../../utils/plural";
+import plural from "../../utils/plural";
 import {
   delayedGame,
   liveGame,
@@ -62,8 +59,8 @@ function bandMark(gameButton: HTMLElement) {
 }
 
 /** A side's heading, as its lowercase text reads under the CSS caps. */
-function needsHeading(count: number, pickText: string) {
-  return `${count} ${verbFor(count, "need")} ${pickText}`;
+function mustWinHeading(count: number, pickText: string) {
+  return `${count} must win ${pickText}`;
 }
 
 /** Level on points, so each is out if their side of P1 misses. */
@@ -128,7 +125,6 @@ function playerButtons(pickName: string) {
 beforeEach(() => {
   setUpAppTest().mockResolvedValue(spreadsheetResponse());
   getPlayerScoresMock.mockResolvedValue(swingScores());
-  localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
 });
 
 afterEach(() => {
@@ -172,9 +168,11 @@ describe("the swing games route", () => {
     const game = (await screen.findByText("KC at DEN")).closest("section");
     expect(game).not.toBeNull();
     const inGame = within(game as HTMLElement);
-    const kc = inGame.getByRole("heading", { name: needsHeading(1, "KC -3") });
+    const kc = inGame.getByRole("heading", {
+      name: mustWinHeading(1, "KC -3"),
+    });
     const den = inGame.getByRole("heading", {
-      name: needsHeading(1, "DEN +3"),
+      name: mustWinHeading(1, "DEN +3"),
     });
     expect(kc.parentElement).toContainElement(
       inGame.getByRole("button", { name: "Alice" }),
@@ -190,10 +188,10 @@ describe("the swing games route", () => {
     mountApp(SWINGS_PATH);
 
     expect(
-      await screen.findByRole("heading", { name: needsHeading(1, "KC") }),
+      await screen.findByRole("heading", { name: mustWinHeading(1, "KC") }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: needsHeading(1, "DEN") }),
+      screen.getByRole("heading", { name: mustWinHeading(1, "DEN") }),
     ).toBeInTheDocument();
   });
 
@@ -325,18 +323,20 @@ describe("the swing games route", () => {
       expect(band).toHaveAttribute("aria-expanded", "false");
       await waitFor(() =>
         expect(
-          screen.queryByRole("heading", { name: needsHeading(1, "KC -3") }),
+          screen.queryByRole("heading", { name: mustWinHeading(1, "KC -3") }),
         ).not.toBeInTheDocument(),
       );
       expect(
-        screen.getByRole("heading", { name: needsHeading(1, "NYJ") }),
+        screen.getByRole("heading", { name: mustWinHeading(1, "NYJ") }),
       ).toBeInTheDocument();
 
       await user.click(band);
 
       expect(band).toHaveAttribute("aria-expanded", "true");
       expect(
-        await screen.findByRole("heading", { name: needsHeading(1, "KC -3") }),
+        await screen.findByRole("heading", {
+          name: mustWinHeading(1, "KC -3"),
+        }),
       ).toBeInTheDocument();
     });
 
@@ -403,7 +403,7 @@ describe("the swing games route", () => {
     await screen.findByText("KC at DEN");
 
     expect(
-      playerButtons(needsHeading(9, "KC -3")).map((it) => it.textContent),
+      playerButtons(mustWinHeading(9, "KC -3")).map((it) => it.textContent),
     ).toEqual(KC_BACKERS.slice(0, 4));
     const more = screen.getByRole("button", { name: "Show More" });
     expect(more).toHaveAttribute("aria-expanded", "false");
@@ -411,7 +411,7 @@ describe("the swing games route", () => {
     await user.click(more);
 
     expect(
-      playerButtons(needsHeading(9, "KC -3")).map((it) => it.textContent),
+      playerButtons(mustWinHeading(9, "KC -3")).map((it) => it.textContent),
     ).toEqual(KC_BACKERS);
     expect(screen.getByRole("button", { name: "Show Fewer" })).toHaveAttribute(
       "aria-expanded",
@@ -425,7 +425,7 @@ describe("the swing games route", () => {
     mountApp(SWINGS_PATH);
     await screen.findByText("KC at DEN");
 
-    expect(playerButtons(needsHeading(4, "KC -3"))).toHaveLength(4);
+    expect(playerButtons(mustWinHeading(4, "KC -3"))).toHaveLength(4);
     expect(screen.queryByRole("button", { name: /^Show/ })).toBeNull();
   });
 
@@ -435,7 +435,7 @@ describe("the swing games route", () => {
     mountApp(SWINGS_PATH);
     await screen.findByText("KC at DEN");
 
-    expect(playerButtons(needsHeading(9, "KC -3"))).toHaveLength(9);
+    expect(playerButtons(mustWinHeading(9, "KC -3"))).toHaveLength(9);
     expect(screen.queryByRole("button", { name: /^Show/ })).toBeNull();
   });
 
@@ -445,7 +445,7 @@ describe("the swing games route", () => {
     mountApp(SWINGS_PATH);
     await screen.findByText("KC at DEN");
 
-    const shown = playerButtons(needsHeading(9, "KC -3"));
+    const shown = playerButtons(mustWinHeading(9, "KC -3"));
     expect(shown.map((it) => it.textContent)).toEqual([
       "Hal",
       ...KC_BACKERS.slice(0, 3),
@@ -515,27 +515,6 @@ describe("the swing games route", () => {
       ["open games no one must win", quietScores],
     ])("sends %s to the scoreboard in place of the page", async (_, make) => {
       getPlayerScoresMock.mockResolvedValue(make());
-      const user = mountApp(SWINGS_PATH, {
-        earlier: ["/"],
-        beside: <BackButton />,
-      });
-
-      expect(
-        await screen.findByRole("heading", {
-          level: 1,
-          name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
-        }),
-      ).toBeInTheDocument();
-
-      await user.click(screen.getByRole("button", { name: "Back" }));
-
-      expect(
-        await screen.findByText("Use Local Spreadsheet"),
-      ).toBeInTheDocument();
-    });
-
-    it("sends a reader without experimental features to the scoreboard in place of the page", async () => {
-      localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
       const user = mountApp(SWINGS_PATH, {
         earlier: ["/"],
         beside: <BackButton />,

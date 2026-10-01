@@ -91,7 +91,7 @@ describe("NavMenu", () => {
   });
 
   describe("at wide-screen", () => {
-    it("lists Home first, then the pages alphabetically, then Settings", async () => {
+    it("lists Home, All Games, Swing Games, Compare Players, then Settings", async () => {
       const user = mount();
       await user.click(trigger());
 
@@ -100,13 +100,13 @@ describe("NavMenu", () => {
       expect(items.map((item) => item.textContent)).toEqual([
         "Home",
         "All Games",
-        "Compare Players",
         "Swing Games",
+        "Compare Players",
         "Settings",
       ]);
     });
 
-    it("offers only Home, All Games and Settings with experimental features off", async () => {
+    it("leaves out Compare Players with experimental features off", async () => {
       localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
       const user = mount();
       await user.click(trigger());
@@ -116,6 +116,7 @@ describe("NavMenu", () => {
       expect(items.map((item) => item.textContent)).toEqual([
         "Home",
         "All Games",
+        "Swing Games",
         "Settings",
       ]);
     });
@@ -408,7 +409,6 @@ describe("NavMenu", () => {
       await user.keyboard("{ArrowDown}");
       await user.keyboard("{ArrowDown}");
       await user.keyboard("{ArrowDown}");
-      await user.keyboard("{ArrowDown}");
 
       await waitFor(() => expect(item).toHaveFocus());
     });
@@ -455,7 +455,7 @@ describe("NavMenu", () => {
         within(drawer)
           .getAllByRole("link")
           .map((link) => link.textContent),
-      ).toEqual(["Home", "All Games", "Compare Players", "Swing Games"]);
+      ).toEqual(["Home", "All Games", "Swing Games", "Compare Players"]);
       expect(
         within(drawer).getByRole("button", { name: "Settings" }),
       ).toBeInTheDocument();

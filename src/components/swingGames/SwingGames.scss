@@ -155,12 +155,16 @@ $section-min: calc(
 }
 
 // Sized so its capitals stand as tall as the pick's, which is set in the other face.
-.swing-games__needs {
+.swing-games__must-win {
   @include section-title(sm);
 
   font-size: calc(
     var(--rak-text-sm) * #{math.div($cap-share-mono, $cap-share-body)}
   );
+}
+
+.swing-games__count {
+  @include count-chip;
 }
 
 .swing-games__pick {

@@ -5,16 +5,12 @@ import resultsPath, { RESULTS_PAGE } from "./resultsPath";
 
 /**
  * Shows its page only to a reader who has opted into experimental features.
- * Anyone else lands on the scoreboard. `closed` sends the opted-in reader there
- * too, for a page with nothing to show that week.
+ * Anyone else lands on the scoreboard.
  */
-export default function ExperimentalGate({
-  closed = false,
-  children,
-}: PropsWithChildren<{ closed?: boolean }>) {
+export default function ExperimentalGate({ children }: PropsWithChildren) {
   const { season, week } = useParams();
   const { experimentalFeatures } = useSettings();
-  if (!experimentalFeatures || closed) {
+  if (!experimentalFeatures) {
     return (
       <Navigate
         replace
