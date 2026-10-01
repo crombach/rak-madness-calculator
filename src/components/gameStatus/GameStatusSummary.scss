@@ -25,7 +25,7 @@
 
 // What separates one part of the strip under the scoreline from the next.
 @mixin meta-dot {
-  content: "·";
+  content: "•";
   margin-inline: var(--rak-space-2);
 }
 
@@ -108,7 +108,7 @@
 }
 
 // A `meta-dot` and its margins.
-$lead-dot: calc(2 * var(--rak-space-2) + 0.3em);
+$lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
 
 // The reader's pick over the pool's on a phone, two lines whatever either holds,
 // so no game's card reads differently from the next. A wider screen sets them on one line with a dot between,
@@ -132,7 +132,7 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.3em);
     }
 
     &:not(.--wrapped) .game-status__my-pick + .game-status__picks::before {
-      content: "·";
+      content: "•";
       position: absolute;
       right: 100%;
       width: $lead-dot;
@@ -147,7 +147,7 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.3em);
 //
 // One line where the dialog is wide enough to hold both halves, wrapping back to two
 // where it is not. Set apart by the space between them rather than by a glyph, since
-// each half already reads with a `·` inside it.
+// each half already reads with a `•` inside it.
 .game-status__meta {
   display: flex;
   flex-direction: column;

@@ -467,7 +467,7 @@ describe("NavMenu", () => {
       const { drawer } = await openDrawer();
 
       expect(drawer).toHaveAccessibleDescription(
-        `${SEASON} Season · Week ${WEEK}`,
+        `${SEASON} Season • Week ${WEEK}`,
       );
     });
 

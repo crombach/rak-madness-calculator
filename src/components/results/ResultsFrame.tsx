@@ -63,7 +63,7 @@ const SKELETONS: Record<ResultsPage, ReactNode> = {
 };
 
 /** What the caption is sized from on a route that does not know the week yet. */
-const CAPTION_STAND_IN = "Scoreboard · 0000 Season · Week 00";
+const CAPTION_STAND_IN = "Scoreboard • 0000 Season • Week 00";
 
 /**
  * What the tables have opened, which is one thing at a time.
@@ -241,7 +241,7 @@ export default function ResultsFrame({
         >
           {seasonParam && weekParam && (
             <span className="results-caption__text">
-              {`${view} · ${weekName(seasonParam, weekParam)}`}
+              {`${view} • ${weekName(seasonParam, weekParam)}`}
             </span>
           )}
         </p>

@@ -47,8 +47,8 @@ new style for something the app already renders elsewhere. UI words: `glossary` 
   is settled. Otherwise it says why, such as "Needs two players".
 - Button text in title case: "Choose Players", "Show More". Not an icon button's
   `aria-label`, which no one sees.
-- One line of separate facts splits them with `·`. The items of one list split
-  with a comma. Never a `·` inside a list.
+- One line of separate facts splits them with `•`. The items of one list split
+  with a comma. Never a `•` inside a list.
 - A loading placeholder for a view one component draws is that component on
   stand-in data, its text hidden under `skeleton-surface` fills, so it takes the
   loaded size. `GamesSkeleton` is the model.
@@ -64,7 +64,7 @@ new style for something the app already renders elsewhere. UI words: `glossary` 
   Real spaces or `gap`, never a margin standing in for one. Half and 1.5 steps:
   `--rak-space-half`, `--rak-space-1-5`.
 - Page anatomy: navbar, a visually hidden `<h1>` (`.page__title`), the caption
-  `View · Week` on every results page, then the page body.
+  `View • Week` on every results page, then the page body.
 - Redirect a reader without the experimental opt-in only through `ExperimentalGate`.
 - Literal sizes allowed: `1px` hairlines, safe-area `env()`, `em` gaps that scale
   with font, `--rak-block-inset`, table row heights. Any other literal becomes a token.

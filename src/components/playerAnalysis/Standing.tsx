@@ -106,7 +106,7 @@ export default function Standing({
       {/* Held apart from the tail, which says how much of the week remains rather
           than what the standing is, so only the standing gets the color. */}
       <span className={getClasses("analysis__headline", tone)}>{text}</span>
-      {" · "}
+      {" • "}
       {remaining > 0
         ? `${plural(remaining, "game")} remaining`
         : unscoreable > 0

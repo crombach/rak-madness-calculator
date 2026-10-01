@@ -72,11 +72,11 @@ describe("the app, results views", () => {
     const user = await mountWithScores();
     await user.click(screen.getByText("View Results"));
 
-    const week = `${SEASON} Season · Week ${CURRENT_WEEK}`;
-    expect(resultsCaption()).toHaveTextContent(`Scoreboard · ${week}`);
+    const week = `${SEASON} Season • Week ${CURRENT_WEEK}`;
+    expect(resultsCaption()).toHaveTextContent(`Scoreboard • ${week}`);
 
     await user.click(screen.getByRole("button", { name: "Picks" }));
-    expect(resultsCaption()).toHaveTextContent(`Picks · ${week}`);
+    expect(resultsCaption()).toHaveTextContent(`Picks • ${week}`);
   });
 
   it("returns home from the logo button", async () => {
