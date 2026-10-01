@@ -69,7 +69,10 @@ const COMPARE_PLAYERS: NavItem = {
       : undefined,
 };
 
-const PAGES: Array<NavItem> = [
+// Home leads, then the pages. Settings renders after them, outside this list.
+const ITEMS: Array<NavItem> = [
+  HOME,
+  GAMES,
   {
     label: RESULTS_PAGE.swingGames,
     icon: <SwapVertIcon />,
@@ -86,14 +89,6 @@ const PAGES: Array<NavItem> = [
     },
   },
   COMPARE_PLAYERS,
-  GAMES,
-];
-
-// Home leads, the rest run alphabetically. Settings renders after them, outside
-// this list.
-const ITEMS: Array<NavItem> = [
-  HOME,
-  ...[...PAGES].sort((a, b) => a.label.localeCompare(b.label)),
 ];
 
 const SETTINGS_LABEL = "Settings";
