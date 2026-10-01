@@ -47,6 +47,8 @@ export type PlayerScore = {
     hasNoPicks: boolean;
     isKnockedOut: boolean;
     explanation?: string;
+    /** For a knockout the best this player could do was a tie on total, what settled it. */
+    tiebreaker?: Tiebreaker;
   };
 };
 
@@ -57,3 +59,6 @@ export type PickResult = {
 };
 
 export type Status = "yes" | "no" | "incomplete" | "unscoreable";
+
+/** The tiers under total that `compareOnMerit` ranks on, in its order. */
+export type Tiebreaker = "mnfPoints" | "college" | "proAgainstTheSpread";

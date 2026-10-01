@@ -5,7 +5,17 @@ import getPlayerAnalysis, { MAX_SEARCHED_GAMES } from "./getPlayerAnalysis";
 import getSwingGames, { SwingGames } from "./getSwingGames";
 import parsePick from "./parsePick";
 import { finalGame, upcomingGame } from "./leagueResultFixtures";
+import applyKnockouts from "./applyKnockouts";
+import comparePlayerScores from "./comparePlayerScores";
 import { pick, player, week } from "./scoringTestFixtures";
+
+/** A finished week, knocked out as the scoring pass would. */
+function settled(players: Array<PlayerScore>, tiebreaker: number) {
+  return week(
+    applyKnockouts([...players].sort(comparePlayerScores), tiebreaker),
+    tiebreaker,
+  );
+}
 
 describe("getSwingGames", () => {
   it("groups the players who need the same side of a game", () => {
@@ -115,9 +125,7 @@ describe("getSwingGames", () => {
           label: "P1",
           name: "P1",
           isFinal: true,
-          sides: [
-            { team: "DEN", pick: "DEN +3", hasScored: false, players: ["Bob"] },
-          ],
+          sides: [{ team: "DEN", pick: "DEN +3", players: ["Bob"] }],
         },
       ],
     });
@@ -144,9 +152,7 @@ describe("getSwingGames", () => {
         label: "P1",
         name: "P1",
         isFinal: true,
-        sides: [
-          { team: "DEN", pick: "DEN", hasScored: false, players: ["Bob"] },
-        ],
+        sides: [{ team: "DEN", pick: "DEN", players: ["Bob"] }],
       },
     ]);
   });
@@ -271,13 +277,13 @@ describe("getSwingGames", () => {
       label: "P1",
       name: "P1",
       isFinal: true,
-      sides: [{ team: "DEN", pick: "DEN", hasScored: false, players: ["Bob"] }],
+      sides: [{ team: "DEN", pick: "DEN", players: ["Bob"] }],
     });
   });
 
-  it("names a player the Monday night game knocked out on the MNF Points, on the side that scored", () => {
+  it("keeps a player the MNF Points knocked out on a pick that scored apart from the sides, with their guess", () => {
     // Level with Alice on KC either way, Bob went out on being further off.
-    const scores = week(
+    const scores = settled(
       [
         player({
           name: "Alice",
@@ -292,7 +298,6 @@ describe("getSwingGames", () => {
           pro: [pick("KC", "yes")],
           tiebreakerPick: 50,
           distance: 9,
-          isKnockedOut: true,
         }),
       ],
       41,
@@ -303,42 +308,121 @@ describe("getSwingGames", () => {
         label: "P1",
         name: "P1",
         isFinal: true,
-        sides: [{ team: "KC", pick: "KC", hasScored: true, players: ["Bob"] }],
+        sides: [],
+        tiebreakers: [
+          {
+            tiebreaker: "mnfPoints",
+            total: 41,
+            players: ["Bob"],
+            tiebreakers: { Bob: { tiebreaker: "mnfPoints", pick: 50 } },
+          },
+        ],
       },
     ]);
   });
 
-  it("splits one team's knockouts by whether each pick scored", () => {
-    const scores = week(
+  it("notes the College Score on a side whose player it knocked out", () => {
+    // Level on total and MNF Points, Bob is a college game behind.
+    const scores = settled(
       [
         player({
           name: "Alice",
-          total: 5,
-          pro: [pick("KC -3", "yes")],
+          total: 1,
+          collegeScore: 1,
+          college: [pick("UGA", "yes")],
+          pro: [pick("KC", "no")],
           tiebreakerPick: 40,
           distance: 1,
         }),
         player({
           name: "Bob",
-          total: 5,
-          pro: [pick("KC -3", "yes")],
-          tiebreakerPick: 50,
-          distance: 9,
-          isKnockedOut: true,
-        }),
-        player({
-          name: "Carol",
-          total: 4,
-          pro: [pick("KC -7", "no")],
-          isKnockedOut: true,
+          total: 1,
+          college: [pick("BAMA", "no")],
+          pro: [pick("DEN", "yes")],
+          tiebreakerPick: 40,
+          distance: 1,
         }),
       ],
       41,
     );
 
     expect(getSwingGames(scores).games[0].sides).toEqual([
-      { team: "KC", pick: "KC -3", hasScored: true, players: ["Bob"] },
-      { team: "KC", pick: "KC -7", hasScored: false, players: ["Carol"] },
+      {
+        team: "BAMA",
+        pick: "BAMA",
+        players: ["Bob"],
+        tiebreakers: { Bob: { tiebreaker: "college" } },
+      },
+    ]);
+  });
+
+  it("notes the Pro Score ATS on a side whose player it knocked out", () => {
+    // Level on total, MNF Points, and college, Bob covered no spread.
+    const scores = settled(
+      [
+        player({
+          name: "Alice",
+          total: 1,
+          proAgainstTheSpread: 1,
+          pro: [pick("KC -3", "yes"), pick("SF", "no")],
+          tiebreakerPick: 40,
+          distance: 1,
+        }),
+        player({
+          name: "Bob",
+          total: 1,
+          pro: [pick("DEN +3", "no"), pick("LAR", "yes")],
+          tiebreakerPick: 40,
+          distance: 1,
+        }),
+      ],
+      41,
+    );
+
+    expect(getSwingGames(scores).games).toEqual([
+      expect.objectContaining({
+        label: "P1",
+        sides: [
+          {
+            team: "DEN",
+            pick: "DEN +3",
+            players: ["Bob"],
+            tiebreakers: { Bob: { tiebreaker: "proAgainstTheSpread" } },
+          },
+        ],
+      }),
+    ]);
+  });
+
+  it("heads a pick that scored by the tiebreaker that knocked its player out", () => {
+    // Both took KC and it scored, but only Alice's pick carried a spread.
+    const scores = settled(
+      [
+        player({
+          name: "Alice",
+          total: 1,
+          proAgainstTheSpread: 1,
+          pro: [pick("KC -3", "yes")],
+          tiebreakerPick: 40,
+          distance: 1,
+        }),
+        player({
+          name: "Bob",
+          total: 1,
+          pro: [pick("KC", "yes")],
+          tiebreakerPick: 40,
+          distance: 1,
+        }),
+      ],
+      41,
+    );
+
+    expect(getSwingGames(scores).games[0].tiebreakers).toEqual([
+      {
+        tiebreaker: "proAgainstTheSpread",
+        players: ["Bob"],
+        tiebreakers: { Bob: { tiebreaker: "proAgainstTheSpread" } },
+      },
     ]);
   });
 

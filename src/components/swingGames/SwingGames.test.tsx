@@ -4,7 +4,7 @@ import { SettingsContextProvider } from "../../context/SettingsContext";
 import { POLL_MS } from "../../hooks/useLiveWeek";
 import { GameStatus } from "../../types/ESPN";
 import { League } from "../../types/League";
-import { RakMadnessScores } from "../../types/RakMadnessScores";
+import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import getSwingGames from "../../utils/scoring/getSwingGames";
 import {
   liveGame,
@@ -12,6 +12,8 @@ import {
   weekOf,
 } from "../../utils/scoring/leagueResultFixtures";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
+import applyKnockouts from "../../utils/scoring/applyKnockouts";
+import comparePlayerScores from "../../utils/scoring/comparePlayerScores";
 import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
 import SwingGames from "./SwingGames";
 
@@ -32,6 +34,14 @@ function liveScores(): RakMadnessScores {
     { label: "P2", league: League.PRO, name: "SF at LAR", result: proUpcoming },
   ];
   return scores;
+}
+
+/** A finished week, knocked out as the scoring pass would. */
+function settled(players: Array<PlayerScore>, tiebreaker: number) {
+  return week(
+    applyKnockouts([...players].sort(comparePlayerScores), tiebreaker),
+    tiebreaker,
+  );
 }
 
 type Poll = (
@@ -102,8 +112,8 @@ describe("SwingGames", () => {
 
     vi.useRealTimers();
   });
-  it("says when a pick that scored still went out on the MNF Points", () => {
-    const scores = week(
+  it("heads the MNF Points knockouts with the total, and gives each one's guess", () => {
+    const scores = settled(
       [
         player({
           name: "Alice",
@@ -118,7 +128,6 @@ describe("SwingGames", () => {
           pro: [pick("KC", "yes")],
           tiebreakerPick: 50,
           distance: 9,
-          isKnockedOut: true,
         }),
       ],
       41,
@@ -128,8 +137,48 @@ describe("SwingGames", () => {
     expect(
       screen.getByRole("heading", {
         level: 4,
-        name: "1 knocked out on MNF Points despite KC",
+        name: "1 knocked out on MNF Points 41",
       }),
     ).toBeInTheDocument();
+    const bob = screen.getByRole("button", {
+      name: "Bob, knocked out on MNF Points 50",
+    });
+    expect(bob).toHaveTextContent("MNF Points 50");
+  });
+
+  it("notes the tiebreaker under a name on a side that missed", () => {
+    // Level on total and MNF Points, Bob is a college game behind.
+    const scores = settled(
+      [
+        player({
+          name: "Alice",
+          total: 1,
+          collegeScore: 1,
+          college: [pick("UGA", "yes")],
+          pro: [pick("KC", "no")],
+          tiebreakerPick: 40,
+          distance: 1,
+        }),
+        player({
+          name: "Bob",
+          total: 1,
+          college: [pick("BAMA", "no")],
+          pro: [pick("DEN", "yes")],
+          tiebreakerPick: 40,
+          distance: 1,
+        }),
+      ],
+      41,
+    );
+    render(page(scores));
+
+    expect(
+      screen.getByRole("heading", { level: 4, name: "1 knocked out on BAMA" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: "Bob, knocked out on College Score",
+      }),
+    ).toHaveTextContent("College Score");
   });
 });

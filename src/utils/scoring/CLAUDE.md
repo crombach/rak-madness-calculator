@@ -27,8 +27,8 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 - `remainingGames`: the open games, and `countDifferences`, where two rows split
 - `differingGames`: every game any two rows split, spread included, and
   `sameGames`, every game they all picked alike
-- `applyKnockouts`: who can still win, why not. A row under a shared name
-  knocks nobody out
+- `applyKnockouts`: who can still win, why not, and which tiebreaker settled a
+  tie. A row under a shared name knocks nobody out
 - `repeatedNames`: the names more than one row was entered under
 - `scoreChanges`: what a refresh changed
 - `getPlayerAnalysis`: what a player must do, plus `getSettledAnalysis`,

@@ -1,3 +1,5 @@
+import { Tiebreaker } from "../../types/RakMadnessScores";
+
 /**
  * The shapes `getSwingGames` answers with, apart from it so that `AppDataContext`
  * can name them without loading `getPlayerAnalysis` into the chunk every route
@@ -12,13 +14,31 @@ export type SwingSide = {
   team: string;
   /** The first of these players' cells, as the tables show it. */
   pick: string;
-  /**
-   * On a final game, whether the pick scored. A Monday night game can knock out a
-   * player whose pick scored, on the MNF Points.
-   */
-  hasScored?: boolean;
   /** In ranking order. */
   players: Array<string>;
+  /** On a final game, each player here a tiebreaker knocked out, by name. */
+  tiebreakers?: Record<string, SwingKnockout>;
+};
+
+/** What settled a knockout that came down to a tie on total. */
+export type SwingKnockout = {
+  tiebreaker: Tiebreaker;
+  /** The player's MNF Points, on the `mnfPoints` tier. */
+  pick?: number;
+};
+
+/**
+ * The players a final game knocked out on one tiebreaker though their pick scored,
+ * so no side of the game holds them.
+ */
+export type SwingTiebreaker = {
+  tiebreaker: Tiebreaker;
+  /** The Monday night total, on the `mnfPoints` tier. */
+  total?: number;
+  /** In ranking order. */
+  players: Array<string>;
+  /** Each of them, by name, where the knockout says what settled it. */
+  tiebreakers: Record<string, SwingKnockout>;
 };
 
 export type SwingGame = {
@@ -35,6 +55,8 @@ export type SwingGame = {
    * players first where no result says which side is away.
    */
   sides: Array<SwingSide>;
+  /** On a final game, who it knocked out on a tiebreaker rather than a pick, by tier. */
+  tiebreakers?: Array<SwingTiebreaker>;
 };
 
 export type SwingGames = {

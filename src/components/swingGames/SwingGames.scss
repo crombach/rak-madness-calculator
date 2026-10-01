@@ -179,7 +179,11 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
   @include ruled-block($rule-alive);
   @include focus-ring;
 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   width: 100%;
+  min-width: 0;
   min-height: var(--rak-touch-target);
   padding: var(--rak-space-2) var(--rak-space-3);
   border-block: 0;
@@ -188,7 +192,6 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
   @include player-name-face;
   font-size: var(--rak-text-cells);
   text-align: start;
-  @include truncate-line;
   cursor: pointer;
   transition: background-color var(--rak-duration-fast) var(--rak-ease-standard);
 
@@ -212,6 +215,25 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 
     border-inline-start-color: var(--rak-my-row-accent);
   }
+}
+
+.swing-games__player-name {
+  @include truncate-line;
+}
+
+// What settled a tiebreaker knockout, a line under the name it ended.
+.swing-games__player-note {
+  @include micro-label;
+  @include truncate-line;
+
+  color: var(--rak-text-secondary);
+  font-family: var(--rak-font-body);
+  font-size: var(--rak-text-xs);
+}
+
+// The Monday night total, set apart as a pick is beside the same heading.
+.swing-games__total {
+  @include badge;
 }
 
 // A real card drawn from a stand-in game, so it takes a loaded card's size. Its

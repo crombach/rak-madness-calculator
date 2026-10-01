@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { ReactNode, useMemo, useRef, useState } from "react";
 import { useShowGameStatus } from "../../context/GameStatusContext";
 import { useShowPlayerAnalysis } from "../../context/PlayerAnalysisContext";
 import { isMyPlayer, useSettings } from "../../context/SettingsContext";
@@ -6,7 +6,8 @@ import { GameStatus } from "../../types/ESPN";
 import { WeekGame } from "../../types/WeekGame";
 import getClasses from "../../utils/getClasses";
 import plural from "../../utils/plural";
-import { SwingGame, SwingSide } from "../../utils/scoring/swingGameTypes";
+import { Tiebreaker } from "../../types/RakMadnessScores";
+import { SwingGame, SwingKnockout } from "../../utils/scoring/swingGameTypes";
 import Button from "../button/Button";
 import CountBadge from "../countBadge/CountBadge";
 import GameMark, {
@@ -19,8 +20,19 @@ import "./SwingGames.scss";
 
 const MUST_WIN = "must win";
 const KNOCKED_OUT = "knocked out on";
-// A pick that scored and still lost the week, on the MNF Points.
-const KNOCKED_OUT_ON_POINTS = "knocked out on MNF Points despite";
+
+/** Each tier as the Scoreboard heads its column. */
+const TIEBREAKER_NAMES: Record<Tiebreaker, string> = {
+  mnfPoints: "MNF Points",
+  college: "College Score",
+  proAgainstTheSpread: "Pro Score ATS",
+};
+
+/** What settled a knockout, with the player's MNF Points where those did. */
+function knockoutNote({ tiebreaker, pick }: SwingKnockout): string {
+  const name = TIEBREAKER_NAMES[tiebreaker];
+  return pick == null ? name : `${name} ${pick}`;
+}
 
 /** How many rows of names a folded side shows. */
 const FOLDED_ROWS = 2;
@@ -30,24 +42,27 @@ const BASE_COLUMNS = 2;
 
 /**
  * A side's players, the reader first so a fold never hides them. Each is ruled in
- * the tables' hue for whether they can still win.
+ * the tables' hue for whether they can still win, and one a tiebreaker knocked out
+ * says which under their name.
  */
 function Side({
-  side,
-  isFinal,
+  heading,
+  players: ranked,
+  tiebreakers,
   knockedOut,
 }: {
-  side: SwingSide;
-  isFinal: boolean;
+  heading: ReactNode;
+  players: Array<string>;
+  tiebreakers?: Record<string, SwingKnockout>;
   knockedOut: ReadonlySet<string>;
 }) {
   const showPlayerAnalysis = useShowPlayerAnalysis();
   const { playerName } = useSettings();
   const [isExpanded, setIsExpanded] = useState(false);
   const players = useMemo(() => {
-    const mine = side.players.filter((name) => isMyPlayer(name, playerName));
-    return [...mine, ...side.players.filter((name) => !mine.includes(name))];
-  }, [side.players, playerName]);
+    const mine = ranked.filter((name) => isMyPlayer(name, playerName));
+    return [...mine, ...ranked.filter((name) => !mine.includes(name))];
+  }, [ranked, playerName]);
   const grid = useRef<HTMLUListElement>(null);
   const limit = FOLDED_ROWS * useGridColumns(grid, BASE_COLUMNS);
   const folded = players.length - limit;
@@ -56,32 +71,31 @@ function Side({
   return (
     <div className="swing-games__side">
       <h4 className="swing-games__must-win">
-        <CountBadge>{side.players.length}</CountBadge>{" "}
-        {!isFinal
-          ? MUST_WIN
-          : side.hasScored
-            ? KNOCKED_OUT_ON_POINTS
-            : KNOCKED_OUT}{" "}
-        <PickBadge
-          pick={side.pick}
-          outcome={isFinal ? (side.hasScored ? "scored" : "missed") : undefined}
-        />
+        <CountBadge>{ranked.length}</CountBadge> {heading}
       </h4>
       <ul ref={grid} className="swing-games__players">
-        {shown.map((name) => (
-          <li key={name}>
-            <button
-              type="button"
-              className={getClasses("swing-games__player", {
-                "--mine": isMyPlayer(name, playerName),
-                "--knocked-out": knockedOut.has(name),
-              })}
-              onClick={() => showPlayerAnalysis(name)}
-            >
-              {name}
-            </button>
-          </li>
-        ))}
+        {shown.map((name) => {
+          const knockout = tiebreakers?.[name];
+          const note = knockout && knockoutNote(knockout);
+          return (
+            <li key={name}>
+              <button
+                type="button"
+                className={getClasses("swing-games__player", {
+                  "--mine": isMyPlayer(name, playerName),
+                  "--knocked-out": knockedOut.has(name),
+                })}
+                aria-label={note && `${name}, ${KNOCKED_OUT} ${note}`}
+                onClick={() => showPlayerAnalysis(name)}
+              >
+                <span className="swing-games__player-name">{name}</span>
+                {note && (
+                  <span className="swing-games__player-note">{note}</span>
+                )}
+              </button>
+            </li>
+          );
+        })}
       </ul>
       {folded > 0 && (
         <Button
@@ -112,7 +126,8 @@ export default function SwingGameCard({
   knockedOut: ReadonlySet<string>;
 }) {
   const showGameStatus = useShowGameStatus();
-  const count = game.sides.reduce(
+  const tiers = game.tiebreakers ?? [];
+  const count = [...game.sides, ...tiers].reduce(
     (total, side) => total + side.players.length,
     0,
   );
@@ -145,9 +160,37 @@ export default function SwingGameCard({
       <div className="swing-games__sides">
         {game.sides.map((side) => (
           <Side
-            key={`${side.team} ${side.hasScored}`}
-            side={side}
-            isFinal={game.isFinal}
+            key={side.team}
+            heading={
+              <>
+                {game.isFinal ? KNOCKED_OUT : MUST_WIN}{" "}
+                <PickBadge
+                  pick={side.pick}
+                  outcome={game.isFinal ? "missed" : undefined}
+                />
+              </>
+            }
+            players={side.players}
+            tiebreakers={side.tiebreakers}
+            knockedOut={knockedOut}
+          />
+        ))}
+        {tiers.map((tier) => (
+          <Side
+            key={tier.tiebreaker}
+            heading={
+              <>
+                {KNOCKED_OUT} {TIEBREAKER_NAMES[tier.tiebreaker]}
+                {tier.total != null && (
+                  <>
+                    {" "}
+                    <span className="swing-games__total">{tier.total}</span>
+                  </>
+                )}
+              </>
+            }
+            players={tier.players}
+            tiebreakers={tier.tiebreakers}
             knockedOut={knockedOut}
           />
         ))}

@@ -1,4 +1,4 @@
-import { PlayerScore } from "../../types/RakMadnessScores";
+import { PlayerScore, Tiebreaker } from "../../types/RakMadnessScores";
 import plural from "../plural";
 import { countDifferences } from "./remainingGames";
 import repeatedNames from "./repeatedNames";
@@ -15,10 +15,14 @@ function remainingSuffix(
     : ` with ${plural(count, noun)} remaining${tail}.`;
 }
 
-function knockedOut(score: PlayerScore, explanation: string): PlayerScore {
+function knockedOut(
+  score: PlayerScore,
+  explanation: string,
+  tiebreaker?: Tiebreaker,
+): PlayerScore {
   return {
     ...score,
-    status: { ...score.status, isKnockedOut: true, explanation },
+    status: { ...score.status, isKnockedOut: true, explanation, tiebreaker },
   };
 }
 
@@ -107,6 +111,7 @@ export default function applyKnockouts(
                     differentCollegePicks,
                     "different college pick",
                   ),
+                "college",
               );
             }
             if (collegeScoreDiff === 0 && isCollegeDone) {
@@ -127,6 +132,7 @@ export default function applyKnockouts(
                       "different pick",
                       " for pro games with spreads",
                     ),
+                  "proAgainstTheSpread",
                 );
               }
             }
@@ -143,6 +149,7 @@ export default function applyKnockouts(
               `Knocked out on MNF Points tiebreaker by ${rivalScore.name}. ` +
                 `${activeScore.name} is ${plural(activeDistance, "point")} off, and ${rivalScore.name} is ` +
                 `${plural(rivalDistance, "point")} off.`,
+              "mnfPoints",
             );
           }
         }
@@ -154,7 +161,11 @@ export default function applyKnockouts(
     // reads it, so a line about still being in contention reaches no reader.
     return {
       ...activeScore,
-      status: { ...activeScore.status, isKnockedOut: false },
+      status: {
+        ...activeScore.status,
+        isKnockedOut: false,
+        tiebreaker: undefined,
+      },
     };
   });
 }

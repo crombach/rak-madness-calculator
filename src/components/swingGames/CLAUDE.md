@@ -11,7 +11,8 @@ with the players it knocked out.
   Its games are grouped by `gameSections`, as on All Games.
 - `SwingGameCard`: one game to a row. Its band opens `useGameStatus`. Each side
   lists its players, a name opening `usePlayerAnalysis`. The sides sit beside
-  each other once both fit.
+  each other once both fit. A tiebreaker knockout names its tier under the name,
+  and a scored pick's knockouts get a side per tier.
 - `SwingGamesSkeleton`: `SwingGameCard`s on a stand-in game, text hidden under
   fills, while the route's chunk or the week loads.
 - `useGridColumns`: how many name columns a side's grid lays out, so a fold

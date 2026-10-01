@@ -2,6 +2,7 @@ import {
   PickResult,
   PlayerScore,
   RakMadnessScores,
+  Tiebreaker,
 } from "../../types/RakMadnessScores";
 import applyKnockouts from "./applyKnockouts";
 import comparePlayerScores from "./comparePlayerScores";
@@ -12,7 +13,13 @@ import parsePick, { formatPickDisplay } from "./parsePick";
 import remainingGames from "./remainingGames";
 import repeatedNames from "./repeatedNames";
 import weekShape from "./weekShape";
-import { SwingGame, SwingGames, SwingSide } from "./swingGameTypes";
+import {
+  SwingGame,
+  SwingGames,
+  SwingKnockout,
+  SwingSide,
+  SwingTiebreaker,
+} from "./swingGameTypes";
 
 export type { SwingGame, SwingGames, SwingSide };
 
@@ -64,8 +71,8 @@ function reopenPick(cell: PickResult): PickResult {
 }
 
 /**
- * The names the knockouts leave standing once the named final games are played
- * again, as if still to come.
+ * Each player's standing, by name, once the named final games are played again, as
+ * if still to come.
  *
  * The Monday night game kicks off last, so any set reopened here holds it once it
  * is final, and the tiebreaker goes with it.
@@ -73,7 +80,7 @@ function reopenPick(cell: PickResult): PickResult {
 function standingWith(
   players: Array<PlayerScore>,
   columns: Array<Column>,
-): Set<string> {
+): Map<string, PlayerScore["status"]> {
   const reopened = players.map((player): PlayerScore => {
     const score = { ...player.score };
     const picks = { college: [...player.college], pro: [...player.pro] };
@@ -99,12 +106,19 @@ function standingWith(
       },
     };
   });
-  return new Set(
-    applyKnockouts(reopened.sort(comparePlayerScores))
-      .filter((player) => !player.status.isKnockedOut)
-      .map((player) => player.name),
-  );
+  return statusByName(applyKnockouts(reopened.sort(comparePlayerScores)));
 }
+
+function statusByName(
+  players: Array<PlayerScore>,
+): Map<string, PlayerScore["status"]> {
+  return new Map(players.map((player) => [player.name, player.status]));
+}
+
+const isStanding = (
+  statuses: Map<string, PlayerScore["status"]>,
+  name: string,
+): boolean => statuses.get(name)?.isKnockedOut === false;
 
 /** When a game kicked off, for the order its knockouts are credited in. */
 function kickoffOf(scores: RakMadnessScores, label: string): number {
@@ -122,16 +136,16 @@ function kickoffOf(scores: RakMadnessScores, label: string): number {
  * The final games are played back in kickoff order, table order among those
  * kicking off together. A player standing before a game and out after it is that
  * game's, so a player two games could each have knocked out is credited to the
- * first of them. A knockout on a game the player left blank names no side.
- * A player whose pick scored can still go out on the Monday night game, on the
- * MNF Points, so each side says whether it scored.
+ * first of them. A knockout on a game the player left blank names no side. One
+ * on a pick that scored came down to a tiebreaker, and is kept apart by tier.
  *
  * One pass of the knockouts per final game, not a must-win verdict per player per
  * game, which is too slow on a busy Sunday.
  */
-function knockoutSides(
-  scores: RakMadnessScores,
-): Map<string, Map<string, SwingSide>> {
+function knockoutSides(scores: RakMadnessScores): {
+  sidesByLabel: Map<string, Map<string, SwingSide>>;
+  tiebreakersByLabel: Map<string, Map<Tiebreaker, SwingTiebreaker>>;
+} {
   const players = scores.scores;
   const { remaining, unscoreable } = weekShape(players);
   const isClosed = new Set([
@@ -150,22 +164,55 @@ function knockoutSides(
 
   const repeated = repeatedNames(players);
   const sidesByLabel = new Map<string, Map<string, SwingSide>>();
-  let after = new Set(
-    players
-      .filter((player) => !player.status.isKnockedOut)
-      .map((player) => player.name),
-  );
+  const tiebreakersByLabel = new Map<
+    string,
+    Map<Tiebreaker, SwingTiebreaker>
+  >();
+  let after = statusByName(players);
   for (let at = finals.length - 1; at >= 0; at--) {
     const before = standingWith(players, finals.slice(at));
     const { label, league, index } = finals[at];
     for (const player of players) {
       const cell = player[league][index];
       if (
-        !before.has(player.name) ||
-        after.has(player.name) ||
+        !isStanding(before, player.name) ||
+        isStanding(after, player.name) ||
         repeated.has(player.name) ||
         !hasOutcome(cell.status)
       ) {
+        continue;
+      }
+      const tiebreaker = after.get(player.name)?.tiebreaker;
+      const knockout: SwingKnockout | undefined = tiebreaker && {
+        tiebreaker,
+        ...(tiebreaker === "mnfPoints" && { pick: player.tiebreaker.pick }),
+      };
+      const into = (group: {
+        players: Array<string>;
+        tiebreakers?: Record<string, SwingKnockout>;
+      }) => {
+        group.players.push(player.name);
+        if (knockout) {
+          group.tiebreakers = { ...group.tiebreakers, [player.name]: knockout };
+        }
+      };
+      if (cell.status === "yes" && tiebreaker) {
+        let tiers = tiebreakersByLabel.get(label);
+        if (tiers == null) {
+          tiers = new Map();
+          tiebreakersByLabel.set(label, tiers);
+        }
+        let tier = tiers.get(tiebreaker);
+        if (tier == null) {
+          tier = {
+            tiebreaker,
+            ...(tiebreaker === "mnfPoints" && { total: scores.tiebreaker }),
+            players: [],
+            tiebreakers: {},
+          };
+          tiers.set(tiebreaker, tier);
+        }
+        into(tier);
         continue;
       }
       const { teamAbbreviation: team } = parsePick(cell.pick);
@@ -175,25 +222,16 @@ function knockoutSides(
         sides = new Map();
         sidesByLabel.set(label, sides);
       }
-      // By team and outcome, so two spreads on one team that scored apart never
-      // share one badge.
-      const hasScored = cell.status === "yes";
-      const key = `${team} ${hasScored}`;
-      const side = sides.get(key);
+      let side = sides.get(team);
       if (side == null) {
-        sides.set(key, {
-          team,
-          pick: cell.pick,
-          hasScored,
-          players: [player.name],
-        });
-      } else {
-        side.players.push(player.name);
+        side = { team, pick: cell.pick, players: [] };
+        sides.set(team, side);
       }
+      into(side);
     }
     after = before;
   }
-  return sidesByLabel;
+  return { sidesByLabel, tiebreakersByLabel };
 }
 
 /**
@@ -206,15 +244,17 @@ function knockoutSides(
 export default function getSwingGames(scores: RakMadnessScores): SwingGames {
   const open = new Set(remainingGames(scores.scores).map((game) => game.label));
   // A won week's open games can knock no one else out.
+  const knockouts = knockoutSides(scores);
   const sidesByLabel = new Map([
     ...(isWeekWon(scores) ? [] : mustWinSides(scores)),
-    ...knockoutSides(scores),
+    ...knockouts.sidesByLabel,
   ]);
 
   const games = columnsOf(scores.scores).flatMap(
     ({ label }): Array<SwingGame> => {
-      const sides = sidesByLabel.get(label);
-      if (sides == null) return [];
+      const sides = sidesByLabel.get(label) ?? new Map<string, SwingSide>();
+      const tiers = knockouts.tiebreakersByLabel.get(label);
+      if (sides.size === 0 && tiers == null) return [];
       const weekGame = scores.games?.find((it) => it.label === label);
       const away = weekGame?.result?.away.team.abbreviation;
       const isAway = (side: SwingSide) => Number(side.team === away);
@@ -227,6 +267,7 @@ export default function getSwingGames(scores: RakMadnessScores): SwingGames {
             (a, b) =>
               isAway(b) - isAway(a) || b.players.length - a.players.length,
           ),
+          ...(tiers && { tiebreakers: [...tiers.values()] }),
         },
       ];
     },
