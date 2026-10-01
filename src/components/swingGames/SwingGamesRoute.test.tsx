@@ -170,7 +170,7 @@ describe("the swing games route", () => {
     mountApp(SWINGS_PATH);
 
     expect(
-      await screen.findByText(/Open games that can knock players out\./),
+      await screen.findByText(/Games that will knock players out\./),
     ).toBeInTheDocument();
   });
 
