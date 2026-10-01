@@ -19,7 +19,7 @@ import {
   MenuIcon,
   ScoreboardIcon,
   SettingsIcon,
-  SwapVertIcon,
+  SkullOutlinedIcon,
 } from "../icon/Icon";
 import resultsPath, { RESULTS_PAGE, weekName } from "../results/resultsPath";
 import SettingsDialog from "../settings/SettingsDialog";
@@ -69,7 +69,7 @@ const COMPARE_PLAYERS: NavItem = {
 
 const KNOCKOUTS: NavItem = {
   label: RESULTS_PAGE.knockouts,
-  icon: <SwapVertIcon />,
+  icon: <SkullOutlinedIcon />,
   path: (season, week) => resultsPath(season, week, RESULTS_PAGE.knockouts),
   // Scores still loading, which is soon over and needs no word. A complete
   // week needs none either.

@@ -12,6 +12,8 @@
 
 // The narrowest a name box goes, which is what sets how many share a row.
 $name-box-min: 7.5rem;
+// The same on a wide page, where room for longer names beats more of them a row.
+$name-box-wide-min: 12rem;
 
 // Where the two sides of a game sit beside each other: two sides each wide
 // enough for `BASE_COLUMNS` name boxes, two boxes of `$name-box-min` and the gap
@@ -19,6 +21,8 @@ $name-box-min: 7.5rem;
 // frame, and the page's padding either side. Literal, since a container query
 // takes no custom property.
 $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
+// Where the wider boxes start: the same sum, at `$name-box-wide-min`.
+$names-wide-from: 2 * (2 * 192px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 
 .knockouts {
   @include page-body;
@@ -164,6 +168,13 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 .knockouts__players {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(#{$name-box-min}, 1fr));
+
+  @container (min-width: #{$names-wide-from}) {
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(#{$name-box-wide-min}, 1fr)
+    );
+  }
   gap: var(--rak-space-2);
   margin: 0;
   padding: 0;
