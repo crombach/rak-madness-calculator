@@ -163,18 +163,6 @@ $section-min: calc(
   );
 }
 
-.swing-games__count {
-  @include count-chip;
-}
-
-.swing-games__pick {
-  @include pick-face;
-
-  color: var(--rak-text);
-  letter-spacing: normal;
-  text-transform: none;
-}
-
 .swing-games__more {
   @include fold-toggle;
 }

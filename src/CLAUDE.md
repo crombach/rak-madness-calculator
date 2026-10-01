@@ -19,6 +19,7 @@ a touch phone: Playwright `isMobile` and `hasTouch`, no hover, no refresh button
 
 - [`components/button/`](components/button/CLAUDE.md) — shared button, Base UI's primitive
 - [`components/comparePlayers/`](components/comparePlayers/CLAUDE.md) — players' picks side by side
+- [`components/countBadge/`](components/countBadge/CLAUDE.md) — a count beside the word it counts
 - [`components/dialog/`](components/dialog/CLAUDE.md) — the shared dialog shell and its search
 - [`components/footer/`](components/footer/CLAUDE.md) — bottom links bar
 - [`components/games/`](components/games/CLAUDE.md) — every game of the week, live ones first
@@ -27,6 +28,7 @@ a touch phone: Playwright `isMobile` and `hasTouch`, no hover, no refresh button
 - [`components/icon/`](components/icon/CLAUDE.md) — SVG icons inlined from Material Design
 - [`components/navbar/`](components/navbar/CLAUDE.md) — top nav bar, view switch, logo button
 - [`components/pageLayout/`](components/pageLayout/CLAUDE.md) — the chrome every page shares
+- [`components/pickBadge/`](components/pickBadge/CLAUDE.md) — a pick outside the tables, filled by outcome
 - [`components/playerAnalysis/`](components/playerAnalysis/CLAUDE.md) — where a player stands, and why
 - [`components/results/`](components/results/CLAUDE.md) — results routes, layout, redirect
 - [`components/settings/`](components/settings/CLAUDE.md) — theme and own name, in a dialog

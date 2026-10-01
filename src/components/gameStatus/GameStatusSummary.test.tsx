@@ -412,13 +412,9 @@ describe("GameStatusSummary, how the reader's pick and the pool's sides did", ()
         players={[]}
       />,
     );
-    const pick = document.querySelector(
-      ".game-status__my-pick .game-status__picks-team",
-    );
+    const pick = document.querySelector(".game-status__my-pick .pick-badge");
     const pool = [
-      ...document.querySelectorAll(
-        ".game-status__picks .game-status__picks-team",
-      ),
+      ...document.querySelectorAll(".game-status__picks .pick-badge"),
     ];
     const outcome = (el: Element | null) =>
       el?.classList.contains("--scored")

@@ -217,7 +217,7 @@ describe("GameStatusDialog", () => {
       games,
     };
     render(dialog("P1", true, pool, () => Promise.resolve(undefined)));
-    await screen.findByText(/^KC/, { selector: ".game-status__picks-team" });
+    await screen.findByText(/^KC/, { selector: ".pick-badge" });
     const [away, home] = document.querySelectorAll(".game-status__picks-side");
     expect(away).toHaveTextContent(/^2 picked KC/);
     expect(home).toHaveTextContent(/^1 picked BUF/);

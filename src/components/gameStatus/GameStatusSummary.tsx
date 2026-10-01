@@ -8,6 +8,8 @@ import observeResize from "../../utils/observeResize";
 import parsePick from "../../utils/scoring/parsePick";
 import pickSplit, { PickSplit } from "../../utils/scoring/pickSplit";
 import { gamecastUrl, kickoffParts, scoringTeam } from "./gameStatusText";
+import CountBadge from "../countBadge/CountBadge";
+import PickBadge from "../pickBadge/PickBadge";
 import Scoreline, { outcomeClasses, SideOutcome } from "./Scoreline";
 import useScorelineFit, { MARKS_OFF, SHORT_NAMES } from "./useScorelineFit";
 import "./GameStatusSummary.scss";
@@ -237,19 +239,18 @@ function Game({
     <span className="game-status__picks-side">
       {count != null && (
         <>
-          <span className="game-status__picks-count">{count}</span>
+          <CountBadge>{count}</CountBadge>
           <span className="game-status__sr-only"> picked</span>{" "}
         </>
       )}
-      <span
-        className={getClasses(
-          "game-status__picks-team",
-          outcomeClasses(outcomeOf(side)),
-        )}
-      >
-        {side.team.abbreviation}
-        {spread != null && ` ${sideLine(spread, side.team.abbreviation)}`}
-      </span>
+      <PickBadge
+        pick={
+          spread != null
+            ? `${side.team.abbreviation} ${sideLine(spread, side.team.abbreviation)}`
+            : side.team.abbreviation
+        }
+        outcome={outcomeOf(side)}
+      />
     </span>
   );
   return (
@@ -261,16 +262,10 @@ function Game({
         {myPick != null && (
           <p className="game-status__my-pick">
             {MY_PICK_LABEL}:{" "}
-            <span
-              className={getClasses(
-                "game-status__picks-team",
-                outcomeClasses(
-                  pickedSide != null ? outcomeOf(pickedSide) : undefined,
-                ),
-              )}
-            >
-              {myPick}
-            </span>
+            <PickBadge
+              pick={myPick}
+              outcome={pickedSide != null ? outcomeOf(pickedSide) : undefined}
+            />
           </p>
         )}
         <p className="game-status__picks">

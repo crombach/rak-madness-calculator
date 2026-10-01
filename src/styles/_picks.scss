@@ -21,6 +21,23 @@ $rule-alive: var(--rak-in-contention-on-light);
   font-weight: var(--rak-weight-semibold);
 }
 
+/**
+ * A short value set apart from the words around it, on the gray fill: a pick or a
+ * count. Both badges take this whole, so one beside the other is the same height.
+ * Fill and ink past the gray are left to the caller.
+ */
+@mixin badge {
+  @include pick-face;
+
+  display: inline-block;
+  padding: 0.1em var(--rak-space-1);
+  border-radius: var(--rak-radius-sm);
+  background-color: var(--rak-count-chip-bg);
+  line-height: var(--rak-line-height-tight);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
 /** The game a pick is on, a step back from the team beside it. */
 @mixin pick-label {
   color: var(--rak-text-tertiary);

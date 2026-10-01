@@ -1,0 +1,8 @@
+@use "../../styles/picks" as *;
+
+// The ink matches the Swing Games player count pill.
+.count-badge {
+  @include badge;
+
+  color: var(--rak-mark-count-text);
+}

@@ -1,0 +1,21 @@
+@use "../../styles/picks" as *;
+
+// The picks table's cell in small: its face, inks and fills. Semibold where the
+// cell is regular, since a badge this size thins out against its fill. An open
+// game's pick takes `--rak-count-chip-bg` under `--rak-text`.
+.pick-badge {
+  @include badge;
+
+  color: var(--rak-text);
+  white-space: nowrap;
+
+  &.--scored {
+    background-color: var(--rak-success-300);
+    color: var(--rak-text-on-pale);
+  }
+
+  &.--missed {
+    background-color: var(--rak-danger-300);
+    color: var(--rak-text-on-pale);
+  }
+}

@@ -18,17 +18,17 @@ const SHEET_NAME_LIMIT = 31;
 
 // Fill colors that pickCell assigns per pick status.
 const FILL_BY_STATUS = {
-  yes: "9CFF99",
-  no: "FF9999",
-  error: "FFDC52",
+  yes: "8DE390",
+  no: "FFABA5",
+  error: "F7E04F",
   incomplete: "FFFFFF",
 };
 
 // Fill colors playerNameCell assigns per standing.
 const FILL_BY_STANDING = {
-  inContention: "99DAFF",
-  knockedOut: "FFC999",
-  nameConflict: "FFDC52",
+  inContention: "A5DDFF",
+  knockedOut: "FEC993",
+  nameConflict: "F7E04F",
   noStatus: "FFFFFF",
 };
 

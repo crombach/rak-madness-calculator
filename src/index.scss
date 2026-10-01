@@ -248,31 +248,32 @@
   --rak-glass-fill: #262626;
   --rak-glass-ink: #fff;
   --rak-glass-unlit: rgb(255 255 255 / 12%);
-  // A score lit for the side that scored the point, or cost it. The dark mode 400
-  // steps, which read on the glass where the light ones do not.
-  --rak-glass-scored: #4ade80;
-  --rak-glass-missed: #f87171;
+  // A score lit for the side that scored the point, or cost it. In light mode
+  // the digits sit a step deeper than dark mode's, and the 400 names beside the
+  // glass a step lighter than they would otherwise, so the two greens and the two
+  // reds read as one pair. The digits are 6.1:1 and 5.2:1 on the glass, the
+  // names 4.7:1 and 5.5:1 on white. Dark mode takes its own pair below.
+  --rak-glass-scored: #35bb58;
+  --rak-glass-missed: #f66c69;
 
   // Semantic ramps. One ramp per meaning, whatever draws it: 100 is a soft fill
   // behind text, 300 fills a table cell, 500 and up are solid fills and text.
   // The table's fills are steps on these rather than a palette of their own, so
   // a wrong pick and a failure are the same red.
   //
-  // 400 is the one step that reads on the app's white and on the dark a readout
-  // is sunk into, which is what lets the game dialog draw a side's name and its
-  // score in the same color. No step can clear 4.5:1 on both, so it is set at the
-  // dark end of what does on white: 4.6:1 there, and 3.2:1 on the glass, which the
-  // score clears as large text at every size it is set.
+  // 400 is text on the app's white, such as a side's name in the game dialog.
+  // Success 300 and 400 share the glass green's hue, so a pick's fill, the name
+  // and the score beside it read as one green.
   --rak-success-100: #e3fbe3;
-  --rak-success-300: #9cff99;
-  --rak-success-400: #1f871f;
+  --rak-success-300: #8de390;
+  --rak-success-400: #018634;
   --rak-success-500: #1f7a1f;
   --rak-success-600: #136c13;
   --rak-success-700: #0a470a;
 
   --rak-danger-100: #fce4e4;
-  --rak-danger-300: #ff9999;
-  --rak-danger-400: #d13c3c;
+  --rak-danger-300: #ffaba5;
+  --rak-danger-400: #bd383a;
   --rak-danger-500: #c41c1c;
   --rak-danger-600: #a51818;
   --rak-danger-700: #7d1212;
@@ -282,10 +283,9 @@
   // is drawn beside. A picks row opens with the player's own cell, which is the
   // orange of `--rak-knocked-out-300` once they are out, and every pick after it is
   // one of these. Ten degrees of hue apart, the two read as one fill and the row
-  // stops saying which of the two things it means. This is twenty off that orange,
-  // and darker than it by fourteen, since hue alone runs out that close to it. The
-  // two hold 41 CIELAB units apart, the green beside them 55.
-  --rak-warning-300: #ffdc52;
+  // stops saying which of the two things it means. This is over thirty off that
+  // orange, and the two hold 42 CIELAB units apart, the green beside them 52.
+  --rak-warning-300: #f7e04f;
   // Orange, six degrees round the wheel from amber and more saturated with it,
   // so the key the home page exports from reads as a color rather than as a
   // brown slab. 5.02:1 on the white ink that key is set in. The toast's warning
@@ -340,20 +340,24 @@
   // A player, by whether they can still win. 300 fills their name cell. -on-light
   // is the same hue taken far enough down to read on a white surface, which the
   // fill cannot, and is what the player analysis search draws its status icon in.
-  --rak-knocked-out-300: #ffc999;
-  --rak-knocked-out-on-light: #8a4a12;
-  --rak-in-contention-300: #99daff;
-  --rak-in-contention-on-light: #126287;
+  //
+  // Blue and orange share an OKLCH lightness of 0.87 and a chroma of up to 0.12,
+  // less where sRGB cannot reach it. Green and red sit deeper, near 0.83, with
+  // more chroma, since a pick's result is what the table is read for. Red at
+  // 0.87 reads as pink. Gold sits lighter so it reads as yellow. Orange leans toward
+  // amber, which holds a knocked out name 27 CIELAB units off the wrong picks
+  // beside it.
+  --rak-knocked-out-300: #fec993;
+  --rak-knocked-out-on-light: #8d5403;
+  --rak-in-contention-300: #a5ddff;
+  --rak-in-contention-on-light: #056b97;
   // Not a standing, so it has no 300 of its own: a name two rows share takes the
   // unscoreable pick's fill in the tables. Only the -on-light step is its own, for
   // the search, where there is no fill behind the mark to say which mark it is.
   //
-  // The same hue as that fill, at the 30% lightness and the saturation the two
-  // steps above pair up at, which is 5.12:1 on white. The fill is more saturated
-  // than either of theirs, and taken down to this lightness at its own saturation
-  // it reaches only 4.09:1. Gold is the most luminous of the three hues, so it has
-  // the least room to spend.
-  --rak-name-conflict-on-light: #876a12;
+  // The same hue as that fill, at the OKLCH lightness and chroma the two steps
+  // above pair up at, which is 6.0:1 on white.
+  --rak-name-conflict-on-light: #716400;
 
   // The reader's own row, ruled above and below every cell, and bloomed like the
   // lamp so the two marks the reader themselves control read as one light. The
@@ -411,8 +415,9 @@
   --rak-mark-live-text: var(--rak-danger-600);
   --rak-mark-invalid-bg: var(--rak-warning-300);
   --rak-mark-invalid-text: var(--rak-warning-700);
-  --rak-mark-final-bg: var(--rak-success-100);
-  --rak-mark-final-text: var(--rak-success-600);
+  // A finished game's mark in the fill a scored pick takes, so the dialog shows one green.
+  --rak-mark-final-bg: var(--rak-success-300);
+  --rak-mark-final-text: var(--rak-text-on-pale);
   --rak-mark-upcoming-bg: var(--rak-neutral-100);
   --rak-mark-upcoming-text: var(--rak-neutral-700);
   // A player count beside a mark, in the upcoming mark's colors.
@@ -486,12 +491,12 @@
   --rak-stripe-with: #2e2e2e;
 
   // How far a cell under the pointer is taken from the fill it carries, striped
-  // or not. Both are set well past the stripe above, so a cell darkened by the
-  // pointer is never read as the striped row below it. The pressed step is as
-  // dark as a cell goes: black text on a striped knocked-out cell still clears
-  // 5:1 there.
-  --rak-hover-strength: 75%;
-  --rak-press-strength: 68%;
+  // or not. The hover step is near the stripe above, but it darkens a column,
+  // which runs across the stripes, so the two do not read as one mark. The
+  // pressed step is as dark as a cell goes: black text on a striped knocked-out
+  // cell still clears 5:1 there.
+  --rak-hover-strength: 90%;
+  --rak-press-strength: 85%;
 
   // The status icon beside a player's name, drawn the same size wherever the
   // name is. The wireframe leaves this much room without drawing one.
@@ -746,6 +751,10 @@ html {
   // black.
   --rak-case: #373737;
 
+  // Brighter than light mode's pair, which the dark surface lets the names take
+  // too, so a name and its score are one hex here.
+  --rak-glass-scored: #4ade80;
+  --rak-glass-missed: #ff8482;
   --rak-success-400: var(--rak-glass-scored);
   --rak-danger-400: var(--rak-glass-missed);
   --rak-gold-700: #e8b84b;
@@ -800,8 +809,8 @@ html {
   // leaves the pair a step no reader can call. That lift makes the gold the
   // lightest of the five and so the tightest pair with the ink, at 5.86:1. Raise
   // the five and the gold is what runs out of room first.
-  --rak-success-300: #12570f;
-  --rak-danger-300: #570f0f;
+  --rak-success-300: #1d4f19;
+  --rak-danger-300: #621d1b;
   --rak-knocked-out-300: #57310f;
   --rak-in-contention-300: #0f3d57;
   --rak-cell-unscoreable: #715e14;

@@ -24,15 +24,14 @@ The `ui-style` skill maps each piece of UI to its token, mixin, or class.
 - `_interactive.scss`: `interactive-fill`, the hover and press fill
 - `_fold.scss`: `fold-toggle`, the Show More button
 - `_label.scss`: `micro-label`, the tracked capitals every small label is set in,
-  `section-title`, the heading over a block, in the one secondary ink, and
-  `count-chip`, a count in a small fill
+  and `section-title`, the heading over a block, in the one secondary ink
 - `_lcd.scss`: `lcd-glass`, the readout the scoreline and the navbar name share,
   and `lcd-field`, the same well for a control typed or chosen into instead
 - `_listbox.scss`: `listbox-popup` and `listbox-item`, a Base UI popup list's shape
 - `_skeleton.scss`: `skeleton-surface`, `skeleton-sheen`, `skeleton-reserve`
 - `_progress.scss`: `progress-bar`, the sweep a wait draws without moving the
   page, and `$progress-height`
-- `_picks.scss`: `pick-type`, `pick-face`, `pick-label`, and `ruled-block` with
+- `_picks.scss`: `pick-type`, `pick-face`, `pick-label`, `badge`, and `ruled-block` with
   its `$rule-*` colors. How a pick, its game ID and a ruled block look anywhere
 - `_text.scss`: `truncate-line`, one line cut short where it runs out of room,
   `player-name-face` and `my-player-name`, the tables' name type, and `$separator`
