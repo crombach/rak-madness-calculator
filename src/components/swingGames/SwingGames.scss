@@ -105,13 +105,19 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
   margin-inline-start: auto;
 }
 
-// The sides stacked, then beside each other once each fits its name boxes.
+// The sides stacked, then beside each other once each fits its name boxes. A
+// lone side, as on a final game, takes the whole width.
 .swing-games__sides {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
 
   @container (min-width: #{$sides-beside-from}) {
-    grid-template-columns: 1fr 1fr;
+    flex-direction: row;
+
+    > * {
+      flex: 1 1 0;
+      min-width: 0;
+    }
   }
 }
 
