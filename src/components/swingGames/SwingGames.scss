@@ -13,9 +13,6 @@
 // The narrowest a name box goes, which is what sets how many share a row.
 $name-box-min: 7.5rem;
 
-// A wireframe bar's height, as `SkeletonTable.scss` draws one.
-$skeleton-bar-height: 0.7rem;
-
 // The narrowest game that still fits `BASE_COLUMNS` name boxes: two boxes and
 // the gap between them, the side's padding, and the frame. 276px, which a
 // browser confirms: the names drop to one column at 274px, and the band holds a
@@ -52,24 +49,6 @@ $section-min: calc(
   margin: 0;
   font-size: var(--rak-text-sm);
   color: var(--rak-text-secondary);
-
-  // The copy's own room, with a bar across each line it wraps to.
-  &.--loading {
-    @include skeleton-reserve;
-
-    &::after {
-      @include skeleton-surface;
-
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(
-        transparent 0 calc((1lh - #{$skeleton-bar-height}) / 2),
-        var(--rak-loading-fill) 0 calc((1lh + #{$skeleton-bar-height}) / 2),
-        transparent 0 1lh
-      );
-    }
-  }
 }
 
 .swing-games__group {

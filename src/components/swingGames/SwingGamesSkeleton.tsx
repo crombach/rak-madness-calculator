@@ -13,10 +13,7 @@ export default function SwingGamesSkeleton() {
     <>
       <SkeletonStatus page={RESULTS_PAGE.swingGames} />
       <div className="swing-games --loading" aria-hidden="true" inert>
-        <p
-          className="swing-games__intro --loading"
-          data-skeleton-text={SWING_GAMES_INTRO}
-        />
+        <p className="swing-games__intro">{SWING_GAMES_INTRO}</p>
         {rangeWithPrefix(GAME_COUNT, "G").map((game) => (
           <div key={game} className="swing-games__group">
             <span className="swing-games__skeleton-band" />

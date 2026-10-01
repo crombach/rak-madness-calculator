@@ -169,8 +169,10 @@ describe("the swing games route", () => {
   it("explains what each side lists", async () => {
     mountApp(SWINGS_PATH);
 
+    // The skeleton shows the same line, so wait for the week first.
+    await screen.findByText("KC at DEN");
     expect(
-      await screen.findByText(/Games that will knock players out\./),
+      screen.getByText(/Games that will knock players out\./),
     ).toBeInTheDocument();
   });
 

@@ -10,7 +10,7 @@ knock out on either side, grouped by which team they need.
   Each open game is a section: its title opens `useGameStatus`, and each side
   lists the players it would knock out, a name opening `usePlayerAnalysis`.
 - `SwingGamesSkeleton`: the wireframe shown while the route's chunk, or the
-  week itself, is still loading. It reserves room for the intro line,
-  whose text lives in `swingGamesIntro`.
+  week itself, is still loading. It shows the intro line too, whose
+  text lives in `swingGamesIntro`.
 - `useGridColumns`: how many name columns a side's grid lays out, so a fold
   cuts at whole rows.
