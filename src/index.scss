@@ -189,7 +189,7 @@
   --rak-primary-400: #f2f2f2;
   --rak-primary-500: #eaeaea;
   --rak-primary-600: #dcdcdc;
-  --rak-primary-700: #c4c4c4;
+  --rak-primary-700: #b3b3b3;
   --rak-primary-800: #a8a8a8;
   // The two chrome bands under the navbar: the week caption and the table's
   // header. Their own tokens rather than steps on the ramp above, which also
@@ -540,6 +540,9 @@
   // the same cut this key always dished by read as a dent rather than a curve,
   // and the lit rim above needs the same lift to still win the read.
   --rak-key-dish: inset 0 -2px 3px rgb(0 0 0 / 5%);
+  // A hairline around the face, so a key reads as standing on the panel rather
+  // than sunk into it where its fill is near the panel's own.
+  --rak-key-ring: 0 0 0 1px rgb(0 0 0 / 14%);
   // The lamp in a key's bottom lip, which says which key in a row is chosen.
   // Unlit it stays visible as a dark lens in its socket, so a row reads as lamps
   // with one of them on rather than as one key wearing a rule. The socket is a
@@ -610,7 +613,7 @@
   // How far a key stands off the panel, and how far it has left to travel once a
   // finger is on it. The difference is what it sinks by, so the two are named
   // together.
-  --rak-key-lift: 2px;
+  --rak-key-lift: 3px;
   --rak-key-pressed: 1px;
 
   // Loading. One fill for a placeholder bar and one sheen that crosses it, shared
@@ -878,6 +881,7 @@ html {
   // mode's dark fills.
   --rak-key-top: inset 0 1px 0 rgb(255 255 255 / 18%);
   --rak-key-dish: inset 0 -2px 3px rgb(0 0 0 / 14%);
+  --rak-key-ring: 0 0 0 1px rgb(0 0 0 / 45%);
   // The lamp against this mode's dark faces. Lit takes `--rak-info-200`, the
   // step the reader's row is ruled in here, the same way light mode above puts
   // both marks on its own 400. A face this dark leaves the lens somewhere to be
