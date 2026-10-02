@@ -23,7 +23,7 @@ const VERSION = 3;
 type StoredGame =
   | (Omit<LeagueResult, "date" | "finishedAt"> & {
       date: string;
-      finishedAt?: string;
+      finishedAt?: string | null;
     })
   | null;
 
@@ -104,7 +104,9 @@ export function readCachedResults(
             ...game,
             date: new Date(game.date),
             finishedAt:
-              game.finishedAt != null ? new Date(game.finishedAt) : undefined,
+              game.finishedAt == null
+                ? game.finishedAt
+                : new Date(game.finishedAt),
           };
   });
   return games;
@@ -130,20 +132,23 @@ export function writeCachedResults(
         : {
             ...game,
             date: game.date.toISOString(),
-            finishedAt: game.finishedAt?.toISOString(),
+            finishedAt:
+              game.finishedAt == null
+                ? game.finishedAt
+                : game.finishedAt.toISOString(),
           };
   });
   results.write(`${season}:${weekNumber}:${league}`, stored);
 }
 
 /**
- * Whether an answer is one this browser can hold on to for good. A final game with
- * no finish time is not yet, since its knockouts are ordered by that finish.
+ * Whether an answer is one this browser can hold on to for good. A final game ESPN
+ * has not yet given a finish time for is not, since knockouts are ordered by it.
  */
 export function isSettled(game: CachedGame): boolean {
   return (
     game == null ||
-    (game.status === GameStatus.FINAL && game.finishedAt != null)
+    (game.status === GameStatus.FINAL && game.finishedAt !== undefined)
   );
 }
 

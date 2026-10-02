@@ -49,8 +49,12 @@ describe("isSettled", () => {
     expect(isSettled(null)).toBe(true);
   });
 
-  it("holds nothing about a final game with no finish time", () => {
+  it("holds nothing about a final game ESPN has not given a finish for yet", () => {
     expect(isSettled(game())).toBe(false);
+  });
+
+  it("holds a final game ESPN has no finish for at all", () => {
+    expect(isSettled({ ...game(), finishedAt: null })).toBe(true);
   });
 
   it("holds nothing about a game still being played", () => {

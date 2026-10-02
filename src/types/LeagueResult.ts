@@ -40,10 +40,10 @@ export type LeagueResult = {
   shortName: string;
   date: Date;
   /**
-   * When the game ended, off ESPN's last play. Absent before the game is final, and
-   * where ESPN did not answer.
+   * When the game ended, off ESPN's last play. Null where ESPN has no plays for the
+   * game. Absent before the game is final, and while ESPN has not answered.
    */
-  finishedAt?: Date;
+  finishedAt?: Date | null;
   status: GameStatus;
   detailMessage: string;
   period?: number;

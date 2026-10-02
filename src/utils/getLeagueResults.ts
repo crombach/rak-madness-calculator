@@ -124,7 +124,10 @@ async function getLeagueEvents(
 }
 
 /** Finish times already read, by event id. */
-const finishes = new Map<string, Date>();
+const finishes = new Map<string, Date | null>();
+
+/** ESPN's play type for the last play of a finished game. */
+const PLAY_TYPE_END_OF_GAME = "66";
 
 /** One play per page, over an event's plays. */
 function playPageUrl(league: League, eventId: string, page?: number): string {
@@ -134,28 +137,35 @@ function playPageUrl(league: League, eventId: string, page?: number): string {
 
 /**
  * When a final game ended, read off the wall clock of its last play. The
- * scoreboard gives only the kickoff. Two requests, since the first only counts the plays.
+ * scoreboard gives only the kickoff. Two requests, since the first only counts
+ * the plays.
  *
- * Undefined on any failure, and nothing is remembered then, so it is asked again.
+ * Null where ESPN has no plays or no clock for the game. Undefined on a failed
+ * request, and while the feed has not yet posted the end of the game, which it
+ * can do after the scoreboard calls the game final. Nothing is remembered then,
+ * so it is asked again.
  */
 async function gameFinish(
   league: League,
   eventId: string,
-): Promise<Date | undefined> {
-  const known = finishes.get(eventId);
-  if (known != null) {
-    return known;
+): Promise<Date | null | undefined> {
+  if (finishes.has(eventId)) {
+    return finishes.get(eventId);
   }
   try {
     const count = await fetch(playPageUrl(league, eventId));
+    if (!count.ok) return undefined;
     const { pageCount } = await count.json();
-    const last = await fetch(playPageUrl(league, eventId, pageCount));
-    const finish = new Date((await last.json()).items[0].wallclock);
-    if (Number.isNaN(finish.getTime())) {
+    const page = await fetch(playPageUrl(league, eventId, pageCount));
+    if (!page.ok) return undefined;
+    const last = (await page.json()).items?.[0];
+    if (last != null && last.type?.id !== PLAY_TYPE_END_OF_GAME) {
       return undefined;
     }
-    finishes.set(eventId, finish);
-    return finish;
+    const finish = new Date(last?.wallclock);
+    const known = Number.isNaN(finish.getTime()) ? null : finish;
+    finishes.set(eventId, known);
+    return known;
   } catch {
     return undefined;
   }
@@ -424,8 +434,11 @@ export async function getLeagueResults(
   await Promise.all(
     [...found].map(async ([key, result]) => {
       if (result?.status === GameStatus.FINAL) {
+        const heldFinish = held[key]?.finishedAt;
         result.finishedAt =
-          held[key]?.finishedAt ?? (await gameFinish(league, result.id));
+          heldFinish !== undefined
+            ? heldFinish
+            : await gameFinish(league, result.id);
       }
     }),
   );

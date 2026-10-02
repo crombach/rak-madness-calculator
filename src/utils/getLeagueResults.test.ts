@@ -108,7 +108,7 @@ function mockFetch(events: Array<EspnEvent>) {
       !url.includes(PLAYS_HOST)
         ? { events }
         : url.includes("page=")
-          ? { items: [{ wallclock: FINISH }] }
+          ? { items: [{ wallclock: FINISH, type: { id: "66" } }] }
           : { pageCount: 188 },
   }));
   stubFetch(fetchMock);
@@ -674,6 +674,44 @@ describe("getLeagueResults, finish times", () => {
 
     expect(game.finishedAt).toEqual(new Date(FINISH));
     expect(playsOf(fetchMock)).toHaveLength(2);
+  });
+
+  /** `mockFetch`, but each game's last plays page is `page`. */
+  function mockFetchWithLastPage(events: Array<EspnEvent>, page: unknown) {
+    const fetchMock = mockFetch(events);
+    const answer = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (url: string) =>
+      url.includes("page=")
+        ? { ok: true, json: async () => page }
+        : answer(url),
+    );
+    return fetchMock;
+  }
+
+  it("holds a game ESPN has no plays for, with no finish", async () => {
+    const fetchMock = mockFetchWithLastPage(
+      [espnEvent({ home: "BUF", away: "KC", id: "f5" })],
+      { items: [] },
+    );
+
+    const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC], SEASON);
+    await getLeagueResults(League.PRO, WEEK, [BUF_KC], SEASON);
+
+    expect(game.finishedAt).toBeNull();
+    expect(urlsOf(fetchMock)).toHaveLength(1);
+  });
+
+  it("asks again while the plays have not reached the end of the game", async () => {
+    const fetchMock = mockFetchWithLastPage(
+      [espnEvent({ home: "BUF", away: "KC", id: "f6" })],
+      { items: [{ wallclock: FINISH, type: { id: "21" } }] },
+    );
+
+    const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC], SEASON);
+    await getLeagueResults(League.PRO, WEEK, [BUF_KC], SEASON);
+
+    expect(game.finishedAt).toBeUndefined();
+    expect(urlsOf(fetchMock)).toHaveLength(2);
   });
 
   it("still gives the game where its plays cannot be read, and asks again", async () => {
