@@ -55,7 +55,7 @@ describe("SettingsDialog", () => {
       "Player Name",
       "Live Player Analysis",
       "Theme",
-      "Experimental Features",
+      "βeta Mode",
     ]);
   });
 
@@ -214,29 +214,20 @@ describe("SettingsDialog, the experimental features", () => {
   it("offers on then off, and starts off", () => {
     mountDialog();
 
-    expect(choiceLabels("Experimental Features")).toEqual(["On", "Off"]);
-    expect(choice("Experimental Features", "Off")).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    expect(choiceLabels("Beta Mode")).toEqual(["On", "Off"]);
+    expect(choice("Beta Mode", "Off")).toHaveAttribute("aria-pressed", "true");
   });
 
   it("saves the opt-in, and forgets it on the way back out", async () => {
     const user = mountDialog();
-    await user.click(choice("Experimental Features", "On"));
+    await user.click(choice("Beta Mode", "On"));
 
-    expect(choice("Experimental Features", "On")).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    expect(choice("Beta Mode", "On")).toHaveAttribute("aria-pressed", "true");
     expect(localStorage.getItem(EXPERIMENTAL_FEATURES_KEY)).toBe("on");
 
-    await user.click(choice("Experimental Features", "Off"));
+    await user.click(choice("Beta Mode", "Off"));
 
-    expect(choice("Experimental Features", "Off")).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    expect(choice("Beta Mode", "Off")).toHaveAttribute("aria-pressed", "true");
     expect(localStorage.getItem(EXPERIMENTAL_FEATURES_KEY)).toBeNull();
   });
 });

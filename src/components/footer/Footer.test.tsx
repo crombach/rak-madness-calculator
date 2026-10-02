@@ -25,7 +25,7 @@ describe("Footer", () => {
 
   it("offers a suggestions link that opens a mail to the app's inbox", () => {
     mountFooter();
-    const suggestions = screen.getByRole("link", { name: "Suggestions" });
+    const suggestions = screen.getByRole("link", { name: "Feedback" });
 
     expect(suggestions).toHaveAttribute("href", "mailto:rakulator@gmail.com");
     expect(suggestions).not.toHaveAttribute("target");

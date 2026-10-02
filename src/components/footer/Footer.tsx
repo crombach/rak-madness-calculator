@@ -28,7 +28,7 @@ export default function Footer() {
       |
       <a className="footer__link" href={SUGGESTIONS_MAILTO}>
         <MailIcon />
-        Suggestions
+        Feedback
       </a>
     </div>
   );
