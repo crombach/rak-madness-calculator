@@ -26,6 +26,7 @@
 @mixin game-card-band {
   display: flex;
   align-items: center;
+  min-height: var(--rak-touch-target);
   background-color: var(--rak-band-card);
   box-shadow: var(--rak-shadow-band-header);
   color: var(--rak-on-solid);
