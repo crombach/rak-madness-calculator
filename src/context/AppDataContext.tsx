@@ -347,10 +347,17 @@ function useWeekKnockouts(
   // The page can land the code before this hook's own request answers. Reading
   // the module's copy too keeps that render from drawing the skeleton again.
   const ready = getKnockouts ?? loadedGetKnockouts;
-  return useMemo(
-    () => (scores == null || ready == null ? undefined : ready(scores)),
-    [scores, ready],
-  );
+  return useMemo(() => {
+    if (scores == null || ready == null) return undefined;
+    // Every page sits under this provider, so a week the knockouts cannot read
+    // costs only the knockouts. That is what a failed download costs too.
+    try {
+      return ready(scores);
+    } catch (error) {
+      console.warn("Could not work out the knockouts", error);
+      return undefined;
+    }
+  }, [scores, ready]);
 }
 
 /** The week's knockouts, or undefined while its scores or the code that reads them load. */

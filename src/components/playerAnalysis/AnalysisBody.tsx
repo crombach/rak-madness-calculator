@@ -165,9 +165,9 @@ export default function AnalysisBody({
 }) {
   if (result.kind === "knockedOut") {
     // The explanation names who knocked them out and by how much, so it says they
-    // cannot win on its own. Only a player without one needs telling. It is read
-    // off the latest scores, so the game that ended their week leads, unchanged
-    // by the games after it.
+    // cannot win on its own. Only a player without one needs telling. The
+    // explanation reads the latest scores, so the game that ended their week
+    // leads, and later games do not change that line.
     return (
       <Message
         lines={[
