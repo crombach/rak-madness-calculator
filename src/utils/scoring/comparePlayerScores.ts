@@ -44,10 +44,12 @@ export function compareOnMerit(a: Merit, b: Merit): number {
   // leaders read off row one.
   if (a.hasNoPicks !== b.hasNoPicks) return a.hasNoPicks ? 1 : -1;
   if (a.total !== b.total) return highestFirst(a.total, b.total);
-  // A player who left the points cell blank has no distance, so this tier cannot
-  // separate them and falls through to the next one.
-  if (a.distance != null && b.distance != null && a.distance !== b.distance) {
-    return lowestFirst(a.distance, b.distance);
+  // Nobody has a distance until the Monday night game is final. After that, a
+  // blank guess, which should never happen, reads as the furthest off.
+  if (a.distance != null || b.distance != null) {
+    const aDistance = a.distance ?? Number.POSITIVE_INFINITY;
+    const bDistance = b.distance ?? Number.POSITIVE_INFINITY;
+    if (aDistance !== bDistance) return lowestFirst(aDistance, bDistance);
   }
   if (a.college !== b.college) return highestFirst(a.college, b.college);
   return highestFirst(a.proAgainstTheSpread, b.proAgainstTheSpread);
