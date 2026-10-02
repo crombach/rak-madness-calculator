@@ -22,7 +22,7 @@ import SEPARATOR from "../../utils/separator";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
 import ComparePlayersSkeleton from "../comparePlayers/ComparePlayersSkeleton";
 import GamesSkeleton from "../games/GamesSkeleton";
-import { gamesPage, preloadGamesRoute } from "../games/GamesPage";
+import { gamesPage } from "../games/GamesPage";
 import { knockoutsPage } from "../knockouts/KnockoutsPage";
 import { comparePlayersPage } from "../comparePlayers/ComparePlayersPage";
 import Button from "../button/Button";
@@ -228,7 +228,7 @@ export default function ResultsFrame({
   // Fetched ahead too, so the menu's link lands on the page rather than on a
   // frame of wireframe while its chunk arrives.
   useEffect(() => {
-    preloadGamesRoute().catch(doNothing);
+    gamesPage.preload().catch(doNothing);
   }, []);
 
   // Stable, so the memoized tables below do not re-render for a dialog opening.

@@ -28,7 +28,7 @@ export default function Knockouts({
   fetchingLeagues,
 }: {
   scores?: RakMadnessScores;
-  /** Undefined while the scores, or the code that reads them, load. */
+  /** Undefined while the scores load. */
   knockouts?: KnockoutGames;
   /** Which leagues have a request in flight, which is what the busy bar says. */
   fetchingLeagues?: ReadonlySet<League>;

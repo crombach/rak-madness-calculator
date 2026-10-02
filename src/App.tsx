@@ -5,10 +5,11 @@ import { RESULTS_PAGE } from "./components/results/resultsPath";
 import PicksRoute from "./components/results/PicksRoute";
 import ResultsLayout from "./components/results/ResultsLayout";
 import ScoreboardRoute from "./components/results/ScoreboardRoute";
-import { GamesPage } from "./components/games/GamesPage";
+import { gamesPage } from "./components/games/GamesPage";
 import { knockoutsPage } from "./components/knockouts/KnockoutsPage";
 import { comparePlayersPage } from "./components/comparePlayers/ComparePlayersPage";
 
+const { Page: GamesPage } = gamesPage;
 const { Page: KnockoutsPage } = knockoutsPage;
 const { Page: ComparePlayersPage } = comparePlayersPage;
 
