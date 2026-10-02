@@ -534,12 +534,6 @@
   // a key stands on is not here: it is that key's own color one step down, which
   // only `Button.scss` knows.
   --rak-key-top: inset 0 1px 0 rgb(255 255 255 / 70%);
-  // The face dishes rather than sitting flat: a shadow along its lower inside
-  // edge, where a concave cap tips away from the light `--rak-key-top` catches
-  // at the rim. Weaker here than in dark mode: this ramp's fills are light, so
-  // the same cut this key always dished by read as a dent rather than a curve,
-  // and the lit rim above needs the same lift to still win the read.
-  --rak-key-dish: inset 0 -2px 3px rgb(0 0 0 / 5%);
   // A hairline around the face, so a key reads as standing on the panel rather
   // than sunk into it where its fill is near the panel's own.
   --rak-key-ring: 0 0 0 1px rgb(0 0 0 / 6%);
@@ -877,10 +871,8 @@ html {
   // lighten here instead.
   --rak-progress-fill: var(--rak-border);
 
-  // The key's own molding, back to the cut it always dished by against this
-  // mode's dark fills.
+  // The key's lit rim, weaker against this mode's dark fills.
   --rak-key-top: inset 0 1px 0 rgb(255 255 255 / 18%);
-  --rak-key-dish: inset 0 -2px 3px rgb(0 0 0 / 14%);
   // The lamp against this mode's dark faces. Lit takes `--rak-info-200`, the
   // step the reader's row is ruled in here, the same way light mode above puts
   // both marks on its own 400. A face this dark leaves the lens somewhere to be
