@@ -114,9 +114,7 @@
   &.--solid {
     --rak-key-edge: var(--rak-disabled-edge);
 
-    // Only `--primary` sets `--rak-key-drop`. The colored fills already stand
-    // off the page by their color alone.
-    @include key(var(--rak-key-lift), var(--rak-key-drop, 0 0 transparent));
+    @include key(var(--rak-key-lift), var(--rak-key-shadow));
 
     // A key that cannot be pressed reads as already held down, and the existing
     // transform/box-shadow transition lifts it back to rest the moment it can be
@@ -188,8 +186,6 @@
     // color, and they move together. A rest fill raised on its own leaves a press
     // crossing two steps at once.
     &.--primary {
-      --rak-key-drop: var(--rak-key-shadow);
-
       @include button-color(
         var(--rak-primary-700),
         var(--rak-key-face, var(--rak-primary-500)),
