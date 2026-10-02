@@ -12,7 +12,6 @@
   transform: translateY(calc(var(--rak-key-lift) - #{$lift}));
   box-shadow:
     var(--rak-key-top),
-    var(--rak-key-ring),
     0 #{$lift} 0 var(--rak-key-edge);
 }
 

@@ -534,9 +534,6 @@
   // a key stands on is not here: it is that key's own color one step down, which
   // only `Button.scss` knows.
   --rak-key-top: inset 0 1px 0 rgb(255 255 255 / 70%);
-  // A hairline around the face, so a key reads as standing on the panel rather
-  // than sunk into it where its fill is near the panel's own.
-  --rak-key-ring: 0 0 0 1px rgb(0 0 0 / 6%);
   // The lamp in a key's bottom lip, which says which key in a row is chosen.
   // Unlit it stays visible as a dark lens in its socket, so a row reads as lamps
   // with one of them on rather than as one key wearing a rule. The socket is a
