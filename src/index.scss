@@ -223,9 +223,6 @@
   // dark face a key in this bar carries, it reads as a white line rather than as
   // an edge, and a key held down looks as raised as its neighbors.
   --rak-nav-key-top: inset 0 1px 0 rgb(255 255 255 / 25%);
-  // Fainter than the page's ring. A key here already stands off the bar by its
-  // lighter face, so a full-strength line around it reads as drawn on.
-  --rak-nav-key-ring: 0 0 0 1px rgb(0 0 0 / 6%);
   // A mark cut into the bar rather than printed on it: ink darker than the
   // fill, and the lower lip of the cut catching the same light as a key's rim.
   --rak-nav-carve-ink: #2b2b2b;
@@ -545,7 +542,7 @@
   --rak-key-dish: inset 0 -2px 3px rgb(0 0 0 / 5%);
   // A hairline around the face, so a key reads as standing on the panel rather
   // than sunk into it where its fill is near the panel's own.
-  --rak-key-ring: 0 0 0 1px rgb(0 0 0 / 14%);
+  --rak-key-ring: 0 0 0 1px rgb(0 0 0 / 6%);
   // The lamp in a key's bottom lip, which says which key in a row is chosen.
   // Unlit it stays visible as a dark lens in its socket, so a row reads as lamps
   // with one of them on rather than as one key wearing a rule. The socket is a
@@ -884,7 +881,6 @@ html {
   // mode's dark fills.
   --rak-key-top: inset 0 1px 0 rgb(255 255 255 / 18%);
   --rak-key-dish: inset 0 -2px 3px rgb(0 0 0 / 14%);
-  --rak-key-ring: 0 0 0 1px rgb(0 0 0 / 45%);
   // The lamp against this mode's dark faces. Lit takes `--rak-info-200`, the
   // step the reader's row is ruled in here, the same way light mode above puts
   // both marks on its own 400. A face this dark leaves the lens somewhere to be
