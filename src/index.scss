@@ -908,6 +908,10 @@ html {
     inset 0 -8px 7px -6px rgb(125 211 252 / 15%);
   --rak-state-hover: rgb(255 255 255 / 8%);
   --rak-state-press: rgb(255 255 255 / 16%);
+  // This mode's cells are already dark, so a cell under the pointer goes
+  // further toward black to show. Light ink only gains contrast on the way.
+  --rak-hover-strength: 80%;
+  --rak-press-strength: 72%;
 }
 
 // Auto, which is the default: the OS decides, unless the reader has asked for
