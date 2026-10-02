@@ -327,6 +327,64 @@ describe("getKnockouts", () => {
     ]);
   });
 
+  it("credits an MNF Points knockout to the tiebreaker game, wherever it kicks off", () => {
+    // A Monday doubleheader. P2, the sheet's last column and so the Points game,
+    // kicks off before P1. Both players picked alike, so only the Points split them.
+    const scores = settled(
+      [
+        player({
+          name: "Alice",
+          total: 5,
+          pro: [pick("KC", "yes"), pick("SF", "yes")],
+          tiebreakerPick: 41,
+          distance: 0,
+        }),
+        player({
+          name: "Bob",
+          total: 5,
+          pro: [pick("KC", "yes"), pick("SF", "yes")],
+          tiebreakerPick: 49,
+          distance: 8,
+        }),
+      ],
+      41,
+    );
+    const kickedOffAt = (game: ReturnType<typeof finalGame>, at: string) => ({
+      ...game,
+      date: new Date(at),
+    });
+    scores.games = [
+      {
+        label: "P1",
+        league: League.PRO,
+        name: "KC at DEN",
+        result: kickedOffAt(
+          finalGame({ home: "DEN", away: "KC", homeScore: 10, awayScore: 20 }),
+          "2024-10-08T02:15:00Z",
+        ),
+      },
+      {
+        label: "P2",
+        league: League.PRO,
+        name: "SF at LAR",
+        result: kickedOffAt(
+          finalGame({ home: "LAR", away: "SF", homeScore: 20, awayScore: 21 }),
+          "2024-10-07T23:15:00Z",
+        ),
+      },
+    ];
+
+    expect(getKnockouts(scores).games).toEqual([
+      {
+        label: "P2",
+        name: "SF at LAR",
+        isFinal: true,
+        sides: [],
+        tiebreakers: [{ tiebreaker: "mnfPoints", players: ["Bob"] }],
+      },
+    ]);
+  });
+
   it("keeps a pick side for a player behind on total", () => {
     const scores = settled(
       [

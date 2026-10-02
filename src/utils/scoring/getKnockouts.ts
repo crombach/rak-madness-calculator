@@ -76,20 +76,20 @@ function reopenPick(cell: PickResult): PickResult {
   return hasOutcome(cell.status) ? { ...cell, status: "incomplete" } : cell;
 }
 
-/**
- * The player with no tiebreaker result and no verdict, as the walk below starts
- * them. The Monday night game kicks off last, so every set it reopens includes it
- * once it is final, and the tiebreaker's result goes with it.
- */
-function withoutResults(player: PlayerScore): PlayerScore {
+/** The player with no verdict, as the walk below starts them. */
+function withoutVerdict(player: PlayerScore): PlayerScore {
   return {
     ...player,
-    tiebreaker: { pick: player.tiebreaker.pick },
     status: {
       hasNoPicks: player.status.hasNoPicks,
       isKnockedOut: player.status.hasNoPicks,
     },
   };
+}
+
+/** The player with no MNF Points result, once the game that settles it reopens. */
+function withoutTiebreaker(player: PlayerScore): PlayerScore {
+  return { ...player, tiebreaker: { pick: player.tiebreaker.pick } };
 }
 
 /** The player with one more final game played again, as if still to come. */
@@ -111,10 +111,15 @@ function reopened(player: PlayerScore, { league, index }: Column): PlayerScore {
 /** Each player's standing, by name. Only those in `asked` are judged. */
 function standingOf(
   players: Array<PlayerScore>,
+  tiebreakerScore: number | undefined,
   asked: ReadonlySet<string>,
 ): Map<string, PlayerScore["status"]> {
   return statusByName(
-    applyKnockouts([...players].sort(comparePlayerScores), undefined, asked),
+    applyKnockouts(
+      [...players].sort(comparePlayerScores),
+      tiebreakerScore,
+      asked,
+    ),
   );
 }
 
@@ -191,12 +196,20 @@ function knockoutSides(scores: RakMadnessScores): {
       )
       .map(({ name }) => name),
   );
+  // The MNF Points are scored off the sheet's last game, the one before its `Pts`
+  // column, which need not kick off last. They hold until that game reopens.
+  const pointsGame = columnsOf(players).at(-1)?.label;
+  let tiebreakerScore = scores.tiebreaker;
   // Every final game from `at` on, played again.
-  let replayed = players.map(withoutResults);
+  let replayed = players.map(withoutVerdict);
   for (let at = finals.length - 1; at >= 0 && stillOut.size > 0; at--) {
-    replayed = replayed.map((player) => reopened(player, finals[at]));
-    const before = standingOf(replayed, stillOut);
     const { label, league, index } = finals[at];
+    replayed = replayed.map((player) => reopened(player, finals[at]));
+    if (label === pointsGame) {
+      tiebreakerScore = undefined;
+      replayed = replayed.map(withoutTiebreaker);
+    }
+    const before = standingOf(replayed, tiebreakerScore, stillOut);
     for (const player of players) {
       const cell = player[league][index];
       if (
