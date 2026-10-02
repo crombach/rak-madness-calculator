@@ -125,8 +125,8 @@
   // Carved into the bar beside the button rather than lit in its glass, since
   // the display face has no β. The navbar's own gap sets it off from the button.
   &__beta {
-    // The name's segments fill its whole em, and Chakra Petch's β inks 0.933 of
-    // one, ascender to descender, so this scale makes the two stand as tall.
+    // The name's segments fill its whole em. Chakra Petch has no β, so a system
+    // face draws it, inking 0.933 of an em. This scale makes the two stand as tall.
     --beta-scale: 1.072;
     flex-shrink: 0;
     color: var(--rak-nav-carve-ink);

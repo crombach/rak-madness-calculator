@@ -881,7 +881,7 @@ html {
   // ramp's own steps. The shadow is stronger, to show at all on a page this dark.
   --rak-key-face: var(--rak-primary-500);
   --rak-key-active: var(--rak-primary-600);
-  --rak-key-shadow: 0 2px 2px rgb(0 0 0 / 70%);
+  --rak-key-shadow: 0 2px 2px rgb(0 0 0 / 45%);
   // The lamp against this mode's dark faces. Lit takes `--rak-info-200`, the
   // step the reader's row is ruled in here, the same way light mode above puts
   // both marks on its own 400. A face this dark leaves the lens somewhere to be
