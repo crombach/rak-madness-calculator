@@ -1,6 +1,6 @@
 ---
 name: experimental-features
-description: Gate a work-in-progress feature behind the Experimental Features setting, or release or remove one already gated. Read before hiding a feature from readers who have not opted in, before shipping a gated feature to everyone, and before deleting a gated feature.
+description: Gate a work-in-progress feature behind the βeta Mode setting, or release or remove one already gated. Read before hiding a feature from readers who have not opted in, before shipping a gated feature to everyone, and before deleting a gated feature.
 ---
 
 # Experimental features

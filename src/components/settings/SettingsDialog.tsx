@@ -91,7 +91,7 @@ export default function SettingsDialog({
               </button>
             )}
           </div>
-          <p className="settings__hint">Your results are highlighted.</p>
+          <p className="settings__hint">Personalize your experience.</p>
         </section>
 
         <section className="settings__section">
@@ -152,7 +152,7 @@ export default function SettingsDialog({
 
         <section className="settings__section">
           <h3 className="settings__label" id={experimentalFeaturesLabelId}>
-            Experimental Features
+            βeta Mode
           </h3>
           <div
             className="settings__choices"

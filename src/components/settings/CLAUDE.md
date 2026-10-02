@@ -4,7 +4,7 @@
 game status use. Only `NavMenu`'s Settings item opens it. Player Name comes
 first, an `lcd-field` shell holding a text input and a clear button, whose value
 marks that player's row in both tables. Live Player
-Analysis, Theme, and Experimental Features follow, each a row of `Button`s
+Analysis, Theme, and βeta Mode follow, each a row of `Button`s
 with `selected`, the navbar's own switch idiom. All of them go through
 `SettingsContext`. A new one means moving `useSettingsSeen.ts`'s
 `SETTINGS_CHANGED_AT` forward.
