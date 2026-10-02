@@ -6,21 +6,11 @@ import PicksRoute from "./components/results/PicksRoute";
 import ResultsLayout from "./components/results/ResultsLayout";
 import ScoreboardRoute from "./components/results/ScoreboardRoute";
 import { GamesPage } from "./components/games/GamesPage";
-import KnockoutsSkeleton from "./components/knockouts/KnockoutsSkeleton";
-import ComparePlayersSkeleton from "./components/comparePlayers/ComparePlayersSkeleton";
-import lazyPreloadable from "./utils/lazyPreloadable";
+import { knockoutsPage } from "./components/knockouts/KnockoutsPage";
+import { comparePlayersPage } from "./components/comparePlayers/ComparePlayersPage";
 
-// Lazy for the must-win search it reaches, which `ResultsFrame` keeps out of the
-// chunk every route waits on.
-const { Page: KnockoutsPage } = lazyPreloadable(
-  () => import("./components/knockouts/KnockoutsRoute"),
-  <KnockoutsSkeleton />,
-);
-// Lazy for Base UI's combobox, which `ResultsFrame` keeps out of that chunk too.
-const { Page: ComparePlayersPage } = lazyPreloadable(
-  () => import("./components/comparePlayers/ComparePlayersRoute"),
-  <ComparePlayersSkeleton />,
-);
+const { Page: KnockoutsPage } = knockoutsPage;
+const { Page: ComparePlayersPage } = comparePlayersPage;
 
 export default function App() {
   return (

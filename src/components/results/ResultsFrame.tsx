@@ -22,7 +22,9 @@ import SEPARATOR from "../../utils/separator";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
 import ComparePlayersSkeleton from "../comparePlayers/ComparePlayersSkeleton";
 import GamesSkeleton from "../games/GamesSkeleton";
-import { preloadGamesRoute } from "../games/GamesPage";
+import { gamesPage, preloadGamesRoute } from "../games/GamesPage";
+import { knockoutsPage } from "../knockouts/KnockoutsPage";
+import { comparePlayersPage } from "../comparePlayers/ComparePlayersPage";
 import Button from "../button/Button";
 import AppNavbar from "../navbar/AppNavbar";
 import EmptyState from "../pageLayout/EmptyState";
@@ -62,6 +64,46 @@ const SKELETONS: Record<ResultsPage, ReactNode> = {
   [RESULTS_PAGE.games]: <GamesSkeleton />,
   [RESULTS_PAGE.comparePlayers]: <ComparePlayersSkeleton />,
 };
+
+/**
+ * The pages whose code is fetched apart. The frame holds its own wireframe until
+ * that code is in too. Handed off sooner, the page's own fallback mounts a fresh
+ * copy of the same wireframe, and its sheen starts over.
+ */
+const LAZY_PAGES: Partial<
+  Record<
+    ResultsPage,
+    { preload: () => Promise<unknown>; isLoaded: () => boolean }
+  >
+> = {
+  [RESULTS_PAGE.knockouts]: knockoutsPage,
+  [RESULTS_PAGE.games]: gamesPage,
+  [RESULTS_PAGE.comparePlayers]: comparePlayersPage,
+};
+
+/**
+ * Whether `view`'s code is in, fetched alongside the week rather than after it. A
+ * fetch that fails answers true as well, so the page's own `lazy` asks again.
+ */
+function usePageCode(view: ResultsPage): boolean {
+  const page = LAZY_PAGES[view];
+  const [settled, setSettled] = useState<ResultsPage>();
+  const isIn = page == null || page.isLoaded() || settled === view;
+  useEffect(() => {
+    if (isIn || page == null) return;
+    let isOnScreen = true;
+    page
+      .preload()
+      .catch(doNothing)
+      .finally(() => {
+        if (isOnScreen) setSettled(view);
+      });
+    return () => {
+      isOnScreen = false;
+    };
+  }, [isIn, page, view]);
+  return isIn;
+}
 
 /** What the caption is sized from on a route that does not know the week yet. */
 const CAPTION_STAND_IN = `Scoreboard${SEPARATOR}0000 Season${SEPARATOR}Week 00`;
@@ -146,6 +188,8 @@ export default function ResultsFrame({
   // The logos belong to the week rather than to the dialog that draws them, so
   // they are warmed from here. `useWarmTeamLogos` says why.
   useWarmTeamLogos(scores?.games);
+
+  const hasPageCode = usePageCode(view);
 
   const { showToast } = useToastActions();
   // Said once, for either dialog. Neither can be retried, so the only way on is a
@@ -251,7 +295,7 @@ export default function ResultsFrame({
         </p>
         <PlayerAnalysisContextProvider showPlayerAnalysis={showPlayerAnalysis}>
           <GameStatusContextProvider showGameStatus={showGameStatus}>
-            {isReady ? (
+            {isReady && hasPageCode ? (
               children
             ) : hasFailed ? (
               <div className="results-failure">
