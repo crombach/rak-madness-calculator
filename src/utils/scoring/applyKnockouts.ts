@@ -92,9 +92,9 @@ export default function applyKnockouts(
               ),
           );
         } else if (totalDifferentPicks === totalScoreDiff) {
-          // A distance is absent where that player left the Monday night points
-          // cell blank, even once the game is final. That should never happen.
-          // Where it does, the blank reads as the furthest off, so two blanks tie.
+          // A blank Monday night points cell leaves the distance absent, even
+          // once the game is final. A blank reads as the furthest off, so two
+          // blanks tie.
           const rivalDistance = rivalScore.tiebreaker.distance;
           const activeDistance = activeScore.tiebreaker.distance;
           // If the best a player can do is tie the rival, check if they're knocked out on breakers.
