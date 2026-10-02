@@ -6,7 +6,7 @@ import {
 import ExperimentalGate from "../results/ExperimentalGate";
 import Knockouts from "./Knockouts";
 
-function KnockoutsPage() {
+function KnockoutsBody() {
   const { rescore, fetchingLeagues } = useScoringStatus();
   return (
     <Knockouts
@@ -22,7 +22,7 @@ function KnockoutsPage() {
 export default function KnockoutsRoute() {
   return (
     <ExperimentalGate>
-      <KnockoutsPage />
+      <KnockoutsBody />
     </ExperimentalGate>
   );
 }

@@ -80,8 +80,8 @@ function reopenPick(cell: PickResult): PickResult {
  * Each player's standing, by name, once the named final games are played again, as
  * if still to come.
  *
- * The Monday night game kicks off last, so any set reopened here holds it once it
- * is final, and the tiebreaker goes with it.
+ * The Monday night game kicks off last, so every set reopened here includes it
+ * once it is final. The tiebreaker's result is reopened with it.
  */
 function standingWith(
   players: Array<PlayerScore>,
@@ -232,9 +232,9 @@ function knockoutSides(scores: RakMadnessScores): {
  */
 export default function getKnockouts(scores: RakMadnessScores): KnockoutGames {
   const open = new Set(remainingGames(scores.scores).map((game) => game.label));
-  // A won week's open games can knock no one else out.
   const knockouts = knockoutSides(scores);
   const sidesByLabel = new Map([
+    // A won week's open games can knock no one else out.
     ...(isWeekWon(scores) ? [] : mustWinSides(scores)),
     ...knockouts.sidesByLabel,
   ]);

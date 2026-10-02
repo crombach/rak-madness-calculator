@@ -11,7 +11,7 @@ import "./Knockouts.scss";
 // Enough to fill a tall screen, one game to a row.
 const STAND_IN_GAMES = 4;
 
-/** Two rows of names, as many as a folded side shows at the narrowest width. */
+/** Two rows of names at the narrowest width, short of the fold. */
 const STAND_IN_PLAYERS = rangeWithPrefix(4, "Player ");
 
 const STAND_IN_GAME: KnockoutGame = {

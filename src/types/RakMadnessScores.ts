@@ -47,7 +47,7 @@ export type PlayerScore = {
     hasNoPicks: boolean;
     isKnockedOut: boolean;
     explanation?: string;
-    /** For a knockout the best this player could do was a tie on total, what settled it. */
+    /** The tiebreaker that knocked this player out of a tie on total. */
     tiebreaker?: Tiebreaker;
   };
 };
