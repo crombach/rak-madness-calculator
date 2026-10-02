@@ -539,7 +539,7 @@
   // cast under it reads as a hole in the page rather than a key standing on it.
   --rak-key-face: var(--rak-primary-400);
   --rak-key-active: var(--rak-primary-500);
-  --rak-key-shadow: 0 3px 6px rgb(0 0 0 / 18%);
+  --rak-key-shadow: 0 2px 4px rgb(0 0 0 / 24%);
   // The lamp in a key's bottom lip, which says which key in a row is chosen.
   // Unlit it stays visible as a dark lens in its socket, so a row reads as lamps
   // with one of them on rather than as one key wearing a rule. The socket is a
@@ -880,7 +880,7 @@ html {
   // ramp's own steps. The shadow is stronger, to show at all on a page this dark.
   --rak-key-face: var(--rak-primary-500);
   --rak-key-active: var(--rak-primary-600);
-  --rak-key-shadow: 0 3px 6px rgb(0 0 0 / 60%);
+  --rak-key-shadow: 0 2px 4px rgb(0 0 0 / 70%);
   // The lamp against this mode's dark faces. Lit takes `--rak-info-200`, the
   // step the reader's row is ruled in here, the same way light mode above puts
   // both marks on its own 400. A face this dark leaves the lens somewhere to be
