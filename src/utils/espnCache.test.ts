@@ -45,8 +45,16 @@ describe("matchupKey", () => {
 
 describe("isSettled", () => {
   it("holds a game that has been played, and a matchup with no game", () => {
-    expect(isSettled(game())).toBe(true);
+    expect(isSettled({ ...game(), finishedAt: new Date() })).toBe(true);
     expect(isSettled(null)).toBe(true);
+  });
+
+  it("holds nothing about a final game ESPN has not given a finish for yet", () => {
+    expect(isSettled(game())).toBe(false);
+  });
+
+  it("holds a final game ESPN has no finish for at all", () => {
+    expect(isSettled({ ...game(), finishedAt: null })).toBe(true);
   });
 
   it("holds nothing about a game still being played", () => {
@@ -70,6 +78,17 @@ describe("espnCache, results", () => {
     // says whether the week still has anything to fetch.
     expect("PHI|DAL" in held).toBe(true);
     expect("OSU|MICH" in held).toBe(false);
+  });
+
+  it("reads back a finish as a date", () => {
+    const finishedAt = new Date("2025-09-14T20:13:01Z");
+    writeCachedResults(SEASON, 3, League.PRO, {
+      [BUF_KC]: { ...game(), finishedAt },
+    });
+
+    expect(
+      readCachedResults(SEASON, 3, League.PRO)[BUF_KC]?.finishedAt,
+    ).toEqual(finishedAt);
   });
 
   it("keeps each league, week, and season apart", () => {

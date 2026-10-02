@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -105,6 +106,16 @@ type Countdown = {
 export function ToastContextProvider({ children }: PropsWithChildren<object>) {
   const [toasts, setToasts] = useState<Array<Toast>>([]);
   const countdowns = useRef(new Map<string, Countdown>());
+
+  useEffect(() => {
+    const running = countdowns.current;
+    return () => {
+      running.forEach(({ handle }) => {
+        if (handle != null) window.clearTimeout(handle);
+      });
+      running.clear();
+    };
+  }, []);
 
   const stopCountdown = useCallback((id: string) => {
     const countdown = countdowns.current.get(id);

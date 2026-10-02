@@ -1,5 +1,5 @@
 import { League } from "../../types/League";
-import { PlayerScore } from "../../types/RakMadnessScores";
+import { PickResult, PlayerScore } from "../../types/RakMadnessScores";
 import { PlayerAnalysis } from "../../types/PlayerAnalysis";
 import getPlayerAnalysis, { MAX_SEARCHED_GAMES } from "./getPlayerAnalysis";
 import getKnockouts, { KnockoutGames } from "./getKnockouts";
@@ -479,7 +479,48 @@ describe("getKnockouts", () => {
     ]);
   });
 
-  it("credits a player two final games knocked out to the one that kicked off first", () => {
+  it("credits a player two final games knocked out to the one that ended first", () => {
+    // Bob needed both P1 and P2, which kicked off together. P2 ended first.
+    const scores = bobNeedsBoth([pick("MIA"), pick("MIA"), pick("NYJ")]);
+    scores.games = [
+      bothGame("P1", "DEN", "KC", "2024-10-06T20:25:00Z"),
+      bothGame("P2", "LAR", "SF", "2024-10-06T20:05:00Z"),
+    ];
+
+    expect(knockoutPicks(getKnockouts(scores), "Bob")).toEqual(["P2 LAR"]);
+  });
+
+  it("credits a game with a finish before one ESPN gave none for", () => {
+    const scores = bobNeedsBoth([pick("MIA"), pick("MIA"), pick("NYJ")]);
+    scores.games = [
+      bothGame("P1", "DEN", "KC"),
+      bothGame("P2", "LAR", "SF", "2024-10-06T20:25:00Z"),
+    ];
+
+    expect(knockoutPicks(getKnockouts(scores), "Bob")).toEqual(["P2 LAR"]);
+  });
+
+  it("keeps a knockout's game once a later game ends", () => {
+    const live = bobNeedsBoth([pick("MIA"), pick("MIA"), pick("NYJ")]);
+    live.games = [
+      bothGame("P1", "DEN", "KC", "2024-10-06T20:25:00Z"),
+      bothGame("P2", "LAR", "SF", "2024-10-06T20:05:00Z"),
+    ];
+    const ended = bobNeedsBoth([
+      pick("MIA", "yes"),
+      pick("MIA", "yes"),
+      pick("NYJ", "no"),
+    ]);
+    ended.games = [
+      ...live.games,
+      bothGame("P3", "MIA", "NYJ", "2024-10-07T03:10:00Z"),
+    ];
+
+    expect(knockoutPicks(getKnockouts(live), "Bob")).toEqual(["P2 LAR"]);
+    expect(knockoutPicks(getKnockouts(ended), "Bob")).toEqual(["P2 LAR"]);
+  });
+
+  it("credits a player two final games knocked out to the one that kicked off first, where neither has a finish", () => {
     // Bob, a point behind Alice, needed both P1 and P2. P2 kicked off first, and
     // once it was lost P1 could no longer knock him out.
     const scores = week([
@@ -669,3 +710,51 @@ describe("getKnockouts, against getPlayerAnalysis", () => {
     ]);
   });
 });
+
+/**
+ * Bob, a point behind Alice and Carol, needs both P1 and P2. `third` is each
+ * player's pick on P3, in that order.
+ */
+function bobNeedsBoth(third: Array<PickResult>) {
+  const bonus = (cell: PickResult) => (cell.status === "yes" ? 1 : 0);
+  return week([
+    player({
+      name: "Alice",
+      total: 6 + bonus(third[0]),
+      pro: [pick("KC", "yes"), pick("SF", "yes"), third[0]],
+    }),
+    player({
+      name: "Carol",
+      total: 6 + bonus(third[2]),
+      pro: [pick("KC", "yes"), pick("SF", "yes"), third[2]],
+    }),
+    player({
+      name: "Bob",
+      total: 3 + bonus(third[1]),
+      pro: [pick("DEN", "no"), pick("LAR", "no"), third[1]],
+      isKnockedOut: true,
+    }),
+  ]);
+}
+
+/**
+ * A final game the road side won, kicked off with the rest, ended at `finishedAt`
+ * where it is given.
+ */
+function bothGame(
+  label: string,
+  home: string,
+  away: string,
+  finishedAt?: string,
+) {
+  return {
+    label,
+    league: League.PRO,
+    name: `${away} at ${home}`,
+    result: {
+      ...finalGame({ home, away, homeScore: 10, awayScore: 20 }),
+      date: new Date("2024-10-06T17:00:00Z"),
+      ...(finishedAt != null && { finishedAt: new Date(finishedAt) }),
+    },
+  };
+}

@@ -123,6 +123,54 @@ async function getLeagueEvents(
   return fetchEspnEvents(espnScoreboardUrl(league, requestParams));
 }
 
+/** Finish times already read, by event id. */
+const finishes = new Map<string, Date | null>();
+
+/** ESPN's play type for the last play of a finished game. */
+const PLAY_TYPE_END_OF_GAME = "66";
+
+/** One play per page, over an event's plays. */
+function playPageUrl(league: League, eventId: string, page?: number): string {
+  const search = page != null ? `&page=${page}` : "";
+  return `https://sports.core.api.espn.com/v2/sports/football/leagues/${league}/events/${eventId}/competitions/${eventId}/plays?limit=1${search}`;
+}
+
+/**
+ * When a final game ended, read off the wall clock of its last play. The
+ * scoreboard gives only the kickoff. Two requests, since the first only counts
+ * the plays.
+ *
+ * Null where ESPN has no plays or no clock for the game. Undefined on a failed
+ * request, and while the feed has not yet posted the end of the game, which it
+ * can do after the scoreboard calls the game final. Nothing is remembered then,
+ * so it is asked again.
+ */
+async function gameFinish(
+  league: League,
+  eventId: string,
+): Promise<Date | null | undefined> {
+  if (finishes.has(eventId)) {
+    return finishes.get(eventId);
+  }
+  try {
+    const count = await fetch(playPageUrl(league, eventId));
+    if (!count.ok) return undefined;
+    const { pageCount } = await count.json();
+    const page = await fetch(playPageUrl(league, eventId, pageCount));
+    if (!page.ok) return undefined;
+    const last = (await page.json()).items?.[0];
+    if (last != null && last.type?.id !== PLAY_TYPE_END_OF_GAME) {
+      return undefined;
+    }
+    const finish = new Date(last?.wallclock);
+    const known = Number.isNaN(finish.getTime()) ? null : finish;
+    finishes.set(eventId, known);
+    return known;
+  } catch {
+    return undefined;
+  }
+}
+
 /** The season record, which ESPN sends beside the home and road splits. */
 const RECORD_TYPE_SEASON = "total";
 
@@ -382,6 +430,18 @@ export async function getLeagueResults(
     if (found.has(keys[position])) return;
     found.set(keys[position], findMatchup(index, teams) ?? null);
   });
+
+  await Promise.all(
+    [...found].map(async ([key, result]) => {
+      if (result?.status === GameStatus.FINAL) {
+        const heldFinish = held[key]?.finishedAt;
+        result.finishedAt =
+          heldFinish !== undefined
+            ? heldFinish
+            : await gameFinish(league, result.id);
+      }
+    }),
+  );
 
   const games: Record<string, CachedGame> = {};
   const kept: Array<LeagueResult> = [];

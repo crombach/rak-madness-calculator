@@ -134,6 +134,19 @@ describe("ToastContextProvider", () => {
     expect(headers()).toEqual([]);
   });
 
+  it("stops every countdown once the provider unmounts", () => {
+    const { unmount } = render(
+      <ToastContextProvider>
+        <Harness />
+      </ToastContextProvider>,
+    );
+    fireEvent.click(screen.getByText("show A"));
+
+    unmount();
+
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   it("auto-dismisses each toast on its own schedule", () => {
     mountHarness();
     fireEvent.click(screen.getByText("show A"));

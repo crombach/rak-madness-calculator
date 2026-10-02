@@ -97,17 +97,29 @@ function espnEvent({
   };
 }
 
-/** Every fetch resolves to the same event list. */
+const PLAYS_HOST = "sports.core.api.espn.com";
+const FINISH = "2024-10-06T20:13:01Z";
+
+/** Every scoreboard resolves to `events`, and every game's last play ends at `FINISH`. */
 function mockFetch(events: Array<EspnEvent>) {
-  const fetchMock = vi
-    .fn()
-    .mockResolvedValue({ ok: true, json: async () => ({ events }) });
+  const fetchMock = vi.fn().mockImplementation(async (url: string) => ({
+    ok: true,
+    json: async () =>
+      !url.includes(PLAYS_HOST)
+        ? { events }
+        : url.includes("page=")
+          ? { items: [{ wallclock: FINISH, type: { id: "66" } }] }
+          : { pageCount: 188 },
+  }));
   stubFetch(fetchMock);
   return fetchMock;
 }
 
+/** The scoreboard requests, leaving out the plays a final game's finish is read off. */
 function urlsOf(fetchMock: Mock): Array<string> {
-  return fetchMock.mock.calls.map((call) => call[0]);
+  return fetchMock.mock.calls
+    .map((call) => call[0])
+    .filter((url) => url.includes("/scoreboard"));
 }
 
 const bufVsKc = espnEvent({ home: "BUF", away: "KC" });
@@ -604,5 +616,114 @@ describe("getLeagueResults, a scoreboard request ESPN could not answer", () => {
     await expect(
       getLeagueResults(League.COLLEGE, WEEK, [new Set(["OSU", "MICH"])]),
     ).rejects.toThrow("500");
+  });
+});
+
+describe("getLeagueResults, finish times", () => {
+  const SEASON = 2024;
+
+  /** `mockFetch`, but every plays request fails. */
+  function mockFetchWithoutPlays(events: Array<EspnEvent>) {
+    const fetchMock = mockFetch(events);
+    const answer = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (url: string) => {
+      if (url.includes(PLAYS_HOST)) throw new Error("offline");
+      return answer(url);
+    });
+    return fetchMock;
+  }
+
+  const playsOf = (fetchMock: Mock): Array<string> =>
+    fetchMock.mock.calls
+      .map((call) => call[0])
+      .filter((url) => url.includes(PLAYS_HOST));
+
+  it("reads a final game's finish off its last play", async () => {
+    const fetchMock = mockFetch([
+      espnEvent({ home: "BUF", away: "KC", id: "f1" }),
+    ]);
+
+    const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+
+    expect(game.finishedAt).toEqual(new Date(FINISH));
+    expect(playsOf(fetchMock)).toEqual([
+      `https://${PLAYS_HOST}/v2/sports/football/leagues/nfl/events/f1/competitions/f1/plays?limit=1`,
+      `https://${PLAYS_HOST}/v2/sports/football/leagues/nfl/events/f1/competitions/f1/plays?limit=1&page=188`,
+    ]);
+  });
+
+  it("gives a live game no finish, and asks nothing about it", async () => {
+    const fetchMock = mockFetch([
+      espnEvent({ home: "BUF", away: "KC", id: "f2", status: GameStatus.LIVE }),
+    ]);
+
+    const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+
+    expect(game.finishedAt).toBeUndefined();
+    expect(playsOf(fetchMock)).toEqual([]);
+  });
+
+  it("asks for a game's finish once", async () => {
+    const fetchMock = mockFetch([
+      espnEvent({ home: "BUF", away: "KC", id: "f3" }),
+    ]);
+    const matchups = [BUF_KC, new Set(["PHI", "DAL"])];
+    await getLeagueResults(League.PRO, WEEK, [BUF_KC], SEASON);
+
+    const [game] = await getLeagueResults(League.PRO, WEEK, matchups, SEASON);
+
+    expect(game.finishedAt).toEqual(new Date(FINISH));
+    expect(playsOf(fetchMock)).toHaveLength(2);
+  });
+
+  /** `mockFetch`, but each game's last plays page is `page`. */
+  function mockFetchWithLastPage(events: Array<EspnEvent>, page: unknown) {
+    const fetchMock = mockFetch(events);
+    const answer = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (url: string) =>
+      url.includes("page=")
+        ? { ok: true, json: async () => page }
+        : answer(url),
+    );
+    return fetchMock;
+  }
+
+  it("holds a game ESPN has no plays for, with no finish", async () => {
+    const fetchMock = mockFetchWithLastPage(
+      [espnEvent({ home: "BUF", away: "KC", id: "f5" })],
+      { items: [] },
+    );
+
+    const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC], SEASON);
+    await getLeagueResults(League.PRO, WEEK, [BUF_KC], SEASON);
+
+    expect(game.finishedAt).toBeNull();
+    expect(urlsOf(fetchMock)).toHaveLength(1);
+  });
+
+  it("asks again while the plays have not reached the end of the game", async () => {
+    const fetchMock = mockFetchWithLastPage(
+      [espnEvent({ home: "BUF", away: "KC", id: "f6" })],
+      { items: [{ wallclock: FINISH, type: { id: "21" } }] },
+    );
+
+    const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC], SEASON);
+    await getLeagueResults(League.PRO, WEEK, [BUF_KC], SEASON);
+
+    expect(game.finishedAt).toBeUndefined();
+    expect(urlsOf(fetchMock)).toHaveLength(2);
+  });
+
+  it("still gives the game where its plays cannot be read, and asks again", async () => {
+    const fetchMock = mockFetchWithoutPlays([
+      espnEvent({ home: "BUF", away: "KC", id: "f4" }),
+    ]);
+
+    const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC], SEASON);
+    await getLeagueResults(League.PRO, WEEK, [BUF_KC], SEASON);
+
+    expect(game.shortName).toBe("KC @ BUF");
+    expect(game.finishedAt).toBeUndefined();
+    expect(urlsOf(fetchMock)).toHaveLength(2);
   });
 });
