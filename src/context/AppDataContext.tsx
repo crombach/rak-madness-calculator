@@ -300,12 +300,21 @@ export function useScoreChanges(): ScoreChanges {
 /** One answer per set of scores, however many callers ask for it. */
 const knockoutsByScores = new WeakMap<RakMadnessScores, KnockoutGames>();
 
+type GetKnockouts = (scores: RakMadnessScores) => KnockoutGames;
+
+/** Set once `loadGetKnockouts` lands, so a hook mounted after starts with it. */
+let loadedGetKnockouts: GetKnockouts | undefined;
+
 /**
  * Loaded on first use. `getKnockouts` pulls in all of `getPlayerAnalysis`, which
  * the routes would otherwise carry in the chunk every one of them waits on.
+ * Knockouts loads it with its own code, so the page has it on first render.
  */
-const loadGetKnockouts = cachedImport(
-  () => import("../utils/scoring/getKnockouts"),
+export const loadGetKnockouts = cachedImport(() =>
+  import("../utils/scoring/getKnockouts").then((module) => {
+    loadedGetKnockouts = module.default;
+    return module;
+  }),
 );
 
 /**
@@ -316,8 +325,7 @@ const loadGetKnockouts = cachedImport(
 export function useKnockouts(): KnockoutGames | undefined {
   const scores = useScores();
   const { experimentalFeatures } = useSettings();
-  const [getKnockouts, setGetKnockouts] =
-    useState<(scores: RakMadnessScores) => KnockoutGames>();
+  const [getKnockouts, setGetKnockouts] = useState(() => loadedGetKnockouts);
   const isNeeded = scores != null && experimentalFeatures;
 
   // Asks again on each new set of scores until the code arrives, so one failed

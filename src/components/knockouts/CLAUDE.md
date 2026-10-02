@@ -6,7 +6,8 @@ with the players it knocked out.
 
 - `KnockoutsRoute`: behind `ExperimentalGate`, hands `Knockouts` the scores,
   `useKnockouts`, `rescore` and `fetchingLeagues`.
-- `KnockoutsPage`: `lazyPreloadable` over `KnockoutsRoute`, mounted by `App.tsx`.
+- `KnockoutsPage`: `lazyPreloadable` over `KnockoutsRoute` and `getKnockouts`,
+  mounted by `App.tsx`.
 - `Knockouts`: polls as `Games` does, and draws its busy bar. A week with no
   game to show, settled or not, redirects to the scoreboard with `replace`.
   Its games are grouped by `gameSections`, as on Games.
