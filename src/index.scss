@@ -538,7 +538,7 @@
   // and the shadow it casts there at rest. A face darker than the page with nothing
   // cast under it reads as a hole in the page rather than a key standing on it.
   --rak-key-face: var(--rak-primary-400);
-  --rak-key-active: #e5e5e5;
+  --rak-key-active: var(--rak-primary-500);
   --rak-key-shadow: 0 3px 6px rgb(0 0 0 / 18%);
   // The lamp in a key's bottom lip, which says which key in a row is chosen.
   // Unlit it stays visible as a dark lens in its socket, so a row reads as lamps
