@@ -15,6 +15,7 @@ description: Gate a work-in-progress feature behind the βeta Mode setting, or r
 A feature is experimental when it reads `experimentalFeatures`. No registry, no list, no comment marker. That read is how every later step finds it.
 
 1. Hide every entry point when the value is false: a nav item, a link, a button.
+   A `NavMenu` item takes `experimental: true` instead. `NavMenu` hides it and marks it β.
 
    ```tsx
    const { experimentalFeatures } = useSettings();
@@ -40,6 +41,7 @@ A feature is experimental when it reads `experimentalFeatures`. No registry, no 
 
 1. `grep -rn experimentalFeatures src` for the feature's call sites. Skip `SettingsContext.tsx`, `SettingsDialog.tsx`, `LogoButton.tsx`, and their tests. Those own the setting and its navbar β, not a feature.
 2. At each one, delete the check and keep the code the true branch ran.
+   In `NavMenu.tsx`, keep the filter and delete `experimental: true` from the released item.
 3. Delete the tests of the feature's off state. Keep the on-state tests, without the seeded key.
 4. Keep the setting, its dialog row, and the β when no call site remains. The next gated feature reuses them.
 
