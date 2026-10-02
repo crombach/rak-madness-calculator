@@ -419,7 +419,7 @@ describe("the knockouts route", () => {
     expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
   });
 
-  it("folds a long side to two rows, then shows the rest on asking", async () => {
+  it("folds a long side to three rows, then shows the rest on asking", async () => {
     stubColumns(2);
     getPlayerScoresMock.mockResolvedValue(crowdedScores());
     const user = mountApp(KNOCKOUTS_PATH);
@@ -427,7 +427,7 @@ describe("the knockouts route", () => {
 
     expect(
       playerButtons(mustWinHeading(9, "KC -3")).map((it) => it.textContent),
-    ).toEqual(KC_BACKERS.slice(0, 4));
+    ).toEqual(KC_BACKERS.slice(0, 6));
     const more = screen.getByRole("button", { name: "Show More" });
     expect(more).toHaveAttribute("aria-expanded", "false");
 
@@ -442,13 +442,13 @@ describe("the knockouts route", () => {
     );
   });
 
-  it("offers no toggle for a side that fits in two rows", async () => {
+  it("offers no toggle for a side that fits in three rows", async () => {
     stubColumns(2);
-    getPlayerScoresMock.mockResolvedValue(crowdedScores(4));
+    getPlayerScoresMock.mockResolvedValue(crowdedScores(6));
     mountApp(KNOCKOUTS_PATH);
     await screen.findByText("KC at DEN");
 
-    expect(playerButtons(mustWinHeading(4, "KC -3"))).toHaveLength(4);
+    expect(playerButtons(mustWinHeading(6, "KC -3"))).toHaveLength(6);
     expect(screen.queryByRole("button", { name: /^Show/ })).toBeNull();
   });
 
@@ -471,7 +471,7 @@ describe("the knockouts route", () => {
     const shown = playerButtons(mustWinHeading(9, "KC -3"));
     expect(shown.map((it) => it.textContent)).toEqual([
       "Hal",
-      ...KC_BACKERS.slice(0, 3),
+      ...KC_BACKERS.slice(0, 5),
     ]);
     expect(shown[0]).toHaveClass("--mine");
     expect(shown[1]).not.toHaveClass("--mine");

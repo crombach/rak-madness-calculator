@@ -29,7 +29,7 @@ const TIEBREAKER_NAMES: Record<Tiebreaker, string> = {
 };
 
 /** How many rows of names a folded side shows. */
-const FOLDED_ROWS = 2;
+const FOLDED_ROWS = 3;
 
 /** The columns `.knockouts__players` lays out at the narrowest supported width. */
 const BASE_COLUMNS = 2;
