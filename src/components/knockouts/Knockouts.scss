@@ -1,0 +1,265 @@
+@use "sass:math";
+@use "../../styles/focus" as *;
+@use "../../styles/ink" as *;
+@use "../../styles/interactive" as *;
+@use "../../styles/fold" as *;
+@use "../../styles/label" as *;
+@use "../../styles/page" as *;
+@use "../../styles/picks" as *;
+@use "../../styles/progress" as *;
+@use "../../styles/skeleton" as *;
+@use "../../styles/text" as *;
+
+// The narrowest a name box goes, which is what sets how many share a row.
+$name-box-min: 7.5rem;
+// The same on a wide page, where room for longer names beats more of them a row.
+$name-box-wide-min: 12rem;
+
+// Where the two sides of a game sit beside each other: two sides each wide
+// enough for `BASE_COLUMNS` name boxes, two boxes of `$name-box-min` and the gap
+// between them plus the side's padding, then the rule between the sides, the
+// frame, and the page's padding either side. Literal, since a container query
+// takes no custom property.
+$sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
+// Where the wider boxes start: the same sum, at `$name-box-wide-min`.
+$names-wide-from: 2 * (2 * 192px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
+
+.knockouts {
+  @include page-body;
+
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+
+  &.--loading .knockouts__group {
+    @include skeleton-sheen;
+  }
+}
+
+.knockouts__progress {
+  @include page-progress-bar;
+}
+
+.knockouts__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+}
+
+// One game to a row, as wide as the page, so no game stands beside a taller one.
+.knockouts__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.knockouts__group {
+  @include game-card-frame;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.knockouts__title {
+  @include game-card-band;
+
+  align-items: stretch;
+  margin: 0;
+  font-weight: normal;
+}
+
+// The whole band, one target opening Game Status, the way the picks table's own
+// column heading does. Its own hover and press fill and an inset focus ring, off
+// the soft `Button.scss` variant. Inset, since the frame's `overflow` would clip
+// a ring drawn outside.
+.knockouts__game {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--rak-space-2);
+  // Lets the matchup give way on a narrow phone rather than push the marks off.
+  min-width: 0;
+  min-height: var(--rak-touch-target);
+  padding: var(--rak-space-2) var(--rak-space-3);
+  border: 0;
+  background-color: transparent;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color var(--rak-duration-medium)
+    var(--rak-ease-standard);
+
+  @include focus-ring;
+  &:focus-visible {
+    outline-offset: calc(-1 * #{$focus-ring-reach});
+  }
+
+  @include interactive-fill(var(--rak-state-hover), var(--rak-state-press));
+  @include press-lands-at-once;
+}
+
+// The count and the mark, at the band's end.
+.knockouts__marks {
+  display: flex;
+  align-items: center;
+  gap: var(--rak-space-2);
+  margin-inline-start: auto;
+}
+
+// The sides stacked, then beside each other once each fits its name boxes. A
+// lone side, as on a final game, takes the whole width.
+.knockouts__sides {
+  display: flex;
+  flex-direction: column;
+
+  @container (min-width: #{$sides-beside-from}) {
+    flex-direction: row;
+
+    > * {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+  }
+}
+
+.knockouts__game-label {
+  @include game-card-label;
+}
+
+.knockouts__game-matchup {
+  @include game-card-name;
+  @include truncate-line;
+}
+
+.knockouts__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+  padding: var(--rak-space-3);
+
+  & + & {
+    border-block-start: var(--rak-border-width-hairline) solid
+      var(--rak-divider-soft);
+
+    @container (min-width: #{$sides-beside-from}) {
+      border-block-start: 0;
+      border-inline-start: var(--rak-border-width-hairline) solid
+        var(--rak-divider-soft);
+    }
+  }
+}
+
+// Sized so its capitals stand as tall as the pick's, which is set in the other face.
+.knockouts__must-win {
+  @include section-title(sm);
+
+  font-size: calc(
+    var(--rak-text-sm) * #{math.div($cap-share-mono, $cap-share-body)}
+  );
+}
+
+.knockouts__more {
+  @include fold-toggle;
+}
+
+.knockouts__players {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(#{$name-box-min}, 1fr));
+
+  @container (min-width: #{$names-wide-from}) {
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(#{$name-box-wide-min}, 1fr)
+    );
+  }
+  gap: var(--rak-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// Without this a long name's min-content widens the item past its track.
+.knockouts__players > li {
+  min-width: 0;
+}
+
+.knockouts__player {
+  @include ruled-block($rule-alive);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--rak-touch-target);
+  padding: var(--rak-space-2) var(--rak-space-3);
+  color: var(--rak-text);
+  @include player-name-face;
+  font-size: var(--rak-text-cells);
+  text-align: start;
+
+  // In the orange the tables fill a knocked out player's name with.
+  &.--knocked-out {
+    border-inline-start-color: $rule-out;
+  }
+
+  // In the blue the tables rule the reader's own row in.
+  &.--mine {
+    @include my-player-name;
+
+    border-inline-start-color: var(--rak-my-row-accent);
+  }
+}
+
+// An open game's name, which opens Player Analysis. A final game's is a plain box.
+button.knockouts__player {
+  @include focus-ring;
+
+  border-block: 0;
+  border-inline-end: 0;
+  cursor: pointer;
+  transition: background-color var(--rak-duration-medium)
+    var(--rak-ease-standard);
+
+  @include interactive-fill(
+    var(--rak-fill-muted),
+    color-mix(
+      in srgb,
+      var(--rak-fill-muted) var(--rak-press-strength),
+      var(--rak-text)
+    )
+  );
+  @include press-lands-at-once;
+}
+
+.knockouts__player-name {
+  @include truncate-line;
+}
+
+// A real card drawn from a stand-in game, so it takes a loaded card's size. Its
+// band keeps its fill, and each block under it becomes a fill with its text hidden.
+.knockouts.--loading .knockouts__group {
+  .knockouts__game > *,
+  .knockouts__must-win > * {
+    visibility: hidden;
+  }
+
+  .knockouts__must-win {
+    @include skeleton-surface;
+
+    width: fit-content;
+    color: transparent;
+  }
+
+  .knockouts__player {
+    @include skeleton-surface;
+
+    border-color: transparent;
+    color: transparent;
+  }
+}

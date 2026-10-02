@@ -43,6 +43,22 @@ $progress-height: 2px;
   }
 }
 
+/**
+ * A `progress-bar` stuck to the top of a `page-body`'s scroll area across its full
+ * width. The margins give back the page's padding and the bar's own height, so
+ * nothing under it moves.
+ */
+@mixin page-progress-bar {
+  @include progress-bar;
+
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  align-self: stretch;
+  margin: calc(-1 * var(--rak-space-4)) calc(-1 * var(--rak-space-4))
+    calc(-1 * #{$progress-height});
+}
+
 @keyframes progress-sweep {
   from {
     transform: translateX(-100%);

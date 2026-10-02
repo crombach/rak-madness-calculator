@@ -7,6 +7,8 @@ $rule-required: var(--rak-danger-500);
 // A player still standing. The step of their name cell's hue dark enough to read
 // as a rule, which the 300 fill is not.
 $rule-alive: var(--rak-in-contention-on-light);
+// A player knocked out, in the same step of their name cell's hue.
+$rule-out: var(--rak-knocked-out-on-light);
 
 /** The face and size a list of picks is set in. */
 @mixin pick-type {

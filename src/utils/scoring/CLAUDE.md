@@ -27,18 +27,18 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 - `remainingGames`: the open games, and `countDifferences`, where two rows split
 - `differingGames`: every game any two rows split, spread included, and
   `sameGames`, every game they all picked alike
-- `applyKnockouts`: who can still win, why not. A row under a shared name
-  knocks nobody out
+- `applyKnockouts`: who can still win, why not, and which tiebreaker settled a
+  tie. A row under a shared name knocks nobody out
 - `repeatedNames`: the names more than one row was entered under
 - `scoreChanges`: what a refresh changed
 - `getPlayerAnalysis`: what a player must do, plus `getSettledAnalysis`,
   the answers a week already holds, which the dialog asks before it waits,
   and `getMustWin`, the must-win games proven at n+1 verdicts, no search needed
-- `getSwingGames`: those must-win games by game instead of by player, each side
-  keyed by team, for the swing games page
-- `swingGameTypes`: its types and `NO_SWINGS`, outside the lazy chunk
+- `getKnockouts`: those must-win games by game instead of by player, each side
+  keyed by team, plus who each final game knocked out, for the knockouts page
+- `knockoutTypes`: its types and `NO_KNOCKOUTS`, outside the lazy chunk
 - `leagueResultFixtures`: test game builders, and `weekOf`, one league's week
 - `scoringTestFixtures`: player and week builders, shared by `getPlayerAnalysis`'s
-  and `getSwingGames`'s tests
+  and `getKnockouts`'s tests
 - `benchFixtures`: the 80x22 worst week the benchmarks measure, every game
   picked

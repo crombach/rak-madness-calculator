@@ -15,11 +15,12 @@ import usePlayerScores from "../hooks/usePlayerScores";
 import { WeekInfo } from "../types/League";
 import { prefetchStoredPicks } from "../utils/loadStoredPicks";
 import { RakMadnessScores } from "../types/RakMadnessScores";
-import { SwingGames } from "../utils/scoring/swingGameTypes";
+import { NO_KNOCKOUTS, KnockoutGames } from "../utils/scoring/knockoutTypes";
 import cachedImport from "../utils/cachedImport";
 import isWeekSettled, { isWeekWon } from "../utils/scoring/isWeekSettled";
 import { readSettledWeek } from "../utils/settledWeeksCache";
 import { NO_SCORE_CHANGES, ScoreChanges } from "../utils/scoring/scoreChanges";
+import { useSettings } from "./SettingsContext";
 
 /** The season and week lists, and which of each is selected. */
 type Calendar = ReturnType<typeof useLeagueWeeks> &
@@ -297,49 +298,60 @@ export function useScoreChanges(): ScoreChanges {
 }
 
 /** One answer per set of scores, however many callers ask for it. */
-const swingGamesByScores = new WeakMap<RakMadnessScores, SwingGames>();
+const knockoutsByScores = new WeakMap<RakMadnessScores, KnockoutGames>();
+
+type GetKnockouts = (scores: RakMadnessScores) => KnockoutGames;
+
+/** Set once `loadGetKnockouts` lands, so a hook mounted after starts with it. */
+let loadedGetKnockouts: GetKnockouts | undefined;
 
 /**
- * Loaded on first use. `getSwingGames` pulls in all of `getPlayerAnalysis`, which
+ * Loaded on first use. `getKnockouts` pulls in all of `getPlayerAnalysis`, which
  * the routes would otherwise carry in the chunk every one of them waits on.
+ * Knockouts loads it with its own code, so the page has it on first render.
  */
-const loadGetSwingGames = cachedImport(
-  () => import("../utils/scoring/getSwingGames"),
+export const loadGetKnockouts = cachedImport(() =>
+  import("../utils/scoring/getKnockouts").then((module) => {
+    loadedGetKnockouts = module.default;
+    return module;
+  }),
 );
 
 /**
- * The week's swing games, or undefined while its scores or the code that reads
- * them load.
+ * The week's knockouts, or undefined while its scores or the code that reads
+ * them load. Skips the work and answers empty while the reader has not opted into
+ * experimental features.
  */
-export function useSwingGames(): SwingGames | undefined {
+export function useKnockouts(): KnockoutGames | undefined {
   const scores = useScores();
-  const [getSwingGames, setGetSwingGames] =
-    useState<(scores: RakMadnessScores) => SwingGames>();
-  const isNeeded = scores != null;
+  const { experimentalFeatures } = useSettings();
+  const [getKnockouts, setGetKnockouts] = useState(() => loadedGetKnockouts);
+  const isNeeded = scores != null && experimentalFeatures;
 
   // Asks again on each new set of scores until the code arrives, so one failed
   // download costs one poll rather than the page.
   useEffect(() => {
-    if (!isNeeded || getSwingGames != null) return;
+    if (!isNeeded || getKnockouts != null) return;
     let isCurrent = true;
-    loadGetSwingGames().then(
+    loadGetKnockouts().then(
       (module) => {
-        if (isCurrent) setGetSwingGames(() => module.default);
+        if (isCurrent) setGetKnockouts(() => module.default);
       },
-      (error) => console.warn("Could not load the swing games", error),
+      (error) => console.warn("Could not load the knockouts", error),
     );
     return () => {
       isCurrent = false;
     };
-  }, [isNeeded, scores, getSwingGames]);
+  }, [isNeeded, scores, getKnockouts]);
 
   return useMemo(() => {
     if (scores == null) return undefined;
-    let swings = swingGamesByScores.get(scores);
-    if (swings == null && getSwingGames != null) {
-      swings = getSwingGames(scores);
-      swingGamesByScores.set(scores, swings);
+    if (!experimentalFeatures) return NO_KNOCKOUTS;
+    let knockouts = knockoutsByScores.get(scores);
+    if (knockouts == null && getKnockouts != null) {
+      knockouts = getKnockouts(scores);
+      knockoutsByScores.set(scores, knockouts);
     }
-    return swings;
-  }, [scores, getSwingGames]);
+    return knockouts;
+  }, [scores, experimentalFeatures, getKnockouts]);
 }

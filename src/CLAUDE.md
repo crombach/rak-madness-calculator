@@ -32,7 +32,7 @@ a touch phone: Playwright `isMobile` and `hasTouch`, no hover, no refresh button
 - [`components/playerAnalysis/`](components/playerAnalysis/CLAUDE.md) — where a player stands, and why
 - [`components/results/`](components/results/CLAUDE.md) — results routes, layout, redirect
 - [`components/settings/`](components/settings/CLAUDE.md) — theme and own name, in a dialog
-- [`components/swingGames/`](components/swingGames/CLAUDE.md) — who each open game keeps alive
+- [`components/knockouts/`](components/knockouts/CLAUDE.md) — who each game knocks out, or knocked out
 - [`components/table/`](components/table/CLAUDE.md) — shared frame and the results tables
 - [`components/toaster/`](components/toaster/CLAUDE.md) — toast notification renderer
 - [`context/`](context/CLAUDE.md) — app data, toast, and analysis providers

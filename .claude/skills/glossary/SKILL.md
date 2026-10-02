@@ -18,8 +18,8 @@ One concept, one name. Reader means the person viewing, in prose and comments. N
 | Pool week                   | week              | `week` (`WeekInfo`), `weekNumber`, `weekParam`                                | round                            |
 | Year of the pool            | season            | `season`                                                                      | year                             |
 | Ranked table page           | Scoreboard        | route `scoreboard`, `ScoresTable`, `ScoreboardRoute`, xlsx sheet "Scoreboard" | standings, leaderboard, rankings |
-| Every game of a week        | All Games         | route `games`, `Games*`                                                       | Live Games                       |
-| Games that move the ranking | Swing Games       | route `swings`, `SwingGames*`                                                 | swings, upsets                   |
+| Every game of a week        | Games             | route `games`, `Games*`                                                       | Live Games                       |
+| Games that move the ranking | Knockouts         | route `knockouts`, `Knockouts*`, `Knockout*`                                  | Swing Games, swings, upsets      |
 | Monday night points guess   | MNF Points        | `tiebreaker`                                                                  | tiebreak                         |
 | Spreadsheet column for it   | Pts               | column header only                                                            |                                  |
 | Point spread                | spread            | `spread`                                                                      | line                             |

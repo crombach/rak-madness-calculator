@@ -47,6 +47,8 @@ export type PlayerScore = {
     hasNoPicks: boolean;
     isKnockedOut: boolean;
     explanation?: string;
+    /** The tiebreaker that knocked this player out of a tie on total. */
+    tiebreaker?: Tiebreaker;
   };
 };
 
@@ -57,3 +59,6 @@ export type PickResult = {
 };
 
 export type Status = "yes" | "no" | "incomplete" | "unscoreable";
+
+/** The tiers under total that `compareOnMerit` ranks on, in its order. */
+export type Tiebreaker = "mnfPoints" | "college" | "proAgainstTheSpread";

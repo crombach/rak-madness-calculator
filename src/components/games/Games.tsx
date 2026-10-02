@@ -1,31 +1,20 @@
-import { ReactNode, useId } from "react";
 import useLiveWeek from "../../hooks/useLiveWeek";
 import useMyPick from "../../hooks/useMyPick";
-import { GameStatus } from "../../types/ESPN";
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
-import { LEAGUES as LEAGUE_KEYS } from "../../utils/scoring/gameColumns";
-import { ESPN_LEAGUE, LeagueResults } from "../../utils/scoring/leagueResults";
+import { LeagueResults } from "../../utils/scoring/leagueResults";
 import EmptyState from "../pageLayout/EmptyState";
-import kickoffDay from "./kickoffDay";
 import GameCard from "./GameCard";
-import SectionTitle from "./SectionTitle";
-import { COMPLETED_TITLE, DAYS, LIVE_TITLE } from "./sectionTitles";
+import gameSections, {
+  FETCHING_LABEL,
+  LIVE_STATUSES,
+  POLLED_LEAGUES,
+} from "./gameSections";
+import { GameSection } from "./SectionTitle";
 import "./Games.scss";
 
-const LEAGUES: ReadonlyArray<League> = LEAGUE_KEYS.map(
-  (key) => ESPN_LEAGUE[key],
-);
-
-/** ESPN's `in` state, a game stopped part way through included. */
-const LIVE_STATUSES: ReadonlySet<GameStatus> = new Set([
-  GameStatus.LIVE,
-  GameStatus.DELAYED,
-]);
-
-const FETCHING_LABEL = "Fetching the games";
 const NO_GAMES = "No games this week";
 
 function PoolGame({
@@ -47,29 +36,7 @@ function PoolGame({
   );
 }
 
-function Section({
-  title,
-  count,
-  children,
-}: {
-  title: string;
-  count: number;
-  children: ReactNode;
-}) {
-  const id = useId();
-  return (
-    <section className="games__section" aria-labelledby={id}>
-      <SectionTitle id={id} title={title} count={count} />
-      {children}
-    </section>
-  );
-}
-
-/**
- * Every game of the week, each as the Game Status dialog shows it. The ones being
- * played first, then those to come by the reader's own calendar day, then the
- * finished ones in table order. A section with no game is left out.
- */
+/** Every game of the week, each as the Game Status dialog shows it, under `gameSections`. */
 export default function Games({
   scores,
   onPoll,
@@ -84,7 +51,7 @@ export default function Games({
 }) {
   const { fetched } = useLiveWeek({
     active: true,
-    leagues: LEAGUES,
+    leagues: POLLED_LEAGUES,
     games: scores?.games,
     onPoll,
     holdForKickoff: false,
@@ -94,27 +61,19 @@ export default function Games({
       ? []
       : [{ game, result: fetched?.get(game.result.id) ?? game.result }],
   );
-  const live = current.filter(({ result }) => LIVE_STATUSES.has(result.status));
-  const now = new Date();
-  const upcoming = current
-    .filter(({ result }) => result.status === GameStatus.UPCOMING)
-    .sort((a, b) => a.result.date.getTime() - b.result.date.getTime());
-  const completed = current.filter(
-    ({ result }) => result.status === GameStatus.FINAL,
+  const sections = gameSections(
+    current.map((card) => ({
+      card,
+      status: card.result.status,
+      kickoff: card.result.date,
+    })),
+    new Date(),
   );
 
-  const sections = [
-    { title: LIVE_TITLE, games: live },
-    ...DAYS.map(({ title, day }) => ({
-      title,
-      games: upcoming.filter(
-        ({ result }) => kickoffDay(result.date, now) === day,
-      ),
-    })),
-    { title: COMPLETED_TITLE, games: completed },
-  ].filter(({ games }) => games.length > 0);
-
-  const isFetching = live.some(({ game }) => fetchingLeagues?.has(game.league));
+  const isFetching = current.some(
+    ({ game, result }) =>
+      LIVE_STATUSES.has(result.status) && fetchingLeagues?.has(game.league),
+  );
 
   return (
     <div className="games">
@@ -130,10 +89,15 @@ export default function Games({
         <EmptyState>{NO_GAMES}</EmptyState>
       )}
       {scores != null &&
-        sections.map(({ title, games }) => (
-          <Section key={title} title={title} count={games.length}>
+        sections.map(({ title, cards }) => (
+          <GameSection
+            key={title}
+            className="games__section"
+            title={title}
+            count={cards.length}
+          >
             <ul className="games__list">
-              {games.map(({ game, result }) => (
+              {cards.map(({ game, result }) => (
                 <PoolGame
                   key={game.label}
                   game={game}
@@ -142,7 +106,7 @@ export default function Games({
                 />
               ))}
             </ul>
-          </Section>
+          </GameSection>
         ))}
     </div>
   );

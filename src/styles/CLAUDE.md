@@ -21,7 +21,8 @@ The `ui-style` skill maps each piece of UI to its token, mixin, or class.
 - `_layout.scss`: `$content-width`, the column the navbar and pages stand in,
   `stacked`, and `dialog-column`
 - `_page.scss`: `page-body`, and the game card frame and band, shared by the card pages
-- `_interactive.scss`: `interactive-fill`, the hover and press fill
+- `_interactive.scss`: `interactive-fill`, the hover and press fill, and
+  `press-lands-at-once`, a press with no ease in
 - `_fold.scss`: `fold-toggle`, the Show More button
 - `_label.scss`: `micro-label`, the tracked capitals every small label is set in,
   and `section-title`, the heading over a block, in the one secondary ink
@@ -30,7 +31,7 @@ The `ui-style` skill maps each piece of UI to its token, mixin, or class.
 - `_listbox.scss`: `listbox-popup` and `listbox-item`, a Base UI popup list's shape
 - `_skeleton.scss`: `skeleton-surface`, `skeleton-sheen`, `skeleton-reserve`
 - `_progress.scss`: `progress-bar`, the sweep a wait draws without moving the
-  page, and `$progress-height`
+  page, `page-progress-bar`, one stuck over a card page, and `$progress-height`
 - `_picks.scss`: `pick-type`, `pick-face`, `pick-label`, `badge`, and `ruled-block` with
   its `$rule-*` colors. How a pick, its game ID and a ruled block look anywhere
 - `_text.scss`: `truncate-line`, one line cut short where it runs out of room,

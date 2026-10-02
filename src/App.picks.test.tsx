@@ -351,7 +351,7 @@ describe("the app, automatic picks fetch", () => {
     expect(screen.getByText("Export Results")).toBeDisabled();
     await user.click(screen.getByRole("button", { name: "Menu" }));
     expect(
-      await screen.findByRole("menuitem", { name: "All Games" }),
+      await screen.findByRole("menuitem", { name: "Games" }),
     ).toHaveAttribute("data-disabled");
   });
 

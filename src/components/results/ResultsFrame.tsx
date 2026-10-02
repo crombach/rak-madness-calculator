@@ -22,12 +22,14 @@ import SEPARATOR from "../../utils/separator";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
 import ComparePlayersSkeleton from "../comparePlayers/ComparePlayersSkeleton";
 import GamesSkeleton from "../games/GamesSkeleton";
-import { preloadGamesRoute } from "../games/GamesPage";
+import { gamesPage } from "../games/GamesPage";
+import { knockoutsPage } from "../knockouts/KnockoutsPage";
+import { comparePlayersPage } from "../comparePlayers/ComparePlayersPage";
 import Button from "../button/Button";
 import AppNavbar from "../navbar/AppNavbar";
 import EmptyState from "../pageLayout/EmptyState";
 import { APP_NAME } from "../navbar/LogoButton";
-import SwingGamesSkeleton from "../swingGames/SwingGamesSkeleton";
+import KnockoutsSkeleton from "../knockouts/KnockoutsSkeleton";
 import SkeletonTable from "../table/SkeletonTable";
 import DialogLoadBoundary from "./DialogLoadBoundary";
 import {
@@ -58,10 +60,50 @@ const GameStatusDialog = lazy(loadGameStatusDialog);
 const SKELETONS: Record<ResultsPage, ReactNode> = {
   [RESULTS_PAGE.scoreboard]: <SkeletonTable view={RESULTS_PAGE.scoreboard} />,
   [RESULTS_PAGE.picks]: <SkeletonTable view={RESULTS_PAGE.picks} />,
-  [RESULTS_PAGE.swingGames]: <SwingGamesSkeleton />,
+  [RESULTS_PAGE.knockouts]: <KnockoutsSkeleton />,
   [RESULTS_PAGE.games]: <GamesSkeleton />,
   [RESULTS_PAGE.comparePlayers]: <ComparePlayersSkeleton />,
 };
+
+/**
+ * The pages whose code is fetched apart. The frame holds its own wireframe until
+ * that code is in too. Handed off sooner, the page's own fallback mounts a fresh
+ * copy of the same wireframe, and its sheen starts over.
+ */
+const LAZY_PAGES: Partial<
+  Record<
+    ResultsPage,
+    { preload: () => Promise<unknown>; isLoaded: () => boolean }
+  >
+> = {
+  [RESULTS_PAGE.knockouts]: knockoutsPage,
+  [RESULTS_PAGE.games]: gamesPage,
+  [RESULTS_PAGE.comparePlayers]: comparePlayersPage,
+};
+
+/**
+ * Whether `view`'s code is in, fetched alongside the week rather than after it. A
+ * fetch that fails answers true as well, so the page's own `lazy` asks again.
+ */
+function usePageCode(view: ResultsPage): boolean {
+  const page = LAZY_PAGES[view];
+  const [settled, setSettled] = useState<ResultsPage>();
+  const isIn = page == null || page.isLoaded() || settled === view;
+  useEffect(() => {
+    if (isIn || page == null) return;
+    let isOnScreen = true;
+    page
+      .preload()
+      .catch(doNothing)
+      .finally(() => {
+        if (isOnScreen) setSettled(view);
+      });
+    return () => {
+      isOnScreen = false;
+    };
+  }, [isIn, page, view]);
+  return isIn;
+}
 
 /** What the caption is sized from on a route that does not know the week yet. */
 const CAPTION_STAND_IN = `Scoreboard${SEPARATOR}0000 Season${SEPARATOR}Week 00`;
@@ -122,8 +164,11 @@ export default function ResultsFrame({
   // Once every game is final there is nothing left to fetch, so the refresh button
   // and the divider beside it go rather than sit there doing nothing.
   const isWeekSettled = useIsWeekSettled();
-  // Games polls on its own, so it offers no refresh of its own either.
-  const canRefresh = !isWeekSettled && view !== RESULTS_PAGE.games;
+  // The card pages poll on their own, so they offer no refresh of their own either.
+  const canRefresh =
+    !isWeekSettled &&
+    view !== RESULTS_PAGE.games &&
+    view !== RESULTS_PAGE.knockouts;
   const [opened, setOpened] = useState<Opened>();
   // Set once both dialogs are fetched, which mounts them closed. Each one reads
   // the week as it mounts, and `PlayerAnalysisDialog` walks every pick of every
@@ -143,6 +188,8 @@ export default function ResultsFrame({
   // The logos belong to the week rather than to the dialog that draws them, so
   // they are warmed from here. `useWarmTeamLogos` says why.
   useWarmTeamLogos(scores?.games);
+
+  const hasPageCode = usePageCode(view);
 
   const { showToast } = useToastActions();
   // Said once, for either dialog. Neither can be retried, so the only way on is a
@@ -181,7 +228,7 @@ export default function ResultsFrame({
   // Fetched ahead too, so the menu's link lands on the page rather than on a
   // frame of wireframe while its chunk arrives.
   useEffect(() => {
-    preloadGamesRoute().catch(doNothing);
+    gamesPage.preload().catch(doNothing);
   }, []);
 
   // Stable, so the memoized tables below do not re-render for a dialog opening.
@@ -248,7 +295,7 @@ export default function ResultsFrame({
         </p>
         <PlayerAnalysisContextProvider showPlayerAnalysis={showPlayerAnalysis}>
           <GameStatusContextProvider showGameStatus={showGameStatus}>
-            {isReady ? (
+            {isReady && hasPageCode ? (
               children
             ) : hasFailed ? (
               <div className="results-failure">

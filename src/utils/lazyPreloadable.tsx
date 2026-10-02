@@ -7,7 +7,7 @@ type Loader<P> = () => Promise<{ default: ComponentType<P> }>;
  *
  * Once its chunk is in, `Page` renders the component straight away. `lazy`
  * suspends for a tick even on a chunk already in, and React then holds its
- * fallback up for 300ms.
+ * fallback up for 300ms. `isLoaded` says whether that chunk is in.
  */
 export default function lazyPreloadable<P extends object>(
   loader: Loader<P>,
@@ -31,5 +31,5 @@ export default function lazyPreloadable<P extends object>(
     );
   }
 
-  return { Page, preload };
+  return { Page, preload, isLoaded: () => loaded != null };
 }

@@ -1,10 +1,16 @@
 import { useNavigate } from "react-router";
-import { screen, waitFor, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 
 vi.mock("../../utils/getLeagueInfo");
 vi.mock("../../utils/readFileToBuffer");
 vi.mock("../../utils/scoring/getPlayerScores");
 vi.mock("../../utils/buildSpreadsheetBuffer");
+// The page itself, spied on, so the gate's own test can tell the page never
+// mounted rather than read a redirect the page would make on its own.
+vi.mock("./Knockouts", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./Knockouts")>();
+  return { default: vi.fn(actual.default) };
+});
 
 import {
   CURRENT_WEEK,
@@ -15,18 +21,23 @@ import {
   setUpAppTest,
   spreadsheetResponse,
 } from "../../appTestFixtures";
-import { PLAYER_NAME_KEY } from "../../context/SettingsContext";
+import {
+  EXPERIMENTAL_FEATURES_KEY,
+  PLAYER_NAME_KEY,
+} from "../../context/SettingsContext";
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import plural from "../../utils/plural";
+import Knockouts from "./Knockouts";
 import {
   delayedGame,
+  finalGame,
   liveGame,
   upcomingGame,
 } from "../../utils/scoring/leagueResultFixtures";
 import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
 
-const SWINGS_PATH = `/${SEASON}/${CURRENT_WEEK}/swings`;
+const KNOCKOUTS_PATH = `/${SEASON}/${CURRENT_WEEK}/knockouts`;
 
 /** Steps back through the router's history, as the browser's own button does. */
 function BackButton() {
@@ -38,23 +49,22 @@ function BackButton() {
   );
 }
 
-/** The toggle's `aria-label`: the game, its player count, then its mark's label. */
-function bandName(game: string, count: number, status = "Not listed by ESPN") {
-  return `${game}, ${plural(count, "player")}, ${status}`;
-}
-
 /**
- * The game button's `aria-label`: opens Game Status, then its mark's label. A game
- * with no ESPN result, as most fixtures here are, reads as unlisted.
+ * The band's `aria-label`: opens Game Status, the player count, then its mark's
+ * label. A game with no ESPN result, as most fixtures here are, reads as unlisted.
  */
-function gameButtonName(game: string, status = "Not listed by ESPN") {
-  return `Game Status for ${game}, ${status}`;
+function gameButtonName(
+  game: string,
+  count: number,
+  status = "Not listed by ESPN",
+) {
+  return `Game Status for ${game}, ${plural(count, "player")}, ${status}`;
 }
 
 /** The mark in a game's band, found from its game button. */
 function bandMark(gameButton: HTMLElement) {
   return gameButton
-    .closest(".swing-games__title")
+    .closest(".knockouts__title")
     ?.querySelector(".game-status__mark:not(.--count)");
 }
 
@@ -64,7 +74,7 @@ function mustWinHeading(count: number, pickText: string) {
 }
 
 /** Level on points, so each is out if their side of P1 misses. */
-function swingScores(alicePick = "KC -3", bobPick = "DEN 3") {
+function knockoutScores(alicePick = "KC -3", bobPick = "DEN 3") {
   const scores = week([
     player({ name: "Alice", total: 5, pro: [pick(alicePick)] }),
     player({ name: "Bob", total: 5, pro: [pick(bobPick)] }),
@@ -102,7 +112,7 @@ function stubColumns(count: number) {
   const real = window.getComputedStyle.bind(window);
   vi.spyOn(window, "getComputedStyle").mockImplementation((element, pseudo) => {
     const style = real(element, pseudo);
-    if (!element.classList.contains("swing-games__players")) return style;
+    if (!element.classList.contains("knockouts__players")) return style;
     return new Proxy(style, {
       get: (target, key) => {
         if (key === "gridTemplateColumns") {
@@ -124,33 +134,43 @@ function playerButtons(pickName: string) {
 
 beforeEach(() => {
   setUpAppTest().mockResolvedValue(spreadsheetResponse());
-  getPlayerScoresMock.mockResolvedValue(swingScores());
+  localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
+  getPlayerScoresMock.mockResolvedValue(knockoutScores());
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("the swing games route", () => {
+describe("the knockouts route", () => {
   it("names the page and marks neither view as selected", async () => {
-    mountApp(SWINGS_PATH);
+    mountApp(KNOCKOUTS_PATH);
 
     expect(
       await screen.findByRole("heading", {
         level: 1,
-        name: `${SEASON} Week ${CURRENT_WEEK} Swing Games`,
+        name: `${SEASON} Week ${CURRENT_WEEK} Knockouts`,
       }),
     ).toBeInTheDocument();
     await screen.findByText("KC at DEN");
     expect(
-      screen.getByText(`Swing Games • ${SEASON} Season • Week ${CURRENT_WEEK}`),
+      screen.getByText(`Knockouts • ${SEASON} Season • Week ${CURRENT_WEEK}`),
     ).toBeInTheDocument();
     expect(screen.queryAllByRole("button", { pressed: true })).toHaveLength(0);
     expect(screen.getByRole("button", { name: "Scoreboard" })).toBeEnabled();
   });
 
+  it("offers no refresh, since the page polls on its own", async () => {
+    mountApp(KNOCKOUTS_PATH);
+    await screen.findByText("KC at DEN");
+
+    expect(
+      screen.queryByRole("button", { name: "Refresh" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("sets the menu off from the view buttons with a divider", async () => {
-    mountApp(SWINGS_PATH);
+    mountApp(KNOCKOUTS_PATH);
     await screen.findByText("KC at DEN");
 
     const divider = screen
@@ -163,9 +183,11 @@ describe("the swing games route", () => {
   });
 
   it("shows each side of a game with the players it knocks out", async () => {
-    mountApp(SWINGS_PATH);
+    mountApp(KNOCKOUTS_PATH);
 
-    const game = (await screen.findByText("KC at DEN")).closest("section");
+    const game = (await screen.findByText("KC at DEN")).closest(
+      ".knockouts__group",
+    );
     expect(game).not.toBeNull();
     const inGame = within(game as HTMLElement);
     const kc = inGame.getByRole("heading", {
@@ -184,8 +206,8 @@ describe("the swing games route", () => {
   });
 
   it("names a pick with no spread by its team alone", async () => {
-    getPlayerScoresMock.mockResolvedValue(swingScores("KC", "DEN"));
-    mountApp(SWINGS_PATH);
+    getPlayerScoresMock.mockResolvedValue(knockoutScores("KC", "DEN"));
+    mountApp(KNOCKOUTS_PATH);
 
     expect(
       await screen.findByRole("heading", { name: mustWinHeading(1, "KC") }),
@@ -196,7 +218,7 @@ describe("the swing games route", () => {
   });
 
   it("opens the player analysis from a player's name", async () => {
-    const user = mountApp(SWINGS_PATH);
+    const user = mountApp(KNOCKOUTS_PATH);
 
     await user.click(await screen.findByRole("button", { name: "Alice" }));
 
@@ -207,7 +229,7 @@ describe("the swing games route", () => {
   });
 
   it("opens the player analysis from the keyboard", async () => {
-    const user = mountApp(SWINGS_PATH);
+    const user = mountApp(KNOCKOUTS_PATH);
     const bob = await screen.findByRole("button", { name: "Bob" });
 
     bob.focus();
@@ -219,40 +241,18 @@ describe("the swing games route", () => {
     expect(within(dialog).getByRole("combobox")).toHaveValue("Bob");
   });
 
-  it("opens the game status from the game button, leaving it open", async () => {
-    const user = mountApp(SWINGS_PATH);
+  it("opens the game status from the band", async () => {
+    const user = mountApp(KNOCKOUTS_PATH);
 
     await user.click(
       await screen.findByRole("button", {
-        name: gameButtonName("P1 KC at DEN"),
+        name: gameButtonName("P1 KC at DEN", 2),
       }),
     );
 
     expect(
       await screen.findByRole("dialog", { name: /Game Status/ }),
     ).toBeInTheDocument();
-    // Behind the modal dialog, which hides the page from the accessibility tree.
-    expect(
-      screen.getByRole("button", {
-        name: bandName("P1 KC at DEN", 2),
-        hidden: true,
-      }),
-    ).toHaveAttribute("aria-expanded", "true");
-  });
-
-  it("reaches the game button before the toggle, tabbing through", async () => {
-    const user = mountApp(SWINGS_PATH);
-    const gameButton = await screen.findByRole("button", {
-      name: gameButtonName("P1 KC at DEN"),
-    });
-    const toggle = screen.getByRole("button", {
-      name: bandName("P1 KC at DEN", 2),
-    });
-
-    gameButton.focus();
-    await user.tab();
-
-    expect(toggle).toHaveFocus();
   });
 
   it("lists games in column order and names each band by its column", async () => {
@@ -268,143 +268,166 @@ describe("the swing games route", () => {
       { label: "P2", league: League.PRO, name: "SF at LAR" },
     ];
     getPlayerScoresMock.mockResolvedValue(scores);
-    mountApp(SWINGS_PATH);
+    mountApp(KNOCKOUTS_PATH);
     await screen.findByText("KC at DEN");
 
     const bands = screen
       .getAllByRole("button", { name: /^Game Status for/ })
-      .map((band) => band.textContent);
+      .map((band) =>
+        [".knockouts__game-label", ".knockouts__game-matchup"]
+          .map((part) => band.querySelector(part)?.textContent)
+          .join(" "),
+      );
     expect(bands).toEqual(["P1 KC at DEN", "P2 SF at LAR"]);
-    expect(screen.getByText("P1")).toHaveClass("swing-games__game-label");
+    expect(screen.getByText("P1")).toHaveClass("knockouts__game-label");
   });
 
-  describe("folding a game", () => {
-    /** Alice needs both games, so each is a swing. */
-    function twoGameScores() {
+  describe("a week under way", () => {
+    // P1 put Alice a point clear of Carol and left Bob, level with Alice on every
+    // game after it, no way past her. Carol needs both games still to come.
+    function underWayScores() {
       const scores = week([
         player({
           name: "Alice",
-          total: 5,
-          pro: [pick("KC -3"), pick("NYJ")],
+          total: 6,
+          pro: [pick("KC", "yes"), pick("SF"), pick("MIA")],
         }),
-        player({ name: "Bob", total: 6, pro: [pick("DEN 3"), pick("MIA")] }),
+        player({
+          name: "Carol",
+          total: 5,
+          pro: [pick("KC", "yes"), pick("LAR"), pick("NYJ")],
+        }),
+        player({
+          name: "Bob",
+          total: 4,
+          pro: [pick("DEN", "no"), pick("SF"), pick("MIA")],
+          isKnockedOut: true,
+        }),
       ]);
       scores.games = [
-        { label: "P1", league: League.PRO, name: "KC at DEN" },
-        { label: "P2", league: League.PRO, name: "NYJ at MIA" },
+        {
+          label: "P1",
+          league: League.PRO,
+          name: "KC at DEN",
+          result: finalGame({
+            home: "DEN",
+            away: "KC",
+            homeScore: 10,
+            awayScore: 20,
+          }),
+        },
+        {
+          label: "P2",
+          league: League.PRO,
+          name: "SF at LAR",
+          result: liveGame({
+            home: "LAR",
+            away: "SF",
+            homeScore: 7,
+            awayScore: 3,
+          }),
+        },
+        {
+          label: "P3",
+          league: League.PRO,
+          name: "MIA at NYJ",
+          result: upcomingGame({ home: "NYJ", away: "MIA" }),
+        },
       ];
       return scores;
     }
 
-    it("starts every game open", async () => {
-      getPlayerScoresMock.mockResolvedValue(twoGameScores());
-      mountApp(SWINGS_PATH);
+    it("sorts the games into the sections Games has, live first", async () => {
+      getPlayerScoresMock.mockResolvedValue(underWayScores());
+      mountApp(KNOCKOUTS_PATH);
+      await screen.findByText("KC at DEN");
 
-      for (const name of [
-        bandName("P1 KC at DEN", 1),
-        bandName("P2 NYJ at MIA", 1),
-      ]) {
-        expect(await screen.findByRole("button", { name })).toHaveAttribute(
-          "aria-expanded",
-          "true",
-        );
+      const sections = screen
+        .getAllByRole("region")
+        .filter((region) => region.classList.contains("knockouts__section"));
+      expect(
+        sections.map((section) => [
+          within(section).getByRole("heading", { level: 2 }).firstChild
+            ?.textContent,
+          within(section)
+            .getAllByRole("heading", { level: 3 })
+            .map(
+              (band) =>
+                band.querySelector(".knockouts__game-label")?.textContent,
+            ),
+        ]),
+      ).toEqual([
+        ["Live", ["P2"]],
+        ["Today", ["P3"]],
+        ["Completed", ["P1"]],
+      ]);
+    });
+
+    it("keeps a final game with the players it knocked out, ruled as out", async () => {
+      getPlayerScoresMock.mockResolvedValue(underWayScores());
+      mountApp(KNOCKOUTS_PATH);
+
+      const heading = await screen.findByRole("heading", {
+        level: 4,
+        name: "1 knocked out on DEN",
+      });
+      const side = within(heading.parentElement as HTMLElement);
+      expect(side.queryByRole("button", { name: "Bob" })).toBeNull();
+      expect(side.getByText("Bob").parentElement).toHaveClass("--knocked-out");
+      for (const carol of screen.getAllByRole("button", { name: "Carol" })) {
+        expect(carol).not.toHaveClass("--knocked-out");
       }
-    });
-
-    it("folds a game from its band and opens it again, on its own", async () => {
-      getPlayerScoresMock.mockResolvedValue(twoGameScores());
-      const user = mountApp(SWINGS_PATH);
-      const band = await screen.findByRole("button", {
-        name: bandName("P1 KC at DEN", 1),
-      });
-
-      await user.click(band);
-
-      expect(band).toHaveAttribute("aria-expanded", "false");
-      await waitFor(() =>
-        expect(
-          screen.queryByRole("heading", { name: mustWinHeading(1, "KC -3") }),
-        ).not.toBeInTheDocument(),
-      );
-      expect(
-        screen.getByRole("heading", { name: mustWinHeading(1, "NYJ") }),
-      ).toBeInTheDocument();
-
-      await user.click(band);
-
-      expect(band).toHaveAttribute("aria-expanded", "true");
-      expect(
-        await screen.findByRole("heading", {
-          name: mustWinHeading(1, "KC -3"),
-        }),
-      ).toBeInTheDocument();
-    });
-
-    it("starts every game open again in another week", async () => {
-      // A fresh spreadsheet per fetch, since each week reads its own body.
-      vi.mocked(global.fetch).mockImplementation(() =>
-        Promise.resolve(spreadsheetResponse()),
-      );
-      getPlayerScoresMock.mockResolvedValue(twoGameScores());
-      const user = mountApp(SWINGS_PATH, {
-        earlier: [`/${SEASON}/${CURRENT_WEEK - 1}/swings`],
-        beside: <BackButton />,
-      });
-      const band = await screen.findByRole("button", {
-        name: bandName("P1 KC at DEN", 1),
-      });
-      await user.click(band);
-      expect(band).toHaveAttribute("aria-expanded", "false");
-
-      await user.click(screen.getByRole("button", { name: "Back" }));
-
-      await waitFor(() =>
-        expect(
-          screen.getByRole("button", { name: bandName("P1 KC at DEN", 1) }),
-        ).toHaveAttribute("aria-expanded", "true"),
-      );
-    });
-
-    it("folds and opens from the keyboard", async () => {
-      const user = mountApp(SWINGS_PATH);
-      const band = await screen.findByRole("button", {
-        name: bandName("P1 KC at DEN", 2),
-      });
-
-      band.focus();
-      await user.keyboard("{Enter}");
-      expect(band).toHaveAttribute("aria-expanded", "false");
-
-      await user.keyboard(" ");
-      expect(band).toHaveAttribute("aria-expanded", "true");
-    });
-
-    it("keeps a side shown in full through a fold", async () => {
-      getPlayerScoresMock.mockResolvedValue(crowdedScores());
-      const user = mountApp(SWINGS_PATH);
-      const band = await screen.findByRole("button", {
-        name: bandName("P1 KC at DEN", 10),
-      });
-
-      await user.click(screen.getByRole("button", { name: "Show More" }));
-      await user.click(band);
-      await user.click(band);
-
-      expect(
-        await screen.findByRole("button", { name: "Show Fewer" }),
-      ).toBeInTheDocument();
     });
   });
 
-  it("folds a long side to two rows, then shows the rest on asking", async () => {
+  it("opens a settled week on who each game knocked out", async () => {
+    const scores = week(
+      [
+        player({ name: "Alice", total: 5, pro: [pick("KC", "yes")] }),
+        player({
+          name: "Bob",
+          total: 4,
+          pro: [pick("DEN", "no")],
+          isKnockedOut: true,
+        }),
+      ],
+      41,
+    );
+    scores.games = [
+      {
+        label: "P1",
+        league: League.PRO,
+        name: "KC at DEN",
+        result: finalGame({
+          home: "DEN",
+          away: "KC",
+          homeScore: 10,
+          awayScore: 20,
+        }),
+      },
+    ];
+    getPlayerScoresMock.mockResolvedValue(scores);
+    mountApp(KNOCKOUTS_PATH);
+
+    const section = await screen.findByRole("region", { name: "Completed" });
+    expect(
+      within(section).getByRole("heading", {
+        level: 4,
+        name: "1 knocked out on DEN",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+  });
+
+  it("folds a long side to three rows, then shows the rest on asking", async () => {
     stubColumns(2);
     getPlayerScoresMock.mockResolvedValue(crowdedScores());
-    const user = mountApp(SWINGS_PATH);
+    const user = mountApp(KNOCKOUTS_PATH);
     await screen.findByText("KC at DEN");
 
     expect(
       playerButtons(mustWinHeading(9, "KC -3")).map((it) => it.textContent),
-    ).toEqual(KC_BACKERS.slice(0, 4));
+    ).toEqual(KC_BACKERS.slice(0, 6));
     const more = screen.getByRole("button", { name: "Show More" });
     expect(more).toHaveAttribute("aria-expanded", "false");
 
@@ -419,20 +442,20 @@ describe("the swing games route", () => {
     );
   });
 
-  it("offers no toggle for a side that fits in two rows", async () => {
+  it("offers no toggle for a side that fits in three rows", async () => {
     stubColumns(2);
-    getPlayerScoresMock.mockResolvedValue(crowdedScores(4));
-    mountApp(SWINGS_PATH);
+    getPlayerScoresMock.mockResolvedValue(crowdedScores(6));
+    mountApp(KNOCKOUTS_PATH);
     await screen.findByText("KC at DEN");
 
-    expect(playerButtons(mustWinHeading(4, "KC -3"))).toHaveLength(4);
+    expect(playerButtons(mustWinHeading(6, "KC -3"))).toHaveLength(6);
     expect(screen.queryByRole("button", { name: /^Show/ })).toBeNull();
   });
 
   it("fits more names on a screen with more columns", async () => {
     stubColumns(5);
     getPlayerScoresMock.mockResolvedValue(crowdedScores());
-    mountApp(SWINGS_PATH);
+    mountApp(KNOCKOUTS_PATH);
     await screen.findByText("KC at DEN");
 
     expect(playerButtons(mustWinHeading(9, "KC -3"))).toHaveLength(9);
@@ -442,13 +465,13 @@ describe("the swing games route", () => {
   it("puts the reader first and marks them, even in a folded side", async () => {
     localStorage.setItem(PLAYER_NAME_KEY, "  hal ");
     getPlayerScoresMock.mockResolvedValue(crowdedScores());
-    mountApp(SWINGS_PATH);
+    mountApp(KNOCKOUTS_PATH);
     await screen.findByText("KC at DEN");
 
     const shown = playerButtons(mustWinHeading(9, "KC -3"));
     expect(shown.map((it) => it.textContent)).toEqual([
       "Hal",
-      ...KC_BACKERS.slice(0, 3),
+      ...KC_BACKERS.slice(0, 5),
     ]);
     expect(shown[0]).toHaveClass("--mine");
     expect(shown[1]).not.toHaveClass("--mine");
@@ -456,7 +479,7 @@ describe("the swing games route", () => {
 
   describe("the mark on a game's heading", () => {
     function withResult(result: LeagueResult) {
-      const scores = swingScores();
+      const scores = knockoutScores();
       scores.games = [{ ...scores.games![0], result }];
       return scores;
     }
@@ -466,10 +489,10 @@ describe("the swing games route", () => {
       getPlayerScoresMock.mockResolvedValue(
         withResult(liveGame({ ...teams, homeScore: 7, awayScore: 3 })),
       );
-      mountApp(SWINGS_PATH);
+      mountApp(KNOCKOUTS_PATH);
 
       const heading = await screen.findByRole("button", {
-        name: gameButtonName("P1 KC at DEN", "Live"),
+        name: gameButtonName("P1 KC at DEN", 2, "Live"),
       });
       expect(bandMark(heading)).toHaveClass("--live");
     });
@@ -480,20 +503,20 @@ describe("the swing games route", () => {
           delayedGame({ ...teams, homeScore: 7, awayScore: 3, period: 2 }),
         ),
       );
-      mountApp(SWINGS_PATH);
+      mountApp(KNOCKOUTS_PATH);
 
       const heading = await screen.findByRole("button", {
-        name: gameButtonName("P1 KC at DEN", "Delayed"),
+        name: gameButtonName("P1 KC at DEN", 2, "Delayed"),
       });
       expect(bandMark(heading)).toHaveClass("--delayed");
     });
 
     it("marks a game yet to start as upcoming", async () => {
       getPlayerScoresMock.mockResolvedValue(withResult(upcomingGame(teams)));
-      mountApp(SWINGS_PATH);
+      mountApp(KNOCKOUTS_PATH);
 
       const heading = await screen.findByRole("button", {
-        name: gameButtonName("P1 KC at DEN", "Yet to kick off"),
+        name: gameButtonName("P1 KC at DEN", 2, "Yet to kick off"),
       });
       expect(bandMark(heading)).toHaveClass("--upcoming");
     });
@@ -511,11 +534,11 @@ describe("the swing games route", () => {
     }
 
     it.each([
-      ["a won week", () => decidedScores],
+      ["a decided week no game knocked anyone out of", () => decidedScores],
       ["open games no one must win", quietScores],
     ])("sends %s to the scoreboard in place of the page", async (_, make) => {
       getPlayerScoresMock.mockResolvedValue(make());
-      const user = mountApp(SWINGS_PATH, {
+      const user = mountApp(KNOCKOUTS_PATH, {
         earlier: ["/"],
         beside: <BackButton />,
       });
@@ -526,6 +549,29 @@ describe("the swing games route", () => {
           name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
         }),
       ).toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Back" }));
+
+      expect(
+        await screen.findByText("Use Local Spreadsheet"),
+      ).toBeInTheDocument();
+    });
+
+    it("sends a reader without experimental features to the scoreboard in place of the page", async () => {
+      localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
+      vi.mocked(Knockouts).mockClear();
+      const user = mountApp(KNOCKOUTS_PATH, {
+        earlier: ["/"],
+        beside: <BackButton />,
+      });
+
+      expect(
+        await screen.findByRole("heading", {
+          level: 1,
+          name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
+        }),
+      ).toBeInTheDocument();
+      expect(Knockouts).not.toHaveBeenCalled();
 
       await user.click(screen.getByRole("button", { name: "Back" }));
 

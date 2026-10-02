@@ -5,8 +5,7 @@ import { Link, useLocation } from "react-router";
 import {
   useScores,
   useIsWeekSettled,
-  useIsWeekWon,
-  useSwingGames,
+  useKnockouts,
 } from "../../context/AppDataContext";
 import { useSettings } from "../../context/SettingsContext";
 import cssMediaQuery from "../../hooks/cssMediaQuery";
@@ -20,7 +19,7 @@ import {
   MenuIcon,
   ScoreboardIcon,
   SettingsIcon,
-  SwapVertIcon,
+  SkullOutlinedIcon,
 } from "../icon/Icon";
 import resultsPath, { RESULTS_PAGE, weekName } from "../results/resultsPath";
 import SettingsDialog from "../settings/SettingsDialog";
@@ -32,8 +31,7 @@ type Week = number | string | undefined;
 /** What an item's enabled rule can read. */
 type NavContext = {
   isWeekSettled: boolean;
-  isWeekWon: boolean;
-  swingGames: ReturnType<typeof useSwingGames>;
+  knockouts: ReturnType<typeof useKnockouts>;
   /** How many players the week has, or undefined while its scores load. */
   playerCount?: number;
 };
@@ -69,27 +67,22 @@ const COMPARE_PLAYERS: NavItem = {
       : undefined,
 };
 
+const KNOCKOUTS: NavItem = {
+  label: RESULTS_PAGE.knockouts,
+  icon: <SkullOutlinedIcon />,
+  path: (season, week) => resultsPath(season, week, RESULTS_PAGE.knockouts),
+  // Scores still loading, which is soon over and needs no word. A complete
+  // week needs none either.
+  disabled: ({ knockouts }) =>
+    knockouts == null || knockouts.games.length === 0,
+  disabledReason: ({ isWeekSettled, knockouts }) =>
+    !isWeekSettled && knockouts?.games.length === 0
+      ? "No game knocks anyone out"
+      : undefined,
+};
+
 // Home leads, then the pages. Settings renders after them, outside this list.
-const ITEMS: Array<NavItem> = [
-  HOME,
-  GAMES,
-  {
-    label: RESULTS_PAGE.swingGames,
-    icon: <SwapVertIcon />,
-    path: (season, week) => resultsPath(season, week, RESULTS_PAGE.swingGames),
-    // Scores still loading, which is soon over and needs no word. A complete
-    // week needs none either.
-    disabled: ({ isWeekSettled, swingGames }) =>
-      isWeekSettled || swingGames == null,
-    disabledReason: ({ isWeekSettled, isWeekWon, swingGames }) => {
-      if (isWeekSettled) return undefined;
-      if (isWeekWon) return "Week complete";
-      if (swingGames?.games.length === 0) return "No game knocks anyone out";
-      return undefined;
-    },
-  },
-  COMPARE_PLAYERS,
-];
+const ITEMS: Array<NavItem> = [HOME, GAMES, KNOCKOUTS, COMPARE_PLAYERS];
 
 const SETTINGS_LABEL = "Settings";
 
@@ -100,8 +93,8 @@ const TRIGGER_CLASSES = buttonClasses({ compact: true, iconOnly: true });
 
 /**
  * The hamburger every page opens beside the scoreboard/picks switch. A drawer
- * from the right edge below `wide-screen`, a popup menu at it and above. Compare
- * Players only with the experimental opt-in.
+ * from the right edge below `wide-screen`, a popup menu at it and above. Knockouts
+ * and Compare Players only with the experimental opt-in.
  */
 export default function NavMenu({
   season,
@@ -117,8 +110,7 @@ export default function NavMenu({
   const isNarrow = useMediaQuery(query);
   const { pathname } = useLocation();
   const isWeekSettled = useIsWeekSettled();
-  const isWeekWon = useIsWeekWon();
-  const swingGames = useSwingGames();
+  const knockouts = useKnockouts();
   const playerCount = useScores()?.scores.length;
   const { experimentalFeatures } = useSettings();
   const [isSettingsOpen, setSettingsOpen] = useState(false);
@@ -126,13 +118,12 @@ export default function NavMenu({
 
   const context: NavContext = {
     isWeekSettled,
-    isWeekWon,
-    swingGames,
+    knockouts,
     playerCount,
   };
   const shown = experimentalFeatures
     ? ITEMS
-    : ITEMS.filter((item) => item !== COMPARE_PLAYERS);
+    : ITEMS.filter((item) => item !== KNOCKOUTS && item !== COMPARE_PLAYERS);
   const links = shown.map((item) => {
     const path = item.path(season, week);
     const isHeldOff = pagesDisabled && item !== HOME;

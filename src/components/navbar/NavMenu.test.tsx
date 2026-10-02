@@ -5,35 +5,32 @@ import { MemoryRouter, Route, Routes, useLocation } from "react-router";
 import {
   useScores,
   useIsWeekSettled,
-  useIsWeekWon,
-  useSwingGames,
+  useKnockouts,
 } from "../../context/AppDataContext";
 import {
   EXPERIMENTAL_FEATURES_KEY,
   SettingsContextProvider,
 } from "../../context/SettingsContext";
-import { SwingGame } from "../../utils/scoring/getSwingGames";
+import { KnockoutGame } from "../../utils/scoring/getKnockouts";
 import { SETTINGS_SEEN_KEY } from "../settings/useSettingsSeen";
 import NavMenu from "./NavMenu";
 
 vi.mock("../../context/AppDataContext", () => ({
   useScores: vi.fn(),
   useIsWeekSettled: vi.fn(),
-  useIsWeekWon: vi.fn(),
-  useSwingGames: vi.fn(),
+  useKnockouts: vi.fn(),
 }));
 
 const mockScores = useScores as Mock;
 const mockIsWeekSettled = useIsWeekSettled as Mock;
-const mockIsWeekWon = useIsWeekWon as Mock;
-const mockSwingGames = useSwingGames as Mock;
+const mockKnockouts = useKnockouts as Mock;
 /** Enough players to compare, as `useScores()` holds them. */
 const TWO_PLAYERS = { scores: [{}, {}] };
-const A_SWING_GAME = {} as SwingGame;
+const A_KNOCKOUT_GAME = {} as KnockoutGame;
 
 const SEASON = 2024;
 const WEEK = 3;
-const SWINGS_PATH = `/${SEASON}/${WEEK}/swings`;
+const KNOCKOUTS_PATH = `/${SEASON}/${WEEK}/knockouts`;
 const GAMES_PATH = `/${SEASON}/${WEEK}/games`;
 const COMPARE_PATH = `/${SEASON}/${WEEK}/compare`;
 
@@ -76,11 +73,10 @@ function trigger() {
 describe("NavMenu", () => {
   beforeEach(() => {
     localStorage.clear();
-    // Swing Games gates on this opt-in too, beside `isWeekWon`.
+    // Knockouts shows only with this opt-in.
     localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
     mockIsWeekSettled.mockReturnValue(false);
-    mockIsWeekWon.mockReturnValue(false);
-    mockSwingGames.mockReturnValue({ games: [A_SWING_GAME] });
+    mockKnockouts.mockReturnValue({ games: [A_KNOCKOUT_GAME] });
     mockScores.mockReturnValue(TWO_PLAYERS);
   });
 
@@ -91,7 +87,7 @@ describe("NavMenu", () => {
   });
 
   describe("at wide-screen", () => {
-    it("lists Home, All Games, Swing Games, Compare Players, then Settings", async () => {
+    it("lists Home, Games, Knockouts, Compare Players, then Settings", async () => {
       const user = mount();
       await user.click(trigger());
 
@@ -99,14 +95,14 @@ describe("NavMenu", () => {
 
       expect(items.map((item) => item.textContent)).toEqual([
         "Home",
-        "All Games",
-        "Swing Games",
+        "Games",
+        "Knockouts",
         "Compare Players",
         "Settings",
       ]);
     });
 
-    it("leaves out Compare Players with experimental features off", async () => {
+    it("leaves out Knockouts and Compare Players with experimental features off", async () => {
       localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
       const user = mount();
       await user.click(trigger());
@@ -115,8 +111,7 @@ describe("NavMenu", () => {
 
       expect(items.map((item) => item.textContent)).toEqual([
         "Home",
-        "All Games",
-        "Swing Games",
+        "Games",
         "Settings",
       ]);
     });
@@ -136,12 +131,12 @@ describe("NavMenu", () => {
 
     it("gives the pages no reason when told to disable them", async () => {
       mockScores.mockReturnValue({ scores: [{}] });
-      mockSwingGames.mockReturnValue({ games: [] });
+      mockKnockouts.mockReturnValue({ games: [] });
       const user = mount({ pagesDisabled: true });
       await user.click(trigger());
 
       expect(
-        await screen.findByRole("menuitem", { name: "Swing Games" }),
+        await screen.findByRole("menuitem", { name: "Knockouts" }),
       ).not.toHaveAccessibleDescription();
     });
 
@@ -229,7 +224,7 @@ describe("NavMenu", () => {
         await screen.findByRole("menuitem", { name: "Home" }),
       ).toHaveAttribute("aria-current", "page");
       expect(
-        screen.getByRole("menuitem", { name: "Swing Games" }),
+        screen.getByRole("menuitem", { name: "Knockouts" }),
       ).not.toHaveAttribute("aria-current");
     });
 
@@ -246,7 +241,7 @@ describe("NavMenu", () => {
     it("returns focus to the trigger on Escape", async () => {
       const user = mount();
       await user.click(trigger());
-      await screen.findByRole("menuitem", { name: "Swing Games" });
+      await screen.findByRole("menuitem", { name: "Knockouts" });
 
       await user.keyboard("{Escape}");
 
@@ -254,15 +249,15 @@ describe("NavMenu", () => {
       expect(screen.queryByRole("menuitem")).not.toBeInTheDocument();
     });
 
-    it("goes to the swing games page and closes on a click", async () => {
+    it("goes to the knockouts page and closes on a click", async () => {
       const user = mount();
       await user.click(trigger());
       await user.click(
-        await screen.findByRole("menuitem", { name: "Swing Games" }),
+        await screen.findByRole("menuitem", { name: "Knockouts" }),
       );
 
       expect(await screen.findByTestId("landed")).toHaveTextContent(
-        SWINGS_PATH,
+        KNOCKOUTS_PATH,
       );
       expect(screen.queryByRole("menuitem")).not.toBeInTheDocument();
     });
@@ -305,9 +300,7 @@ describe("NavMenu", () => {
     it("goes to the games page on a click", async () => {
       const user = mount();
       await user.click(trigger());
-      await user.click(
-        await screen.findByRole("menuitem", { name: "All Games" }),
-      );
+      await user.click(await screen.findByRole("menuitem", { name: "Games" }));
 
       expect(await screen.findByTestId("landed")).toHaveTextContent(GAMES_PATH);
     });
@@ -317,93 +310,91 @@ describe("NavMenu", () => {
       const user = mount();
       await user.click(trigger());
 
-      const item = await screen.findByRole("menuitem", { name: "All Games" });
+      const item = await screen.findByRole("menuitem", { name: "Games" });
 
       expect(item).toHaveAttribute("data-disabled");
       expect(item).toHaveAccessibleDescription("");
     });
 
-    it("disables the pages a complete week has no use for, with no reason", async () => {
+    it("disables Knockouts on a complete week no game knocked anyone out of, with no reason", async () => {
       mockIsWeekSettled.mockReturnValue(true);
-      mockIsWeekWon.mockReturnValue(true);
-      mockSwingGames.mockReturnValue({ games: [] });
+      mockKnockouts.mockReturnValue({ games: [] });
       const user = mount();
       await user.click(trigger());
 
-      const item = await screen.findByRole("menuitem", { name: /Swing Games/ });
+      const item = await screen.findByRole("menuitem", { name: /Knockouts/ });
       expect(item).toHaveAttribute("data-disabled");
       expect(item).not.toHaveAccessibleDescription();
       expect(
-        screen.getByRole("menuitem", { name: "All Games" }),
+        screen.getByRole("menuitem", { name: "Games" }),
       ).not.toHaveAttribute("data-disabled");
     });
 
-    it("disables Swing Games once the week has a winner, games still to play", async () => {
-      mockIsWeekWon.mockReturnValue(true);
+    it("leaves Knockouts enabled on a complete week a game knocked someone out of", async () => {
+      mockIsWeekSettled.mockReturnValue(true);
       const user = mount();
       await user.click(trigger());
 
       const item = await screen.findByRole("menuitem", {
-        name: /Swing Games/,
+        name: "Knockouts",
       });
 
-      expect(item).toHaveAttribute("data-disabled");
-      expect(item).toHaveAccessibleDescription("Week complete");
+      expect(item).not.toHaveAttribute("data-disabled");
     });
 
-    it("disables Swing Games while scores load", async () => {
-      mockSwingGames.mockReturnValue(undefined);
+    it("disables Knockouts while scores load", async () => {
+      mockKnockouts.mockReturnValue(undefined);
       const user = mount();
       await user.click(trigger());
 
       const item = await screen.findByRole("menuitem", {
-        name: /Swing Games/,
+        name: /Knockouts/,
       });
 
       expect(item).toHaveAttribute("data-disabled");
       expect(item).not.toHaveAccessibleDescription();
     });
 
-    it("disables Swing Games once no open game can knock anyone out", async () => {
-      mockSwingGames.mockReturnValue({ games: [] });
+    it("disables Knockouts once no open game can knock anyone out", async () => {
+      mockKnockouts.mockReturnValue({ games: [] });
       const user = mount();
       await user.click(trigger());
 
       const item = await screen.findByRole("menuitem", {
-        name: /Swing Games/,
+        name: /Knockouts/,
       });
 
       expect(item).toHaveAttribute("data-disabled");
     });
 
     it("shows the disabled reason under the item's name in the popup", async () => {
-      mockSwingGames.mockReturnValue({ games: [] });
+      mockKnockouts.mockReturnValue({ games: [] });
       const user = mount();
       await user.click(trigger());
-      await screen.findByRole("menuitem", { name: /Swing Games/ });
+      await screen.findByRole("menuitem", { name: /Knockouts/ });
 
       expect(screen.getByText("No game knocks anyone out")).toBeVisible();
       expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
     });
 
     it("names the disabled reason as the item's accessible description", async () => {
-      mockSwingGames.mockReturnValue({ games: [] });
+      mockKnockouts.mockReturnValue({ games: [] });
       const user = mount();
       await user.click(trigger());
 
       const item = await screen.findByRole("menuitem", {
-        name: /Swing Games/,
+        name: /Knockouts/,
       });
 
       expect(item).toHaveAccessibleDescription("No game knocks anyone out");
     });
 
     it("reaches the disabled item by keyboard", async () => {
-      mockSwingGames.mockReturnValue({ games: [] });
+      mockKnockouts.mockReturnValue({ games: [] });
       const user = mount();
       await user.click(trigger());
       const item = await screen.findByRole("menuitem", {
-        name: /Swing Games/,
+        name: /Knockouts/,
       });
 
       await user.keyboard("{ArrowDown}");
@@ -413,12 +404,12 @@ describe("NavMenu", () => {
       await waitFor(() => expect(item).toHaveFocus());
     });
 
-    it("leaves Swing Games enabled with a game open", async () => {
+    it("leaves Knockouts enabled with a game open", async () => {
       const user = mount();
       await user.click(trigger());
 
       const item = await screen.findByRole("menuitem", {
-        name: "Swing Games",
+        name: "Knockouts",
       });
 
       expect(item).not.toHaveAttribute("data-disabled");
@@ -455,7 +446,7 @@ describe("NavMenu", () => {
         within(drawer)
           .getAllByRole("link")
           .map((link) => link.textContent),
-      ).toEqual(["Home", "All Games", "Swing Games", "Compare Players"]);
+      ).toEqual(["Home", "Games", "Knockouts", "Compare Players"]);
       expect(
         within(drawer).getByRole("button", { name: "Settings" }),
       ).toBeInTheDocument();
@@ -477,20 +468,20 @@ describe("NavMenu", () => {
       expect(drawer).not.toHaveAccessibleDescription();
     });
 
-    it("disables Swing Games while scores load", async () => {
-      mockSwingGames.mockReturnValue(undefined);
+    it("disables Knockouts while scores load", async () => {
+      mockKnockouts.mockReturnValue(undefined);
       const { drawer } = await openDrawer();
 
       expect(
         within(drawer).getByRole("link", { name: "Home" }),
       ).toHaveAttribute("href");
-      const swings = within(drawer).getByRole("link", { name: "Swing Games" });
-      expect(swings).toHaveAttribute("aria-disabled", "true");
-      expect(swings).not.toHaveAccessibleDescription();
+      const knockouts = within(drawer).getByRole("link", { name: "Knockouts" });
+      expect(knockouts).toHaveAttribute("aria-disabled", "true");
+      expect(knockouts).not.toHaveAccessibleDescription();
     });
 
     it("shows the disabled reason under the item's name in the drawer", async () => {
-      mockSwingGames.mockReturnValue({ games: [] });
+      mockKnockouts.mockReturnValue({ games: [] });
       const { drawer } = await openDrawer();
 
       expect(
@@ -500,27 +491,27 @@ describe("NavMenu", () => {
     });
 
     it("names the disabled reason as the item's accessible description", async () => {
-      mockSwingGames.mockReturnValue({ games: [] });
+      mockKnockouts.mockReturnValue({ games: [] });
       const { drawer } = await openDrawer();
 
       expect(
-        within(drawer).getByRole("link", { name: "Swing Games" }),
+        within(drawer).getByRole("link", { name: "Knockouts" }),
       ).toHaveAccessibleDescription("No game knocks anyone out");
     });
 
-    it("leaves Swing Games enabled with a game open", async () => {
+    it("leaves Knockouts enabled with a game open", async () => {
       const { drawer } = await openDrawer();
 
       expect(
-        within(drawer).getByRole("link", { name: "Swing Games" }),
+        within(drawer).getByRole("link", { name: "Knockouts" }),
       ).toBeVisible();
     });
 
     it("marks the page it is on as current", async () => {
-      const { drawer } = await openDrawer({ at: SWINGS_PATH });
+      const { drawer } = await openDrawer({ at: KNOCKOUTS_PATH });
 
       expect(
-        within(drawer).getByRole("link", { name: "Swing Games" }),
+        within(drawer).getByRole("link", { name: "Knockouts" }),
       ).toHaveAttribute("aria-current", "page");
       expect(
         within(drawer).getByRole("link", { name: "Home" }),
@@ -535,15 +526,13 @@ describe("NavMenu", () => {
       );
     });
 
-    it("goes to the swing games page and closes on a tap", async () => {
+    it("goes to the knockouts page and closes on a tap", async () => {
       const { user, drawer } = await openDrawer();
 
-      await user.click(
-        within(drawer).getByRole("link", { name: "Swing Games" }),
-      );
+      await user.click(within(drawer).getByRole("link", { name: "Knockouts" }));
 
       expect(await screen.findByTestId("landed")).toHaveTextContent(
-        SWINGS_PATH,
+        KNOCKOUTS_PATH,
       );
       await waitFor(() =>
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
@@ -551,11 +540,9 @@ describe("NavMenu", () => {
     });
 
     it("closes on a tap of the page it is on", async () => {
-      const { user, drawer } = await openDrawer({ at: SWINGS_PATH });
+      const { user, drawer } = await openDrawer({ at: KNOCKOUTS_PATH });
 
-      await user.click(
-        within(drawer).getByRole("link", { name: "Swing Games" }),
-      );
+      await user.click(within(drawer).getByRole("link", { name: "Knockouts" }));
 
       await waitFor(() =>
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),

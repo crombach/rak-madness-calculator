@@ -11,7 +11,7 @@ vi.mock("../../context/AppDataContext", () => ({
   useScores: vi.fn(() => undefined),
   useIsWeekSettled: vi.fn(() => false),
   useIsWeekWon: vi.fn(() => false),
-  useSwingGames: vi.fn(() => undefined),
+  useKnockouts: vi.fn(() => undefined),
 }));
 
 const CURRENT_WEEK = 5;
