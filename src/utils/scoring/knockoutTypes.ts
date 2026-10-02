@@ -54,4 +54,16 @@ export type KnockoutGames = {
   games: Array<KnockoutGame>;
 };
 
-export const NO_KNOCKOUTS: KnockoutGames = { games: [] };
+/** The final game a player went out in, or undefined where none knocked them out. */
+export function finalGameThatKnockedOut(
+  knockouts: KnockoutGames | undefined,
+  playerName: string,
+): KnockoutGame | undefined {
+  return knockouts?.games.find(
+    (game) =>
+      game.isFinal &&
+      [...game.sides, ...(game.tiebreakers ?? [])].some((group) =>
+        group.players.includes(playerName),
+      ),
+  );
+}

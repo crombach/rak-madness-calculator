@@ -93,8 +93,8 @@ const TRIGGER_CLASSES = buttonClasses({ compact: true, iconOnly: true });
 
 /**
  * The hamburger every page opens beside the scoreboard/picks switch. A drawer
- * from the right edge below `wide-screen`, a popup menu at it and above. Knockouts
- * and Compare Players only with the experimental opt-in.
+ * from the right edge below `wide-screen`, a popup menu at it and above. Compare
+ * Players only with the experimental opt-in.
  */
 export default function NavMenu({
   season,
@@ -123,7 +123,7 @@ export default function NavMenu({
   };
   const shown = experimentalFeatures
     ? ITEMS
-    : ITEMS.filter((item) => item !== KNOCKOUTS && item !== COMPARE_PLAYERS);
+    : ITEMS.filter((item) => item !== COMPARE_PLAYERS);
   const links = shown.map((item) => {
     const path = item.path(season, week);
     const isHeldOff = pagesDisabled && item !== HOME;
