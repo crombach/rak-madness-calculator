@@ -278,9 +278,7 @@ button.nav-drawer__item {
   }
 }
 
-// Set off from the name by less than the row's gap, so it reads as part of it.
-// At the name's own weight: Chakra Petch has no β, so a system face draws it,
-// and that face runs heavier than the name at any weight above it.
+// Closer to the name than the row's gap, so it reads as part of it.
 .nav-menu__beta {
   margin-inline-start: var(--rak-space-1);
 }

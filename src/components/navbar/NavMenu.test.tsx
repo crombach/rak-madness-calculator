@@ -13,7 +13,7 @@ import {
 } from "../../context/SettingsContext";
 import { KnockoutGame } from "../../utils/scoring/getKnockouts";
 import { SETTINGS_SEEN_KEY } from "../settings/useSettingsSeen";
-import { BETA_MARK } from "./LogoButton";
+import { BETA_MARK, BETA_WORD } from "./LogoButton";
 import NavMenu from "./NavMenu";
 
 vi.mock("../../context/AppDataContext", () => ({
@@ -71,8 +71,10 @@ function trigger() {
   return screen.getByRole("button", { name: "Menu" });
 }
 
-// Compare Players is experimental, so its name ends in the β mark.
-const COMPARE_PLAYERS_NAME = `Compare Players${BETA_MARK}`;
+// Compare Players is experimental, so it ends in the β mark, which a screen
+// reader hears as its word.
+const COMPARE_PLAYERS_NAME = `Compare Players ${BETA_WORD}`;
+const COMPARE_PLAYERS_TEXT = `Compare Players${BETA_MARK} ${BETA_WORD}`;
 
 describe("NavMenu", () => {
   beforeEach(() => {
@@ -101,7 +103,7 @@ describe("NavMenu", () => {
         "Home",
         "Games",
         "Knockouts",
-        COMPARE_PLAYERS_NAME,
+        COMPARE_PLAYERS_TEXT,
         "Settings",
       ]);
     });
@@ -451,7 +453,7 @@ describe("NavMenu", () => {
         within(drawer)
           .getAllByRole("link")
           .map((link) => link.textContent),
-      ).toEqual(["Home", "Games", "Knockouts", COMPARE_PLAYERS_NAME]);
+      ).toEqual(["Home", "Games", "Knockouts", COMPARE_PLAYERS_TEXT]);
       expect(
         within(drawer).getByRole("button", { name: "Settings" }),
       ).toBeInTheDocument();

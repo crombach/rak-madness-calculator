@@ -21,7 +21,7 @@ import {
   SettingsIcon,
   SkullOutlinedIcon,
 } from "../icon/Icon";
-import { BETA_MARK } from "./LogoButton";
+import { BETA_MARK, BETA_WORD } from "./LogoButton";
 import resultsPath, { RESULTS_PAGE, weekName } from "../results/resultsPath";
 import SettingsDialog from "../settings/SettingsDialog";
 import useSettingsSeen from "../settings/useSettingsSeen";
@@ -186,11 +186,14 @@ function ItemName({
   if (!experimental) {
     return label;
   }
-  // A screen reader says β as "beta", so the mark carries the word itself.
   return (
     <span>
       {label}
-      <span className="nav-menu__beta">{BETA_MARK}</span>
+      <span className="nav-menu__beta" aria-hidden="true">
+        {BETA_MARK}
+      </span>
+      {/* A space of its own, or the accessible name runs the words together. */}{" "}
+      <span className="nav-menu__sr-only">{BETA_WORD}</span>
     </span>
   );
 }
