@@ -135,24 +135,29 @@ const isStanding = (
 ): boolean => statuses.get(name)?.isKnockedOut === false;
 
 /**
- * When a game ended, for the order its knockouts are credited in. Its kickoff
- * stands in where ESPN gave no finish.
+ * When a game ended, for the order its knockouts are credited in. A game ESPN gave
+ * no finish for goes after every game it did, by kickoff, since a kickoff is hours
+ * earlier than any finish.
  */
-function finishOf(scores: RakMadnessScores, label: string): number {
+function finishOf(
+  scores: RakMadnessScores,
+  label: string,
+): { hasFinish: boolean; at: number } {
   const result = scores.games?.find((game) => game.label === label)?.result;
-  const finish = (result?.finishedAt ?? result?.date)?.getTime();
-  return finish != null && Number.isFinite(finish)
-    ? finish
-    : Number.POSITIVE_INFINITY;
+  const at = (result?.finishedAt ?? result?.date)?.getTime();
+  return {
+    hasFinish: result?.finishedAt != null,
+    at: at != null && Number.isFinite(at) ? at : Number.POSITIVE_INFINITY,
+  };
 }
 
 /**
  * Each final game that knocked someone out, with the side they picked.
  *
  * The final games are played back in the order they ended, table order among
- * those ending together. A game that ends later never moves an earlier credit. A player standing before a game and out after it is that
- * game's, so a player two games could each have knocked out is credited to the
- * first of them. A knockout that came down to a tiebreaker goes under its tier,
+ * those ending together. A game that ends later never moves an earlier credit.
+ * A player standing before a game and out after it is that game's, so a player
+ * two games could each have knocked out is credited to the first of them. A knockout that came down to a tiebreaker goes under its tier,
  * whatever the pick did. Any other is behind on total, and goes under the pick,
  * so one on a game the player left blank names no side.
  *
@@ -178,7 +183,12 @@ function knockoutSides(scores: RakMadnessScores): {
       order,
       finish: finishOf(scores, column.label),
     }))
-    .sort((a, b) => a.finish - b.finish || a.order - b.order)
+    .sort(
+      (a, b) =>
+        Number(b.finish.hasFinish) - Number(a.finish.hasFinish) ||
+        a.finish.at - b.finish.at ||
+        a.order - b.order,
+    )
     .map(({ column }) => column);
 
   const repeated = repeatedNames(players);

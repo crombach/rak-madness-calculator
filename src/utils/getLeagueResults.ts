@@ -126,15 +126,15 @@ async function getLeagueEvents(
 /** Finish times already read, by event id. */
 const finishes = new Map<string, Date>();
 
-/** A page one play long, of an event's plays. */
+/** One play per page, over an event's plays. */
 function playPageUrl(league: League, eventId: string, page?: number): string {
   const search = page != null ? `&page=${page}` : "";
   return `https://sports.core.api.espn.com/v2/sports/football/leagues/${league}/events/${eventId}/competitions/${eventId}/plays?limit=1${search}`;
 }
 
 /**
- * When a final game ended: the wall clock of its last play. The scoreboard says
- * only when it kicked off. Two requests, since the first only counts the plays.
+ * When a final game ended, read off the wall clock of its last play. The
+ * scoreboard gives only the kickoff. Two requests, since the first only counts the plays.
  *
  * Undefined on any failure, and nothing is remembered then, so it is asked again.
  */

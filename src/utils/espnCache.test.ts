@@ -45,8 +45,12 @@ describe("matchupKey", () => {
 
 describe("isSettled", () => {
   it("holds a game that has been played, and a matchup with no game", () => {
-    expect(isSettled(game())).toBe(true);
+    expect(isSettled({ ...game(), finishedAt: new Date() })).toBe(true);
     expect(isSettled(null)).toBe(true);
+  });
+
+  it("holds nothing about a final game with no finish time", () => {
+    expect(isSettled(game())).toBe(false);
   });
 
   it("holds nothing about a game still being played", () => {

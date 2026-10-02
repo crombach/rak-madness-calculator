@@ -136,9 +136,15 @@ export function writeCachedResults(
   results.write(`${season}:${weekNumber}:${league}`, stored);
 }
 
-/** Whether an answer is one this browser can hold on to for good. */
+/**
+ * Whether an answer is one this browser can hold on to for good. A final game with
+ * no finish time is not yet, since its knockouts are ordered by that finish.
+ */
 export function isSettled(game: CachedGame): boolean {
-  return game == null || game.status === GameStatus.FINAL;
+  return (
+    game == null ||
+    (game.status === GameStatus.FINAL && game.finishedAt != null)
+  );
 }
 
 /**

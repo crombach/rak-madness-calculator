@@ -490,6 +490,16 @@ describe("getKnockouts", () => {
     expect(knockoutPicks(getKnockouts(scores), "Bob")).toEqual(["P2 LAR"]);
   });
 
+  it("credits a game with a finish before one ESPN gave none for", () => {
+    const scores = bobNeedsBoth([pick("MIA"), pick("MIA"), pick("NYJ")]);
+    scores.games = [
+      bothGame("P1", "DEN", "KC"),
+      bothGame("P2", "LAR", "SF", "2024-10-06T20:25:00Z"),
+    ];
+
+    expect(knockoutPicks(getKnockouts(scores), "Bob")).toEqual(["P2 LAR"]);
+  });
+
   it("keeps a knockout's game once a later game ends", () => {
     const live = bobNeedsBoth([pick("MIA"), pick("MIA"), pick("NYJ")]);
     live.games = [
@@ -727,12 +737,15 @@ function bobNeedsBoth(third: Array<PickResult>) {
   ]);
 }
 
-/** A final game the road side won, kicked off with the rest, ended at `finishedAt`. */
+/**
+ * A final game the road side won, kicked off with the rest, ended at `finishedAt`
+ * where it is given.
+ */
 function bothGame(
   label: string,
   home: string,
   away: string,
-  finishedAt: string,
+  finishedAt?: string,
 ) {
   return {
     label,
@@ -741,7 +754,7 @@ function bothGame(
     result: {
       ...finalGame({ home, away, homeScore: 10, awayScore: 20 }),
       date: new Date("2024-10-06T17:00:00Z"),
-      finishedAt: new Date(finishedAt),
+      ...(finishedAt != null && { finishedAt: new Date(finishedAt) }),
     },
   };
 }

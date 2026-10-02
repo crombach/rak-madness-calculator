@@ -97,11 +97,20 @@ function espnEvent({
   };
 }
 
-/** Every fetch resolves to the same event list. */
+const PLAYS_HOST = "sports.core.api.espn.com";
+const FINISH = "2024-10-06T20:13:01Z";
+
+/** Every scoreboard resolves to `events`, and every game's last play ends at `FINISH`. */
 function mockFetch(events: Array<EspnEvent>) {
-  const fetchMock = vi
-    .fn()
-    .mockResolvedValue({ ok: true, json: async () => ({ events }) });
+  const fetchMock = vi.fn().mockImplementation(async (url: string) => ({
+    ok: true,
+    json: async () =>
+      !url.includes(PLAYS_HOST)
+        ? { events }
+        : url.includes("page=")
+          ? { items: [{ wallclock: FINISH }] }
+          : { pageCount: 188 },
+  }));
   stubFetch(fetchMock);
   return fetchMock;
 }
@@ -612,37 +621,25 @@ describe("getLeagueResults, a scoreboard request ESPN could not answer", () => {
 
 describe("getLeagueResults, finish times", () => {
   const SEASON = 2024;
-  const PLAYS = "sports.core.api.espn.com";
-  const FINISH = "2024-10-06T20:13:01Z";
 
-  /** A scoreboard of `events`, and plays whose last one ends at `FINISH`. */
-  function mockFetchWithPlays(events: Array<EspnEvent>, plays = true) {
-    const fetchMock = vi.fn().mockImplementation(async (url: string) => {
-      if (!url.includes(PLAYS)) {
-        return { ok: true, json: async () => ({ events }) };
-      }
-      if (!plays) {
-        throw new Error("offline");
-      }
-      return {
-        ok: true,
-        json: async () =>
-          url.includes("page=")
-            ? { items: [{ wallclock: FINISH }] }
-            : { pageCount: 188 },
-      };
+  /** `mockFetch`, but every plays request fails. */
+  function mockFetchWithoutPlays(events: Array<EspnEvent>) {
+    const fetchMock = mockFetch(events);
+    const answer = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (url: string) => {
+      if (url.includes(PLAYS_HOST)) throw new Error("offline");
+      return answer(url);
     });
-    stubFetch(fetchMock);
     return fetchMock;
   }
 
   const playsOf = (fetchMock: Mock): Array<string> =>
     fetchMock.mock.calls
       .map((call) => call[0])
-      .filter((url) => url.includes(PLAYS));
+      .filter((url) => url.includes(PLAYS_HOST));
 
   it("reads a final game's finish off its last play", async () => {
-    const fetchMock = mockFetchWithPlays([
+    const fetchMock = mockFetch([
       espnEvent({ home: "BUF", away: "KC", id: "f1" }),
     ]);
 
@@ -650,13 +647,13 @@ describe("getLeagueResults, finish times", () => {
 
     expect(game.finishedAt).toEqual(new Date(FINISH));
     expect(playsOf(fetchMock)).toEqual([
-      `https://${PLAYS}/v2/sports/football/leagues/nfl/events/f1/competitions/f1/plays?limit=1`,
-      `https://${PLAYS}/v2/sports/football/leagues/nfl/events/f1/competitions/f1/plays?limit=1&page=188`,
+      `https://${PLAYS_HOST}/v2/sports/football/leagues/nfl/events/f1/competitions/f1/plays?limit=1`,
+      `https://${PLAYS_HOST}/v2/sports/football/leagues/nfl/events/f1/competitions/f1/plays?limit=1&page=188`,
     ]);
   });
 
   it("gives a live game no finish, and asks nothing about it", async () => {
-    const fetchMock = mockFetchWithPlays([
+    const fetchMock = mockFetch([
       espnEvent({ home: "BUF", away: "KC", id: "f2", status: GameStatus.LIVE }),
     ]);
 
@@ -667,7 +664,7 @@ describe("getLeagueResults, finish times", () => {
   });
 
   it("asks for a game's finish once", async () => {
-    const fetchMock = mockFetchWithPlays([
+    const fetchMock = mockFetch([
       espnEvent({ home: "BUF", away: "KC", id: "f3" }),
     ]);
     const matchups = [BUF_KC, new Set(["PHI", "DAL"])];
@@ -679,15 +676,16 @@ describe("getLeagueResults, finish times", () => {
     expect(playsOf(fetchMock)).toHaveLength(2);
   });
 
-  it("still gives the game where its plays cannot be read", async () => {
-    mockFetchWithPlays(
-      [espnEvent({ home: "BUF", away: "KC", id: "f4" })],
-      false,
-    );
+  it("still gives the game where its plays cannot be read, and asks again", async () => {
+    const fetchMock = mockFetchWithoutPlays([
+      espnEvent({ home: "BUF", away: "KC", id: "f4" }),
+    ]);
 
-    const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+    const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC], SEASON);
+    await getLeagueResults(League.PRO, WEEK, [BUF_KC], SEASON);
 
     expect(game.shortName).toBe("KC @ BUF");
     expect(game.finishedAt).toBeUndefined();
+    expect(urlsOf(fetchMock)).toHaveLength(2);
   });
 });
