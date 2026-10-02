@@ -223,6 +223,9 @@
   // dark face a key in this bar carries, it reads as a white line rather than as
   // an edge, and a key held down looks as raised as its neighbors.
   --rak-nav-key-top: inset 0 1px 0 rgb(255 255 255 / 25%);
+  // Fainter than the page's ring: a key here already stands off the bar by its
+  // lighter face, so a full-strength line around it reads as drawn on.
+  --rak-nav-key-ring: 0 0 0 1px rgb(0 0 0 / 6%);
   // A mark cut into the bar rather than printed on it: ink darker than the
   // fill, and the lower lip of the cut catching the same light as a key's rim.
   --rak-nav-carve-ink: #2b2b2b;
@@ -731,6 +734,7 @@ html {
   // A literal, like the fills above: the bar pins `--rak-key-top` to this, and
   // a read back would be a cycle. Unchanged from what this mode always wore.
   --rak-nav-key-top: inset 0 1px 0 rgb(255 255 255 / 18%);
+  --rak-nav-key-ring: 0 0 0 1px rgb(0 0 0 / 20%);
   --rak-nav-carve-ink: #262626;
   --rak-nav-carve-lip: rgb(255 255 255 / 18%);
   --rak-nav-led: var(--rak-info-200);
