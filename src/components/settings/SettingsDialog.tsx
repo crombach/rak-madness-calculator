@@ -152,7 +152,7 @@ export default function SettingsDialog({
 
         <section className="settings__section">
           <h3 className="settings__label" id={experimentalFeaturesLabelId}>
-            βeta Mode
+            <span className="settings__beta">β</span>eta Mode
           </h3>
           <div
             className="settings__choices"

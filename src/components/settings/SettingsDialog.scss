@@ -17,6 +17,11 @@
   @include section-title(sm);
 }
 
+// Uppercase turns β into Β, which reads as a Latin B.
+.settings__beta {
+  text-transform: none;
+}
+
 .settings__choices {
   display: flex;
   flex-direction: row;
