@@ -53,5 +53,3 @@ export type KnockoutGames = {
    */
   games: Array<KnockoutGame>;
 };
-
-export const NO_KNOCKOUTS: KnockoutGames = { games: [] };

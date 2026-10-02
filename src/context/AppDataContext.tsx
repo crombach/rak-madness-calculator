@@ -15,12 +15,11 @@ import usePlayerScores from "../hooks/usePlayerScores";
 import { WeekInfo } from "../types/League";
 import { prefetchStoredPicks } from "../utils/loadStoredPicks";
 import { RakMadnessScores } from "../types/RakMadnessScores";
-import { NO_KNOCKOUTS, KnockoutGames } from "../utils/scoring/knockoutTypes";
+import { KnockoutGames } from "../utils/scoring/knockoutTypes";
 import cachedImport from "../utils/cachedImport";
 import isWeekSettled, { isWeekWon } from "../utils/scoring/isWeekSettled";
 import { readSettledWeek } from "../utils/settledWeeksCache";
 import { NO_SCORE_CHANGES, ScoreChanges } from "../utils/scoring/scoreChanges";
-import { useSettings } from "./SettingsContext";
 
 /** The season and week lists, and which of each is selected. */
 type Calendar = ReturnType<typeof useLeagueWeeks> &
@@ -89,6 +88,9 @@ const WeekOutcomeContext = createContext<WeekOutcome>(NO_OUTCOME);
  * flag.
  */
 const ScoreChangesContext = createContext<ScoreChanges>(NO_SCORE_CHANGES);
+
+/** The week's knockouts, worked out once here for every page and dialog that reads them. */
+const KnockoutsContext = createContext<KnockoutGames | undefined>(undefined);
 
 /** The season and week a results URL names, from `/<season>/<week>/…`. Empty elsewhere. */
 function routeFromPath(pathname: string): {
@@ -247,6 +249,7 @@ export function AppDataContextProvider({
       rescore,
     ],
   );
+  const knockouts = useWeekKnockouts(scores);
 
   return (
     <CalendarContext.Provider value={calendar}>
@@ -254,7 +257,9 @@ export function AppDataContextProvider({
         <ScoresContext.Provider value={scores}>
           <WeekOutcomeContext.Provider value={weekOutcome}>
             <ScoreChangesContext.Provider value={scoreChanges}>
-              {children}
+              <KnockoutsContext.Provider value={knockouts}>
+                {children}
+              </KnockoutsContext.Provider>
             </ScoreChangesContext.Provider>
           </WeekOutcomeContext.Provider>
         </ScoresContext.Provider>
@@ -297,12 +302,12 @@ export function useScoreChanges(): ScoreChanges {
   return useContext(ScoreChangesContext);
 }
 
-/** One answer per set of scores, however many callers ask for it. */
-const knockoutsByScores = new WeakMap<RakMadnessScores, KnockoutGames>();
-
 type GetKnockouts = (scores: RakMadnessScores) => KnockoutGames;
 
-/** Set once `loadGetKnockouts` lands, so a hook mounted after starts with it. */
+/** A week the knockouts cannot read, answered as one with nothing to show. */
+const NO_KNOCKOUTS: KnockoutGames = { games: [] };
+
+/** Set once `loadGetKnockouts` lands, so a render after it can read it at once. */
 let loadedGetKnockouts: GetKnockouts | undefined;
 
 /**
@@ -319,19 +324,17 @@ export const loadGetKnockouts = cachedImport(() =>
 
 /**
  * The week's knockouts, or undefined while its scores or the code that reads
- * them load. Skips the work and answers empty while the reader has not opted into
- * experimental features.
+ * them load. The provider calls it once, so each set of scores is read once.
  */
-export function useKnockouts(): KnockoutGames | undefined {
-  const scores = useScores();
-  const { experimentalFeatures } = useSettings();
+function useWeekKnockouts(
+  scores: RakMadnessScores | undefined,
+): KnockoutGames | undefined {
   const [getKnockouts, setGetKnockouts] = useState(() => loadedGetKnockouts);
-  const isNeeded = scores != null && experimentalFeatures;
 
   // Asks again on each new set of scores until the code arrives, so one failed
   // download costs one poll rather than the page.
   useEffect(() => {
-    if (!isNeeded || getKnockouts != null) return;
+    if (scores == null || getKnockouts != null) return;
     let isCurrent = true;
     loadGetKnockouts().then(
       (module) => {
@@ -342,16 +345,25 @@ export function useKnockouts(): KnockoutGames | undefined {
     return () => {
       isCurrent = false;
     };
-  }, [isNeeded, scores, getKnockouts]);
+  }, [scores, getKnockouts]);
 
+  // The page can land the code before this hook's own request answers. Reading
+  // the module's copy too keeps that render from drawing the skeleton again.
+  const ready = getKnockouts ?? loadedGetKnockouts;
   return useMemo(() => {
-    if (scores == null) return undefined;
-    if (!experimentalFeatures) return NO_KNOCKOUTS;
-    let knockouts = knockoutsByScores.get(scores);
-    if (knockouts == null && getKnockouts != null) {
-      knockouts = getKnockouts(scores);
-      knockoutsByScores.set(scores, knockouts);
+    if (scores == null || ready == null) return undefined;
+    // Every page sits under this provider, so a week the knockouts cannot read
+    // costs only the knockouts. The page sends a link to it to the scoreboard.
+    try {
+      return ready(scores);
+    } catch (error) {
+      console.warn("Could not work out the knockouts", error);
+      return NO_KNOCKOUTS;
     }
-    return knockouts;
-  }, [scores, experimentalFeatures, getKnockouts]);
+  }, [scores, ready]);
+}
+
+/** The week's knockouts, or undefined while its scores or the code that reads them load. */
+export function useKnockouts(): KnockoutGames | undefined {
+  return useContext(KnockoutsContext);
 }

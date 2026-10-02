@@ -73,7 +73,7 @@ function trigger() {
 describe("NavMenu", () => {
   beforeEach(() => {
     localStorage.clear();
-    // Knockouts shows only with this opt-in.
+    // Compare Players shows only with this opt-in.
     localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
     mockIsWeekSettled.mockReturnValue(false);
     mockKnockouts.mockReturnValue({ games: [A_KNOCKOUT_GAME] });
@@ -102,7 +102,7 @@ describe("NavMenu", () => {
       ]);
     });
 
-    it("leaves out Knockouts and Compare Players with experimental features off", async () => {
+    it("leaves out Compare Players with experimental features off", async () => {
       localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
       const user = mount();
       await user.click(trigger());
@@ -112,6 +112,7 @@ describe("NavMenu", () => {
       expect(items.map((item) => item.textContent)).toEqual([
         "Home",
         "Games",
+        "Knockouts",
         "Settings",
       ]);
     });

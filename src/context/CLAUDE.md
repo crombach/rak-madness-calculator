@@ -4,7 +4,7 @@
   routes, season and week from the pathname. Read by `useCalendar`, `useScores`,
   and `useScoringStatus` (flags, refresh), so a poll's flags skip the tables.
   `WeekOutcomeContext` and `ScoreChangesContext` split off likewise.
-  `useKnockouts` loads `getKnockouts` on first use.
+  `KnockoutsContext` runs `getKnockouts` once per scores, read by `useKnockouts`.
 - `SettingsContext`: the theme, the reader's name, live analysis, and the
   experimental opt-in, from `settingsStore`. Writes `data-theme` for
   `index.scss`, and answers `useIsMyPlayer`.
