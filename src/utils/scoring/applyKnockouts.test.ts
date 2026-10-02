@@ -389,4 +389,30 @@ describe("applyKnockouts", () => {
 
     expect(result[1].status.isKnockedOut).toBe(false);
   });
+
+  it("knocks out a tied player who left the Monday night guess blank", () => {
+    const result = applyKnockouts(
+      [
+        player({ name: "Alice", total: 4, tiebreakerPick: 45, distance: 2 }),
+        player({ name: "Bob", total: 4 }),
+      ],
+      47,
+    );
+
+    expect(result[1].status.isKnockedOut).toBe(true);
+    expect(result[1].status.explanation).toBe(
+      "Knocked out on MNF Points tiebreaker by Alice. " +
+        "Bob made no guess, and Alice is 2 points off.",
+    );
+  });
+
+  it("leaves two tied players who both left the guess blank to the next tier", () => {
+    const result = applyKnockouts(
+      [player({ name: "Alice", total: 4 }), player({ name: "Bob", total: 4 })],
+      47,
+    );
+
+    expect(result[0].status.isKnockedOut).toBe(false);
+    expect(result[1].status.isKnockedOut).toBe(false);
+  });
 });

@@ -77,13 +77,21 @@ describe("comparePlayerScores", () => {
     ).toEqual(["Alice", "Bob"]);
   });
 
-  it("falls through to the next tier when either guess is missing", () => {
-    // Bob has a guess and Alice does not, so this tier cannot separate them and
-    // the college score decides it. Treating a blank cell as any distance at all,
-    // however far, would hand it to Bob instead.
+  it("ranks a missing guess as the furthest off", () => {
+    // A blank guess should never happen. Where one does, any guess beats it,
+    // however far off, before the college score is read.
     expect(
       ranked(
-        player("Bob", { total: 5, college: 0, distance: 2 }),
+        player("Alice", { total: 5, college: 3 }),
+        player("Bob", { total: 5, college: 0, distance: 30 }),
+      ),
+    ).toEqual(["Bob", "Alice"]);
+  });
+
+  it("falls through to the next tier when both guesses are missing", () => {
+    expect(
+      ranked(
+        player("Bob", { total: 5, college: 0 }),
         player("Alice", { total: 5, college: 3 }),
       ),
     ).toEqual(["Alice", "Bob"]);

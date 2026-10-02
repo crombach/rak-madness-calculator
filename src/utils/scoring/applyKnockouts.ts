@@ -92,8 +92,9 @@ export default function applyKnockouts(
               ),
           );
         } else if (totalDifferentPicks === totalScoreDiff) {
-          // Either distance is absent when that player left the Monday night
-          // points cell blank, even once the game itself is final.
+          // A blank Monday night points cell leaves the distance absent, even
+          // once the game is final. A blank reads as the furthest off, so two
+          // blanks tie.
           const rivalDistance = rivalScore.tiebreaker.distance;
           const activeDistance = activeScore.tiebreaker.distance;
           // If the best a player can do is tie the rival, check if they're knocked out on breakers.
@@ -144,15 +145,18 @@ export default function applyKnockouts(
           } else if (
             tiebreakerScore != null &&
             rivalDistance != null &&
-            activeDistance != null &&
-            rivalDistance - activeDistance < 0
+            rivalDistance < (activeDistance ?? Number.POSITIVE_INFINITY)
           ) {
             // If the tiebreaker score has been scraped, all games must be over.
             // Unless the active player has tied the rival, they are knocked out.
+            const activeOff =
+              activeDistance == null
+                ? "made no guess"
+                : `is ${plural(activeDistance, "point")} off`;
             return knockedOut(
               activeScore,
               `Knocked out on MNF Points tiebreaker by ${rivalScore.name}. ` +
-                `${activeScore.name} is ${plural(activeDistance, "point")} off, and ${rivalScore.name} is ` +
+                `${activeScore.name} ${activeOff}, and ${rivalScore.name} is ` +
                 `${plural(rivalDistance, "point")} off.`,
               "mnfPoints",
             );
