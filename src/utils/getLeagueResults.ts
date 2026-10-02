@@ -123,6 +123,44 @@ async function getLeagueEvents(
   return fetchEspnEvents(espnScoreboardUrl(league, requestParams));
 }
 
+/** Finish times already read, by event id. */
+const finishes = new Map<string, Date>();
+
+/** A page one play long, of an event's plays. */
+function playPageUrl(league: League, eventId: string, page?: number): string {
+  const search = page != null ? `&page=${page}` : "";
+  return `https://sports.core.api.espn.com/v2/sports/football/leagues/${league}/events/${eventId}/competitions/${eventId}/plays?limit=1${search}`;
+}
+
+/**
+ * When a final game ended: the wall clock of its last play. The scoreboard says
+ * only when it kicked off. Two requests, since the first only counts the plays.
+ *
+ * Undefined on any failure, and nothing is remembered then, so it is asked again.
+ */
+async function gameFinish(
+  league: League,
+  eventId: string,
+): Promise<Date | undefined> {
+  const known = finishes.get(eventId);
+  if (known != null) {
+    return known;
+  }
+  try {
+    const count = await fetch(playPageUrl(league, eventId));
+    const { pageCount } = await count.json();
+    const last = await fetch(playPageUrl(league, eventId, pageCount));
+    const finish = new Date((await last.json()).items[0].wallclock);
+    if (Number.isNaN(finish.getTime())) {
+      return undefined;
+    }
+    finishes.set(eventId, finish);
+    return finish;
+  } catch {
+    return undefined;
+  }
+}
+
 /** The season record, which ESPN sends beside the home and road splits. */
 const RECORD_TYPE_SEASON = "total";
 
@@ -382,6 +420,15 @@ export async function getLeagueResults(
     if (found.has(keys[position])) return;
     found.set(keys[position], findMatchup(index, teams) ?? null);
   });
+
+  await Promise.all(
+    [...found].map(async ([key, result]) => {
+      if (result?.status === GameStatus.FINAL) {
+        result.finishedAt =
+          held[key]?.finishedAt ?? (await gameFinish(league, result.id));
+      }
+    }),
+  );
 
   const games: Record<string, CachedGame> = {};
   const kept: Array<LeagueResult> = [];

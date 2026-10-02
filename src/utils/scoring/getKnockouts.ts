@@ -134,21 +134,23 @@ const isStanding = (
   name: string,
 ): boolean => statuses.get(name)?.isKnockedOut === false;
 
-/** When a game kicked off, for the order its knockouts are credited in. */
-function kickoffOf(scores: RakMadnessScores, label: string): number {
-  const kickoff = scores.games
-    ?.find((game) => game.label === label)
-    ?.result?.date.getTime();
-  return kickoff != null && Number.isFinite(kickoff)
-    ? kickoff
+/**
+ * When a game ended, for the order its knockouts are credited in. Its kickoff
+ * stands in where ESPN gave no finish.
+ */
+function finishOf(scores: RakMadnessScores, label: string): number {
+  const result = scores.games?.find((game) => game.label === label)?.result;
+  const finish = (result?.finishedAt ?? result?.date)?.getTime();
+  return finish != null && Number.isFinite(finish)
+    ? finish
     : Number.POSITIVE_INFINITY;
 }
 
 /**
  * Each final game that knocked someone out, with the side they picked.
  *
- * The final games are played back in kickoff order, table order among those
- * kicking off together. A player standing before a game and out after it is that
+ * The final games are played back in the order they ended, table order among
+ * those ending together. A game that ends later never moves an earlier credit. A player standing before a game and out after it is that
  * game's, so a player two games could each have knocked out is credited to the
  * first of them. A knockout that came down to a tiebreaker goes under its tier,
  * whatever the pick did. Any other is behind on total, and goes under the pick,
@@ -174,9 +176,9 @@ function knockoutSides(scores: RakMadnessScores): {
     .map((column, order) => ({
       column,
       order,
-      kickoff: kickoffOf(scores, column.label),
+      finish: finishOf(scores, column.label),
     }))
-    .sort((a, b) => a.kickoff - b.kickoff || a.order - b.order)
+    .sort((a, b) => a.finish - b.finish || a.order - b.order)
     .map(({ column }) => column);
 
   const repeated = repeatedNames(players);

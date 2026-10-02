@@ -72,6 +72,17 @@ describe("espnCache, results", () => {
     expect("OSU|MICH" in held).toBe(false);
   });
 
+  it("reads back a finish as a date", () => {
+    const finishedAt = new Date("2025-09-14T20:13:01Z");
+    writeCachedResults(SEASON, 3, League.PRO, {
+      [BUF_KC]: { ...game(), finishedAt },
+    });
+
+    expect(
+      readCachedResults(SEASON, 3, League.PRO)[BUF_KC]?.finishedAt,
+    ).toEqual(finishedAt);
+  });
+
   it("keeps each league, week, and season apart", () => {
     writeCachedResults(SEASON, 3, League.PRO, { [BUF_KC]: game() });
 

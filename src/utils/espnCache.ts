@@ -17,10 +17,15 @@ import localStorageCache, { LocalStorageCache } from "./localStorageCache";
 /** A week of both leagues is tens of KB. */
 const MAX_CACHED_WEEKS = 6;
 /** Bumped where a stored shape changes, which makes every older entry a miss. */
-const VERSION = 2;
+const VERSION = 3;
 
-/** A game as it was stored, whose date has been through JSON and is text again. */
-type StoredGame = (Omit<LeagueResult, "date"> & { date: string }) | null;
+/** A game as it was stored, whose dates have been through JSON and are text again. */
+type StoredGame =
+  | (Omit<LeagueResult, "date" | "finishedAt"> & {
+      date: string;
+      finishedAt?: string;
+    })
+  | null;
 
 /** Keyed by matchup. Null is a matchup ESPN listed no game for. */
 type StoredGames = Record<string, StoredGame>;
@@ -92,7 +97,15 @@ export function readCachedResults(
   }
   const games: Record<string, CachedGame> = {};
   Object.entries(stored ?? {}).forEach(([key, game]) => {
-    games[key] = game == null ? null : { ...game, date: new Date(game.date) };
+    games[key] =
+      game == null
+        ? null
+        : {
+            ...game,
+            date: new Date(game.date),
+            finishedAt:
+              game.finishedAt != null ? new Date(game.finishedAt) : undefined,
+          };
   });
   return games;
 }
@@ -112,7 +125,13 @@ export function writeCachedResults(
   const stored: StoredGames = {};
   Object.entries(games).forEach(([key, game]) => {
     stored[key] =
-      game == null ? null : { ...game, date: game.date.toISOString() };
+      game == null
+        ? null
+        : {
+            ...game,
+            date: game.date.toISOString(),
+            finishedAt: game.finishedAt?.toISOString(),
+          };
   });
   results.write(`${season}:${weekNumber}:${league}`, stored);
 }
