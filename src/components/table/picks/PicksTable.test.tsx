@@ -1,6 +1,6 @@
 import { Mock } from "vitest";
 import { Profiler } from "react";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import {
   PickResult,
@@ -389,43 +389,87 @@ describe("PicksTable, column hover", () => {
 
 describe("PicksTable, column press", () => {
   const LIT = "--column-lit";
+  const PRESSED = "--column-pressed";
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function renderPressable() {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(
+      <GameStatusContextProvider showGameStatus={vi.fn()}>
+        <PicksTable scores={scores} />
+      </GameStatusContextProvider>,
+    );
+    return { user };
+  }
+
+  // Waits out the delay a finger holds before its column lights.
+  function rest() {
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
+  }
 
   it("lights the pressed column while the finger rests on it", async () => {
-    const { user } = renderPicks();
+    const { user } = renderPressable();
 
     await user.pointer({ keys: "[TouchA>]", target: screen.getByText("MICH") });
+    rest();
 
     expect(screen.getByText("C1 pick").closest("td")).toHaveClass(LIT);
     expect(screen.getByRole("columnheader", { name: "C1" })).toHaveClass(LIT);
     expect(screen.getByText("OSU").closest("td")).not.toHaveClass(LIT);
   });
 
+  it("lights nothing the moment a finger lands", async () => {
+    const { user } = renderPressable();
+
+    await user.pointer({ keys: "[TouchA>]", target: screen.getByText("MICH") });
+
+    expect(document.querySelector(`.${LIT}, .${PRESSED}`)).toBeNull();
+  });
+
   it("puts the column out once the finger lifts", async () => {
-    const { user } = renderPicks();
+    const { user } = renderPressable();
 
     await user.pointer({ keys: "[TouchA]", target: screen.getByText("MICH") });
+    rest();
 
-    expect(document.querySelector(`.${LIT}`)).toBeNull();
+    expect(document.querySelector(`.${LIT}, .${PRESSED}`)).toBeNull();
   });
 
-  it("puts the column out when a scroll cancels the touch", async () => {
-    const { user } = renderPicks();
-    const cell = screen.getByText("MICH");
+  it.each([
+    ["before the finger rests", false],
+    ["after the finger rests", true],
+  ])(
+    "puts the column out when a scroll cancels the touch %s",
+    async (_, restsFirst) => {
+      const { user } = renderPressable();
+      const cell = screen.getByText("MICH");
 
-    await user.pointer({ keys: "[TouchA>]", target: cell });
-    fireEvent.pointerCancel(cell, { pointerType: "touch" });
+      await user.pointer({ keys: "[TouchA>]", target: cell });
+      if (restsFirst) rest();
+      fireEvent.pointerCancel(cell, { pointerType: "touch" });
+      rest();
 
-    expect(document.querySelector(`.${LIT}`)).toBeNull();
-  });
+      expect(document.querySelector(`.${LIT}, .${PRESSED}`)).toBeNull();
+    },
+  );
 
   it.each(["MouseLeft", "TouchA"])(
     "darkens every cell of the column a %s press holds, until it lifts",
     async (key) => {
-      const PRESSED = "--column-pressed";
-      const { user } = renderPicks();
+      const { user } = renderPressable();
       const cell = screen.getByText("MICH");
 
       await user.pointer({ keys: `[${key}>]`, target: cell });
+      rest();
 
       expect(screen.getByText("C1 pick").closest("td")).toHaveClass(PRESSED);
       expect(screen.getByRole("columnheader", { name: "C1" })).toHaveClass(

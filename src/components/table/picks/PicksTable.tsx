@@ -1,4 +1,4 @@
-import { PointerEvent, memo, useLayoutEffect, useRef } from "react";
+import { PointerEvent, memo, useEffect, useLayoutEffect, useRef } from "react";
 import { useScoreChanges } from "../../../context/AppDataContext";
 import { useShowGameStatus } from "../../../context/GameStatusContext";
 import { GameStatus } from "../../../types/ESPN";
@@ -35,6 +35,12 @@ const COLUMN_LIT_CLASS = "--column-lit";
 
 /** Marks every cell of the column a press holds, heading included. */
 const COLUMN_PRESSED_CLASS = "--column-pressed";
+
+/**
+ * How long a finger rests before its column lights, Android's tap timeout. A
+ * scroll cancels the touch within it, so the column a fling starts on stays out.
+ */
+const TOUCH_PRESS_DELAY_MS = 100;
 
 /** Which column a mark is on, and the table it is in. */
 type ColumnMark = { table: HTMLTableElement; game?: string };
@@ -205,6 +211,9 @@ function PicksTable({
   const { picks: pickChanges } = useScoreChanges();
   const hovered = useRef<ColumnMark>(undefined);
   const pressed = useRef<ColumnMark>(undefined);
+  const touchPress = useRef<number>(undefined);
+
+  useEffect(() => () => clearTimeout(touchPress.current), []);
 
   // A refresh that redraws a cell replaces the class the pointer put on it.
   useLayoutEffect(() => {
@@ -220,14 +229,24 @@ function PicksTable({
   }
 
   // A press darkens the whole column it lands on, not just the cell, and a finger
-  // lights it too until it lifts. A scroll cancels the touch rather than lifting
-  // it, which puts the column out the same way.
+  // lights it too until it lifts. A finger waits out `TOUCH_PRESS_DELAY_MS`
+  // first, since a scroll cancels the touch rather than lifting it.
   function trackPress(event: PointerEvent<HTMLTableElement>) {
-    press(event.currentTarget, gameOf(event));
-    if (event.pointerType === "touch") lightTarget(event);
+    const table = event.currentTarget;
+    const game = gameOf(event);
+    if (event.pointerType !== "touch") {
+      press(table, game);
+      return;
+    }
+    clearTimeout(touchPress.current);
+    touchPress.current = window.setTimeout(() => {
+      press(table, game);
+      hover(table, game);
+    }, TOUCH_PRESS_DELAY_MS);
   }
 
   function endPress(event: PointerEvent<HTMLTableElement>) {
+    clearTimeout(touchPress.current);
     press(event.currentTarget, undefined);
     if (event.pointerType === "touch") hover(event.currentTarget, undefined);
   }
@@ -284,6 +303,7 @@ function PicksTable({
       onPointerUp={endPress}
       onPointerCancel={endPress}
       onPointerLeave={(event) => {
+        clearTimeout(touchPress.current);
         press(event.currentTarget, undefined);
         if (event.pointerType !== "touch")
           hover(event.currentTarget, undefined);
