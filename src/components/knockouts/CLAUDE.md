@@ -4,8 +4,8 @@ The `/:season/:week/knockouts` route: each open game, with the players it would
 knock out on either side, grouped by which team they need, and each final game
 with the players it knocked out.
 
-- `KnockoutsRoute`: hands `Knockouts` the scores, `useKnockouts`, `rescore`
-  and `fetchingLeagues`.
+- `KnockoutsRoute`: behind `ExperimentalGate`, hands `Knockouts` the scores,
+  `useKnockouts`, `rescore` and `fetchingLeagues`.
 - `KnockoutsPage`: `lazyPreloadable` over `KnockoutsRoute` and `getKnockouts`,
   mounted by `App.tsx`.
 - `Knockouts`: polls as `Games` does, and draws its busy bar. A week with no

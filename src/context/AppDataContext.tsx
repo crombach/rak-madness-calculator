@@ -20,6 +20,7 @@ import cachedImport from "../utils/cachedImport";
 import isWeekSettled, { isWeekWon } from "../utils/scoring/isWeekSettled";
 import { readSettledWeek } from "../utils/settledWeeksCache";
 import { NO_SCORE_CHANGES, ScoreChanges } from "../utils/scoring/scoreChanges";
+import { useSettings } from "./SettingsContext";
 
 /** The season and week lists, and which of each is selected. */
 type Calendar = ReturnType<typeof useLeagueWeeks> &
@@ -304,7 +305,10 @@ export function useScoreChanges(): ScoreChanges {
 
 type GetKnockouts = (scores: RakMadnessScores) => KnockoutGames;
 
-/** A week the knockouts cannot read, answered as one with nothing to show. */
+/**
+ * A week the knockouts cannot read, or a reader not opted into experimental
+ * features, answered as one with nothing to show.
+ */
 const NO_KNOCKOUTS: KnockoutGames = { games: [] };
 
 /** Set once `loadGetKnockouts` lands, so a render after it can read it at once. */
@@ -325,16 +329,20 @@ export const loadGetKnockouts = cachedImport(() =>
 /**
  * The week's knockouts, or undefined while its scores or the code that reads
  * them load. The provider calls it once, so each set of scores is read once.
+ * Skips the work and answers empty while the reader has not opted into
+ * experimental features.
  */
 function useWeekKnockouts(
   scores: RakMadnessScores | undefined,
 ): KnockoutGames | undefined {
   const [getKnockouts, setGetKnockouts] = useState(() => loadedGetKnockouts);
+  const { experimentalFeatures } = useSettings();
+  const isNeeded = scores != null && experimentalFeatures;
 
   // Asks again on each new set of scores until the code arrives, so one failed
   // download costs one poll rather than the page.
   useEffect(() => {
-    if (scores == null || getKnockouts != null) return;
+    if (!isNeeded || getKnockouts != null) return;
     let isCurrent = true;
     loadGetKnockouts().then(
       (module) => {
@@ -345,13 +353,15 @@ function useWeekKnockouts(
     return () => {
       isCurrent = false;
     };
-  }, [scores, getKnockouts]);
+  }, [isNeeded, scores, getKnockouts]);
 
   // The page can land the code before this hook's own request answers. Reading
   // the module's copy too keeps that render from drawing the skeleton again.
   const ready = getKnockouts ?? loadedGetKnockouts;
   return useMemo(() => {
-    if (scores == null || ready == null) return undefined;
+    if (scores == null) return undefined;
+    if (!experimentalFeatures) return NO_KNOCKOUTS;
+    if (ready == null) return undefined;
     // Every page sits under this provider, so a week the knockouts cannot read
     // costs only the knockouts. The page sends a link to it to the scoreboard.
     try {
@@ -360,7 +370,7 @@ function useWeekKnockouts(
       console.warn("Could not work out the knockouts", error);
       return NO_KNOCKOUTS;
     }
-  }, [scores, ready]);
+  }, [scores, experimentalFeatures, ready]);
 }
 
 /** The week's knockouts, or undefined while its scores or the code that reads them load. */

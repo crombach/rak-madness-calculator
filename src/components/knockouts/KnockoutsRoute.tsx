@@ -3,9 +3,10 @@ import {
   useScoringStatus,
   useKnockouts,
 } from "../../context/AppDataContext";
+import ExperimentalGate from "../results/ExperimentalGate";
 import Knockouts from "./Knockouts";
 
-export default function KnockoutsRoute() {
+function KnockoutsBody() {
   const { rescore, fetchingLeagues } = useScoringStatus();
   return (
     <Knockouts
@@ -14,5 +15,14 @@ export default function KnockoutsRoute() {
       onPoll={rescore}
       fetchingLeagues={fetchingLeagues}
     />
+  );
+}
+
+// Knockouts shows only to a reader who opted in to experimental features.
+export default function KnockoutsRoute() {
+  return (
+    <ExperimentalGate>
+      <KnockoutsBody />
+    </ExperimentalGate>
   );
 }
