@@ -437,8 +437,23 @@ describe("PicksTable, column press", () => {
 
   it("puts the column out once the finger lifts", async () => {
     const { user } = renderPressable();
+    const cell = screen.getByText("MICH");
+
+    await user.pointer({ keys: "[TouchA>]", target: cell });
+    rest();
+    await user.pointer({ keys: "[/TouchA]", target: cell });
+
+    expect(document.querySelector(`.${LIT}, .${PRESSED}`)).toBeNull();
+  });
+
+  it("flashes the column a quick tap lifts from", async () => {
+    const { user } = renderPressable();
 
     await user.pointer({ keys: "[TouchA]", target: screen.getByText("MICH") });
+
+    expect(screen.getByText("C1 pick").closest("td")).toHaveClass(LIT, PRESSED);
+    expect(screen.getByText("OSU").closest("td")).not.toHaveClass(LIT);
+
     rest();
 
     expect(document.querySelector(`.${LIT}, .${PRESSED}`)).toBeNull();
