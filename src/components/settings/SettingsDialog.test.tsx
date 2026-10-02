@@ -215,28 +215,19 @@ describe("SettingsDialog, the experimental features", () => {
     mountDialog();
 
     expect(choiceLabels("Beta Mode")).toEqual(["On", "Off"]);
-    expect(choice("Beta Mode", "Off")).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    expect(choice("Beta Mode", "Off")).toHaveAttribute("aria-pressed", "true");
   });
 
   it("saves the opt-in, and forgets it on the way back out", async () => {
     const user = mountDialog();
     await user.click(choice("Beta Mode", "On"));
 
-    expect(choice("Beta Mode", "On")).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    expect(choice("Beta Mode", "On")).toHaveAttribute("aria-pressed", "true");
     expect(localStorage.getItem(EXPERIMENTAL_FEATURES_KEY)).toBe("on");
 
     await user.click(choice("Beta Mode", "Off"));
 
-    expect(choice("Beta Mode", "Off")).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    expect(choice("Beta Mode", "Off")).toHaveAttribute("aria-pressed", "true");
     expect(localStorage.getItem(EXPERIMENTAL_FEATURES_KEY)).toBeNull();
   });
 });
