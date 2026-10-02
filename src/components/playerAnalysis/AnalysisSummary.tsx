@@ -20,7 +20,6 @@ export default function AnalysisSummary({
   shape,
   weekNumber,
   hasNameConflict,
-  knockedOutIn,
 }: {
   scores?: RakMadnessScores;
   /** The player picked, whose standing heads the answer. */
@@ -36,8 +35,6 @@ export default function AnalysisSummary({
   weekNumber?: number;
   /** Whether more than one row of the week was entered under the name picked. */
   hasNameConflict?: boolean;
-  /** The final game that knocked the player out, by name. */
-  knockedOutIn?: string;
 }) {
   // Nothing under the search until a name is picked, which the placeholder in it
   // already asks for.
@@ -73,7 +70,6 @@ export default function AnalysisSummary({
             result={result}
             isEveryGameSettled={week.isEveryGameSettled}
             weekNumber={weekNumber}
-            knockedOutIn={knockedOutIn}
           />
         </div>
       )}

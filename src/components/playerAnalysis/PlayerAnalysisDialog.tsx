@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { useKnockouts } from "../../context/AppDataContext";
 import useArrival from "../../hooks/useArrival";
 import { PlayerAnalysis } from "../../types/PlayerAnalysis";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
-import { finalGameThatKnockedOut } from "../../utils/scoring/knockoutTypes";
 import repeatedNames from "../../utils/scoring/repeatedNames";
 import weekShape from "../../utils/scoring/weekShape";
 import getPlayerAnalysis, {
@@ -53,11 +51,6 @@ export default function PlayerAnalysisDialog({
   // came first.
   const repeated = useMemo(() => repeatedNames(scores?.scores ?? []), [scores]);
   const hasNameConflict = player != null && repeated.has(player.name);
-  const knockouts = useKnockouts();
-  const knockedOutIn =
-    player == null
-      ? undefined
-      : finalGameThatKnockedOut(knockouts, player.name)?.name;
 
   // A name arriving from outside stands in for a choice made in the search.
   useArrival(named, (name) => {
@@ -128,7 +121,6 @@ export default function PlayerAnalysisDialog({
         shape={shape}
         weekNumber={weekNumber}
         hasNameConflict={hasNameConflict}
-        knockedOutIn={knockedOutIn}
       />
     </DialogShell>
   );

@@ -118,22 +118,6 @@ describe("AnalysisSummary", () => {
     expect(screen.queryByText("Bob cannot win this week.")).toBeNull();
   });
 
-  it("leads with the final game that knocked the player out", () => {
-    const result: PlayerAnalysis = {
-      kind: "knockedOut",
-      playerName: "Bob",
-      explanation: "Knocked out on Total Score by Alice. Behind by 2.",
-    };
-    render(<AnalysisSummary result={result} knockedOutIn="KC @ DEN" />);
-
-    expect(
-      screen.getAllByText(/^Knocked out/).map((line) => line.textContent),
-    ).toEqual([
-      "Knocked out when KC @ DEN went final.",
-      "Knocked out on Total Score by Alice. Behind by 2.",
-    ]);
-  });
-
   it("tells a knocked out player carrying no reason that they cannot win", () => {
     const result: PlayerAnalysis = { kind: "knockedOut", playerName: "Bob" };
     render(<AnalysisSummary result={result} />);

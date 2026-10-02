@@ -155,25 +155,17 @@ export default function AnalysisBody({
   result,
   isEveryGameSettled,
   weekNumber,
-  knockedOutIn,
 }: {
   result: PlayerAnalysis;
   isEveryGameSettled?: boolean;
   weekNumber?: number;
-  /** The final game that knocked the player out, by name. */
-  knockedOutIn?: string;
 }) {
   if (result.kind === "knockedOut") {
     // The explanation names who knocked them out and by how much, so it says they
-    // cannot win on its own. Only a player without one needs telling. The
-    // explanation reads the latest scores, so the game that ended their week
-    // leads, and later games do not change that line.
+    // cannot win on its own. Only a player without one needs telling.
     return (
       <Message
         lines={[
-          knockedOutIn == null
-            ? undefined
-            : `Knocked out when ${knockedOutIn} went final.`,
           result.explanation ?? `${result.playerName} cannot win this week.`,
         ]}
       />

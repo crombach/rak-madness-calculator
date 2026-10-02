@@ -9,21 +9,6 @@ import { playerScore } from "../../weekFixtures";
 import PlayerAnalysisDialog from "./PlayerAnalysisDialog";
 import { playerOptions } from "./playerOptions";
 
-// Bobby went out when the one game went final.
-vi.mock("../../context/AppDataContext", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../../context/AppDataContext")>()),
-  useKnockouts: () => ({
-    games: [
-      {
-        label: "P1",
-        name: "KC @ DEN",
-        isFinal: true,
-        sides: [{ team: "DEN", pick: "DEN +3", players: ["Bobby"] }],
-      },
-    ],
-  }),
-}));
-
 function proPick(pick: string): PickResult {
   return {
     pick,
@@ -170,9 +155,6 @@ describe("PlayerAnalysisDialog", () => {
 
     expect(
       await screen.findByText("Knocked out on Total Score by Alice."),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Knocked out when KC @ DEN went final."),
     ).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Player" })).toHaveValue(
       "Bobby",
