@@ -300,7 +300,14 @@
     background-color: transparent;
     color: inherit;
 
+    // The fill lets go over `--rak-duration-medium`, in the order `.button`'s
+    // `transition` lists its properties.
+    transition-duration:
+      var(--rak-duration-medium), var(--rak-duration-fast),
+      var(--rak-duration-fast), var(--rak-duration-fast);
+
     @include interactive-fill(var(--rak-state-hover), var(--rak-state-press));
+    @include press-lands-at-once;
   }
 
   // The button's own work is running. The label stays, because the user pressed

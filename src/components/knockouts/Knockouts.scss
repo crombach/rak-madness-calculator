@@ -91,7 +91,8 @@ $names-wide-from: 2 * (2 * 192px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
   white-space: nowrap;
   text-align: start;
   cursor: pointer;
-  transition: background-color var(--rak-duration-fast) var(--rak-ease-standard);
+  transition: background-color var(--rak-duration-medium)
+    var(--rak-ease-standard);
 
   @include focus-ring;
   &:focus-visible {
@@ -99,6 +100,7 @@ $names-wide-from: 2 * (2 * 192px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
   }
 
   @include interactive-fill(var(--rak-state-hover), var(--rak-state-press));
+  @include press-lands-at-once;
 }
 
 // The count and the mark, at the band's end.
@@ -221,7 +223,8 @@ button.knockouts__player {
   border-block: 0;
   border-inline-end: 0;
   cursor: pointer;
-  transition: background-color var(--rak-duration-fast) var(--rak-ease-standard);
+  transition: background-color var(--rak-duration-medium)
+    var(--rak-ease-standard);
 
   @include interactive-fill(
     var(--rak-fill-muted),
@@ -231,6 +234,7 @@ button.knockouts__player {
       var(--rak-text)
     )
   );
+  @include press-lands-at-once;
 }
 
 .knockouts__player-name {

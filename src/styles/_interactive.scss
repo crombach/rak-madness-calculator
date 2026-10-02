@@ -23,3 +23,15 @@
     }
   }
 }
+
+/**
+ * A press that lands at once and lets go slowly. A tap lifts before a fill easing
+ * in would show, so it blinks. Landing at once, then fading out over
+ * `--rak-duration-medium`, reads as one press instead. The surface sets that
+ * duration on its own `transition`, which this only cuts short under a press.
+ */
+@mixin press-lands-at-once {
+  &:active {
+    transition-duration: 0s;
+  }
+}
