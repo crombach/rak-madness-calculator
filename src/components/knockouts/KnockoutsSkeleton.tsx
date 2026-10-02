@@ -9,7 +9,7 @@ import KnockoutCard from "./KnockoutCard";
 import "./Knockouts.scss";
 
 // Enough to fill a tall screen, one game to a row.
-const STAND_IN_GAMES = 4;
+const STAND_IN_GAMES = 8;
 
 /** Two rows of names at the narrowest width, short of the fold. */
 const STAND_IN_PLAYERS = rangeWithPrefix(4, "Player ");
