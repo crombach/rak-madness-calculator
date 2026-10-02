@@ -20,9 +20,11 @@ import {
   spreadsheetResponse,
 } from "../appTestFixtures";
 import { pick, player, week } from "../utils/scoring/scoringTestFixtures";
+import { EXPERIMENTAL_FEATURES_KEY } from "./SettingsContext";
 
 beforeEach(() => {
   setUpAppTest().mockResolvedValue(spreadsheetResponse());
+  localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
   getPlayerScoresMock.mockResolvedValue(
     week([
       player({ name: "Alice", total: 5, pro: [pick("KC -3")] }),

@@ -497,6 +497,8 @@
   // cell still clears 5:1 there.
   --rak-hover-strength: 90%;
   --rak-press-strength: 85%;
+  // A table cell's own press step, which dark mode below takes further.
+  --rak-cell-press-strength: var(--rak-press-strength);
 
   // The status icon beside a player's name, drawn the same size wherever the
   // name is. The wireframe leaves this much room without drawing one.
@@ -908,6 +910,10 @@ html {
     inset 0 -8px 7px -6px rgb(125 211 252 / 15%);
   --rak-state-hover: rgb(255 255 255 / 8%);
   --rak-state-press: rgb(255 255 255 / 16%);
+  // This mode's cells are already dark, so a cell under the pointer goes
+  // further toward black to show. Light ink only gains contrast on the way.
+  --rak-hover-strength: 80%;
+  --rak-cell-press-strength: 72%;
 }
 
 // Auto, which is the default: the OS decides, unless the reader has asked for

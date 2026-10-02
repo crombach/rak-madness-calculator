@@ -3,7 +3,13 @@ import {
   makeGame,
   registerAppMocks,
 } from "../lib/mocks.js";
-import { SEASON, WEEK, THEME_KEY, PLAYER_NAME_KEY } from "../lib/constants.js";
+import {
+  SEASON,
+  WEEK,
+  THEME_KEY,
+  EXPERIMENTAL_FEATURES_KEY,
+  PLAYER_NAME_KEY,
+} from "../lib/constants.js";
 
 /** `light` or `dark`. */
 const THEME = process.env.KNOCKOUTS_THEME ?? "light";
@@ -61,11 +67,12 @@ export default async function run({ page, context, baseUrl }) {
 
   await page.goto(`${baseUrl}/${SEASON}/${WEEK}/knockouts`);
   await page.evaluate(
-    ([themeKey, theme, nameKey, name]) => {
+    ([themeKey, theme, nameKey, name, flagKey]) => {
       localStorage.setItem(themeKey, theme);
       localStorage.setItem(nameKey, name);
+      localStorage.setItem(flagKey, "on");
     },
-    [THEME_KEY, THEME, PLAYER_NAME_KEY, MY_NAME],
+    [THEME_KEY, THEME, PLAYER_NAME_KEY, MY_NAME, EXPERIMENTAL_FEATURES_KEY],
   );
   await page.goto(`${baseUrl}/${SEASON}/${WEEK}/knockouts`);
   await page.getByText("KC @ DEN").waitFor({ timeout: 10000 });

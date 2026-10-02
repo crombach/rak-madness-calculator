@@ -8,9 +8,9 @@
   week's refresh. Clearing `isWeekLive` fades refresh and its divider out,
   then unmounts them.
 - `NavMenu`: the hamburger every page mounts. Every `ITEMS` entry, then Settings
-  opening `SettingsDialog`. Compare Players shows only with the opt-in. A
-  wide-screen popup, a drawer below it. An item that does not apply is disabled,
-  never hidden. Its reason sits under its name.
+  opening `SettingsDialog`. Knockouts and Compare Players show only with
+  experimental features on. A wide-screen popup, a drawer below it. An item
+  that does not apply is disabled, never hidden. Its reason sits under its name.
 - `LogoButton`: `APP_NAME`, which it exports, as a target that goes home, set
   in `--rak-font-display`.
 
