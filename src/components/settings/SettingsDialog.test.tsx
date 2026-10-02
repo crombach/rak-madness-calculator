@@ -214,8 +214,8 @@ describe("SettingsDialog, the experimental features", () => {
   it("offers on then off, and starts off", () => {
     mountDialog();
 
-    expect(choiceLabels("βeta Mode")).toEqual(["On", "Off"]);
-    expect(choice("βeta Mode", "Off")).toHaveAttribute(
+    expect(choiceLabels("Beta Mode")).toEqual(["On", "Off"]);
+    expect(choice("Beta Mode", "Off")).toHaveAttribute(
       "aria-pressed",
       "true",
     );
@@ -223,17 +223,17 @@ describe("SettingsDialog, the experimental features", () => {
 
   it("saves the opt-in, and forgets it on the way back out", async () => {
     const user = mountDialog();
-    await user.click(choice("βeta Mode", "On"));
+    await user.click(choice("Beta Mode", "On"));
 
-    expect(choice("βeta Mode", "On")).toHaveAttribute(
+    expect(choice("Beta Mode", "On")).toHaveAttribute(
       "aria-pressed",
       "true",
     );
     expect(localStorage.getItem(EXPERIMENTAL_FEATURES_KEY)).toBe("on");
 
-    await user.click(choice("βeta Mode", "Off"));
+    await user.click(choice("Beta Mode", "Off"));
 
-    expect(choice("βeta Mode", "Off")).toHaveAttribute(
+    expect(choice("Beta Mode", "Off")).toHaveAttribute(
       "aria-pressed",
       "true",
     );

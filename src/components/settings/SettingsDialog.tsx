@@ -151,7 +151,12 @@ export default function SettingsDialog({
         </section>
 
         <section className="settings__section">
-          <h3 className="settings__label" id={experimentalFeaturesLabelId}>
+          {/* A screen reader says β as "beta", which would make this "beta eta". */}
+          <h3
+            className="settings__label"
+            id={experimentalFeaturesLabelId}
+            aria-label="Beta Mode"
+          >
             <span className="settings__beta">β</span>eta Mode
           </h3>
           <div
