@@ -278,6 +278,12 @@ button.nav-drawer__item {
   }
 }
 
+// Set off from the name by less than the row's gap, so it reads as part of it.
+.nav-menu__beta {
+  margin-inline-start: var(--rak-space-1);
+  font-weight: var(--rak-weight-bold);
+}
+
 .nav-menu__reason {
   grid-column: 2;
   font-size: var(--rak-text-xs);

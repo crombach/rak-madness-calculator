@@ -21,6 +21,7 @@ import {
   SettingsIcon,
   SkullOutlinedIcon,
 } from "../icon/Icon";
+import { BETA_MARK } from "./LogoButton";
 import resultsPath, { RESULTS_PAGE, weekName } from "../results/resultsPath";
 import SettingsDialog from "../settings/SettingsDialog";
 import useSettingsSeen from "../settings/useSettingsSeen";
@@ -44,6 +45,8 @@ type NavItem = {
   disabled?: (context: NavContext) => boolean;
   /** Why the item is disabled, or undefined to leave it enabled. */
   disabledReason?: (context: NavContext) => string | undefined;
+  /** True to show the item only with the experimental opt-in, marked β. */
+  experimental?: boolean;
 };
 
 const HOME: NavItem = { label: "Home", icon: <HomeIcon />, path: () => "/" };
@@ -60,6 +63,7 @@ const COMPARE_PLAYERS: NavItem = {
   icon: <JoinIcon />,
   path: (season, week) =>
     resultsPath(season, week, RESULTS_PAGE.comparePlayers),
+  experimental: true,
   disabled: ({ playerCount }) => playerCount == null || playerCount < 2,
   disabledReason: ({ isWeekSettled, playerCount }) =>
     !isWeekSettled && playerCount != null && playerCount < 2
@@ -93,8 +97,8 @@ const TRIGGER_CLASSES = buttonClasses({ compact: true, iconOnly: true });
 
 /**
  * The hamburger every page opens beside the scoreboard/picks switch. A drawer
- * from the right edge below `wide-screen`, a popup menu at it and above. Compare
- * Players only with the experimental opt-in.
+ * from the right edge below `wide-screen`, a popup menu at it and above. An
+ * experimental item only with the opt-in, marked β after its name.
  */
 export default function NavMenu({
   season,
@@ -121,14 +125,15 @@ export default function NavMenu({
     knockouts,
     playerCount,
   };
-  const shown = experimentalFeatures
-    ? ITEMS
-    : ITEMS.filter((item) => item !== COMPARE_PLAYERS);
+  const shown = ITEMS.filter(
+    (item) => experimentalFeatures || !item.experimental,
+  );
   const links = shown.map((item) => {
     const path = item.path(season, week);
     const isHeldOff = pagesDisabled && item !== HOME;
     return {
       ...item,
+      name: <ItemName label={item.label} experimental={item.experimental} />,
       path,
       isCurrent: pathname === path,
       disabled: isHeldOff || (item.disabled?.(context) ?? false),
@@ -163,11 +168,32 @@ export default function NavMenu({
 }
 
 type NavLink = Omit<NavItem, "path" | "disabled" | "disabledReason"> & {
+  /** The label, and the β after it on an experimental item. */
+  name: ReactNode;
   path: string;
   isCurrent: boolean;
   disabled: boolean;
   disabledReason?: string;
 };
+
+function ItemName({
+  label,
+  experimental,
+}: {
+  label: string;
+  experimental?: boolean;
+}) {
+  if (!experimental) {
+    return label;
+  }
+  // A screen reader says β as "beta", so the mark carries the word itself.
+  return (
+    <span>
+      {label}
+      <span className="nav-menu__beta">{BETA_MARK}</span>
+    </span>
+  );
+}
 
 /**
  * A menu's open state, held open until the page a link leads to is on screen.
@@ -214,11 +240,19 @@ function NavPopup({
         >
           <Menu.Popup className="nav-menu__popup">
             {links.map(
-              ({ label, icon, path, isCurrent, disabled, disabledReason }) =>
+              ({
+                label,
+                name,
+                icon,
+                path,
+                isCurrent,
+                disabled,
+                disabledReason,
+              }) =>
                 disabled || disabledReason != null ? (
                   <DisabledNavItem
                     key={label}
-                    label={label}
+                    name={name}
                     icon={icon}
                     reason={disabledReason}
                     isCurrent={isCurrent}
@@ -232,7 +266,7 @@ function NavPopup({
                     aria-current={isCurrent ? "page" : undefined}
                   >
                     {icon}
-                    {label}
+                    {name}
                   </Menu.LinkItem>
                 ),
             )}
@@ -259,19 +293,19 @@ function NavPopup({
  */
 function DisabledContent({
   icon,
-  label,
+  name,
   reason,
   reasonId,
 }: {
   icon: ReactNode;
-  label: string;
+  name: ReactNode;
   reason?: string;
   reasonId: string;
 }) {
   return (
     <>
       {icon}
-      {label}
+      {name}
       {/* Kept out of the item's name, so a screen reader hears it once, as the
           description. */}
       {reason != null && (
@@ -285,12 +319,12 @@ function DisabledContent({
 
 /** A disabled popup item. Base UI keeps `Menu.Item` focusable while disabled. */
 function DisabledNavItem({
-  label,
+  name,
   icon,
   reason,
   isCurrent,
 }: {
-  label: string;
+  name: ReactNode;
   icon: ReactNode;
   reason?: string;
   isCurrent: boolean;
@@ -307,7 +341,7 @@ function DisabledNavItem({
     >
       <DisabledContent
         icon={icon}
-        label={label}
+        name={name}
         reason={reason}
         reasonId={reasonId}
       />
@@ -355,6 +389,7 @@ function NavDrawer({
                 {links.map(
                   ({
                     label,
+                    name,
                     icon,
                     path,
                     isCurrent,
@@ -364,7 +399,7 @@ function NavDrawer({
                     <li key={label}>
                       {disabled || disabledReason != null ? (
                         <DisabledDrawerItem
-                          label={label}
+                          name={name}
                           icon={icon}
                           reason={disabledReason}
                           isCurrent={isCurrent}
@@ -377,7 +412,7 @@ function NavDrawer({
                           onClick={() => isCurrent && setOpen(false)}
                         >
                           {icon}
-                          {label}
+                          {name}
                         </Link>
                       )}
                     </li>
@@ -409,12 +444,12 @@ function NavDrawer({
 
 /** A disabled drawer row. */
 function DisabledDrawerItem({
-  label,
+  name,
   icon,
   reason,
   isCurrent,
 }: {
-  label: string;
+  name: ReactNode;
   icon: ReactNode;
   reason?: string;
   isCurrent: boolean;
@@ -434,7 +469,7 @@ function DisabledDrawerItem({
     >
       <DisabledContent
         icon={icon}
-        label={label}
+        name={name}
         reason={reason}
         reasonId={reasonId}
       />

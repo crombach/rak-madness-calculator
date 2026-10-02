@@ -13,6 +13,7 @@ import {
 } from "../../context/SettingsContext";
 import { KnockoutGame } from "../../utils/scoring/getKnockouts";
 import { SETTINGS_SEEN_KEY } from "../settings/useSettingsSeen";
+import { BETA_MARK } from "./LogoButton";
 import NavMenu from "./NavMenu";
 
 vi.mock("../../context/AppDataContext", () => ({
@@ -70,6 +71,9 @@ function trigger() {
   return screen.getByRole("button", { name: "Menu" });
 }
 
+// Compare Players is experimental, so its name ends in the β mark.
+const COMPARE_PLAYERS_NAME = `Compare Players${BETA_MARK}`;
+
 describe("NavMenu", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -97,7 +101,7 @@ describe("NavMenu", () => {
         "Home",
         "Games",
         "Knockouts",
-        "Compare Players",
+        COMPARE_PLAYERS_NAME,
         "Settings",
       ]);
     });
@@ -267,7 +271,7 @@ describe("NavMenu", () => {
       const user = mount();
       await user.click(trigger());
       await user.click(
-        await screen.findByRole("menuitem", { name: "Compare Players" }),
+        await screen.findByRole("menuitem", { name: COMPARE_PLAYERS_NAME }),
       );
 
       expect(await screen.findByTestId("landed")).toHaveTextContent(
@@ -291,7 +295,7 @@ describe("NavMenu", () => {
       await user.click(trigger());
 
       const item = await screen.findByRole("menuitem", {
-        name: "Compare Players",
+        name: COMPARE_PLAYERS_NAME,
       });
 
       expect(item).toHaveAttribute("data-disabled");
@@ -447,7 +451,7 @@ describe("NavMenu", () => {
         within(drawer)
           .getAllByRole("link")
           .map((link) => link.textContent),
-      ).toEqual(["Home", "Games", "Knockouts", "Compare Players"]);
+      ).toEqual(["Home", "Games", "Knockouts", COMPARE_PLAYERS_NAME]);
       expect(
         within(drawer).getByRole("button", { name: "Settings" }),
       ).toBeInTheDocument();

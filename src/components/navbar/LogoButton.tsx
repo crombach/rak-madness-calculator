@@ -19,7 +19,7 @@ const DSEG14_ALL_SEGMENTS = "~";
  */
 const UNLIT_SEGMENTS = APP_NAME.replace(/\S/g, DSEG14_ALL_SEGMENTS);
 
-const BETA_MARK = "β";
+export const BETA_MARK = "β";
 export const BETA_WORD = "beta";
 
 export default function LogoButton({ onClick }: { onClick: () => void }) {
