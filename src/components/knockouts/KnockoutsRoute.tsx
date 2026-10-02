@@ -18,7 +18,6 @@ function KnockoutsBody() {
   );
 }
 
-// Knockouts shows only to a reader who opted in to experimental features.
 export default function KnockoutsRoute() {
   return (
     <ExperimentalGate>

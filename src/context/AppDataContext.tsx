@@ -329,8 +329,8 @@ export const loadGetKnockouts = cachedImport(() =>
 /**
  * The week's knockouts, or undefined while its scores or the code that reads
  * them load. The provider calls it once, so each set of scores is read once.
- * Skips the work and answers empty while the reader has not opted into
- * experimental features.
+ * Answers `NO_KNOCKOUTS` without loading `getKnockouts` while experimental
+ * features are off.
  */
 function useWeekKnockouts(
   scores: RakMadnessScores | undefined,

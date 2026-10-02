@@ -5,8 +5,8 @@ vi.mock("../../utils/getLeagueInfo");
 vi.mock("../../utils/readFileToBuffer");
 vi.mock("../../utils/scoring/getPlayerScores");
 vi.mock("../../utils/buildSpreadsheetBuffer");
-// The page itself, spied on, so the gate's own test can tell the page never
-// mounted rather than read a redirect the page would make on its own.
+// Spy on the page, so the gate test can prove the page never mounted. A
+// redirect alone could come from the page itself.
 vi.mock("./Knockouts", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./Knockouts")>();
   return { default: vi.fn(actual.default) };
