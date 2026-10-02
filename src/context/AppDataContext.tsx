@@ -304,6 +304,9 @@ export function useScoreChanges(): ScoreChanges {
 
 type GetKnockouts = (scores: RakMadnessScores) => KnockoutGames;
 
+/** A week the knockouts cannot read, answered as one with nothing to show. */
+const NO_KNOCKOUTS: KnockoutGames = { games: [] };
+
 /** Set once `loadGetKnockouts` lands, so a render after it can read it at once. */
 let loadedGetKnockouts: GetKnockouts | undefined;
 
@@ -350,12 +353,12 @@ function useWeekKnockouts(
   return useMemo(() => {
     if (scores == null || ready == null) return undefined;
     // Every page sits under this provider, so a week the knockouts cannot read
-    // costs only the knockouts. That is what a failed download costs too.
+    // costs only the knockouts. The page sends a link to it to the scoreboard.
     try {
       return ready(scores);
     } catch (error) {
       console.warn("Could not work out the knockouts", error);
-      return undefined;
+      return NO_KNOCKOUTS;
     }
   }, [scores, ready]);
 }

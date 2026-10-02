@@ -48,3 +48,15 @@ it("keeps the scoreboard up when the knockouts throw", async () => {
     }),
   ).toBeInTheDocument();
 });
+
+it("sends a direct link to Knockouts to the scoreboard when the knockouts throw", async () => {
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+  mountApp(`/${SEASON}/${CURRENT_WEEK}/knockouts`);
+
+  expect(
+    await screen.findByRole("heading", {
+      level: 1,
+      name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
+    }),
+  ).toBeInTheDocument();
+});
