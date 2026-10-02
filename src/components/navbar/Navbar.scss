@@ -40,6 +40,8 @@
   // the same color.
   --rak-key-face: var(--rak-primary-400);
   --rak-key-active: var(--rak-primary-600);
+  // A key here already stands off the bar by its lighter face.
+  --rak-key-shadow: 0 0 transparent;
 }
 
 .navbar__content {

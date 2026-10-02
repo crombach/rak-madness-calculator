@@ -8,11 +8,14 @@
 // and nothing around the key moves. Transform rather than margin for that
 // reason, and a state rather than an animation. The travel is eased by the
 // transition below, and where motion is turned off the key still lands sunk.
-@mixin key($lift) {
+// `$drop` is the shadow a key casts on the panel at rest. A key held down has
+// sunk to the panel and casts none, so only the rest state passes one.
+@mixin key($lift, $drop: 0 0 transparent) {
   transform: translateY(calc(var(--rak-key-lift) - #{$lift}));
   box-shadow:
     var(--rak-key-top),
-    0 #{$lift} 0 var(--rak-key-edge);
+    0 #{$lift} 0 var(--rak-key-edge),
+    #{$drop};
 }
 
 // The fill, hover, and press shared by every solid color variant. `--primary`
@@ -111,7 +114,9 @@
   &.--solid {
     --rak-key-edge: var(--rak-disabled-edge);
 
-    @include key(var(--rak-key-lift));
+    // Only `--primary` sets `--rak-key-drop`. The colored fills already stand
+    // off the page by their color alone.
+    @include key(var(--rak-key-lift), var(--rak-key-drop, 0 0 transparent));
 
     // A key that cannot be pressed reads as already held down, and the existing
     // transform/box-shadow transition lifts it back to rest the moment it can be
@@ -183,6 +188,8 @@
     // color, and they move together. A rest fill raised on its own leaves a press
     // crossing two steps at once.
     &.--primary {
+      --rak-key-drop: var(--rak-key-shadow);
+
       @include button-color(
         var(--rak-primary-700),
         var(--rak-key-face, var(--rak-primary-500)),
