@@ -77,42 +77,45 @@ function reopenPick(cell: PickResult): PickResult {
 }
 
 /**
- * Each player's standing, by name, once the named final games are played again, as
- * if still to come.
- *
- * The Monday night game kicks off last, so every set reopened here includes it
- * once it is final. The tiebreaker's result is reopened with it.
+ * The player with no tiebreaker result and no verdict, as the walk below starts
+ * them. The Monday night game kicks off last, so every set it reopens includes it
+ * once it is final, and the tiebreaker's result goes with it.
  */
-function standingWith(
-  players: Array<PlayerScore>,
-  columns: Array<Column>,
-): Map<string, PlayerScore["status"]> {
-  const reopened = players.map((player): PlayerScore => {
-    const score = { ...player.score };
-    const picks = { college: [...player.college], pro: [...player.pro] };
-    for (const { league, index } of columns) {
-      const cell = player[league][index];
-      if (cell.status === "yes") {
-        score.total -= 1;
-        score[league] -= 1;
-        if (league === "pro" && parsePick(cell.pick).spread !== 0) {
-          score.proAgainstTheSpread -= 1;
-        }
-      }
-      picks[league][index] = reopenPick(cell);
+function withoutResults(player: PlayerScore): PlayerScore {
+  return {
+    ...player,
+    tiebreaker: { pick: player.tiebreaker.pick },
+    status: {
+      hasNoPicks: player.status.hasNoPicks,
+      isKnockedOut: player.status.hasNoPicks,
+    },
+  };
+}
+
+/** The player with one more final game played again, as if still to come. */
+function reopened(player: PlayerScore, { league, index }: Column): PlayerScore {
+  const cell = player[league][index];
+  const score = { ...player.score };
+  if (cell.status === "yes") {
+    score.total -= 1;
+    score[league] -= 1;
+    if (league === "pro" && parsePick(cell.pick).spread !== 0) {
+      score.proAgainstTheSpread -= 1;
     }
-    return {
-      ...player,
-      ...picks,
-      score,
-      tiebreaker: { pick: player.tiebreaker.pick },
-      status: {
-        hasNoPicks: player.status.hasNoPicks,
-        isKnockedOut: player.status.hasNoPicks,
-      },
-    };
-  });
-  return statusByName(applyKnockouts(reopened.sort(comparePlayerScores)));
+  }
+  const picks = [...player[league]];
+  picks[index] = reopenPick(cell);
+  return { ...player, [league]: picks, score };
+}
+
+/** Each player's standing, by name. Only those in `asked` are judged. */
+function standingOf(
+  players: Array<PlayerScore>,
+  asked: ReadonlySet<string>,
+): Map<string, PlayerScore["status"]> {
+  return statusByName(
+    applyKnockouts([...players].sort(comparePlayerScores), undefined, asked),
+  );
 }
 
 function statusByName(
@@ -147,7 +150,9 @@ function kickoffOf(scores: RakMadnessScores, label: string): number {
  * so one on a game the player left blank names no side.
  *
  * One pass of the knockouts per final game, not a must-win verdict per player per
- * game, which is too slow on a busy Sunday.
+ * game, which is too slow on a busy Sunday. Reopening a game only ever gives a
+ * player more ways to win, so one standing after a game stood before it too. Each
+ * pass judges only the players still out, and the walk ends once none are.
  */
 function knockoutSides(scores: RakMadnessScores): {
   sidesByLabel: Map<string, Map<string, KnockoutSide>>;
@@ -176,15 +181,27 @@ function knockoutSides(scores: RakMadnessScores): {
     Map<Tiebreaker, KnockoutTiebreaker>
   >();
   let after = statusByName(players);
-  for (let at = finals.length - 1; at >= 0; at--) {
-    const before = standingWith(players, finals.slice(at));
+  // Never credited to a game: one with no picks is out before any of them, and
+  // a repeated name is nobody the page can point to.
+  let stillOut = new Set(
+    players
+      .filter(
+        ({ name, status }) =>
+          !status.hasNoPicks && !repeated.has(name) && !isStanding(after, name),
+      )
+      .map(({ name }) => name),
+  );
+  // Every final game from `at` on, played again.
+  let replayed = players.map(withoutResults);
+  for (let at = finals.length - 1; at >= 0 && stillOut.size > 0; at--) {
+    replayed = replayed.map((player) => reopened(player, finals[at]));
+    const before = standingOf(replayed, stillOut);
     const { label, league, index } = finals[at];
     for (const player of players) {
       const cell = player[league][index];
       if (
+        !stillOut.has(player.name) ||
         !isStanding(before, player.name) ||
-        isStanding(after, player.name) ||
-        repeated.has(player.name) ||
         !hasOutcome(cell.status)
       ) {
         continue;
@@ -219,6 +236,9 @@ function knockoutSides(scores: RakMadnessScores): {
       side.players.push(player.name);
     }
     after = before;
+    stillOut = new Set(
+      [...stillOut].filter((name) => !isStanding(after, name)),
+    );
   }
   return { sidesByLabel, tiebreakersByLabel };
 }

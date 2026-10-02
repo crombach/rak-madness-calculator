@@ -30,10 +30,14 @@ function knockedOut(
  * Marks every player who can no longer catch the leader, with the reason.
  *
  * Assumes every team abbreviation is correct. A mismatch corrupts the scores.
+ *
+ * `only` names the players to judge. Everyone else is still a rival, and comes
+ * back as passed in.
  */
 export default function applyKnockouts(
   sortedScores: Array<PlayerScore>,
   tiebreakerScore?: number,
+  only?: ReadonlySet<string>,
 ): Array<PlayerScore> {
   // One walk. Asking for the open games and the week's state apart reads every
   // pick of every player three times over.
@@ -44,6 +48,7 @@ export default function applyKnockouts(
   const repeated = repeatedNames(sortedScores);
 
   return sortedScores.map((activeScore, activeIndex) => {
+    if (only != null && !only.has(activeScore.name)) return activeScore;
     if (activeScore.status.hasNoPicks) {
       return knockedOut(activeScore, "Knocked out due to having no picks.");
     }
