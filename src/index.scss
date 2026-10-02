@@ -877,10 +877,10 @@ html {
   // The key's lit rim, weaker against this mode's dark fills.
   --rak-key-top: inset 0 1px 0 rgb(255 255 255 / 18%);
   // This mode's gray keys already stand lighter than the page, so they keep the
-  // ramp's own steps.
+  // ramp's own steps. The shadow is stronger, to show at all on a page this dark.
   --rak-key-face: var(--rak-primary-500);
   --rak-key-active: var(--rak-primary-600);
-  --rak-key-shadow: 0 0 transparent;
+  --rak-key-shadow: 0 3px 6px rgb(0 0 0 / 60%);
   // The lamp against this mode's dark faces. Lit takes `--rak-info-200`, the
   // step the reader's row is ruled in here, the same way light mode above puts
   // both marks on its own 400. A face this dark leaves the lens somewhere to be
