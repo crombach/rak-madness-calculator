@@ -24,10 +24,10 @@
   }
   @include interactive-fill(
     cell-darkened(var(--rak-hover-strength)),
-    cell-darkened(var(--rak-press-strength))
+    cell-darkened(var(--rak-cell-press-strength))
   );
   &.--column-pressed {
-    background-color: cell-darkened(var(--rak-press-strength));
+    background-color: cell-darkened(var(--rak-cell-press-strength));
   }
 }
 
