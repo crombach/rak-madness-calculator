@@ -81,15 +81,23 @@
   list-style: none;
 }
 
-// The combobox, and the remove button beside it.
+// The combobox, and the remove button beside it. A note wraps under them both.
 .compare-players__field {
   display: flex;
-  gap: var(--rak-space-2);
+  flex-wrap: wrap;
+  gap: var(--rak-space-half) var(--rak-space-2);
 
   > :first-child {
     flex: 1;
     min-width: 0;
   }
+}
+
+// Why a picker holds a name the week's list lacks, under the field.
+.compare-players__note {
+  flex-basis: 100%;
+  color: var(--rak-text-secondary);
+  font-size: var(--rak-text-xs);
 }
 
 // The remove key's face and the edge it stands on span the combobox exactly,

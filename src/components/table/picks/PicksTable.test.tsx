@@ -162,6 +162,26 @@ describe("PicksTable, rows", () => {
     expect(ranks).toEqual(["1", "1", "3"]);
   });
 
+  it("draws a missing player last, N/A in every shown column", () => {
+    render(
+      <PicksTable
+        scores={scores}
+        missingNames={["Dave"]}
+        games={new Set(["C1", "P2"])}
+        showsTiebreakers
+      />,
+    );
+    const rows = screen.getAllByRole("row");
+    const dave = screen.getByText("Dave").closest("tr");
+    expect(rows.filter((row) => row.textContent !== "").at(-1)).toBe(dave);
+    expect(
+      Array.from(
+        dave?.querySelectorAll("td") ?? [],
+        (cell) => cell.textContent,
+      ),
+    ).toEqual(["N/A", "Dave", ...Array(8).fill("N/A")]);
+  });
+
   it("shows each pick's text", () => {
     render(<PicksTable scores={scores} />);
     expect(screen.getByText("MICH")).toBeInTheDocument();

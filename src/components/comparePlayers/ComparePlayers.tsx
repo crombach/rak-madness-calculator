@@ -30,14 +30,19 @@ const EMPTY_MESSAGES: Record<Exclude<GameScope, "all">, string> = {
 
 let slotCount = 0;
 
-function newSlot(id?: string): Slot {
-  return { key: slotCount++, id };
+function newSlot(slot: Omit<Slot, "key"> = {}): Slot {
+  return { key: slotCount++, ...slot };
+}
+
+/** Whether a picker holds a player, this week's row or a saved name it lacks. */
+function isFilled({ id, missingName }: Slot): boolean {
+  return id != null || missingName != null;
 }
 
 /** Drops the empty pickers, except the first empty ones it needs to keep `MIN_PICKERS`. */
 function withoutEmptySlots(slots: Array<Slot>): Array<Slot> {
-  let spare = MIN_PICKERS - slots.filter(({ id }) => id != null).length;
-  return slots.filter(({ id }) => id != null || spare-- > 0);
+  let spare = MIN_PICKERS - slots.filter(isFilled).length;
+  return slots.filter((slot) => isFilled(slot) || spare-- > 0);
 }
 
 /** The rows the pickers hold, in picker order. */
@@ -47,29 +52,38 @@ function playersIn(slots: Array<Slot>, scores?: RakMadnessScores) {
   );
 }
 
+/** The name each filled picker holds, in picker order. */
+function namesIn(slots: Array<Slot>, scores?: RakMadnessScores) {
+  return slots.flatMap(
+    ({ id, missingName }) =>
+      scores?.scores.find((player) => player.id === id)?.name ??
+      missingName ??
+      [],
+  );
+}
+
 /**
- * The rows the saved names still name this week, one row per name. Falls back to
- * the reader's own row alone when none of them does.
+ * A picker per saved name, holding this week's row for it or, where the week has
+ * none, the name alone. Falls back to the reader's own row when nothing is saved.
  */
-function startingIds(
+function startingSlots(
   players: Array<PlayerScore>,
   myName: string,
-): Array<string | undefined> {
-  const ids: Array<string> = [];
+): Array<Slot> {
+  const slots: Array<Slot> = [];
   for (const name of readComparedPlayers()) {
     const row = players.find(
-      (player) => player.name === name && !ids.includes(player.id),
+      (player) =>
+        player.name === name && !slots.some(({ id }) => id === player.id),
     );
-    if (row != null) ids.push(row.id);
+    slots.push(newSlot(row != null ? { id: row.id } : { missingName: name }));
   }
-  if (ids.length === 0) {
+  if (slots.length === 0) {
     const mine = players.find((player) => isMyPlayer(player.name, myName));
-    if (mine != null) ids.push(mine.id);
+    if (mine != null) slots.push(newSlot({ id: mine.id }));
   }
-  return [
-    ...ids,
-    ...Array(Math.max(MIN_PICKERS - ids.length, 0)).fill(undefined),
-  ];
+  while (slots.length < MIN_PICKERS) slots.push(newSlot());
+  return slots;
 }
 
 /** Two to ten players' picks in one table, on every game or those they split or share. */
@@ -81,34 +95,39 @@ export default function ComparePlayers({
   const { playerName } = useSettings();
   const options = useMemo(() => playerOptions(scores), [scores]);
   const [slots, setSlots] = useState(() =>
-    startingIds(scores?.scores ?? [], playerName).map(newSlot),
+    startingSlots(scores?.scores ?? [], playerName),
   );
   // Opens on the pickers when fewer than two players come back from last time.
   const [isOpen, setIsOpen] = useState(
-    () => slots.filter(({ id }) => id != null).length < MIN_PICKERS,
+    () => slots.filter(isFilled).length < MIN_PICKERS,
   );
   const [scope, setScope] = useState(readGameScope);
   const [addedKey, setAddedKey] = useState<number>();
   const chooseRef = useRef<HTMLButtonElement>(null);
   const chosen = useMemo(() => playersIn(slots, scores), [slots, scores]);
-  // Saved only on the reader's own change, so a week missing the saved names
-  // leaves them for a week that has them.
+  const missing = useMemo(
+    () => slots.flatMap(({ missingName }) => missingName ?? []),
+    [slots],
+  );
   const changeSlots = (next: Array<Slot>) => {
     setSlots(next);
-    writeComparedPlayers(playersIn(next, scores).map((player) => player.name));
+    writeComparedPlayers(namesIn(next, scores));
   };
 
   const players = useMemo(
     () => new Set(chosen.map((player) => player.id)),
     [chosen],
   );
-  const isReady = chosen.length >= MIN_PICKERS;
+  const isReady = chosen.length + missing.length >= MIN_PICKERS;
+  // A player with no picks this week neither splits nor shares a game, so the
+  // scope reads only the players with picks.
+  const canScope = chosen.length >= MIN_PICKERS;
   // Undefined shows every game.
   const games = useMemo(() => {
-    if (!isReady || scope === "all") return undefined;
+    if (!canScope || scope === "all") return undefined;
     return scope === "different" ? differingGames(chosen) : sameGames(chosen);
-  }, [isReady, chosen, scope]);
-  const names = NAMES.format(chosen.map((player) => player.name));
+  }, [canScope, chosen, scope]);
+  const names = NAMES.format(namesIn(slots, scores));
   const captions: Record<GameScope, string> = {
     all: `Picks of ${names}`,
     different: `Picks where ${names} differ`,
@@ -133,7 +152,7 @@ export default function ComparePlayers({
               setScope(next);
               writeGameScope(next);
             }}
-            disabled={!isReady}
+            disabled={!canScope}
           />
         </div>
         <EmptyState className="compare-players__standing">
@@ -150,6 +169,7 @@ export default function ComparePlayers({
           scores={scores}
           caption={captions[scope]}
           players={players}
+          missingNames={missing}
           games={games}
           showsTiebreakers
         />
@@ -164,7 +184,9 @@ export default function ComparePlayers({
         finalFocus={chooseRef}
         options={options}
         slots={slots}
-        canAdd={slots.length < Math.min(MAX_PICKERS, options.length)}
+        canAdd={
+          slots.length < Math.min(MAX_PICKERS, options.length + missing.length)
+        }
         onChoose={(key, id) =>
           changeSlots(
             slots.map((slot) => (slot.key === key ? { key, id } : slot)),
@@ -179,8 +201,8 @@ export default function ComparePlayers({
         onRemove={(key) => {
           const next = slots.filter((slot) => slot.key !== key);
           // An empty picker holds no choice, so removing it changes none.
-          const wasEmpty = slots.find((slot) => slot.key === key)?.id == null;
-          if (wasEmpty) setSlots(next);
+          const removed = slots.find((slot) => slot.key === key);
+          if (removed == null || !isFilled(removed)) setSlots(next);
           else changeSlots(next);
         }}
       />

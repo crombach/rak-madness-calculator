@@ -2,6 +2,7 @@
 
 `PicksTable`: college/pro pick grid. A click on a pick cell or its column heading
 opens that game's status. `PlayerName` per row opens the player analysis instead.
+`missingNames` adds N/A rows after the real ones.
 Column labels via `rangeWithPrefix` (C1..., P1...), built once for headers and
 cells, so the two cannot disagree.
 

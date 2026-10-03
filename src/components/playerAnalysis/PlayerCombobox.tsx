@@ -8,6 +8,7 @@ import "./PlayerAnalysisDialog.scss";
 /** A search over the week's players, each entry marked the way the tables mark them. */
 export default function PlayerCombobox({
   ariaLabel,
+  ariaDescribedBy,
   options,
   value,
   onValueChange,
@@ -16,6 +17,7 @@ export default function PlayerCombobox({
   focusOnMount,
 }: {
   ariaLabel: string;
+  ariaDescribedBy?: string;
   options: Array<PlayerOption>;
   value?: PlayerOption;
   onValueChange: (chosen: PlayerOption) => void;
@@ -26,6 +28,7 @@ export default function PlayerCombobox({
   return (
     <DialogCombobox<PlayerOption>
       ariaLabel={ariaLabel}
+      ariaDescribedBy={ariaDescribedBy}
       placeholder="Search players..."
       emptyMessage="No matching players"
       items={options}

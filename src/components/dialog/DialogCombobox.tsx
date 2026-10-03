@@ -14,6 +14,7 @@ import getClasses from "../../utils/getClasses";
  */
 export default function DialogCombobox<T>({
   ariaLabel,
+  ariaDescribedBy,
   placeholder,
   emptyMessage,
   items,
@@ -31,6 +32,7 @@ export default function DialogCombobox<T>({
   focusOnMount = false,
 }: {
   ariaLabel: string;
+  ariaDescribedBy?: string;
   placeholder: string;
   /** Shown in place of the list where the query reaches nothing. */
   emptyMessage: string;
@@ -158,6 +160,7 @@ export default function DialogCombobox<T>({
             ref={inputRef}
             placeholder={placeholder}
             aria-label={ariaLabel}
+            aria-describedby={ariaDescribedBy}
             className={getClasses("dialog__input", {
               "--overlaid": overlay != null,
             })}

@@ -1,4 +1,4 @@
-import { RefObject, useRef, useState } from "react";
+import { RefObject, useId, useRef, useState } from "react";
 import Button from "../button/Button";
 import DialogShell from "../dialog/DialogShell";
 import { AddIcon, DeleteIcon } from "../icon/Icon";
@@ -8,13 +8,19 @@ import { MIN_PICKERS, pickerLabel } from "./comparedPlayers";
 // For the section and label rules, which this dialog shares with Settings.
 import "./ComparePlayers.scss";
 
-/** One picker. `key` stays with it when an earlier one is removed. */
-export type Slot = { key: number; id?: string };
+/**
+ * One picker. `key` stays with it when an earlier one is removed. `missingName`
+ * holds a saved player this week has no row for, in place of `id`.
+ */
+export type Slot = { key: number; id?: string; missingName?: string };
+
+const MISSING_NOTE = "No picks this week";
 
 function PlayerPicker({
   label,
   options,
   value,
+  missingName,
   onValueChange,
   onRemove,
   canRemove,
@@ -23,18 +29,21 @@ function PlayerPicker({
   label: string;
   options: Array<PlayerOption>;
   value?: PlayerOption;
+  missingName?: string;
   onValueChange: (chosen: PlayerOption) => void;
   onRemove: () => void;
   /** Whether more than the fewest pickers remain. */
   canRemove: boolean;
   focusOnMount?: boolean;
 }) {
-  const [query, setQuery] = useState(value?.name ?? "");
+  const [query, setQuery] = useState(value?.name ?? missingName ?? "");
   const fieldRef = useRef<HTMLLIElement>(null);
+  const noteId = useId();
   return (
     <li ref={fieldRef} className="compare-players__field">
       <PlayerCombobox
         ariaLabel={label}
+        ariaDescribedBy={missingName != null ? noteId : undefined}
         options={options}
         value={value}
         onValueChange={onValueChange}
@@ -59,6 +68,12 @@ function PlayerPicker({
       >
         <DeleteIcon />
       </Button>
+      {/* Last, so it wraps onto a line of its own under the field. */}
+      {missingName != null && (
+        <span id={noteId} className="compare-players__note">
+          {MISSING_NOTE}
+        </span>
+      )}
     </li>
   );
 }
@@ -110,6 +125,7 @@ export default function ComparePlayersDialog({
                   label={pickerLabel(index)}
                   options={listed}
                   value={listed.find((option) => option.id === slot.id)}
+                  missingName={slot.missingName}
                   onValueChange={(option) => onChoose(slot.key, option.id)}
                   focusOnMount={slot.key === addedKey}
                   onRemove={() => onRemove(slot.key)}

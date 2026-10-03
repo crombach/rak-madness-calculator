@@ -107,4 +107,24 @@ function PlayerName({
   );
 }
 
+/**
+ * The name cell of a player this week has no row for. Plain, since there is no
+ * standing to mark and no analysis to open.
+ */
+export function MissingPlayerName({ name }: { name: string }) {
+  const isMine = useIsMyPlayer(name);
+  return (
+    <td
+      className={getClasses(PLAYER_COL_CLASS, "--no-status", {
+        "--mine": isMine,
+      })}
+    >
+      <span className="player-name">
+        <span className="player-name__name">{name}</span>
+      </span>
+      {isMine && <span className="table__sr-only">Your row</span>}
+    </td>
+  );
+}
+
 export default memo(PlayerName);
