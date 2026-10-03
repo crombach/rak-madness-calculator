@@ -64,7 +64,9 @@ function namesIn(slots: Array<Slot>, scores?: RakMadnessScores) {
 
 /**
  * A picker per saved name, holding this week's row for it or, where the week has
- * none, the name alone. Falls back to the reader's own row when nothing is saved.
+ * no row by that name, the name alone. A name saved more often than the week has
+ * rows for it keeps only the rows. Falls back to the reader's own row when nothing
+ * is saved.
  */
 function startingSlots(
   players: Array<PlayerScore>,
@@ -76,7 +78,10 @@ function startingSlots(
       (player) =>
         player.name === name && !slots.some(({ id }) => id === player.id),
     );
-    slots.push(newSlot(row != null ? { id: row.id } : { missingName: name }));
+    if (row != null) slots.push(newSlot({ id: row.id }));
+    else if (!players.some((player) => player.name === name)) {
+      slots.push(newSlot({ missingName: name }));
+    }
   }
   if (slots.length === 0) {
     const mine = players.find((player) => isMyPlayer(player.name, myName));
@@ -167,7 +172,7 @@ export default function ComparePlayers({
       {isReady && (games == null || games.size > 0) && (
         <PicksTable
           scores={scores}
-          caption={captions[scope]}
+          caption={captions[canScope ? scope : "all"]}
           players={players}
           missingNames={missing}
           games={games}

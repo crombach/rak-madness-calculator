@@ -578,6 +578,32 @@ describe("the compare players route", () => {
     expect(screen.getByRole("button", { name: "Different" })).toBeDisabled();
   });
 
+  it("names every game in the caption when the scope cannot apply", async () => {
+    localStorage.setItem(GAME_SCOPE_KEY, "different");
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Dave"]),
+    );
+    mountApp(COMPARE_PATH);
+
+    expect(
+      await screen.findByRole("table", { name: "Picks of Alice and Dave" }),
+    ).toBeInTheDocument();
+  });
+
+  it("adds no empty row for a name saved twice that the week has once", async () => {
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Alice", "Carol"]),
+    );
+    mountApp(COMPARE_PATH);
+
+    const table = await screen.findByRole("table", {
+      name: "Picks of Alice and Carol",
+    });
+    expect(within(table).getAllByText("Alice")).toHaveLength(1);
+  });
+
   it("keeps a player through a week that lacks them", async () => {
     // A fresh response per week, since a body reads only once.
     vi.mocked(fetch).mockImplementation(async () => spreadsheetResponse());

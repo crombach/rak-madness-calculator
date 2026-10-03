@@ -414,8 +414,9 @@ function PicksTable({
           </tr>
         );
       })}
-      {missingNames.map((name) => (
-        <tr key={`missing:${name}`}>
+      {/* By place, since two players a week lacks can share a name. */}
+      {missingNames.map((name, index) => (
+        <tr key={`missing:${index}`}>
           <td>{MISSING}</td>
           <MissingPlayerName name={name} />
           {Array.from(

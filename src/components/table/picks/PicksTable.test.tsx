@@ -182,6 +182,15 @@ describe("PicksTable, rows", () => {
     ).toEqual(["N/A", "Dave", ...Array(8).fill("N/A")]);
   });
 
+  it("draws two missing players who share a name as two rows", () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    render(<PicksTable scores={scores} missingNames={["Dave", "Dave"]} />);
+    expect(screen.getAllByText("Dave")).toHaveLength(2);
+    // React reports a key two rows share through `console.error`.
+    expect(error).not.toHaveBeenCalled();
+    error.mockRestore();
+  });
+
   it("shows each pick's text", () => {
     render(<PicksTable scores={scores} />);
     expect(screen.getByText("MICH")).toBeInTheDocument();
