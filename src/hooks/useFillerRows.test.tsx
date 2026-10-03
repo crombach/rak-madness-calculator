@@ -1,5 +1,10 @@
+import { render, screen } from "@testing-library/react";
+import { useRef } from "react";
 import { describe, expect, it } from "vitest";
-import { fillerRowCount } from "./useFillerRows";
+import useFillerRows, {
+  FILLER_ROW_CLASS,
+  fillerRowCount,
+} from "./useFillerRows";
 
 const ROW_HEIGHT = 32;
 
@@ -78,5 +83,60 @@ describe("fillerRowCount", () => {
 
   it("asks for nothing when the row height could not be read", () => {
     expect(count({ tableHeight: 300, rowHeight: 0 })).toBe(0);
+  });
+});
+
+/** A table of `rows` real rows, padded by the hook. */
+function PaddedTable({ rows }: { rows: number }) {
+  const ref = useRef<HTMLTableElement>(null);
+  const filler = useFillerRows(ref);
+  return (
+    <table ref={ref}>
+      <tbody>
+        {Array.from({ length: rows }, (_, row) => (
+          <tr key={row} />
+        ))}
+        {Array.from({ length: filler }, (_, row) => (
+          <tr key={`filler-${row}`} className={FILLER_ROW_CLASS} />
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+describe("useFillerRows", () => {
+  beforeEach(() => {
+    // jsdom lays nothing out, so every row stands one row tall from the top of
+    // the window.
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+      function (this: HTMLElement) {
+        const rows =
+          this.tagName === "TABLE" ? this.querySelectorAll("tr").length : 1;
+        return DOMRect.fromRect({ height: rows * ROW_HEIGHT });
+      },
+    );
+    // A frame that never comes, so only a pass before the paint can count.
+    vi.spyOn(window, "requestAnimationFrame").mockReturnValue(0);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function fillerRows() {
+    return screen.getByRole("table").querySelectorAll(`tr.${FILLER_ROW_CLASS}`)
+      .length;
+  }
+
+  it("refits the padding before the paint when the real rows change", () => {
+    // 768px of window at 32px a row is 24 rows.
+    const { rerender } = render(<PaddedTable rows={4} />);
+    expect(fillerRows()).toBe(20);
+
+    rerender(<PaddedTable rows={5} />);
+    expect(fillerRows()).toBe(19);
+
+    rerender(<PaddedTable rows={3} />);
+    expect(fillerRows()).toBe(21);
   });
 });
