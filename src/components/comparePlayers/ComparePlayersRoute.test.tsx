@@ -512,6 +512,29 @@ describe("the compare players route", () => {
     ).toEqual(["Bob", "Gone", "Alice", "Carol"]);
   });
 
+  it("strikes through a saved player this week lacks", async () => {
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Dave"]),
+    );
+    await openDialog(mountApp(COMPARE_PATH));
+
+    const picker = await screen.findByRole("combobox", { name: "Player 2" });
+    expect(picker.parentElement?.querySelector("s")).toHaveTextContent("Dave");
+  });
+
+  it("matches saved names to the week's rows whatever their case", async () => {
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["ALICE", "carol"]),
+    );
+    mountApp(COMPARE_PATH);
+
+    expect(
+      await screen.findByRole("table", { name: "Picks of Alice and Carol" }),
+    ).toBeInTheDocument();
+  });
+
   it("shows a saved player this week lacks as a row with no picks", async () => {
     localStorage.setItem(
       COMPARED_PLAYERS_KEY,

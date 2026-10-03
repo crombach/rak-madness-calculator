@@ -1,3 +1,4 @@
+@use "../../styles/a11y" as *;
 @use "../../styles/breakpoints" as *;
 @use "../../styles/label" as *;
 @use "../../styles/layout" as *;
@@ -81,11 +82,10 @@
   list-style: none;
 }
 
-// The combobox, and the remove button beside it. A note wraps under them both.
+// The combobox, and the remove button beside it.
 .compare-players__field {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--rak-space-half) var(--rak-space-2);
+  gap: var(--rak-space-2);
 
   > :first-child {
     flex: 1;
@@ -93,11 +93,8 @@
   }
 }
 
-// Why a picker holds a name the week's list lacks, under the field.
 .compare-players__note {
-  flex-basis: 100%;
-  color: var(--rak-text-secondary);
-  font-size: var(--rak-text-xs);
+  @include visually-hidden;
 }
 
 // The remove key's face and the edge it stands on span the combobox exactly,

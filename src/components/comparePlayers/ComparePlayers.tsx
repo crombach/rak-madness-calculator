@@ -62,6 +62,11 @@ function namesIn(slots: Array<Slot>, scores?: RakMadnessScores) {
   );
 }
 
+/** Whether two names are one player's, so a name re-cased between weeks still matches. */
+function isSameName(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
 /**
  * A picker per saved name, holding this week's row for it or, where the week has
  * no row by that name, the name alone. A name saved more often than the week has
@@ -76,10 +81,11 @@ function startingSlots(
   for (const name of readComparedPlayers()) {
     const row = players.find(
       (player) =>
-        player.name === name && !slots.some(({ id }) => id === player.id),
+        isSameName(player.name, name) &&
+        !slots.some(({ id }) => id === player.id),
     );
     if (row != null) slots.push(newSlot({ id: row.id }));
-    else if (!players.some((player) => player.name === name)) {
+    else if (!players.some((player) => isSameName(player.name, name))) {
       slots.push(newSlot({ missingName: name }));
     }
   }

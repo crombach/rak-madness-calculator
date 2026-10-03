@@ -44,6 +44,7 @@ function PlayerPicker({
       <PlayerCombobox
         ariaLabel={label}
         ariaDescribedBy={missingName != null ? noteId : undefined}
+        missingName={missingName}
         options={options}
         value={value}
         onValueChange={onValueChange}
@@ -68,7 +69,7 @@ function PlayerPicker({
       >
         <DeleteIcon />
       </Button>
-      {/* Last, so it wraps onto a line of its own under the field. */}
+      {/* Says what the strikethrough alone carries. */}
       {missingName != null && (
         <span id={noteId} className="compare-players__note">
           {MISSING_NOTE}
