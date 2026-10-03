@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { useIsWeekSettled } from "../../context/AppDataContext";
 import { isMyPlayer, useSettings } from "../../context/SettingsContext";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import differingGames, { sameGames } from "../../utils/scoring/differingGames";
@@ -13,11 +14,17 @@ import {
   MIN_PICKERS,
   readComparedPlayers,
   readGameScope,
+  readShowsLeader,
   writeComparedPlayers,
   writeGameScope,
+  writeShowsLeader,
 } from "./comparedPlayers";
 import ComparePlayersDialog, { Slot } from "./ComparePlayersDialog";
-import { ChooseButton, GamesToggle } from "./ComparePlayersControls";
+import {
+  ChooseButton,
+  GamesToggle,
+  LeaderToggle,
+} from "./ComparePlayersControls";
 import "./ComparePlayers.scss";
 
 const NAMES = new Intl.ListFormat("en", { type: "conjunction" });
@@ -97,25 +104,38 @@ function startingSlots(
   return slots;
 }
 
-/** Two to ten players' picks in one table, on every game or those they split or share. */
+/**
+ * Two to ten players' picks in one table, on every game or those they split or
+ * share. The week's leader can join them beyond the ten-player limit.
+ */
 export default function ComparePlayers({
   scores,
 }: {
   scores?: RakMadnessScores;
 }) {
   const { playerName } = useSettings();
+  const isSettled = useIsWeekSettled();
   const options = useMemo(() => playerOptions(scores), [scores]);
   const [slots, setSlots] = useState(() =>
     startingSlots(scores?.scores ?? [], playerName),
   );
+  const [showsLeader, setShowsLeader] = useState(readShowsLeader);
+  const picked = useMemo(() => playersIn(slots, scores), [slots, scores]);
+  // The week's leader, when shown and not picked already. It holds no picker.
+  const top = scores?.scores[0];
+  const leader =
+    showsLeader && top != null && !picked.includes(top) ? top : undefined;
   // Opens on the pickers when fewer than two players come back from last time.
   const [isOpen, setIsOpen] = useState(
-    () => slots.filter(isFilled).length < MIN_PICKERS,
+    () => slots.filter(isFilled).length + (leader ? 1 : 0) < MIN_PICKERS,
   );
   const [scope, setScope] = useState(readGameScope);
   const [addedKey, setAddedKey] = useState<number>();
   const chooseRef = useRef<HTMLButtonElement>(null);
-  const chosen = useMemo(() => playersIn(slots, scores), [slots, scores]);
+  const chosen = useMemo(
+    () => (leader ? [...picked, leader] : picked),
+    [picked, leader],
+  );
   const missing = useMemo(
     () => slots.flatMap(({ missingName }) => missingName ?? []),
     [slots],
@@ -138,7 +158,10 @@ export default function ComparePlayers({
     if (!canScope || scope === "all") return undefined;
     return scope === "different" ? differingGames(chosen) : sameGames(chosen);
   }, [canScope, chosen, scope]);
-  const names = NAMES.format(namesIn(slots, scores));
+  const names = NAMES.format([
+    ...namesIn(slots, scores),
+    ...(leader ? [leader.name] : []),
+  ]);
   const captions: Record<GameScope, string> = {
     all: `Picks of ${names}`,
     different: `Picks where ${names} differ`,
@@ -156,6 +179,15 @@ export default function ComparePlayers({
               setSlots(withoutEmptySlots(slots));
               setIsOpen(true);
             }}
+          />
+          <LeaderToggle
+            on={showsLeader}
+            isSettled={isSettled}
+            onChange={(on) => {
+              setShowsLeader(on);
+              writeShowsLeader(on);
+            }}
+            disabled={top == null}
           />
           <GamesToggle
             scope={scope}

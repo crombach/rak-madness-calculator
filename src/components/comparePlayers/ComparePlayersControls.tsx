@@ -19,6 +19,25 @@ export function ChooseButton({
   );
 }
 
+/** Adds the week's leader to the players chosen. Reads "Show Winner" once the week is complete. */
+export function LeaderToggle({
+  on,
+  isSettled = false,
+  onChange = doNothing,
+  disabled = false,
+}: {
+  on: boolean;
+  isSettled?: boolean;
+  onChange?: (on: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <Button disabled={disabled} selected={on} onClick={() => onChange(!on)}>
+      {isSettled ? "Show Winner" : "Show Leader"}
+    </Button>
+  );
+}
+
 const SCOPE_LABELS: Record<GameScope, string> = {
   all: "All",
   different: "Different",

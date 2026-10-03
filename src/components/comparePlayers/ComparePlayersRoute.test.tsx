@@ -19,7 +19,11 @@ import {
   PLAYER_NAME_KEY,
 } from "../../context/SettingsContext";
 import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
-import { COMPARED_PLAYERS_KEY, GAME_SCOPE_KEY } from "./comparedPlayers";
+import {
+  COMPARED_PLAYERS_KEY,
+  GAME_SCOPE_KEY,
+  LEADER_KEY,
+} from "./comparedPlayers";
 
 const COMPARE_PATH = `/${SEASON}/${CURRENT_WEEK}/compare`;
 
@@ -684,6 +688,117 @@ describe("the compare players route", () => {
       "aria-pressed",
       "true",
     );
+  });
+
+  it("adds the leader to the players chosen", async () => {
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Bob", "Carol"]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    await screen.findByRole("table", { name: "Picks of Bob and Carol" });
+
+    await user.click(screen.getByRole("button", { name: "Show Leader" }));
+
+    const table = await screen.findByRole("table", {
+      name: "Picks of Bob, Carol, and Alice",
+    });
+    expect(within(table).getByText("Alice")).toBeInTheDocument();
+  });
+
+  it("compares one chosen player with the leader", async () => {
+    localStorage.setItem(LEADER_KEY, "on");
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(["Bob"]));
+    mountApp(COMPARE_PATH);
+
+    expect(
+      await screen.findByRole("table", { name: "Picks of Bob and Alice" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("splits games with the leader among the players", async () => {
+    localStorage.setItem(LEADER_KEY, "on");
+    localStorage.setItem(GAME_SCOPE_KEY, "different");
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(["Bob"]));
+    mountApp(COMPARE_PATH);
+
+    expect(
+      await screen.findByText("They picked every game the same"),
+    ).toBeInTheDocument();
+  });
+
+  it("adds no second row for a leader already chosen", async () => {
+    localStorage.setItem(LEADER_KEY, "on");
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Carol"]),
+    );
+    mountApp(COMPARE_PATH);
+
+    const table = await screen.findByRole("table", {
+      name: "Picks of Alice and Carol",
+    });
+    expect(within(table).getAllByText("Alice")).toHaveLength(1);
+  });
+
+  it("adds the leader past the ten players chosen", async () => {
+    const names = Array.from(
+      { length: 11 },
+      (_, index) => `Player ${String.fromCharCode(65 + index)}`,
+    );
+    getPlayerScoresMock.mockResolvedValue(
+      week(names.map((name) => player({ name }))),
+    );
+    localStorage.setItem(LEADER_KEY, "on");
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(names.slice(1)));
+    mountApp(COMPARE_PATH);
+
+    const table = await screen.findByRole("table");
+    expect(within(table).getByText("Player A")).toBeInTheDocument();
+    expect(within(table).getByText("Player K")).toBeInTheDocument();
+  });
+
+  it("saves whether the leader shows", async () => {
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Bob", "Carol"]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    await screen.findByRole("table");
+    const toggle = screen.getByRole("button", { name: "Show Leader" });
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(localStorage.getItem(LEADER_KEY)).toBe("on");
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    expect(localStorage.getItem(LEADER_KEY)).toBeNull();
+  });
+
+  it("calls the leader the winner once the week is complete", async () => {
+    getPlayerScoresMock.mockResolvedValue(
+      week(
+        [
+          player({ name: "Alice", total: 1, pro: [pick("KC", "yes")] }),
+          player({ name: "Bob", pro: [pick("DEN", "no")] }),
+        ],
+        40,
+      ),
+    );
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(["Bob"]));
+    const user = mountApp(COMPARE_PATH);
+    await openDialog(user);
+    await closeDialog(user);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Show Winner" }),
+    );
+
+    expect(
+      await screen.findByRole("table", { name: "Picks of Bob and Alice" }),
+    ).toBeInTheDocument();
   });
 
   it("sends a reader without experimental features to the scoreboard", async () => {

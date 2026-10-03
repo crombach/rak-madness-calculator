@@ -49,6 +49,22 @@ export function writeGameScope(scope: GameScope): void {
   writeSetting(SCOPE_SETTING, scope === DEFAULT_SCOPE ? "" : scope);
 }
 
+const LEADER_SETTING = "compareLeader";
+const LEADER_ON = "on";
+
+/** The exact key the leader toggle is saved under, for a test to seed or read. */
+export const LEADER_KEY = PREFIX + LEADER_SETTING;
+
+/** Whether the week's leader joins the players chosen, off unless saved on. */
+export function readShowsLeader(): boolean {
+  return readSetting(LEADER_SETTING) === LEADER_ON;
+}
+
+/** Saves the leader toggle, or forgets it when off. */
+export function writeShowsLeader(on: boolean): void {
+  writeSetting(LEADER_SETTING, on ? LEADER_ON : "");
+}
+
 /** A picker's label and accessible name, counted from 1. */
 export function pickerLabel(index: number): string {
   return `Player ${index + 1}`;
