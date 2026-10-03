@@ -5,8 +5,8 @@ import { GAME_SCOPES, GameScope } from "./comparedPlayers";
 import "./ComparePlayers.scss";
 
 /**
- * A named row of keys. `divided` rules it off from the group before it on a wide
- * screen.
+ * A named row of keys. `divided` rules it off from the group before it once
+ * the toolbar fits on one line.
  */
 export function ControlGroup({
   label,

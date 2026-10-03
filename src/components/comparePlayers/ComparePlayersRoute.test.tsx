@@ -344,10 +344,12 @@ describe("the compare players route", () => {
     await screen.findByRole("dialog", { name: "Compare Players" });
     const choose = screen.getByRole("button", { name: "Choose", hidden: true });
     expect(choose).toHaveAttribute("data-popup-open");
+    expect(choose).toHaveAttribute("aria-expanded", "true");
 
     await closeDialog(user);
 
     await waitFor(() => expect(choose).not.toHaveAttribute("data-popup-open"));
+    expect(choose).toHaveAttribute("aria-expanded", "false");
   });
 
   it("focuses an added picker once, not again on reopen", async () => {
