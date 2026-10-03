@@ -16,40 +16,41 @@
   width: min(100cqi, 100%);
 }
 
-// Players over Games, each the full width, until there is room to
-// set them side by side as one toolbar, split the way the navbar splits its keys.
+// Players over Games, each the full width, until there is room to set them side
+// by side as one toolbar, centered over the table and split the way the navbar
+// splits its keys.
 .compare-players__controls {
   display: flex;
   flex-direction: column;
   align-self: stretch;
   gap: var(--rak-space-2);
 
-  @include wide-screen {
+  @include compare-toolbar {
     flex-direction: row;
-    align-self: flex-start;
+    align-self: center;
     align-items: center;
     gap: var(--rak-space-4);
   }
 }
 
-// The name over the keys on a phone, beside them on a wide screen.
+// The name over the keys when stacked, beside them in one row.
 .compare-players__group {
   display: flex;
   flex-direction: column;
   gap: var(--rak-space-2);
 
-  @include wide-screen {
+  @include compare-toolbar {
     flex-direction: row;
     align-items: center;
     gap: var(--rak-space-4);
   }
 }
 
-// The phone stacks the groups, which parts them without a rule.
+// Stacked groups part without a rule.
 .compare-players__divider {
   display: none;
 
-  @include wide-screen {
+  @include compare-toolbar {
     display: block;
   }
 }
@@ -130,7 +131,7 @@
 // A frame hugging a table of a few games stands a narrow strip in a wide case.
 // The controls hold it open, and the table stretches to meet them.
 //
-// The controls line up with the navbar's keys, so switching the game scope
+// The controls center on the navbar's column, so switching the game scope
 // leaves them in place while the table narrows. The frame is at least as wide
 // as the navbar and centers on the same column. Its padding is the navbar's,
 // plus the gap between that column and the edge of this box.
