@@ -69,7 +69,7 @@ function PlayerPicker({
       >
         <DeleteIcon />
       </Button>
-      {/* Says what the strikethrough alone carries. */}
+      {/* Hidden, for a screen reader, which reads no strikethrough. */}
       {missingName != null && (
         <span id={noteId} className="compare-players__note">
           {MISSING_NOTE}

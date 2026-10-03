@@ -195,6 +195,7 @@ export default function ComparePlayers({
         finalFocus={chooseRef}
         options={options}
         slots={slots}
+        // A missing player holds a picker without being one of the week's options.
         canAdd={
           slots.length < Math.min(MAX_PICKERS, options.length + missing.length)
         }
