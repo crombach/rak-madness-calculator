@@ -11,6 +11,7 @@ import {
 import rangeWithPrefix from "./rangeWithPrefix";
 import { fillStatus } from "./scoring/getPickResults";
 import repeatedNames from "./scoring/repeatedNames";
+import { ranksOnMerit } from "./scoring/comparePlayerScores";
 
 /** Keep in sync with the header `functions/api/picks/[season]/[week].ts` responds with. */
 export const XLSX_CONTENT_TYPE =
@@ -177,6 +178,7 @@ export default async function buildSpreadsheetBuffer(
   const XLSX = await import("xlsx-js-style");
   const workbook = XLSX.utils.book_new();
   const repeated = repeatedNames(scoresObject.scores);
+  const ranks = ranksOnMerit(scoresObject.scores);
 
   const resultsData = [
     [
@@ -191,7 +193,7 @@ export default async function buildSpreadsheetBuffer(
     ],
     ...scoresObject.scores.map((player, index) => {
       return [
-        normalCell({ value: index + 1, alignment: "left", isBold: true }),
+        normalCell({ value: ranks[index], alignment: "left", isBold: true }),
         playerNameCell(player, rowStatusOf(player, repeated, showStatus)),
         normalCell({ value: player.tiebreaker.pick ?? "N/A" }),
         normalCell({ value: player.tiebreaker.distance ?? "N/A" }),
@@ -235,7 +237,7 @@ export default async function buildSpreadsheetBuffer(
     ],
     ...scoresObject.scores.map((player, index) => {
       return [
-        normalCell({ value: index + 1, alignment: "left", isBold: true }),
+        normalCell({ value: ranks[index], alignment: "left", isBold: true }),
         playerNameCell(player, rowStatusOf(player, repeated, showStatus)),
         ...player.college.map(pickCell),
         normalCell({ value: player.score.college, alignment: "center" }),

@@ -73,6 +73,23 @@ export function comparePlayerScoresOnMerit(
 }
 
 /**
+ * Each row's rank. A row tied on merit with the row above shares its rank, and the
+ * next rank skips the places they fill, as in 1, 1, 3. Expects rows in
+ * `comparePlayerScores` order, which puts tied rows next to each other.
+ */
+export function ranksOnMerit(sorted: ReadonlyArray<PlayerScore>): number[] {
+  const ranks: number[] = [];
+  sorted.forEach((player, index) => {
+    ranks.push(
+      index > 0 && comparePlayerScoresOnMerit(sorted[index - 1], player) === 0
+        ? ranks[index - 1]
+        : index + 1,
+    );
+  });
+  return ranks;
+}
+
+/**
  * The row order, which needs every pair separated even where the rules do not
  * separate them. Two players the tiers leave tied have both won the week, so the
  * name is a row order and not a tiebreaker, which is why it lives here rather than

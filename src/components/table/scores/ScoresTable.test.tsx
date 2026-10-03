@@ -94,6 +94,18 @@ describe("ScoresTable", () => {
     expect(texts).toEqual(["1", "Alice", "41", "0", "1", "2", "1", "3"]);
   });
 
+  it("gives players tied on merit one rank", () => {
+    mountTable({
+      tiebreaker: 41,
+      scores: [player(), player({ name: "Bea" }), knockedOutBob],
+    });
+    const ranks = ["Alice", "Bea", "Bob"].map(
+      (name) =>
+        screen.getByText(name).closest("tr")?.querySelector("td")?.textContent,
+    );
+    expect(ranks).toEqual(["1", "1", "3"]);
+  });
+
   it("marks every header cell with its column scope", () => {
     mountTable(bothPlayers);
     screen
