@@ -162,6 +162,35 @@ describe("PicksTable, rows", () => {
     expect(ranks).toEqual(["1", "1", "3"]);
   });
 
+  it("draws a missing player last, N/A in every shown column", () => {
+    render(
+      <PicksTable
+        scores={scores}
+        missingNames={["Dave"]}
+        games={new Set(["C1", "P2"])}
+        showsTiebreakers
+      />,
+    );
+    const rows = screen.getAllByRole("row");
+    const dave = screen.getByText("Dave").closest("tr");
+    expect(rows.filter((row) => row.textContent !== "").at(-1)).toBe(dave);
+    expect(
+      Array.from(
+        dave?.querySelectorAll("td") ?? [],
+        (cell) => cell.textContent,
+      ),
+    ).toEqual(["N/A", "Dave", ...Array(8).fill("N/A")]);
+  });
+
+  it("draws two missing players who share a name as two rows", () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    render(<PicksTable scores={scores} missingNames={["Dave", "Dave"]} />);
+    expect(screen.getAllByText("Dave")).toHaveLength(2);
+    // React reports a key two rows share through `console.error`.
+    expect(error).not.toHaveBeenCalled();
+    error.mockRestore();
+  });
+
   it("shows each pick's text", () => {
     render(<PicksTable scores={scores} />);
     expect(screen.getByText("MICH")).toBeInTheDocument();

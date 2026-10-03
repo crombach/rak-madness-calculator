@@ -1,4 +1,5 @@
 import { screen, waitFor, within } from "@testing-library/react";
+import { useNavigate } from "react-router";
 
 vi.mock("../../utils/getLeagueInfo");
 vi.mock("../../utils/readFileToBuffer");
@@ -21,6 +22,16 @@ import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
 import { COMPARED_PLAYERS_KEY, GAME_SCOPE_KEY } from "./comparedPlayers";
 
 const COMPARE_PATH = `/${SEASON}/${CURRENT_WEEK}/compare`;
+
+/** Navigates the way the navbar's week switch does, which the test cannot reach. */
+function GoToWeek({ path }: { path: string }) {
+  const navigate = useNavigate();
+  return (
+    <button type="button" onClick={() => navigate(path)}>
+      Go to week
+    </button>
+  );
+}
 
 /** Alice and Carol split on C2 and P1 only. Bob ranks between them. */
 function compareScores() {
@@ -458,14 +469,20 @@ describe("the compare players route", () => {
     ).toEqual(["Carol", "Alice"]);
   });
 
-  it("keeps saved players this week lacks until the reader chooses", async () => {
+  it("keeps saved players this week lacks, marked as having no picks", async () => {
     const saved = JSON.stringify(["Gone", "Alice", "Missing"]);
     localStorage.setItem(COMPARED_PLAYERS_KEY, saved);
     await openDialog(mountApp(COMPARE_PATH));
 
-    expect(
-      await screen.findByRole("combobox", { name: "Player 1" }),
-    ).toHaveValue("Alice");
+    const gone = await screen.findByRole("combobox", { name: "Player 1" });
+    expect(gone).toHaveValue("Gone");
+    expect(gone).toHaveAccessibleDescription("No picks this week");
+    expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveValue(
+      "Alice",
+    );
+    expect(screen.getByRole("combobox", { name: "Player 3" })).toHaveValue(
+      "Missing",
+    );
     expect(localStorage.getItem(COMPARED_PLAYERS_KEY)).toBe(saved);
   });
 
@@ -476,12 +493,12 @@ describe("the compare players route", () => {
     await openDialog(user);
     await user.click(await screen.findByRole("button", { name: "Add Player" }));
 
-    await user.click(screen.getByRole("button", { name: "Remove Player 3" }));
+    await user.click(screen.getByRole("button", { name: "Remove Player 4" }));
 
     expect(localStorage.getItem(COMPARED_PLAYERS_KEY)).toBe(saved);
   });
 
-  it("opens on the saved players the week still has", async () => {
+  it("opens on the saved players in their saved order", async () => {
     localStorage.setItem(
       COMPARED_PLAYERS_KEY,
       JSON.stringify(["Bob", "Gone", "Alice", "Carol"]),
@@ -489,13 +506,154 @@ describe("the compare players route", () => {
     await openDialog(mountApp(COMPARE_PATH));
 
     expect(
-      await screen.findByRole("combobox", { name: "Player 1" }),
-    ).toHaveValue("Bob");
-    expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveValue(
-      "Alice",
+      (await screen.findAllByRole("combobox")).map((picker) =>
+        picker.getAttribute("value"),
+      ),
+    ).toEqual(["Bob", "Gone", "Alice", "Carol"]);
+  });
+
+  it("strikes through a saved player this week lacks", async () => {
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Dave"]),
     );
-    expect(screen.getByRole("combobox", { name: "Player 3" })).toHaveValue(
-      "Carol",
+    await openDialog(mountApp(COMPARE_PATH));
+
+    const picker = await screen.findByRole("combobox", { name: "Player 2" });
+    expect(picker.parentElement?.querySelector("s")).toHaveTextContent("Dave");
+  });
+
+  it("matches saved names to the week's rows whatever their case", async () => {
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["ALICE", "carol"]),
+    );
+    mountApp(COMPARE_PATH);
+
+    expect(
+      await screen.findByRole("table", { name: "Picks of Alice and Carol" }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows a saved player this week lacks as a row with no picks", async () => {
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Dave"]),
+    );
+    mountApp(COMPARE_PATH);
+
+    const table = await screen.findByRole("table", {
+      name: "Picks of Alice and Dave",
+    });
+    const rows = within(table)
+      .getAllByRole("row")
+      .map((row) =>
+        Array.from(row.querySelectorAll("td"), (cell) => cell.textContent),
+      )
+      .filter((cells) => cells.length > 0 && cells[1] !== "");
+    expect(rows[0][0]).toBe("1");
+    expect(rows[1]).toEqual(["N/A", "Dave", ...Array(10).fill("N/A")]);
+  });
+
+  it("keeps a saved player this week lacks when the reader changes another", async () => {
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Dave"]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Carol");
+
+    expect(
+      JSON.parse(localStorage.getItem(COMPARED_PLAYERS_KEY) ?? ""),
+    ).toEqual(["Carol", "Dave"]);
+  });
+
+  it("replaces a saved player this week lacks with the one chosen", async () => {
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Dave"]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 2", "Carol");
+
+    const picker = screen.getByRole("combobox", { name: "Player 2" });
+    expect(picker).toHaveValue("Carol");
+    expect(picker).not.toHaveAccessibleDescription();
+    expect(
+      JSON.parse(localStorage.getItem(COMPARED_PLAYERS_KEY) ?? ""),
+    ).toEqual(["Alice", "Carol"]);
+  });
+
+  it("splits games only among the players with picks", async () => {
+    localStorage.setItem(GAME_SCOPE_KEY, "different");
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Dave"]),
+    );
+    mountApp(COMPARE_PATH);
+
+    const table = await screen.findByRole("table");
+    expect(
+      within(table)
+        .getAllByRole("columnheader")
+        .map((header) => header.textContent),
+    ).toEqual(expect.arrayContaining(["C1", "C2", "P1", "P2"]));
+    expect(screen.getByRole("button", { name: "Different" })).toBeDisabled();
+  });
+
+  it("names every game in the caption when the scope cannot apply", async () => {
+    localStorage.setItem(GAME_SCOPE_KEY, "different");
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Dave"]),
+    );
+    mountApp(COMPARE_PATH);
+
+    expect(
+      await screen.findByRole("table", { name: "Picks of Alice and Dave" }),
+    ).toBeInTheDocument();
+  });
+
+  it("adds no empty row for a name saved twice that the week has once", async () => {
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Alice", "Carol"]),
+    );
+    mountApp(COMPARE_PATH);
+
+    const table = await screen.findByRole("table", {
+      name: "Picks of Alice and Carol",
+    });
+    expect(within(table).getAllByText("Alice")).toHaveLength(1);
+  });
+
+  it("keeps a player through a week that lacks them", async () => {
+    // A fresh response per week, since a body reads only once.
+    vi.mocked(fetch).mockImplementation(async () => spreadsheetResponse());
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Bob"]),
+    );
+    getPlayerScoresMock.mockResolvedValue(
+      week([
+        player({ name: "Alice", college: [pick("MICH")], pro: [pick("KC")] }),
+      ]),
+    );
+    const user = mountApp(COMPARE_PATH, {
+      beside: <GoToWeek path={`/${SEASON}/${CURRENT_WEEK - 1}/compare`} />,
+    });
+    await screen.findByRole("table", { name: "Picks of Alice and Bob" });
+
+    getPlayerScoresMock.mockResolvedValue(compareScores());
+    await user.click(screen.getByRole("button", { name: "Go to week" }));
+
+    const table = await screen.findByRole("table", {
+      name: "Picks of Alice and Bob",
+    });
+    await waitFor(() =>
+      expect(within(table).getAllByRole("cell", { name: "BUF" })).toHaveLength(
+        2,
+      ),
     );
   });
 

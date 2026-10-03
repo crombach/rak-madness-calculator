@@ -16,7 +16,7 @@ import {
   pickChangeKey,
 } from "../../../utils/scoring/gameColumns";
 import { fillStatus } from "../../../utils/scoring/getPickResults";
-import PlayerName from "../playerName/PlayerName";
+import PlayerName, { MissingPlayerName } from "../playerName/PlayerName";
 import TableShell, {
   PICK_COL_CLASS,
   PLAYER_COL_CLASS,
@@ -30,6 +30,12 @@ const FIXED_COLUMN_COUNT = 5;
 
 /** MNF Points Pick, MNF Points Distance, and Pro Score ATS. */
 const TIEBREAKER_COLUMN_COUNT = 3;
+
+/** Rank and player, the two cells ahead of the game columns. */
+const ROW_HEAD_COLUMN_COUNT = 2;
+
+/** What a missing player's row reads in every cell but the name. */
+const MISSING = "N/A";
 
 /** Marks every cell of the lit column, heading included. */
 const COLUMN_LIT_CLASS = "--column-lit";
@@ -199,6 +205,7 @@ function PicksTable({
   scores,
   caption = "Player picks for the week, college and pro games",
   players,
+  missingNames = [],
   games,
   showsTiebreakers = false,
 }: {
@@ -206,6 +213,8 @@ function PicksTable({
   caption?: string;
   /** The ids of the rows drawn, or every row when left out. Ranks still count every row. */
   players?: ReadonlySet<string>;
+  /** Players this week has no row for, drawn last with every cell N/A. */
+  missingNames?: ReadonlyArray<string>;
   /** The labels of the game columns drawn, or every column when left out. */
   games?: ReadonlySet<string>;
   /** Adds the scoreboard's tiebreaker columns: both MNF Points ones and Pro Score ATS. */
@@ -405,6 +414,19 @@ function PicksTable({
           </tr>
         );
       })}
+      {/* By place, since two players a week lacks can share a name. */}
+      {missingNames.map((name, index) => (
+        <tr key={`missing:${index}`}>
+          <td>{MISSING}</td>
+          <MissingPlayerName name={name} />
+          {Array.from(
+            { length: columnCount - ROW_HEAD_COLUMN_COUNT },
+            (_, index) => (
+              <td key={index}>{MISSING}</td>
+            ),
+          )}
+        </tr>
+      ))}
     </TableShell>
   );
 }

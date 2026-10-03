@@ -8,6 +8,8 @@ import "./PlayerAnalysisDialog.scss";
 /** A search over the week's players, each entry marked the way the tables mark them. */
 export default function PlayerCombobox({
   ariaLabel,
+  ariaDescribedBy,
+  missingName,
   options,
   value,
   onValueChange,
@@ -16,6 +18,9 @@ export default function PlayerCombobox({
   focusOnMount,
 }: {
   ariaLabel: string;
+  ariaDescribedBy?: string;
+  /** A player the week has no row for, struck through in the input. */
+  missingName?: string;
   options: Array<PlayerOption>;
   value?: PlayerOption;
   onValueChange: (chosen: PlayerOption) => void;
@@ -26,6 +31,7 @@ export default function PlayerCombobox({
   return (
     <DialogCombobox<PlayerOption>
       ariaLabel={ariaLabel}
+      ariaDescribedBy={ariaDescribedBy}
       placeholder="Search players..."
       emptyMessage="No matching players"
       items={options}
@@ -59,6 +65,11 @@ export default function PlayerCombobox({
             />
           </span>
         )
+      }
+      unlisted={
+        missingName != null
+          ? { text: missingName, overlay: <s>{missingName}</s> }
+          : undefined
       }
       focusOnMount={focusOnMount}
       // An entry carries the status icon the tables give the same player, in

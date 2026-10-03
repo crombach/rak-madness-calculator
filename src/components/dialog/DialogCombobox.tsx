@@ -14,6 +14,7 @@ import getClasses from "../../utils/getClasses";
  */
 export default function DialogCombobox<T>({
   ariaLabel,
+  ariaDescribedBy,
   placeholder,
   emptyMessage,
   items,
@@ -27,10 +28,12 @@ export default function DialogCombobox<T>({
   optionClassName,
   adornment,
   renderValue,
+  unlisted,
   renderOption,
   focusOnMount = false,
 }: {
   ariaLabel: string;
+  ariaDescribedBy?: string;
   placeholder: string;
   /** Shown in place of the list where the query reaches nothing. */
   emptyMessage: string;
@@ -53,6 +56,11 @@ export default function DialogCombobox<T>({
    * has no focus. An input holds plain text alone, so this is what styles it.
    */
   renderValue?: (item: T) => ReactNode;
+  /**
+   * A subject the caller holds with no entry in `items`. Its `text` starts the
+   * input, and `overlay` styles it the way `renderValue` styles a choice.
+   */
+  unlisted?: { text: string; overlay: ReactNode };
   renderOption: (item: T) => ReactNode;
   /** Focuses the input as it mounts. */
   focusOnMount?: boolean;
@@ -73,7 +81,13 @@ export default function DialogCombobox<T>({
    * dismissed without a pick, so that restores this along with the text.
    */
   const showsChoice = value != null && query === itemToStringLabel(value);
-  const overlay = showsChoice ? renderValue?.(value) : undefined;
+  const showsUnlisted =
+    value == null && unlisted != null && query === unlisted.text;
+  const overlay = showsChoice
+    ? renderValue?.(value)
+    : showsUnlisted
+      ? unlisted.overlay
+      : undefined;
 
   /**
    * Choosing is the end of the search, so the input gives the focus up.
@@ -158,6 +172,7 @@ export default function DialogCombobox<T>({
             ref={inputRef}
             placeholder={placeholder}
             aria-label={ariaLabel}
+            aria-describedby={ariaDescribedBy}
             className={getClasses("dialog__input", {
               "--overlaid": overlay != null,
             })}

@@ -1,3 +1,4 @@
+@use "../../styles/a11y" as *;
 @use "../../styles/breakpoints" as *;
 @use "../../styles/label" as *;
 @use "../../styles/layout" as *;
@@ -90,6 +91,10 @@
     flex: 1;
     min-width: 0;
   }
+}
+
+.compare-players__note {
+  @include visually-hidden;
 }
 
 // The remove key's face and the edge it stands on span the combobox exactly,
