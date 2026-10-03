@@ -1,6 +1,7 @@
 import { PlayerScore } from "../../types/RakMadnessScores";
 import comparePlayerScores, {
   comparePlayerScoresOnMerit,
+  ranksOnMerit,
 } from "./comparePlayerScores";
 
 /**
@@ -128,5 +129,50 @@ describe("comparePlayerScoresOnMerit", () => {
     expect(comparePlayerScores(player("Zoe"), player("amy"))).toBeGreaterThan(
       0,
     );
+  });
+});
+
+describe("ranksOnMerit", () => {
+  function ranks(...players: Array<PlayerScore>): Array<number> {
+    return ranksOnMerit([...players].sort(comparePlayerScores));
+  }
+
+  it("gives players tied on merit one rank and skips the places they fill", () => {
+    expect(
+      ranks(
+        player("Zoe", { total: 10 }),
+        player("amy", { total: 10 }),
+        player("Bob", { total: 8 }),
+      ),
+    ).toEqual([1, 1, 3]);
+  });
+
+  it("separates players a tiebreaker separates", () => {
+    expect(
+      ranks(
+        player("Zoe", { total: 10, college: 6 }),
+        player("amy", { total: 10 }),
+      ),
+    ).toEqual([1, 2]);
+  });
+
+  it("shares a rank tied below first place", () => {
+    expect(
+      ranks(
+        player("Ann", { total: 12 }),
+        player("Zoe", { total: 10, distance: 3 }),
+        player("amy", { total: 10, distance: 3 }),
+      ),
+    ).toEqual([1, 2, 2]);
+  });
+
+  it("shares the last rank among players with no picks", () => {
+    expect(
+      ranks(
+        player("Ann", { total: 5 }),
+        player("Zoe", { hasNoPicks: true }),
+        player("amy", { hasNoPicks: true }),
+      ),
+    ).toEqual([1, 2, 2]);
   });
 });

@@ -129,6 +129,19 @@ describe("buildSpreadsheetBuffer, results sheet", () => {
     expect(rows[2]).toEqual([2, "Bob", 45, 4, 0, 1, 0, 1]);
   });
 
+  it("gives players tied on merit one rank on both sheets", async () => {
+    const workbook = await readBack({
+      ...scores,
+      scores: [scores.scores[0], player({ name: "Bea" }), scores.scores[1]],
+    });
+    for (const sheet of [RESULTS_SHEET, PICKS_SHEET]) {
+      const ranks = rowsOf(workbook, sheet)
+        .slice(1)
+        .map((row) => row[0]);
+      expect(ranks).toEqual([1, 1, 3]);
+    }
+  });
+
   it("writes N/A when a player has no tiebreaker pick or distance", async () => {
     const workbook = await readBack({
       tiebreaker: 41,

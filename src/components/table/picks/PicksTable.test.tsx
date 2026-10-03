@@ -147,12 +147,19 @@ describe("PicksTable, headers", () => {
 });
 
 describe("PicksTable, rows", () => {
-  it("ranks players by their position in the list", () => {
-    render(<PicksTable scores={scores} />);
-    const firstRow = screen.getByText("Alice").closest("tr");
-    expect(firstRow).toHaveTextContent("1");
-    const secondRow = screen.getByText("Bob").closest("tr");
-    expect(secondRow).toHaveTextContent("2");
+  it("gives players tied on merit one rank", () => {
+    const carl = playerScore({
+      ...player({ name: "Carl" }),
+      score: { total: 1, college: 0, pro: 1, proAgainstTheSpread: 0 },
+    });
+    render(
+      <PicksTable scores={{ ...scores, scores: [...scores.scores, carl] }} />,
+    );
+    const ranks = ["Alice", "Bob", "Carl"].map(
+      (name) =>
+        screen.getByText(name).closest("tr")?.querySelector("td")?.textContent,
+    );
+    expect(ranks).toEqual(["1", "1", "3"]);
   });
 
   it("shows each pick's text", () => {

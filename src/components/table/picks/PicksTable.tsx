@@ -10,6 +10,7 @@ import {
 } from "../../../types/RakMadnessScores";
 import getClasses from "../../../utils/getClasses";
 import repeatedNames from "../../../utils/scoring/repeatedNames";
+import { ranksOnMerit } from "../../../utils/scoring/comparePlayerScores";
 import {
   leagueLabels,
   pickChangeKey,
@@ -303,6 +304,7 @@ function PicksTable({
   // Marked wherever a name shows, since a name two rows share reads as one player
   // and the analysis behind it cannot answer for either.
   const repeated = repeatedNames(scores.scores);
+  const ranks = ranksOnMerit(scores.scores);
   const firstPlayer = scores.scores[0];
   const collegeCount = firstPlayer.college.length;
   const proCount = firstPlayer.pro.length;
@@ -367,7 +369,7 @@ function PicksTable({
         if (players != null && !players.has(player.id)) return null;
         return (
           <tr key={player.id}>
-            <RankCell rank={index + 1} />
+            <RankCell rank={ranks[index]} />
             <PlayerName
               player={player}
               hasNameConflict={repeated.has(player.name)}
