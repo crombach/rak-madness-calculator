@@ -176,6 +176,7 @@ export default function ComparePlayers({
           <ControlGroup label="Players">
             <ChooseButton
               ref={chooseRef}
+              isOpen={isOpen}
               onClick={() => {
                 // Here rather than on close, where the dialog would shrink as it fades.
                 setSlots(withoutEmptySlots(slots));

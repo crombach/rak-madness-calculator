@@ -172,6 +172,13 @@
       @include key(var(--rak-key-pressed));
     }
 
+    // A key holding a menu or dialog open stays down until that closes. Base UI
+    // sets the attribute on its own triggers, and `popupOpen` on `Button`.
+    &[data-popup-open] {
+      transition-delay: 0s;
+      @include key(var(--rak-key-pressed));
+    }
+
     // Two fills, not three or four. A pointer on the key, a finger down on it, and
     // the route holding it selected all land on the same fill. A step apart, and
     // two eased moves land back to back. The browser drops `:active` the instant
@@ -199,6 +206,11 @@
 
       // After `--selected` for the same reason: held by the work, not the pointer.
       &.--busy {
+        background-color: var(--rak-key-active, var(--rak-primary-600));
+      }
+
+      // Held by the open popup, likewise.
+      &[data-popup-open] {
         background-color: var(--rak-key-active, var(--rak-primary-600));
       }
     }

@@ -38,13 +38,20 @@ export function ControlGroup({
 /** Opens the dialog. Here, so the wireframe draws the same button. */
 export function ChooseButton({
   onClick = doNothing,
+  isOpen = false,
   ref,
 }: {
   onClick?: () => void;
+  isOpen?: boolean;
   ref?: Ref<HTMLButtonElement>;
 }) {
   return (
-    <Button className="compare-players__choose" onClick={onClick} ref={ref}>
+    <Button
+      className="compare-players__choose"
+      onClick={onClick}
+      popupOpen={isOpen}
+      ref={ref}
+    >
       Choose
     </Button>
   );

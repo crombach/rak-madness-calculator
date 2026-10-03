@@ -65,6 +65,7 @@ export default function Button({
   className = "",
   ariaLabel,
   ariaExpanded,
+  popupOpen = false,
   ref,
 }: {
   children: ReactNode;
@@ -91,6 +92,11 @@ export default function Button({
   ariaLabel?: string;
   /** Set where the button opens and closes something below it. */
   ariaExpanded?: boolean;
+  /**
+   * Set while the dialog this button opened is open. Holds the key down, as
+   * Base UI's `data-popup-open` does for a menu's own trigger.
+   */
+  popupOpen?: boolean;
   ref?: Ref<HTMLButtonElement>;
 }) {
   const classes = buttonClasses({
@@ -112,6 +118,7 @@ export default function Button({
       aria-pressed={selected}
       aria-disabled={ariaDisabled || undefined}
       aria-busy={busy || undefined}
+      data-popup-open={popupOpen ? "" : undefined}
       className={classes}
       disabled={disabled}
       onClick={ariaDisabled ? doNothing : onClick}
