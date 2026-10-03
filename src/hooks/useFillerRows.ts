@@ -67,8 +67,8 @@ function fillToY(box: HTMLElement | undefined): number {
 
 /**
  * Pads a table out to the bottom of the viewport, so a short one does not leave
- * the page half empty. Measured in a layout effect, so the rows are there before
- * the first paint.
+ * the page half empty. Measured in a layout effect after every render, so the
+ * padding fits the rows in the frame they first appear in.
  */
 export default function useFillerRows(
   tableRef: RefObject<HTMLTableElement | null>,
@@ -93,10 +93,12 @@ export default function useFillerRows(
     );
   }, [tableRef]);
 
+  // A render can add or drop real rows. Waiting for the resize below would
+  // paint a frame or two with the old padding, a row short or a row over.
+  useLayoutEffect(measure);
+
   useLayoutEffect(() => {
-    // The first pass is before the paint, so the rows are there in the frame the
-    // table first appears in. Every pass after it waits for a frame.
-    measure();
+    // A resize no render caused waits for a frame.
     let frame = 0;
     // A keyboard opening resizes the window over a few hundred milliseconds, and
     // answering every event of that redraws every filler row mid-animation. One
