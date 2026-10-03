@@ -339,6 +339,17 @@ describe("the compare players route", () => {
     );
   });
 
+  it("holds Choose down while the dialog is open", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await screen.findByRole("dialog", { name: "Compare Players" });
+    const choose = screen.getByRole("button", { name: "Choose", hidden: true });
+    expect(choose).toHaveAttribute("data-popup-open");
+
+    await closeDialog(user);
+
+    await waitFor(() => expect(choose).not.toHaveAttribute("data-popup-open"));
+  });
+
   it("focuses an added picker once, not again on reopen", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
@@ -751,6 +762,26 @@ describe("the compare players route", () => {
 
     const table = await screen.findByRole("table", {
       name: "Picks of Alice and Carol",
+    });
+    expect(within(table).getAllByText("Alice")).toHaveLength(1);
+  });
+
+  it("shows the leader once when the reader then chooses them", async () => {
+    localStorage.setItem(LEADER_KEY, "on");
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Bob", "Carol"]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    await screen.findByRole("table", {
+      name: "Picks of Bob, Carol, and Alice",
+    });
+
+    await choose(user, "Player 2", "Alice");
+    await closeDialog(user);
+
+    const table = await screen.findByRole("table", {
+      name: "Picks of Bob and Alice",
     });
     expect(within(table).getAllByText("Alice")).toHaveLength(1);
   });
