@@ -1,8 +1,39 @@
-import { Ref, useId } from "react";
+import { ReactNode, Ref, useId } from "react";
 import doNothing from "../../utils/doNothing";
 import Button from "../button/Button";
 import { GAME_SCOPES, GameScope } from "./comparedPlayers";
 import "./ComparePlayers.scss";
+
+/**
+ * A named row of keys. `divided` rules it off from the group before it on a wide
+ * screen.
+ */
+export function ControlGroup({
+  label,
+  divided = false,
+  children,
+}: {
+  label: string;
+  divided?: boolean;
+  children: ReactNode;
+}) {
+  const labelId = useId();
+  return (
+    <div className="compare-players__group">
+      {divided && <span className="compare-players__divider" />}
+      <span id={labelId} className="compare-players__group-label">
+        {label}
+      </span>
+      <div
+        className="compare-players__keys"
+        role="group"
+        aria-labelledby={labelId}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
 
 /** Opens the dialog. Here, so the wireframe draws the same button. */
 export function ChooseButton({
@@ -14,7 +45,7 @@ export function ChooseButton({
 }) {
   return (
     <Button className="compare-players__choose" onClick={onClick} ref={ref}>
-      Choose Players
+      Choose
     </Button>
   );
 }
@@ -54,29 +85,18 @@ export function GamesToggle({
   onChange?: (scope: GameScope) => void;
   disabled?: boolean;
 }) {
-  const labelId = useId();
   return (
-    <div className="compare-players__games">
-      <span className="compare-players__divider" />
-      <span id={labelId} className="compare-players__games-label">
-        Games
-      </span>
-      <div
-        className="compare-players__scopes"
-        role="group"
-        aria-labelledby={labelId}
-      >
-        {GAME_SCOPES.map((value) => (
-          <Button
-            key={value}
-            disabled={disabled}
-            selected={scope === value}
-            onClick={() => onChange(value)}
-          >
-            {SCOPE_LABELS[value]}
-          </Button>
-        ))}
-      </div>
-    </div>
+    <ControlGroup label="Games" divided>
+      {GAME_SCOPES.map((value) => (
+        <Button
+          key={value}
+          disabled={disabled}
+          selected={scope === value}
+          onClick={() => onChange(value)}
+        >
+          {SCOPE_LABELS[value]}
+        </Button>
+      ))}
+    </ControlGroup>
   );
 }

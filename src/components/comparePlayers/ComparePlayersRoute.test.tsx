@@ -71,7 +71,7 @@ async function openDialog(user: ReturnType<typeof mountApp>) {
   const opener = await waitFor(
     () =>
       screen.queryByRole("dialog") ??
-      screen.getByRole("button", { name: "Choose Players" }),
+      screen.getByRole("button", { name: "Choose" }),
   );
   if (opener.getAttribute("role") !== "dialog") await user.click(opener);
 }
@@ -328,16 +328,14 @@ describe("the compare players route", () => {
     expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveFocus();
   });
 
-  it("returns focus to Choose Players from the dialog the page opened", async () => {
+  it("returns focus to Choose from the dialog the page opened", async () => {
     const user = mountApp(COMPARE_PATH);
     await screen.findByRole("dialog", { name: "Compare Players" });
 
     await closeDialog(user);
 
     await waitFor(() =>
-      expect(
-        screen.getByRole("button", { name: "Choose Players" }),
-      ).toHaveFocus(),
+      expect(screen.getByRole("button", { name: "Choose" })).toHaveFocus(),
     );
   });
 
@@ -349,7 +347,7 @@ describe("the compare players route", () => {
     await choose(user, "Player 3", "Bob");
     await closeDialog(user);
 
-    await user.click(screen.getByRole("button", { name: "Choose Players" }));
+    await user.click(screen.getByRole("button", { name: "Choose" }));
 
     expect(
       await screen.findByRole("combobox", { name: "Player 3" }),
@@ -363,7 +361,7 @@ describe("the compare players route", () => {
     await choose(user, "Player 3", "Carol");
     await closeDialog(user);
 
-    await user.click(screen.getByRole("button", { name: "Choose Players" }));
+    await user.click(screen.getByRole("button", { name: "Choose" }));
 
     expect(
       await screen.findByRole("combobox", { name: "Player 1" }),
@@ -380,7 +378,7 @@ describe("the compare players route", () => {
     await user.click(screen.getByRole("button", { name: "Add Player" }));
     await closeDialog(user);
 
-    await user.click(screen.getByRole("button", { name: "Choose Players" }));
+    await user.click(screen.getByRole("button", { name: "Choose" }));
 
     expect(
       await screen.findByRole("combobox", { name: "Player 1" }),
@@ -688,6 +686,21 @@ describe("the compare players route", () => {
       "aria-pressed",
       "true",
     );
+  });
+
+  it("groups Choose and the leader toggle under Players", async () => {
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Carol"]),
+    );
+    mountApp(COMPARE_PATH);
+
+    const players = await screen.findByRole("group", { name: "Players" });
+    expect(
+      within(players)
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    ).toEqual(["Choose", "Show Leader"]);
   });
 
   it("adds the leader to the players chosen", async () => {

@@ -16,7 +16,7 @@
   width: min(100cqi, 100%);
 }
 
-// Choose Players over the game scope, each the full width, until there is room to
+// Players over Games, each the full width, until there is room to
 // set them side by side as one toolbar, split the way the navbar splits its keys.
 .compare-players__controls {
   display: flex;
@@ -33,7 +33,7 @@
 }
 
 // The name over the keys on a phone, beside them on a wide screen.
-.compare-players__games {
+.compare-players__group {
   display: flex;
   flex-direction: column;
   gap: var(--rak-space-2);
@@ -61,12 +61,12 @@
   background-color: var(--rak-on-solid);
 }
 
-.compare-players__games-label {
+.compare-players__group-label {
   @include section-title(sm);
 }
 
 // Even halves, so which one is chosen is the only thing telling them apart.
-.compare-players__scopes {
+.compare-players__keys {
   display: grid;
   grid-auto-columns: 1fr;
   grid-auto-flow: column;

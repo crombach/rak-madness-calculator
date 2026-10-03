@@ -3,6 +3,7 @@ import SkeletonTable from "../table/SkeletonTable";
 import { readGameScope, readShowsLeader } from "./comparedPlayers";
 import {
   ChooseButton,
+  ControlGroup,
   GamesToggle,
   LeaderToggle,
 } from "./ComparePlayersControls";
@@ -14,8 +15,10 @@ export default function ComparePlayersSkeleton() {
     <>
       <div className="compare-players" aria-hidden="true" inert>
         <div className="compare-players__controls">
-          <ChooseButton />
-          <LeaderToggle on={readShowsLeader()} />
+          <ControlGroup label="Players">
+            <ChooseButton />
+            <LeaderToggle on={readShowsLeader()} />
+          </ControlGroup>
           <GamesToggle scope={readGameScope()} />
         </div>
       </div>

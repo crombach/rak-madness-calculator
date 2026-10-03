@@ -22,6 +22,7 @@ import {
 import ComparePlayersDialog, { Slot } from "./ComparePlayersDialog";
 import {
   ChooseButton,
+  ControlGroup,
   GamesToggle,
   LeaderToggle,
 } from "./ComparePlayersControls";
@@ -172,23 +173,25 @@ export default function ComparePlayers({
     <>
       <div className="compare-players">
         <div className="compare-players__controls">
-          <ChooseButton
-            ref={chooseRef}
-            onClick={() => {
-              // Here rather than on close, where the dialog would shrink as it fades.
-              setSlots(withoutEmptySlots(slots));
-              setIsOpen(true);
-            }}
-          />
-          <LeaderToggle
-            on={showsLeader}
-            isSettled={isSettled}
-            onChange={(on) => {
-              setShowsLeader(on);
-              writeShowsLeader(on);
-            }}
-            disabled={top == null}
-          />
+          <ControlGroup label="Players">
+            <ChooseButton
+              ref={chooseRef}
+              onClick={() => {
+                // Here rather than on close, where the dialog would shrink as it fades.
+                setSlots(withoutEmptySlots(slots));
+                setIsOpen(true);
+              }}
+            />
+            <LeaderToggle
+              on={showsLeader}
+              isSettled={isSettled}
+              onChange={(on) => {
+                setShowsLeader(on);
+                writeShowsLeader(on);
+              }}
+              disabled={top == null}
+            />
+          </ControlGroup>
           <GamesToggle
             scope={scope}
             onChange={(next) => {

@@ -95,7 +95,7 @@ export default async function run({ page, context, baseUrl }) {
   );
   await page.goto(path);
   // The page opens the dialog itself when fewer than two players are saved.
-  const choose = page.getByRole("button", { name: "Choose Players" });
+  const choose = page.getByRole("button", { name: "Choose" });
   const dialog = page.getByRole("dialog");
   await choose.or(dialog).first().waitFor({ timeout: 10000 });
   if (!(await dialog.isVisible())) await choose.click();
