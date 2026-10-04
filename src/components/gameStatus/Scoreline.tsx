@@ -8,7 +8,6 @@ import {
   MINUTE_MS,
   countdownText,
   detailText,
-  lastPlayText,
   outcomeText,
 } from "./gameStatusText";
 // The readout is part of the `game-status` block, which `GameStatusSummary.scss` owns.
@@ -120,7 +119,7 @@ function Note({
   }
   return (
     <p className="game-status__down">
-      {down ?? lastPlayText(result) ?? NO_DOWN}
+      {down ?? result.possession.lastPlay ?? NO_DOWN}
     </p>
   );
 }

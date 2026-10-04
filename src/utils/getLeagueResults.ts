@@ -203,17 +203,13 @@ function teamAbbreviation(competitor: EspnCompetitor): string {
 
 const QUARTER_SECONDS = 15 * 60;
 const REGULATION_PERIODS = 4;
-const TOUCHDOWN_POINTS = 6;
-/**
- * How far the clock may run past the last play before that play is out of date.
- * The most it ran between two plays in 264 finished games was 55 seconds.
- */
+/** The clock ran at most 55 seconds between two plays in 264 finished games. */
 const STALE_PLAY_SECONDS = 60;
+const TOUCHDOWN_POINTS = 6;
 
-const TIMEOUT = "Timeout";
-/** Plays after which ESPN's play team says nothing about who has the ball. */
+/** Plays that say nothing about who has the ball. */
 const BREAK_PLAYS = new Set([
-  TIMEOUT,
+  "Timeout",
   "Official Timeout",
   "Two-minute warning",
   "End Period",
@@ -223,10 +219,11 @@ const BREAK_PLAYS = new Set([
   "Coin Toss",
 ]);
 
-/** `Timeout #1 by KC at 02:00.` */
-const PRO_TIMEOUT = /^Timeout #\d by (\w+) at /;
-/** `Timeout San Diego State, clock 08:47`, naming the team by its location. */
-const COLLEGE_TIMEOUT = /^Timeout (.+), clock /;
+/**
+ * The caller, from `Timeout #1 by KC at 02:00.` or, in college, from
+ * `Timeout San Diego State, clock 08:47`.
+ */
+const TIMEOUT_CALLER = /^Timeout (?:#\d by (\w+) at |(.+), clock )/;
 /** The pro play-by-play spells these teams apart from the scoreboard. */
 const PLAY_BY_PLAY_ABBREVIATIONS: Record<string, string> = {
   ARZ: "ARI",
@@ -237,88 +234,69 @@ const PLAY_BY_PLAY_ABBREVIATIONS: Record<string, string> = {
   WAS: "WSH",
 };
 
-type Sides = { home: EspnCompetitor; away: EspnCompetitor };
-
-function sideWhere(
-  { home, away }: Sides,
-  matches: (competitor: EspnCompetitor) => boolean,
-): HomeAway | undefined {
-  if (matches(home)) return HomeAway.HOME;
-  if (matches(away)) return HomeAway.AWAY;
-  return undefined;
-}
-
-function sideOf(sides: Sides, teamId?: string): HomeAway | undefined {
-  return teamId == null ? undefined : sideWhere(sides, (c) => c.id === teamId);
-}
-
-/** Seconds left in regulation by the game's own clock. Absent in overtime. */
-function secondsLeft({ period, displayClock }: EspnStatus): number | undefined {
-  if (period == null || period > REGULATION_PERIODS) return undefined;
-  const [minutes, seconds] = (displayClock ?? "").split(":").map(Number);
-  if (!Number.isFinite(minutes) || !Number.isFinite(seconds)) return undefined;
-  return (
-    (REGULATION_PERIODS - period) * QUARTER_SECONDS + minutes * 60 + seconds
-  );
-}
-
 /**
  * Whether the clock has run well past the last play, which ESPN's scoreboard can
- * lag behind by minutes. A play run on a stopped clock cannot be caught this way.
+ * lag behind by minutes. Both count down the seconds left in regulation.
  */
-function isStale(play: EspnPlay, status: EspnStatus): boolean {
+function isStale(play: EspnPlay, { period, displayClock }: EspnStatus) {
   const playedAt = play.probability?.secondsLeft;
-  const now = secondsLeft(status);
-  return playedAt != null && now != null && playedAt - now > STALE_PLAY_SECONDS;
-}
-
-function timeoutCaller(sides: Sides, text = ""): HomeAway | undefined {
-  const pro = PRO_TIMEOUT.exec(text)?.[1];
-  if (pro != null) {
-    const abbreviation = PLAY_BY_PLAY_ABBREVIATIONS[pro] ?? pro;
-    return sideWhere(sides, (c) => teamAbbreviation(c) === abbreviation);
+  const [minutes, seconds] = (displayClock ?? "").split(":").map(Number);
+  if (
+    playedAt == null ||
+    period == null ||
+    period > REGULATION_PERIODS ||
+    isNaN(seconds)
+  ) {
+    return false;
   }
-  const college = COLLEGE_TIMEOUT.exec(text)?.[1];
-  return college == null
-    ? undefined
-    : sideWhere(sides, (c) => c.team.location === college);
+  const now =
+    (REGULATION_PERIODS - period) * QUARTER_SECONDS + minutes * 60 + seconds;
+  return playedAt - now > STALE_PLAY_SECONDS;
 }
 
 /**
- * Who has the ball, read from ESPN's own say where it gives one and otherwise
- * from the last play: whoever held the ball when it ended.
+ * Who has the ball: ESPN's say where it gives one, else whoever held it when the
+ * last play ended. Also what that play was, like `KC timeout` or `BUF to kick off`.
  */
 function readPossession(
   situation: EspnSituation | undefined,
   status: EspnStatus,
-  sides: Sides,
+  sides: Array<EspnCompetitor>,
 ): Possession {
+  const byId = (id?: string) => sides.find((side) => side.id === id);
   const possession: Possession = {
     downDistanceText: situation?.downDistanceText,
-    homeAway: sideOf(sides, situation?.possession),
+    homeAway: byId(situation?.possession)?.homeAway,
   };
   const play = situation?.lastPlay;
   const type = play?.type?.text;
   if (play == null || type == null || isStale(play, status)) {
     return possession;
   }
-  if (BREAK_PLAYS.has(type)) {
-    const calledBy =
-      type === TIMEOUT ? timeoutCaller(sides, play.text) : undefined;
-    return { ...possession, lastPlay: { type, calledBy } };
-  }
   // A score short of a touchdown is followed by a kickoff from the side that
   // started the play: the kicker after a field goal, the offense after a safety.
   const points = play.scoreValue ?? 0;
   if (points > 0 && points < TOUCHDOWN_POINTS) {
-    const kicksOff = sideOf(sides, play.start?.team?.id);
-    return { ...possession, lastPlay: { type, kicksOff } };
+    const kicker = byId(play.start?.team?.id);
+    const lastPlay = kicker ? `${teamAbbreviation(kicker)} to kick off` : type;
+    return { ...possession, lastPlay };
   }
+  if (BREAK_PLAYS.has(type)) {
+    const [, pro, college] = TIMEOUT_CALLER.exec(play.text ?? "") ?? [];
+    const name = college ?? PLAY_BY_PLAY_ABBREVIATIONS[pro] ?? pro;
+    const caller = sides.find(
+      (side) =>
+        name != null &&
+        (side.team.location === name || teamAbbreviation(side) === name),
+    );
+    const lastPlay = caller ? `${teamAbbreviation(caller)} timeout` : type;
+    return { ...possession, lastPlay };
+  }
+  const holder = byId((play.end?.team ?? play.team)?.id);
   return {
     ...possession,
-    homeAway:
-      possession.homeAway ?? sideOf(sides, (play.end?.team ?? play.team)?.id),
-    lastPlay: { type },
+    homeAway: possession.homeAway ?? holder?.homeAway,
+    lastPlay: type,
   };
 }
 
@@ -439,7 +417,10 @@ export function toLeagueResult(event: EspnEvent): LeagueResult | null {
   // margin just because there is no winner yet.
   const scoreMargin = Math.abs(homeScore - awayScore);
 
-  const possession = readPossession(competition.situation, event.status, sides);
+  const possession = readPossession(competition.situation, event.status, [
+    home,
+    away,
+  ]);
 
   return {
     id: event.id,
