@@ -16,5 +16,6 @@ each.
 - `SectionTitle`: a section's heading, its game count in a chip, and
   `GameSection`, the section it names, on both card pages.
 - `GamesSkeleton`: one section under a blank title and count, `GameCard`s on a
-  stand-in game, text hidden under fills. Also while the week loads.
+  stand-in game, text hidden under fills. Also while the week loads. A pick line
+  where the reader set a name.
 - `standInGame`: that stand-in game, for both card pages' skeletons.
