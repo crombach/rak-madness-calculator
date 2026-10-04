@@ -15,10 +15,27 @@ describe("reloadForNewBuild", () => {
     reload.mockReset();
   });
 
-  it("reloads the page for a chunk a deploy removed", () => {
-    void reloadForNewBuild(lost);
-    expect(reload).toHaveBeenCalledOnce();
-  });
+  it.each([
+    [
+      "Chrome",
+      new TypeError("Failed to fetch dynamically imported module: x.js"),
+    ],
+    [
+      "Firefox",
+      new TypeError("error loading dynamically imported module: x.js"),
+    ],
+    ["Safari", new TypeError("Importing a module script failed.")],
+    [
+      "Vite, for the route's stylesheet",
+      new Error("Unable to preload CSS for x.css"),
+    ],
+  ])(
+    "reloads the page for a chunk a deploy removed, in %s's words",
+    (_, error) => {
+      void reloadForNewBuild(error);
+      expect(reload).toHaveBeenCalledOnce();
+    },
+  );
 
   it("leaves a tab offline as it is, since a reload would lose the app", async () => {
     vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
@@ -27,7 +44,9 @@ describe("reloadForNewBuild", () => {
   });
 
   it("leaves a module that threw as it is, since the new build has it too", async () => {
-    const thrown = new RangeError("Invalid time value");
+    const thrown = new TypeError(
+      "Cannot read properties of undefined (reading 'x')",
+    );
     await expect(reloadForNewBuild(thrown)).rejects.toBe(thrown);
     expect(reload).not.toHaveBeenCalled();
   });
