@@ -18,7 +18,11 @@ export type Possession = {
    * past its last play.
    */
   between?: string;
-  /** Who stopped the clock, like `KC T/O` or `Official T/O`. Absent as `between` is. */
+  /**
+   * Who stopped the clock, like `KC T/O` or `Official T/O`. Absent where ESPN names
+   * no caller, at the half and the end of regulation, and where the clock has run on
+   * past its last play.
+   */
   timeout?: string;
 };
 
