@@ -48,7 +48,7 @@ new style for something the app already renders elsewhere. UI words: `glossary` 
 - Give a disabled item's reason as a smaller line under its name, aligned with
   it, at every width. Also its `aria-describedby`. No tooltips.
 - A disabled item gives no reason while scores or picks load, or once the week
-  is settled. Otherwise it says why, such as "Needs two players".
+  is settled. Otherwise it says why, such as "No game knocks anyone out".
 - Button text in title case: "Show Leader", "Show More". Not an icon button's
   `aria-label`, which no one sees.
 - One line of separate facts splits them with `SEPARATOR` (`src/utils/separator.ts`),

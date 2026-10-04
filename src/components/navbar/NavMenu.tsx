@@ -64,11 +64,7 @@ const COMPARE_PLAYERS: NavItem = {
   path: (season, week) =>
     resultsPath(season, week, RESULTS_PAGE.comparePlayers),
   experimental: true,
-  disabled: ({ playerCount }) => playerCount == null || playerCount < 2,
-  disabledReason: ({ isWeekSettled, playerCount }) =>
-    !isWeekSettled && playerCount != null && playerCount < 2
-      ? "Needs two players"
-      : undefined,
+  disabled: ({ playerCount }) => playerCount == null,
 };
 
 const KNOCKOUTS: NavItem = {
