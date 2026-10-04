@@ -336,13 +336,12 @@ function isHalfOver({
   return ends && displayClock === "0:00";
 }
 
-/** The play type of every kickoff, like `Kickoff` or `Kickoff Return (Offense)`. */
+/** What every kickoff's play type starts with, like `Kickoff Return (Offense)`. */
 const KICKOFF = "Kickoff";
 
 /**
- * A kickoff once the half or regulation runs out starts the next period, though ESPN
- * can hold the old period's `0:00` for a minute after it. The period moves on, and
- * the clock, not yet known, is left out.
+ * A kickoff after the half or regulation ends starts the next period. Its clock is
+ * not known yet, so it is left out.
  */
 function afterKickoff(status: EspnStatus, play?: EspnPlay): EspnStatus {
   const { period } = status;
@@ -568,8 +567,14 @@ export function toLeagueResult(event: EspnEvent): LeagueResult | null {
   // margin just because there is no winner yet.
   const scoreMargin = Math.abs(homeScore - awayScore);
 
-  const clock = afterKickoff(event.status, competition.situation?.lastPlay);
-  const possession = readPossession(competition.situation, clock, [home, away]);
+  const periodStatus = afterKickoff(
+    event.status,
+    competition.situation?.lastPlay,
+  );
+  const possession = readPossession(competition.situation, periodStatus, [
+    home,
+    away,
+  ]);
 
   return {
     id: event.id,
@@ -578,8 +583,8 @@ export function toLeagueResult(event: EspnEvent): LeagueResult | null {
     date: new Date(event.date),
     status,
     detailMessage: event.status.type.shortDetail,
-    period: clock.period,
-    clock: clock.displayClock,
+    period: periodStatus.period,
+    clock: periodStatus.displayClock,
     home: homeSide,
     away: awaySide,
     isNeutralSite: competition.neutralSite ?? false,
