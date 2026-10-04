@@ -216,10 +216,11 @@ const OFFICIAL_TIMEOUT_LINE = "Official T/O";
 /** A try after a touchdown, like `Extra Point Missed`, `Blocked PAT` or `Two Point Pass`. */
 const TRY_PLAY = /Extra Point|Two.?Point|\bPAT\b/i;
 const COIN_TOSS = "Coin Toss";
+const END_OF_GAME = "End of Game";
 /** Break plays that say where the game is, and the line each one shows. */
 const BREAK_LINES: Record<string, string> = {
   [COIN_TOSS]: COIN_TOSS,
-  "End of Game": "End of Game",
+  [END_OF_GAME]: END_OF_GAME,
 };
 
 /** Plays that say nothing about who has the ball. */
@@ -305,7 +306,7 @@ function readPossession(
     play == null ||
     type == null ||
     isStale(play, status) ||
-    isHalfOver(status)
+    (isHalfOver(status) && type !== END_OF_GAME)
   ) {
     return possession;
   }

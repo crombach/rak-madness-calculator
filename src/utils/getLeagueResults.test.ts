@@ -415,10 +415,11 @@ describe("getLeagueResults, mapping", () => {
     });
 
     it("says the game is over before ESPN marks it final", async () => {
-      const possession = await readLive({
-        type: { text: "End of Game" },
-        text: "END GAME",
-      });
+      const possession = await readLive(
+        { type: { text: "End of Game" }, text: "END GAME" },
+        {},
+        { period: 4, displayClock: "0:00" },
+      );
       expect(possession).toEqual({ between: "End of Game" });
     });
 
