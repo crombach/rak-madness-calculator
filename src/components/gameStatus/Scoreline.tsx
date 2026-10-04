@@ -33,8 +33,8 @@ const DSEG7_ALL_SEGMENTS = "8";
 const SECOND_MS = 1000;
 
 /**
- * The time now, moved on every `everyMs` while `ticking`, which is as fine as a
- * countdown says it. A poll waiting out a kickoff renders nothing on its own.
+ * The time now, refreshed every `everyMs` while `ticking`. A poll waiting out a
+ * kickoff renders nothing on its own.
  */
 function useClock(ticking: boolean, everyMs: number): Date {
   const [now, setNow] = useState(() => new Date());
@@ -87,18 +87,26 @@ export function outcomeClasses(outcome?: SideOutcome): Record<string, boolean> {
 
 /** Where the game is up to, over the scores. */
 function Detail({ result }: { result: LeagueResult }) {
-  const endsAt = result.halftimeEndsAt;
-  const now = useClock(endsAt != null, SECOND_MS);
-  const left =
-    endsAt == null
-      ? 0
-      : Math.ceil((endsAt.getTime() - now.getTime()) / SECOND_MS);
   const text = detailText(result);
   return (
     <p className="game-status__detail">
-      {left > 0 ? `${text} ${minutesAndSeconds(left)}` : text}
+      {result.halftimeEndsAt != null ? (
+        <HalftimeLeft text={text} endsAt={result.halftimeEndsAt} />
+      ) : (
+        text
+      )}
     </p>
   );
+}
+
+/**
+ * Halftime and what is left of it, ticking. Its own component, so its clock starts
+ * when the countdown does rather than when the game was first drawn.
+ */
+function HalftimeLeft({ text, endsAt }: { text: string; endsAt: Date }) {
+  const now = useClock(true, SECOND_MS);
+  const left = Math.ceil((endsAt.getTime() - now.getTime()) / SECOND_MS);
+  return left > 0 ? `${text} ${minutesAndSeconds(left)}` : text;
 }
 
 /**

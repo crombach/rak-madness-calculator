@@ -202,7 +202,7 @@ const PRO_HALFTIME_MS = 13 * 60 * 1000;
 /**
  * When a pro halftime runs out, off the wall clock of the play that ended the half.
  * Undefined in college, on a failed request, and while ESPN has not posted the end of
- * the half, which is asked again.
+ * the half. Nothing is remembered then, so it is asked again.
  */
 async function halftimeEnd(
   league: League,
@@ -229,8 +229,8 @@ const TEAM_REF_ID = /\/teams\/([^/?]+)/;
  * The id of the side that kicked off to open the game, off the start of its first
  * play, the coin toss. That side receives the kickoff after the half.
  *
- * Null where the first play names no side. Undefined on a failed request, which is
- * asked again.
+ * Null where the first play names no side. Undefined on a failed request. Nothing
+ * is remembered then, so it is asked again.
  */
 async function openingKicker(
   league: League,
