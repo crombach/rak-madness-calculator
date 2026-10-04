@@ -1,10 +1,13 @@
 import {
   EspnCompetitor,
   EspnEvent,
+  EspnPlay,
+  EspnSituation,
   EspnStatus,
   EspnVenue,
   GameStatus,
   HomeAway,
+  REGULATION_PERIODS,
 } from "../types/ESPN";
 import { League, SeasonType, WeekInfo } from "../types/League";
 import { GameSide, LeagueResult, Possession } from "../types/LeagueResult";
@@ -199,6 +202,123 @@ function teamAbbreviation(competitor: EspnCompetitor): string {
   return competitor.team.abbreviation?.toUpperCase() ?? "";
 }
 
+const QUARTER_SECONDS = 15 * 60;
+/** Seconds the clock may run past a play before the play counts as stale. */
+const STALE_PLAY_SECONDS = 60;
+const TOUCHDOWN_POINTS = 6;
+
+/** Plays that say nothing about who has the ball. */
+const BREAK_PLAYS = new Set([
+  "Timeout",
+  "Official Timeout",
+  "Two-minute warning",
+  "End Period",
+  "End of Half",
+  "End of Regulation",
+  "End of Game",
+  "Coin Toss",
+]);
+
+/**
+ * The caller, from `Timeout #1 by KC at 02:00.` or, in college, from
+ * `Timeout San Diego State, clock 08:47`.
+ */
+const TIMEOUT_CALLER = /^Timeout (?:#\d by (\w+) at |(.+), clock )/;
+/** The pro play-by-play spells these teams apart from the scoreboard. */
+const PLAY_BY_PLAY_ABBREVIATIONS: Record<string, string> = {
+  ARZ: "ARI",
+  BLT: "BAL",
+  CLV: "CLE",
+  HST: "HOU",
+  LA: "LAR",
+  WAS: "WSH",
+};
+
+/**
+ * Whether a half or regulation has just run out. The kickoff after the break goes to
+ * whoever the coin toss favors, not to the last play's side, and ESPN can still show
+ * this clock after the second half has started.
+ */
+function isHalfOver({ period, displayClock }: EspnStatus) {
+  const ends =
+    period === REGULATION_PERIODS / 2 || period === REGULATION_PERIODS;
+  return ends && displayClock === "0:00";
+}
+
+/**
+ * Whether the clock has run well past the last play, which ESPN's scoreboard can
+ * lag behind by minutes. Both count down the seconds left in regulation.
+ */
+function isStale(play: EspnPlay, { period, displayClock }: EspnStatus) {
+  const playedAt = play.probability?.secondsLeft;
+  const [minutes, seconds] = (displayClock ?? "").split(":").map(Number);
+  if (
+    playedAt == null ||
+    period == null ||
+    period > REGULATION_PERIODS ||
+    isNaN(seconds)
+  ) {
+    return false;
+  }
+  const now =
+    (REGULATION_PERIODS - period) * QUARTER_SECONDS + minutes * 60 + seconds;
+  return playedAt - now > STALE_PLAY_SECONDS;
+}
+
+/**
+ * Who has the ball, and what is happening between plays, like `KC timeout` or
+ * `BUF to kick off`. ESPN's `possession` wins where it gives one, else the side that
+ * held the ball when the last play ended.
+ */
+function readPossession(
+  situation: EspnSituation | undefined,
+  status: EspnStatus,
+  sides: Array<EspnCompetitor>,
+): Possession {
+  const byId = (id?: string) => sides.find((side) => side.id === id);
+  const possession: Possession = {
+    downDistanceText: situation?.downDistanceText,
+    homeAway: byId(situation?.possession)?.homeAway,
+  };
+  const play = situation?.lastPlay;
+  const type = play?.type?.text;
+  if (
+    play == null ||
+    type == null ||
+    isStale(play, status) ||
+    isHalfOver(status)
+  ) {
+    return possession;
+  }
+  // After a score short of a touchdown, the side that started the play kicks off.
+  // That is the kicker after a field goal and the offense after a safety. The score
+  // ended the drive, so whatever down ESPN still holds is over.
+  const points = play.scoreValue ?? 0;
+  if (points > 0 && points < TOUCHDOWN_POINTS) {
+    const kicker = byId(play.start?.team?.id);
+    const between = kicker && `${teamAbbreviation(kicker)} to kick off`;
+    return { homeAway: possession.homeAway, between };
+  }
+  if (BREAK_PLAYS.has(type)) {
+    const [, pro, college] = TIMEOUT_CALLER.exec(play.text ?? "") ?? [];
+    const name = college ?? PLAY_BY_PLAY_ABBREVIATIONS[pro] ?? pro;
+    const caller = sides.find(
+      (side) =>
+        name != null &&
+        (side.team.location === name || teamAbbreviation(side) === name),
+    );
+    const between = caller && `${teamAbbreviation(caller)} timeout`;
+    return { ...possession, between };
+  }
+  const holder = byId((play.end?.team ?? play.team)?.id);
+  return {
+    homeAway: possession.homeAway ?? holder?.homeAway,
+    // A touchdown ends the drive, so whatever down ESPN still holds is over.
+    downDistanceText:
+      points < TOUCHDOWN_POINTS ? possession.downDistanceText : undefined,
+  };
+}
+
 /**
  * Whether any picks column asks about this event, read off the event rather than the
  * game built from it. A college week arrives as hundreds of events and the picks name
@@ -316,14 +436,10 @@ export function toLeagueResult(event: EspnEvent): LeagueResult | null {
   // margin just because there is no winner yet.
   const scoreMargin = Math.abs(homeScore - awayScore);
 
-  const possession: Possession = {
-    downDistanceText: competition.situation?.downDistanceText,
-  };
-  if (competition.situation?.possession === home.id) {
-    possession.homeAway = HomeAway.HOME;
-  } else if (competition.situation?.possession === away.id) {
-    possession.homeAway = HomeAway.AWAY;
-  }
+  const possession = readPossession(competition.situation, event.status, [
+    home,
+    away,
+  ]);
 
   return {
     id: event.id,

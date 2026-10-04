@@ -1,12 +1,9 @@
-import { GameStatus } from "../../types/ESPN";
+import { GameStatus, REGULATION_PERIODS } from "../../types/ESPN";
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import { GameSpread } from "../../types/WeekGame";
 import plural from "../../utils/plural";
 import marginAgainstSpread from "../../utils/scoring/marginAgainstSpread";
-
-/** Regulation is four quarters, and anything past them is overtime. */
-const REGULATION_PERIODS = 4;
 
 /**
  * The break in the middle, said in ESPN's own word for it.

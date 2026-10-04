@@ -7,7 +7,7 @@ How a game in the week is going, opened from a pick cell.
 - `GameMark`: the pill saying where a game stands, on the search and each card.
 - `GameStatusSummary`: the reader's pick, then each side's `pickSplit` count and
   line, both sides, kickoff, town, Gamecast link.
-- `Scoreline`: the two scores, the state over, the down or outcome under.
+- `Scoreline`: the two scores, the state over, the down, a kickoff or timeout, or the outcome under.
   `outcomeClasses` colors a side, its score, the pool line's teams and the
   reader's pick alike.
 - `gameStatusText`: the strings both read.
