@@ -1,4 +1,5 @@
 import { ComponentType, ReactNode, Suspense, lazy } from "react";
+import reloadForNewBuild from "./reloadForNewBuild";
 
 type Loader<P> = () => Promise<{ default: ComponentType<P> }>;
 
@@ -19,7 +20,7 @@ export default function lazyPreloadable<P extends object>(
       loaded = module.default;
       return module;
     });
-  const Lazy = lazy(preload);
+  const Lazy = lazy(() => preload().catch(reloadForNewBuild));
 
   function Page(props: P) {
     const Loaded = loaded;
