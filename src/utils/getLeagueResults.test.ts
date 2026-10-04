@@ -414,6 +414,14 @@ describe("getLeagueResults, mapping", () => {
       expect(possession).toEqual({ between: "KC to kick off" });
     });
 
+    it("says the game is over before ESPN marks it final", async () => {
+      const possession = await readLive({
+        type: { text: "End of Game" },
+        text: "END GAME",
+      });
+      expect(possession).toEqual({ between: "End of Game" });
+    });
+
     it("says the kickoff is next after the coin toss", async () => {
       const possession = await readLive({ type: { text: "Coin Toss" } });
       expect(possession).toEqual({ between: "Kickoff" });

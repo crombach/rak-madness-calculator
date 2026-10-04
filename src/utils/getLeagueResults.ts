@@ -215,8 +215,11 @@ const OFFICIAL_TIMEOUT = "Official Timeout";
 const OFFICIAL_TIMEOUT_LINE = "Official T/O";
 /** A try after a touchdown, like `Extra Point Missed`, `Blocked PAT` or `Two Point Pass`. */
 const TRY_PLAY = /Extra Point|Two.?Point|\bPAT\b/i;
-const COIN_TOSS = "Coin Toss";
-const COIN_TOSS_LINE = "Kickoff";
+/** Break plays that say what comes next, and the line each one shows. */
+const BREAK_LINES: Record<string, string> = {
+  "Coin Toss": "Kickoff",
+  "End of Game": "End of Game",
+};
 
 /** Plays that say nothing about who has the ball. */
 const BREAK_PLAYS = new Set([
@@ -226,8 +229,7 @@ const BREAK_PLAYS = new Set([
   "End Period",
   "End of Half",
   "End of Regulation",
-  "End of Game",
-  COIN_TOSS,
+  ...Object.keys(BREAK_LINES),
 ]);
 
 /**
@@ -326,8 +328,8 @@ function readPossession(
     }
     return { ...possession, timeout: OFFICIAL_TIMEOUT_LINE };
   }
-  if (type === COIN_TOSS) {
-    return { ...possession, between: COIN_TOSS_LINE };
+  if (Object.hasOwn(BREAK_LINES, type)) {
+    return { ...possession, between: BREAK_LINES[type] };
   }
   if (BREAK_PLAYS.has(type)) {
     const [, pro, college] = TIMEOUT_CALLER.exec(play.text ?? "") ?? [];
