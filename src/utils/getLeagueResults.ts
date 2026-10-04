@@ -294,11 +294,6 @@ const OFFICIAL_TIMEOUT_LINE = "Official T/O";
 const TRY_PLAY = /Extra Point|Two.?Point|\bPAT\b/i;
 const COIN_TOSS = "Coin Toss";
 const END_OF_GAME = "End of Game";
-/** Break plays that say where the game is, and the line each one shows. */
-const BREAK_LINES: Record<string, string> = {
-  [COIN_TOSS]: COIN_TOSS,
-  [END_OF_GAME]: END_OF_GAME,
-};
 
 /** Plays that say nothing about who has the ball. */
 const BREAK_PLAYS = new Set([
@@ -308,7 +303,8 @@ const BREAK_PLAYS = new Set([
   "End Period",
   "End of Half",
   "End of Regulation",
-  ...Object.keys(BREAK_LINES),
+  COIN_TOSS,
+  END_OF_GAME,
 ]);
 
 /**
@@ -379,9 +375,12 @@ function readPossession(
     `${teamAbbreviation(side)} to kick off`;
   const play = situation?.lastPlay;
   const type = play?.type?.text;
-  // Once the half or regulation runs out nobody has the ball, though ESPN can hold
+  // Once the half or the game runs out nobody has the ball, though ESPN can hold
   // the last side and down for a poll or two.
-  if (isHalfOver(status) && type !== END_OF_GAME) {
+  if (type === END_OF_GAME) {
+    return { between: END_OF_GAME };
+  }
+  if (isHalfOver(status)) {
     return {};
   }
   if (play == null || type == null || isStale(play, status)) {
@@ -408,13 +407,9 @@ function readPossession(
     return { ...possession, timeout: OFFICIAL_TIMEOUT_LINE };
   }
   // ESPN starts the coin toss play with the side that kicks off.
-  const tossKicker =
-    type === COIN_TOSS ? byId(play.start?.team?.id) : undefined;
-  if (tossKicker) {
-    return { ...possession, between: kickOff(tossKicker) };
-  }
-  if (Object.hasOwn(BREAK_LINES, type)) {
-    return { ...possession, between: BREAK_LINES[type] };
+  if (type === COIN_TOSS) {
+    const kicker = byId(play.start?.team?.id);
+    return { ...possession, between: kicker ? kickOff(kicker) : COIN_TOSS };
   }
   if (BREAK_PLAYS.has(type)) {
     const [, pro, college] = TIMEOUT_CALLER.exec(play.text ?? "") ?? [];
