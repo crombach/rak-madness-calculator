@@ -564,7 +564,7 @@ describe("getLeagueResults, mapping", () => {
       ["the half", 2],
       ["regulation", 4],
     ])(
-      "reads nothing off the last play once %s runs out",
+      "says no side has the ball, and no down, once %s runs out",
       async (_, period) => {
         const possession = await readLive(
           {
@@ -573,10 +573,10 @@ describe("getLeagueResults, mapping", () => {
             start: { team: { id: "KC" } },
             end: { team: { id: "KC" } },
           },
-          { downDistanceText: "2nd & 10 at KC 25" },
+          { downDistanceText: "1st & 10 at JAX 45", possession: "KC" },
           { period, displayClock: "0:00" },
         );
-        expect(possession).toEqual({ downDistanceText: "2nd & 10 @ KC 25" });
+        expect(possession).toEqual({});
       },
     );
 

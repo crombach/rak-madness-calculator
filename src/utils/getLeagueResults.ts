@@ -333,12 +333,12 @@ function readPossession(
     `${teamAbbreviation(side)} to kick off`;
   const play = situation?.lastPlay;
   const type = play?.type?.text;
-  if (
-    play == null ||
-    type == null ||
-    isStale(play, status) ||
-    (isHalfOver(status) && type !== END_OF_GAME)
-  ) {
+  // Once the half or regulation runs out nobody has the ball, though ESPN can hold
+  // the last side and down for a poll or two.
+  if (isHalfOver(status) && type !== END_OF_GAME) {
+    return {};
+  }
+  if (play == null || type == null || isStale(play, status)) {
     return possession;
   }
   // After a score short of a touchdown, or any try, the side that started the play
