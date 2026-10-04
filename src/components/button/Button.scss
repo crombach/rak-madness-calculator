@@ -29,7 +29,7 @@
       background-color: #{$active};
     }
   }
-  &:active {
+  &:active:not([data-released]) {
     background-color: #{$active};
   }
   // A key working takes the fill a key held down takes, because that is where it
@@ -150,7 +150,8 @@
         var(--rak-duration-fast);
     }
 
-    &:active {
+    // Not once a finger has lifted, which Firefox on Android can leave `:active`.
+    &:active:not([data-released]) {
       transition-delay: 0s;
       @include key(var(--rak-key-pressed));
     }

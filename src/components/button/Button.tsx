@@ -1,5 +1,5 @@
 import { Button as BaseButton } from "@base-ui/react/button";
-import { ReactNode, Ref } from "react";
+import { PointerEvent, ReactNode, Ref, SyntheticEvent } from "react";
 import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import "./Button.scss";
@@ -48,6 +48,23 @@ export function buttonClasses({
     },
     className,
   );
+}
+
+/**
+ * Firefox on Android can hold `:active` on a key after the finger lifts, until
+ * the next tap lands somewhere else. A key that should rise, such as a toggle
+ * turned off, then stays down. `Button.scss` presses only a key not marked
+ * released. Set on the element rather than in state, so a tap renders nothing.
+ */
+function markReleased(event: PointerEvent<HTMLButtonElement>) {
+  if (event.pointerType === "touch") {
+    event.currentTarget.dataset.released = "";
+  }
+}
+
+/** Any new press, a key's included, can show again. */
+function clearReleased(event: SyntheticEvent<HTMLButtonElement>) {
+  delete event.currentTarget.dataset.released;
 }
 
 export default function Button({
@@ -124,6 +141,10 @@ export default function Button({
       className={classes}
       disabled={disabled}
       onClick={ariaDisabled ? doNothing : onClick}
+      onPointerDown={clearReleased}
+      onKeyDown={clearReleased}
+      onPointerUp={markReleased}
+      onPointerCancel={markReleased}
     >
       {children}
     </BaseButton>
