@@ -386,13 +386,16 @@ describe("getLeagueResults, mapping", () => {
       });
     });
 
-    it("keeps the ball with the side that scored a touchdown", async () => {
-      const possession = await readLive({
-        type: { text: "Passing Touchdown" },
-        scoreValue: 6,
-        team: { id: "KC" },
-        end: { team: { id: "KC" } },
-      });
+    it("keeps the ball with the side that scored a touchdown, and drops its down", async () => {
+      const possession = await readLive(
+        {
+          type: { text: "Passing Touchdown" },
+          scoreValue: 6,
+          team: { id: "KC" },
+          end: { team: { id: "KC" } },
+        },
+        { downDistanceText: "1st & Goal at BUF 3" },
+      );
       expect(possession).toEqual({ homeAway: HomeAway.AWAY });
     });
 

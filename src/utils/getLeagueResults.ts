@@ -295,8 +295,10 @@ function readPossession(
   }
   const holder = byId((play.end?.team ?? play.team)?.id);
   return {
-    ...possession,
     homeAway: possession.homeAway ?? holder?.homeAway,
+    // A touchdown ends the drive, so whatever down ESPN still holds is over.
+    downDistanceText:
+      points < TOUCHDOWN_POINTS ? possession.downDistanceText : undefined,
   };
 }
 
