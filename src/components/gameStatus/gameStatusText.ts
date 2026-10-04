@@ -1,4 +1,4 @@
-import { GameStatus } from "../../types/ESPN";
+import { GameStatus, HomeAway } from "../../types/ESPN";
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import { GameSpread } from "../../types/WeekGame";
@@ -189,6 +189,18 @@ export function detailText(result: LeagueResult): string {
     return HALFTIME_DETAIL;
   }
   return running ? `${period} ${result.clock}` : period;
+}
+
+/** What ESPN last saw happen, like `KC timeout` or `BUF to kick off`. */
+export function lastPlayText(result: LeagueResult): string | undefined {
+  const { lastPlay } = result.possession;
+  if (lastPlay == null) return undefined;
+  const team = (side: HomeAway) =>
+    (side === HomeAway.HOME ? result.home : result.away).team.abbreviation;
+  if (lastPlay.kicksOff != null)
+    return `${team(lastPlay.kicksOff)} to kick off`;
+  if (lastPlay.calledBy != null) return `${team(lastPlay.calledBy)} timeout`;
+  return lastPlay.type;
 }
 
 /** The other team in the game, which the line is only ever written against one of. */

@@ -12,6 +12,17 @@ type Team = {
 export type Possession = {
   homeAway?: HomeAway;
   downDistanceText?: string;
+  /** Absent where ESPN sent none, or where the clock has run on past it. */
+  lastPlay?: LastPlay;
+};
+
+export type LastPlay = {
+  /** ESPN's name for the play, like `Timeout` or `Passing Touchdown`. */
+  type: string;
+  /** Who called it, where it is a timeout that names its caller. */
+  calledBy?: HomeAway;
+  /** Who kicks off next, where it was a score a kickoff follows. */
+  kicksOff?: HomeAway;
 };
 
 /**

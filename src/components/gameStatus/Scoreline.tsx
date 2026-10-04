@@ -8,6 +8,7 @@ import {
   MINUTE_MS,
   countdownText,
   detailText,
+  lastPlayText,
   outcomeText,
 } from "./gameStatusText";
 // The readout is part of the `game-status` block, which `GameStatusSummary.scss` owns.
@@ -48,8 +49,8 @@ function useMinuteClock(ticking: boolean): Date {
 const HAS_BALL_LABEL = "Has the ball";
 
 /**
- * Said in place of the down and distance while a game being played has none, which is
- * every ball that is not yet dead and every break in the game.
+ * Said in place of the down and distance while a game being played has none, and ESPN
+ * names no last play, or one the clock has run on past.
  *
  * A line either way, rather than one that comes and goes. The game is asked about again
  * every `POLL_MS`, and an answer with no down in it would otherwise take the line away
@@ -117,7 +118,11 @@ function Note({
   if (down == null && result.status !== GameStatus.LIVE) {
     return null;
   }
-  return <p className="game-status__down">{down ?? NO_DOWN}</p>;
+  return (
+    <p className="game-status__down">
+      {down ?? lastPlayText(result) ?? NO_DOWN}
+    </p>
+  );
 }
 
 /**

@@ -550,6 +550,16 @@ describe("GameStatusSummary, a game still being played", () => {
     expect(screen.getByText("Between plays")).toBeInTheDocument();
   });
 
+  it.each([
+    [{ type: "Field Goal Good", kicksOff: HomeAway.AWAY }, "KC to kick off"],
+    [{ type: "Timeout", calledBy: HomeAway.HOME }, "BUF timeout"],
+    [{ type: "Official Timeout" }, "Official Timeout"],
+  ])("says the last play where there is no down: %o", (lastPlay, text) => {
+    const between = { ...live, possession: { lastPlay } };
+    render(<GameStatusSummary game={game(between)} result={between} />);
+    expect(screen.getByText(text)).toBeInTheDocument();
+  });
+
   it("drops the last down at the half, where no side has the ball", () => {
     // ESPN leaves the down that ended the half standing, with the side that ran it
     // cleared. Nobody is facing it, so the line says the break instead.

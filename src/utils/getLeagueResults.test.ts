@@ -3,6 +3,9 @@ import {
   ESPN_STATE,
   EspnCompetitor,
   EspnEvent,
+  EspnPlay,
+  EspnSituation,
+  EspnStatus,
   GameStatus,
   HomeAway,
 } from "../types/ESPN";
@@ -54,6 +57,7 @@ function espnEvent({
   status = GameStatus.FINAL,
   date = GAME_DATE,
   situation,
+  clock,
   id = "1",
   homeExtras,
   awayExtras,
@@ -65,7 +69,8 @@ function espnEvent({
   awayScore?: number;
   status?: GameStatus;
   date?: string;
-  situation?: { downDistanceText?: string; possession: string };
+  situation?: EspnSituation;
+  clock?: Pick<EspnStatus, "period" | "displayClock">;
   id?: string;
   homeExtras?: Partial<EspnCompetitor>;
   awayExtras?: Partial<EspnCompetitor>;
@@ -77,6 +82,7 @@ function espnEvent({
     shortName: `${away} @ ${home}`,
     date,
     status: {
+      ...clock,
       type: {
         id: status,
         state: ESPN_STATE[status],
@@ -89,7 +95,7 @@ function espnEvent({
           competitor(home, HomeAway.HOME, homeScore, homeExtras),
           competitor(away, HomeAway.AWAY, awayScore, awayExtras),
         ],
-        situation: situation as never,
+        situation,
         date,
         venue,
       },
@@ -341,6 +347,157 @@ describe("getLeagueResults, mapping", () => {
     expect(result.possession).toEqual({
       downDistanceText: "2nd & 7",
       homeAway: HomeAway.AWAY,
+    });
+  });
+
+  describe("where ESPN gives no side the ball", () => {
+    const readLive = async (
+      lastPlay: EspnPlay,
+      situation: Omit<EspnSituation, "lastPlay"> = {},
+      clock?: Pick<EspnStatus, "period" | "displayClock">,
+    ) => {
+      mockFetch([
+        espnEvent({
+          home: "BUF",
+          away: "KC",
+          status: GameStatus.LIVE,
+          situation: { ...situation, lastPlay },
+          clock,
+        }),
+      ]);
+      const [result] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+      return result.possession;
+    };
+
+    it("gives the ball to whoever held it once a kickoff ended", async () => {
+      const possession = await readLive(
+        {
+          type: { text: "Kickoff" },
+          team: { id: "KC" },
+          end: { team: { id: "BUF" } },
+          probability: { secondsLeft: 2327 },
+        },
+        { downDistanceText: "1st & 10 at BUF 25" },
+        { period: 2, displayClock: "8:47" },
+      );
+      expect(possession).toEqual({
+        homeAway: HomeAway.HOME,
+        downDistanceText: "1st & 10 at BUF 25",
+        lastPlay: { type: "Kickoff" },
+      });
+    });
+
+    it("keeps the ball with the side that scored a touchdown", async () => {
+      const possession = await readLive({
+        type: { text: "Passing Touchdown" },
+        scoreValue: 6,
+        team: { id: "KC" },
+        end: { team: { id: "KC" } },
+      });
+      expect(possession.homeAway).toBe(HomeAway.AWAY);
+    });
+
+    it("has the side that kicked a field goal kick off next", async () => {
+      const possession = await readLive({
+        type: { text: "Field Goal Good" },
+        scoreValue: 3,
+        team: { id: "KC" },
+        start: { team: { id: "KC" } },
+        end: { team: { id: "KC" } },
+      });
+      expect(possession).toEqual({
+        lastPlay: { type: "Field Goal Good", kicksOff: HomeAway.AWAY },
+      });
+    });
+
+    it("has the side that gave up a safety kick off, whatever ESPN typed it", async () => {
+      const possession = await readLive({
+        type: { text: "Pass Incompletion" },
+        scoreValue: 2,
+        team: { id: "KC" },
+        start: { team: { id: "BUF" } },
+        end: { team: { id: "KC" } },
+      });
+      expect(possession.lastPlay?.kicksOff).toBe(HomeAway.HOME);
+    });
+
+    it("reads a timeout's caller from the text, not the play's team", async () => {
+      const possession = await readLive({
+        type: { text: "Timeout" },
+        text: "Timeout #1 by BUF at 02:00.",
+        team: { id: "KC" },
+        end: { team: { id: "KC" } },
+      });
+      expect(possession).toEqual({
+        lastPlay: { type: "Timeout", calledBy: HomeAway.HOME },
+      });
+    });
+
+    it("reads a caller the pro play-by-play spells its own way", async () => {
+      mockFetch([
+        espnEvent({
+          home: "BAL",
+          away: "KC",
+          status: GameStatus.LIVE,
+          situation: {
+            lastPlay: {
+              type: { text: "Timeout" },
+              text: "Timeout #2 by BLT at 08:12.",
+            },
+          },
+        }),
+      ]);
+      const [result] = await getLeagueResults(League.PRO, WEEK, [
+        new Set(["BAL", "KC"]),
+      ]);
+      expect(result.possession.lastPlay?.calledBy).toBe(HomeAway.HOME);
+    });
+
+    it("reads a college caller by the team's location", async () => {
+      mockFetch([
+        espnEvent({
+          home: "BUF",
+          away: "KC",
+          status: GameStatus.LIVE,
+          awayExtras: {
+            team: {
+              displayName: "KC Team",
+              abbreviation: "KC",
+              location: "Kansas City",
+            },
+          },
+          situation: {
+            lastPlay: {
+              type: { text: "Timeout" },
+              text: "Timeout Kansas City, clock 08:47",
+            },
+          },
+        }),
+      ]);
+      const [result] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+      expect(result.possession.lastPlay?.calledBy).toBe(HomeAway.AWAY);
+    });
+
+    it("names no caller for a timeout the officials called", async () => {
+      const possession = await readLive({
+        type: { text: "Official Timeout" },
+        text: "Official Timeout at 11:42.",
+        team: { id: "KC" },
+      });
+      expect(possession).toEqual({ lastPlay: { type: "Official Timeout" } });
+    });
+
+    it("drops a last play the clock has run well past", async () => {
+      const possession = await readLive(
+        {
+          type: { text: "Kickoff" },
+          end: { team: { id: "BUF" } },
+          probability: { secondsLeft: 2400 },
+        },
+        {},
+        { period: 2, displayClock: "8:38" },
+      );
+      expect(possession).toEqual({});
     });
   });
 

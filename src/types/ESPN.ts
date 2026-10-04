@@ -89,8 +89,28 @@ export type EspnLinescore = {
 
 export type EspnSituation = {
   downDistanceText?: string;
-  possession: string; // Team ID
+  /**
+   * The id of the team with the ball. ESPN drops it after a kickoff, a score, a
+   * timeout and the end of a period.
+   */
+  possession?: string;
+  lastPlay?: EspnPlay;
 };
+
+/** The play's team is whoever ran it: the offense, or the side kicking. */
+export type EspnPlay = {
+  type?: { text?: string };
+  text?: string;
+  scoreValue?: number;
+  team?: EspnTeamRef;
+  start?: { team?: EspnTeamRef };
+  /** Who has the ball once the play is over. */
+  end?: { team?: EspnTeamRef };
+  /** Seconds left in regulation when the play ran. */
+  probability?: { secondsLeft?: number };
+};
+
+export type EspnTeamRef = { id: string };
 
 export type EspnTeam = {
   /** Where the team plays: a city for the pros, a school for the colleges. */
