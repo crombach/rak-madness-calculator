@@ -174,6 +174,37 @@ async function gameFinish(
   }
 }
 
+/** Who kicked off to open each game, by event id. */
+const openingKickers = new Map<string, string | null>();
+/** The team id at the end of a play's team link, like `.../teams/9?lang=en`. */
+const TEAM_REF_ID = /\/teams\/([^/?]+)/;
+
+/**
+ * The id of the side that kicked off to open the game, off the start of its first
+ * play, the coin toss. That side receives the kickoff after the half.
+ *
+ * Null where the first play names no side. Undefined on a failed request, which is
+ * asked again.
+ */
+async function openingKicker(
+  league: League,
+  eventId: string,
+): Promise<string | null | undefined> {
+  if (openingKickers.has(eventId)) {
+    return openingKickers.get(eventId);
+  }
+  try {
+    const response = await fetch(playPageUrl(league, eventId));
+    if (!response.ok) return undefined;
+    const first = (await response.json()).items?.[0];
+    const id = TEAM_REF_ID.exec(first?.start?.team?.$ref ?? "")?.[1] ?? null;
+    openingKickers.set(eventId, id);
+    return id;
+  } catch {
+    return undefined;
+  }
+}
+
 /** The season record, which ESPN sends beside the home and road splits. */
 const RECORD_TYPE_SEASON = "total";
 
@@ -591,6 +622,24 @@ export async function getLeagueResults(
 
   await Promise.all(
     [...found].map(async ([key, result]) => {
+      const event = events.find(({ id }) => id === result?.id);
+      if (
+        result != null &&
+        event != null &&
+        event.status.period === REGULATION_PERIODS / 2 &&
+        isHalfOver(event.status)
+      ) {
+        const kicker = await openingKicker(league, result.id);
+        const receiver = event.competitions[0].competitors.find(
+          ({ id }) => id === kicker,
+        );
+        if (receiver != null) {
+          result.possession = {
+            ...result.possession,
+            between: `${teamAbbreviation(receiver)} to receive`,
+          };
+        }
+      }
       if (result?.status === GameStatus.FINAL) {
         const heldFinish = held[key]?.finishedAt;
         result.finishedAt =

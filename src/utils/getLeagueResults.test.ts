@@ -869,6 +869,69 @@ describe("getLeagueResults, a scoreboard request ESPN could not answer", () => {
   });
 });
 
+describe("getLeagueResults, at halftime", () => {
+  const HALF = { period: 2, displayClock: "0:00" };
+
+  /** `mockFetch`, but the first play is a coin toss `kicker` started. */
+  function mockFetchWithToss(events: Array<EspnEvent>, kicker: string) {
+    const fetchMock = mockFetch(events);
+    const answer = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (url: string) =>
+      url.includes(PLAYS_HOST)
+        ? {
+            ok: true,
+            json: async () => ({
+              items: [
+                {
+                  type: { text: "Coin Toss" },
+                  start: { team: { $ref: `http://x/teams/${kicker}?lang=en` } },
+                },
+              ],
+            }),
+          }
+        : answer(url),
+    );
+    return fetchMock;
+  }
+
+  it("has the side that kicked off the game receive after the break", async () => {
+    mockFetchWithToss(
+      [
+        espnEvent({
+          home: "BUF",
+          away: "KC",
+          id: "h1",
+          status: GameStatus.LIVE,
+          clock: HALF,
+        }),
+      ],
+      "KC",
+    );
+    const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+    expect(game.possession.between).toBe("KC to receive");
+  });
+
+  it("asks nothing about the opening kickoff before the half", async () => {
+    const fetchMock = mockFetchWithToss(
+      [
+        espnEvent({
+          home: "BUF",
+          away: "KC",
+          id: "h2",
+          status: GameStatus.LIVE,
+          clock: { period: 2, displayClock: "4:12" },
+        }),
+      ],
+      "KC",
+    );
+    const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+    expect(game.possession.between).toBeUndefined();
+    expect(
+      fetchMock.mock.calls.filter(([url]) => url.includes(PLAYS_HOST)),
+    ).toEqual([]);
+  });
+});
+
 describe("getLeagueResults, finish times", () => {
   const SEASON = 2024;
 
