@@ -7,7 +7,7 @@ plus the week's leader when shown.
 - `ComparePlayersPage`: `lazyPreloadable` over `ComparePlayersRoute`, mounted
   by `App.tsx`.
 - `ComparePlayers`: `PicksTable` with every tiebreaker, on every game or only
-  the `differingGames` or `sameGames`. With no player chosen, it
+  the `differingGames` or `sameGames`. With no player or leader to show, it
   opens the dialog over a `SkeletonTable`.
 - `ComparePlayersDialog`: a `PlayerCombobox` per player, added and removed by
   the reader.

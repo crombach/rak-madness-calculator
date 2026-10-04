@@ -127,7 +127,7 @@ export default function ComparePlayers({
   const top = scores?.scores[0];
   const leader =
     showsLeader && top != null && !picked.includes(top) ? top : undefined;
-  // Opens on the pickers when no player comes back from last time.
+  // Opens on the pickers when no player comes back from last time, and no leader shows.
   const [isOpen, setIsOpen] = useState(
     () => slots.filter(isFilled).length + (leader ? 1 : 0) < MIN_PICKERS,
   );

@@ -63,8 +63,8 @@ function markReleased(event: PointerEvent<HTMLButtonElement>) {
 }
 
 /**
- * Clears the released mark, so a new press shows, whether a finger, a pointer or
- * a key makes it. Marks a key pressed while chosen. That press turns it off, so
+ * Clears the released mark, so a new press shows, whether a pointer or a key
+ * makes it. Marks a key pressed while chosen. That press turns it off, so
  * `Button.scss` lets it rise without the pause that holds a key about to be
  * chosen.
  */
