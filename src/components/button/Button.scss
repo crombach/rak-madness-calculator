@@ -214,7 +214,7 @@
         background-color: var(--rak-key-active, var(--rak-primary-600));
       }
 
-      // Held by the open popup, likewise.
+      // Held by the open popup rather than the pointer, so after `:active` too.
       &[data-popup-open] {
         background-color: var(--rak-key-active, var(--rak-primary-600));
       }

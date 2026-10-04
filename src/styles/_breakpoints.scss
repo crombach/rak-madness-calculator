@@ -29,8 +29,9 @@ $breakpoint-wide: 601px;
 
 /**
  * Above this the Compare Players controls fit on one line. Measured: the row is
- * 714px wide, and the page's padding fits it from a 740px window. Below that the
- * Show Leader key wraps its label.
+ * 714px wide, and the page's padding fits it from a 740px window. The breakpoint
+ * keeps 21px past that, so the row never sits flush against the padding. Below
+ * 740px the Show Leader key wraps its label.
  */
 $breakpoint-compare-toolbar: 761px;
 
