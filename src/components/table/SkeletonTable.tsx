@@ -71,7 +71,7 @@ const PICKS_COLUMNS: Array<Column> = [
 
 /**
  * Compare Players' shape: a few pro games, among the tiebreakers the real table
- * adds. No stand-in rows, since two to ten players never scroll the table.
+ * adds. No stand-in rows, since ten players and the leader never scroll the table.
  */
 const COMPARE_COLUMNS: Array<Column> = [
   ...RANK_AND_PLAYER,

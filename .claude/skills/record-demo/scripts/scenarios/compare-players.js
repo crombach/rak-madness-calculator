@@ -94,11 +94,13 @@ export default async function run({ page, context, baseUrl }) {
     [THEME_KEY, THEME, PLAYER_NAME_KEY, MY_NAME, EXPERIMENTAL_FEATURES_KEY],
   );
   await page.goto(path);
-  // The page opens the dialog itself when fewer than two players are saved.
-  const choose = page.getByRole("button", { name: "Choose Players" });
+  // The page opens the dialog itself when no player is saved.
+  const choose = page.getByRole("button", { name: "Choose" });
   const dialog = page.getByRole("dialog");
   await choose.or(dialog).first().waitFor({ timeout: 10000 });
   if (!(await dialog.isVisible())) await choose.click();
+  // The dialog opens on the reader's own player alone.
+  await page.getByRole("button", { name: "Add Player" }).click();
   const versus = page.getByRole("combobox", { name: "Player 2" });
   await versus.waitFor({ timeout: 10000 });
   await versus.click();

@@ -282,18 +282,8 @@ describe("NavMenu", () => {
       );
     });
 
-    it.each([
-      ["with no reason while scores load", undefined, false, ""],
-      [
-        "with fewer than two players",
-        { scores: [{}] },
-        false,
-        "Needs two players",
-      ],
-      ["with no reason once the week is settled", { scores: [{}] }, true, ""],
-    ])("disables Compare Players %s", async (_, scores, isSettled, reason) => {
-      mockScores.mockReturnValue(scores);
-      mockIsWeekSettled.mockReturnValue(isSettled);
+    it("disables Compare Players with no reason while scores load", async () => {
+      mockScores.mockReturnValue(undefined);
       const user = mount();
       await user.click(trigger());
 
@@ -302,7 +292,7 @@ describe("NavMenu", () => {
       });
 
       expect(item).toHaveAttribute("data-disabled");
-      expect(item).toHaveAccessibleDescription(reason);
+      expect(item).toHaveAccessibleDescription("");
     });
 
     it("goes to the games page on a click", async () => {

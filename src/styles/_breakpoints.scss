@@ -28,6 +28,14 @@ $breakpoint-labeled-navbar: 561px;
 $breakpoint-wide: 601px;
 
 /**
+ * From this width up, the Compare Players controls fit on one line. Measured: the row is
+ * 714px wide, and the page's padding fits it from a 740px window. The breakpoint
+ * keeps 21px past that, so the row never sits flush against the padding. Below
+ * 740px the Show Leader key wraps its label.
+ */
+$breakpoint-compare-toolbar: 761px;
+
+/**
  * Below this the home page's stack of controls no longer clears the footer's
  * links. Worked out in `Footer.scss`.
  */
@@ -50,6 +58,13 @@ $breakpoint-short: 540px;
 /** Room enough to center a dialog, rather than stand it on the bottom edge. */
 @mixin wide-screen {
   @media (min-width: $breakpoint-wide) {
+    @content;
+  }
+}
+
+/** Room enough for the Compare Players controls to stand in one row. */
+@mixin compare-toolbar {
+  @media (min-width: $breakpoint-compare-toolbar) {
     @content;
   }
 }

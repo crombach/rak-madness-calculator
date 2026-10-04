@@ -1,5 +1,5 @@
 import { Button as BaseButton } from "@base-ui/react/button";
-import { ReactNode, Ref } from "react";
+import { PointerEvent, ReactNode, Ref, SyntheticEvent } from "react";
 import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import "./Button.scss";
@@ -50,6 +50,33 @@ export function buttonClasses({
   );
 }
 
+/**
+ * Firefox on Android can hold `:active` on a key after the finger lifts, until
+ * the next tap lands somewhere else. A key that should rise, such as a toggle
+ * turned off, then stays down. `Button.scss` presses only a key not marked
+ * released. Set on the element rather than in state, so a tap renders nothing.
+ */
+function markReleased(event: PointerEvent<HTMLButtonElement>) {
+  if (event.pointerType === "touch") {
+    event.currentTarget.dataset.released = "";
+  }
+}
+
+/**
+ * Clears the released mark, so a new press shows, whether a pointer or a key
+ * makes it. Marks a key pressed while chosen. That press turns it off, so
+ * `Button.scss` lets it rise without the pause that holds a key about to be
+ * chosen.
+ */
+function startPress(event: SyntheticEvent<HTMLButtonElement>) {
+  const key = event.currentTarget;
+  delete key.dataset.released;
+  key.toggleAttribute(
+    "data-was-selected",
+    key.getAttribute("aria-pressed") === "true",
+  );
+}
+
 export default function Button({
   children,
   onClick,
@@ -65,6 +92,7 @@ export default function Button({
   className = "",
   ariaLabel,
   ariaExpanded,
+  popupOpen,
   ref,
 }: {
   children: ReactNode;
@@ -91,6 +119,12 @@ export default function Button({
   ariaLabel?: string;
   /** Set where the button opens and closes something below it. */
   ariaExpanded?: boolean;
+  /**
+   * Set where the button opens a dialog, true while it is open. Says so to a
+   * screen reader, and holds the key down as Base UI's `data-popup-open` does
+   * for a menu's own trigger.
+   */
+  popupOpen?: boolean;
   ref?: Ref<HTMLButtonElement>;
 }) {
   const classes = buttonClasses({
@@ -108,13 +142,19 @@ export default function Button({
       ref={ref}
       type="button"
       aria-label={ariaLabel}
-      aria-expanded={ariaExpanded}
+      aria-haspopup={popupOpen === undefined ? undefined : "dialog"}
+      aria-expanded={ariaExpanded ?? popupOpen}
       aria-pressed={selected}
       aria-disabled={ariaDisabled || undefined}
       aria-busy={busy || undefined}
+      data-popup-open={popupOpen ? "" : undefined}
       className={classes}
       disabled={disabled}
       onClick={ariaDisabled ? doNothing : onClick}
+      onPointerDown={startPress}
+      onKeyDown={startPress}
+      onPointerUp={markReleased}
+      onPointerCancel={markReleased}
     >
       {children}
     </BaseButton>

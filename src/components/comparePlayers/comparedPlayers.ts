@@ -5,8 +5,11 @@ const SETTING = "comparedPlayers";
 /** The exact key the chosen names are saved under, for a test to seed or read. */
 export const COMPARED_PLAYERS_KEY = PREFIX + SETTING;
 
-/** The fewest pickers the page shows, padded up to when fewer names were saved. */
-export const MIN_PICKERS = 2;
+/** The fewest pickers the page shows, padded up to when no name was saved. */
+export const MIN_PICKERS = 1;
+
+/** The fewest players with picks whose games can split or agree. */
+export const MIN_SCOPED = 2;
 
 /** The most players the page compares at once. */
 export const MAX_PICKERS = 10;
@@ -47,6 +50,22 @@ export function readGameScope(): GameScope {
 /** Saves the game scope, or forgets it for the default. */
 export function writeGameScope(scope: GameScope): void {
   writeSetting(SCOPE_SETTING, scope === DEFAULT_SCOPE ? "" : scope);
+}
+
+const LEADER_SETTING = "compareLeader";
+const LEADER_ON = "on";
+
+/** The exact key the leader toggle is saved under, for a test to seed or read. */
+export const LEADER_KEY = PREFIX + LEADER_SETTING;
+
+/** Whether the week's leader joins the players chosen, off unless saved on. */
+export function readShowsLeader(): boolean {
+  return readSetting(LEADER_SETTING) === LEADER_ON;
+}
+
+/** Saves the leader toggle, or forgets it when off. */
+export function writeShowsLeader(on: boolean): void {
+  writeSetting(LEADER_SETTING, on ? LEADER_ON : "");
 }
 
 /** A picker's label and accessible name, counted from 1. */

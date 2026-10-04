@@ -29,7 +29,7 @@
       background-color: #{$active};
     }
   }
-  &:active {
+  &:active:not([data-released]) {
     background-color: #{$active};
   }
   // A key working takes the fill a key held down takes, because that is where it
@@ -142,15 +142,20 @@
     //
     // Only under the pointer or keyboard focus, which is where a release
     // happens. A key coming out of `:disabled` on its own rises with every
-    // other key, not a pause behind them. `:where` keeps both out of the
-    // specificity, so the rules below still clear the pause.
-    &.--selectable:where(:hover, :focus-visible) {
+    // other key, not a pause behind them. Nor a key pressed while chosen. That
+    // press turns it off, so the pause only makes it slow to rise. `:where`
+    // keeps all three out of the specificity, so the rules below still clear
+    // the pause.
+    &.--selectable:where(:hover, :focus-visible):where(
+        :not([data-was-selected])
+      ) {
       transition-delay:
         var(--rak-duration-fast), 0s, var(--rak-duration-fast),
         var(--rak-duration-fast);
     }
 
-    &:active {
+    // Not once a finger has lifted, which Firefox on Android can leave `:active`.
+    &:active:not([data-released]) {
       transition-delay: 0s;
       @include key(var(--rak-key-pressed));
     }
@@ -168,6 +173,13 @@
     // stays down until the work does end. The pointer leaves mid-work more often
     // than not, and `:active` is gone the moment it does.
     &.--busy {
+      transition-delay: 0s;
+      @include key(var(--rak-key-pressed));
+    }
+
+    // A key holding a menu or dialog open stays down until that closes. Base UI
+    // sets the attribute on its own triggers, and `popupOpen` on `Button`.
+    &[data-popup-open] {
       transition-delay: 0s;
       @include key(var(--rak-key-pressed));
     }
@@ -199,6 +211,11 @@
 
       // After `--selected` for the same reason: held by the work, not the pointer.
       &.--busy {
+        background-color: var(--rak-key-active, var(--rak-primary-600));
+      }
+
+      // Held by the open popup rather than the pointer, so after `:active` too.
+      &[data-popup-open] {
         background-color: var(--rak-key-active, var(--rak-primary-600));
       }
     }

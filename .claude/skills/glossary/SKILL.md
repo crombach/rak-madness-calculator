@@ -29,6 +29,7 @@ One concept, one name. Reader means the person viewing, in prose and comments. N
 | NFL or college              | league            | `League` enum                                                                 | pool                             |
 | The Rak Madness group       | pool              | none                                                                          | league                           |
 | Finished week               | Week complete     | `settled`                                                                     | done, over                       |
+| Week's top row              | Leader, or Winner | `leader`. Winner once the week is complete                                    | first place                      |
 | Per-player win analysis     | Player Analysis   | `playerAnalysis`, `PlayerAnalysis*`                                           |                                  |
 
 The "Player rankings" caption on the Scoreboard table is the screen-reader name. Keep it.

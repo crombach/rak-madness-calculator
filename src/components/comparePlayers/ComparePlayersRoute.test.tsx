@@ -19,7 +19,11 @@ import {
   PLAYER_NAME_KEY,
 } from "../../context/SettingsContext";
 import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
-import { COMPARED_PLAYERS_KEY, GAME_SCOPE_KEY } from "./comparedPlayers";
+import {
+  COMPARED_PLAYERS_KEY,
+  GAME_SCOPE_KEY,
+  LEADER_KEY,
+} from "./comparedPlayers";
 
 const COMPARE_PATH = `/${SEASON}/${CURRENT_WEEK}/compare`;
 
@@ -61,13 +65,13 @@ function compareScores() {
 
 /**
  * Opens the dialog the pickers are in, unless it is open already. The page opens
- * it itself when fewer than two players come back from last time.
+ * it itself when no player comes back from last time.
  */
 async function openDialog(user: ReturnType<typeof mountApp>) {
   const opener = await waitFor(
     () =>
       screen.queryByRole("dialog") ??
-      screen.getByRole("button", { name: "Choose Players" }),
+      screen.getByRole("button", { name: "Choose" }),
   );
   if (opener.getAttribute("role") !== "dialog") await user.click(opener);
 }
@@ -87,6 +91,11 @@ async function choose(
   name: string,
 ) {
   await openDialog(user);
+  // The dialog opens on one picker, so a later one needs adding first.
+  await screen.findAllByRole("combobox");
+  if (!screen.queryByRole("combobox", { name: picker })) {
+    await user.click(screen.getByRole("button", { name: "Add Player" }));
+  }
   await user.click(await screen.findByRole("combobox", { name: picker }));
   await user.click(await screen.findByRole("option", { name }));
 }
@@ -113,7 +122,7 @@ describe("the compare players route", () => {
     ).toBeInTheDocument();
   });
 
-  it("opens on the pickers, with no picks, until two players are chosen", async () => {
+  it("opens on the pickers, with no picks, until a player is chosen", async () => {
     mountApp(COMPARE_PATH);
 
     expect(
@@ -186,6 +195,7 @@ describe("the compare players route", () => {
   it("leaves the player already chosen out of the other list", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
+    await user.click(screen.getByRole("button", { name: "Add Player" }));
 
     await user.click(screen.getByRole("combobox", { name: "Player 2" }));
 
@@ -304,12 +314,33 @@ describe("the compare players route", () => {
     expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveValue(
       "Bob",
     );
-    for (const remove of screen.getAllByRole("button", { name: /Remove/ })) {
-      expect(remove).toBeDisabled();
-    }
     expect(
       JSON.parse(localStorage.getItem(COMPARED_PLAYERS_KEY) ?? ""),
     ).toEqual(["Alice", "Bob"]);
+  });
+
+  it("removes players down to one picker", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Carol");
+
+    await user.click(screen.getByRole("button", { name: "Remove Player 2" }));
+
+    expect(screen.getAllByRole("combobox")).toHaveLength(1);
+    expect(
+      screen.getByRole("button", { name: "Remove Player 1" }),
+    ).toBeDisabled();
+  });
+
+  it("shows one chosen player alone, with no games to split", async () => {
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(["Bob"]));
+    mountApp(COMPARE_PATH);
+
+    expect(
+      await screen.findByRole("table", { name: "Picks of Bob" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Different" })).toBeDisabled();
   });
 
   it("moves focus to the picker that takes a removed one's place", async () => {
@@ -324,17 +355,28 @@ describe("the compare players route", () => {
     expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveFocus();
   });
 
-  it("returns focus to Choose Players from the dialog the page opened", async () => {
+  it("returns focus to Choose from the dialog the page opened", async () => {
     const user = mountApp(COMPARE_PATH);
     await screen.findByRole("dialog", { name: "Compare Players" });
 
     await closeDialog(user);
 
     await waitFor(() =>
-      expect(
-        screen.getByRole("button", { name: "Choose Players" }),
-      ).toHaveFocus(),
+      expect(screen.getByRole("button", { name: "Choose" })).toHaveFocus(),
     );
+  });
+
+  it("holds Choose down while the dialog is open", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await screen.findByRole("dialog", { name: "Compare Players" });
+    const choose = screen.getByRole("button", { name: "Choose", hidden: true });
+    expect(choose).toHaveAttribute("data-popup-open");
+    expect(choose).toHaveAttribute("aria-expanded", "true");
+
+    await closeDialog(user);
+
+    await waitFor(() => expect(choose).not.toHaveAttribute("data-popup-open"));
+    expect(choose).toHaveAttribute("aria-expanded", "false");
   });
 
   it("focuses an added picker once, not again on reopen", async () => {
@@ -345,7 +387,7 @@ describe("the compare players route", () => {
     await choose(user, "Player 3", "Bob");
     await closeDialog(user);
 
-    await user.click(screen.getByRole("button", { name: "Choose Players" }));
+    await user.click(screen.getByRole("button", { name: "Choose" }));
 
     expect(
       await screen.findByRole("combobox", { name: "Player 3" }),
@@ -359,7 +401,7 @@ describe("the compare players route", () => {
     await choose(user, "Player 3", "Carol");
     await closeDialog(user);
 
-    await user.click(screen.getByRole("button", { name: "Choose Players" }));
+    await user.click(screen.getByRole("button", { name: "Choose" }));
 
     expect(
       await screen.findByRole("combobox", { name: "Player 1" }),
@@ -370,22 +412,21 @@ describe("the compare players route", () => {
     expect(screen.getAllByRole("combobox")).toHaveLength(2);
   });
 
-  it("keeps two pickers when the dialog opens again with fewer chosen", async () => {
+  it("keeps one picker when the dialog opens again with none chosen", async () => {
     const user = mountApp(COMPARE_PATH);
-    await choose(user, "Player 1", "Alice");
+    await screen.findByRole("dialog", { name: "Compare Players" });
     await user.click(screen.getByRole("button", { name: "Add Player" }));
     await closeDialog(user);
 
-    await user.click(screen.getByRole("button", { name: "Choose Players" }));
+    await user.click(screen.getByRole("button", { name: "Choose" }));
 
     expect(
       await screen.findByRole("combobox", { name: "Player 1" }),
-    ).toHaveValue("Alice");
-    expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveValue("");
-    expect(screen.getAllByRole("combobox")).toHaveLength(2);
+    ).toHaveValue("");
+    expect(screen.getAllByRole("combobox")).toHaveLength(1);
   });
 
-  it("holds a saved scope with no table and no message until two are chosen", async () => {
+  it("holds a saved scope with no table and no message until a player is chosen", async () => {
     localStorage.setItem(GAME_SCOPE_KEY, "different");
     const user = mountApp(COMPARE_PATH);
     await screen.findByRole("dialog", { name: "Compare Players" });
@@ -423,14 +464,15 @@ describe("the compare players route", () => {
     await openDialog(user);
     await user.click(await screen.findByRole("button", { name: "Add Player" }));
 
-    expect(screen.getByRole("combobox", { name: "Player 3" })).toHaveFocus();
+    expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveFocus();
   });
 
   it("hides Add Player once every player has a picker", async () => {
     const user = mountApp(COMPARE_PATH);
     await openDialog(user);
-
     await user.click(await screen.findByRole("button", { name: "Add Player" }));
+
+    await user.click(screen.getByRole("button", { name: "Add Player" }));
 
     expect(
       screen.queryByRole("button", { name: "Add Player" }),
@@ -449,7 +491,7 @@ describe("the compare players route", () => {
     await openDialog(user);
     await screen.findByRole("button", { name: "Add Player" });
 
-    for (let added = 0; added < 8; added++) {
+    for (let added = 0; added < 9; added++) {
       await user.click(screen.getByRole("button", { name: "Add Player" }));
     }
 
@@ -684,6 +726,152 @@ describe("the compare players route", () => {
       "aria-pressed",
       "true",
     );
+  });
+
+  it("groups Choose and the leader toggle under Players", async () => {
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Carol"]),
+    );
+    mountApp(COMPARE_PATH);
+
+    const players = await screen.findByRole("group", { name: "Players" });
+    expect(
+      within(players)
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    ).toEqual(["Choose", "Show Leader"]);
+  });
+
+  it("adds the leader to the players chosen", async () => {
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Bob", "Carol"]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    await screen.findByRole("table", { name: "Picks of Bob and Carol" });
+
+    await user.click(screen.getByRole("button", { name: "Show Leader" }));
+
+    const table = await screen.findByRole("table", {
+      name: "Picks of Bob, Carol, and Alice",
+    });
+    expect(within(table).getByText("Alice")).toBeInTheDocument();
+  });
+
+  it("compares one chosen player with the leader", async () => {
+    localStorage.setItem(LEADER_KEY, "on");
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(["Bob"]));
+    mountApp(COMPARE_PATH);
+
+    expect(
+      await screen.findByRole("table", { name: "Picks of Bob and Alice" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("splits games with the leader among the players", async () => {
+    localStorage.setItem(LEADER_KEY, "on");
+    localStorage.setItem(GAME_SCOPE_KEY, "different");
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(["Bob"]));
+    mountApp(COMPARE_PATH);
+
+    expect(
+      await screen.findByText("They picked every game the same"),
+    ).toBeInTheDocument();
+  });
+
+  it("adds no second row for a leader already chosen", async () => {
+    localStorage.setItem(LEADER_KEY, "on");
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Alice", "Carol"]),
+    );
+    mountApp(COMPARE_PATH);
+
+    const table = await screen.findByRole("table", {
+      name: "Picks of Alice and Carol",
+    });
+    expect(within(table).getAllByText("Alice")).toHaveLength(1);
+  });
+
+  it("shows the leader once when the reader then chooses them", async () => {
+    localStorage.setItem(LEADER_KEY, "on");
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Bob", "Carol"]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    await screen.findByRole("table", {
+      name: "Picks of Bob, Carol, and Alice",
+    });
+
+    await choose(user, "Player 2", "Alice");
+    await closeDialog(user);
+
+    const table = await screen.findByRole("table", {
+      name: "Picks of Bob and Alice",
+    });
+    expect(within(table).getAllByText("Alice")).toHaveLength(1);
+  });
+
+  it("adds the leader past the ten players chosen", async () => {
+    const names = Array.from(
+      { length: 11 },
+      (_, index) => `Player ${String.fromCharCode(65 + index)}`,
+    );
+    getPlayerScoresMock.mockResolvedValue(
+      week(names.map((name) => player({ name }))),
+    );
+    localStorage.setItem(LEADER_KEY, "on");
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(names.slice(1)));
+    mountApp(COMPARE_PATH);
+
+    const table = await screen.findByRole("table");
+    expect(within(table).getByText("Player A")).toBeInTheDocument();
+    expect(within(table).getByText("Player K")).toBeInTheDocument();
+  });
+
+  it("saves whether the leader shows", async () => {
+    localStorage.setItem(
+      COMPARED_PLAYERS_KEY,
+      JSON.stringify(["Bob", "Carol"]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    await screen.findByRole("table");
+    const toggle = screen.getByRole("button", { name: "Show Leader" });
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(localStorage.getItem(LEADER_KEY)).toBe("on");
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    expect(localStorage.getItem(LEADER_KEY)).toBeNull();
+  });
+
+  it("calls the leader the winner once the week is complete", async () => {
+    getPlayerScoresMock.mockResolvedValue(
+      week(
+        [
+          player({ name: "Alice", total: 1, pro: [pick("KC", "yes")] }),
+          player({ name: "Bob", pro: [pick("DEN", "no")] }),
+        ],
+        40,
+      ),
+    );
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(["Bob"]));
+    const user = mountApp(COMPARE_PATH);
+    await openDialog(user);
+    await closeDialog(user);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Show Winner" }),
+    );
+
+    expect(
+      await screen.findByRole("table", { name: "Picks of Bob and Alice" }),
+    ).toBeInTheDocument();
   });
 
   it("sends a reader without experimental features to the scoreboard", async () => {
