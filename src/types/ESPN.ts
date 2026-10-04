@@ -91,6 +91,8 @@ export type EspnLinescore = {
 };
 
 export type EspnSituation = {
+  /** The down, or -1 between a score and the kickoff after it. */
+  down?: number;
   downDistanceText?: string;
   /**
    * The id of the team with the ball. ESPN drops it after a kickoff, a score, a

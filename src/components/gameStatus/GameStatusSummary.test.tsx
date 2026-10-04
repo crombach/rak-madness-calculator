@@ -556,6 +556,22 @@ describe("GameStatusSummary, a game still being played", () => {
     expect(screen.getByText("KC to kick off")).toBeInTheDocument();
   });
 
+  it("says a timeout beside the clock, and keeps the down", () => {
+    const timeout = {
+      ...live,
+      period: 2,
+      clock: "10:54",
+      possession: {
+        homeAway: HomeAway.HOME,
+        downDistanceText: "4th & 2 @ NE 41",
+        timeout: "NE T/O",
+      },
+    };
+    render(<GameStatusSummary game={game(timeout)} result={timeout} />);
+    expect(screen.getByText("Q2 10:54 • NE T/O")).toBeInTheDocument();
+    expect(screen.getByText("4th & 2 @ NE 41")).toBeInTheDocument();
+  });
+
   it("drops the last down at the half, where no side has the ball", () => {
     // ESPN leaves the down that ended the half standing, with the side that ran it
     // cleared. Nobody is facing it, so the line says the break instead.

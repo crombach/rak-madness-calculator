@@ -206,17 +206,28 @@ const QUARTER_SECONDS = 15 * 60;
 /** Seconds the clock may run past a play before the play counts as stale. */
 const STALE_PLAY_SECONDS = 60;
 const TOUCHDOWN_POINTS = 6;
+/** ESPN's `at` before the yard line, said as `@` to save room under the scores. */
+const DOWN_AT = " at ";
+const DOWN_AT_MARK = " @ ";
+/** ESPN's down between a score and the kickoff after it. */
+const AFTER_SCORE_DOWN = -1;
+const OFFICIAL_TIMEOUT = "Official Timeout";
+const OFFICIAL_TIMEOUT_LINE = "Official T/O";
+/** A try after a touchdown, like `Extra Point Missed`, `Blocked PAT` or `Two Point Pass`. */
+const TRY_PLAY = /Extra Point|Two.?Point|\bPAT\b/i;
+const COIN_TOSS = "Coin Toss";
+const COIN_TOSS_LINE = "Kickoff";
 
 /** Plays that say nothing about who has the ball. */
 const BREAK_PLAYS = new Set([
   "Timeout",
-  "Official Timeout",
+  OFFICIAL_TIMEOUT,
   "Two-minute warning",
   "End Period",
   "End of Half",
   "End of Regulation",
   "End of Game",
-  "Coin Toss",
+  COIN_TOSS,
 ]);
 
 /**
@@ -277,9 +288,14 @@ function readPossession(
 ): Possession {
   const byId = (id?: string) => sides.find((side) => side.id === id);
   const possession: Possession = {
-    downDistanceText: situation?.downDistanceText,
+    downDistanceText: situation?.downDistanceText?.replace(
+      DOWN_AT,
+      DOWN_AT_MARK,
+    ),
     homeAway: byId(situation?.possession)?.homeAway,
   };
+  const kickOff = (side: EspnCompetitor) =>
+    `${teamAbbreviation(side)} to kick off`;
   const play = situation?.lastPlay;
   const type = play?.type?.text;
   if (
@@ -290,14 +306,28 @@ function readPossession(
   ) {
     return possession;
   }
-  // After a score short of a touchdown, the side that started the play kicks off.
-  // That is the kicker after a field goal and the offense after a safety. The score
-  // ended the drive, so whatever down ESPN still holds is over.
+  // After a score short of a touchdown, or any try, the side that started the play
+  // kicks off. That is the kicker after a field goal or a try, and the offense after
+  // a safety. The drive is over, so whatever down ESPN still holds is too.
   const points = play.scoreValue ?? 0;
-  if (points > 0 && points < TOUCHDOWN_POINTS) {
+  if ((points > 0 && points < TOUCHDOWN_POINTS) || TRY_PLAY.test(type)) {
     const kicker = byId(play.start?.team?.id);
-    const between = kicker && `${teamAbbreviation(kicker)} to kick off`;
+    const between = kicker && kickOff(kicker);
     return { homeAway: possession.homeAway, between };
+  }
+  // The officials stop play mid-drive, or after a score until the kickoff. After a
+  // score, ESPN credits the stop to the side that kicks off, which says more than
+  // the stop does.
+  if (type === OFFICIAL_TIMEOUT) {
+    const kicker =
+      situation?.down === AFTER_SCORE_DOWN ? byId(play.team?.id) : undefined;
+    if (kicker) {
+      return { homeAway: possession.homeAway, between: kickOff(kicker) };
+    }
+    return { ...possession, timeout: OFFICIAL_TIMEOUT_LINE };
+  }
+  if (type === COIN_TOSS) {
+    return { ...possession, between: COIN_TOSS_LINE };
   }
   if (BREAK_PLAYS.has(type)) {
     const [, pro, college] = TIMEOUT_CALLER.exec(play.text ?? "") ?? [];
@@ -307,16 +337,18 @@ function readPossession(
         name != null &&
         (side.team.location === name || teamAbbreviation(side) === name),
     );
-    const between = caller && `${teamAbbreviation(caller)} timeout`;
-    return { ...possession, between };
+    const timeout = caller && `${teamAbbreviation(caller)} T/O`;
+    return { ...possession, timeout };
   }
   const holder = byId((play.end?.team ?? play.team)?.id);
-  return {
-    homeAway: possession.homeAway ?? holder?.homeAway,
-    // A touchdown ends the drive, so whatever down ESPN still holds is over.
-    downDistanceText:
-      points < TOUCHDOWN_POINTS ? possession.downDistanceText : undefined,
-  };
+  const homeAway = possession.homeAway ?? holder?.homeAway;
+  // A touchdown ends the drive, so whatever down ESPN still holds is over. The side
+  // that scored keeps the ball for the try.
+  if (points >= TOUCHDOWN_POINTS) {
+    const between = holder && `${teamAbbreviation(holder)} extra point`;
+    return { homeAway, between };
+  }
+  return { homeAway, downDistanceText: possession.downDistanceText };
 }
 
 /**

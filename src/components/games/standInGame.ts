@@ -40,3 +40,6 @@ export const STAND_IN: WeekGame = {
   name: STAND_IN_RESULT.shortName,
   result: STAND_IN_RESULT,
 };
+
+/** The reader's pick on a stand-in card, which holds its line while picks load. */
+export const STAND_IN_PICK = "AWY -3";

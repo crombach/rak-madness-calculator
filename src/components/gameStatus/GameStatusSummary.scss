@@ -535,6 +535,13 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
   grid-row: 1;
   // Both sides of the row take their baseline from the same place, or neither does.
   align-self: baseline;
+  // As wide as the scores and no wider, so `Q2 10:54 • Official T/O` never takes
+  // room off the names. A line a little wider spills evenly either side.
+  display: flex;
+  justify-content: center;
+  width: 0;
+  min-width: 100%;
+  white-space: nowrap;
 }
 
 .game-status__down,
@@ -542,7 +549,7 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
   grid-row: 3;
 }
 
-// Held to no width, so a line like `4th & Goal at UCONN 10` never widens the middle
+// Held to no width, so a line like `4th & Goal @ UCONN 10` never widens the middle
 // column and takes room off the names. A flex box centers a line wider than itself,
 // so the text spills evenly over the space either side, on one line.
 .game-status__down {
