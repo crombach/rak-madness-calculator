@@ -873,8 +873,12 @@ describe("getLeagueResults, at halftime", () => {
   const HALF = { period: 2, displayClock: "0:00" };
   const HALF_ENDED = "2026-10-04T18:21:59Z";
 
-  /** `mockFetch`, but the first play is a coin toss `kicker` started. */
-  function mockFetchWithToss(events: Array<EspnEvent>, kicker: string) {
+  /** `mockFetch`, but the first play is a coin toss `kicker` started, and the last is `last`. */
+  function mockFetchWithToss(
+    events: Array<EspnEvent>,
+    kicker: string,
+    last: object = { type: { id: "65" }, wallclock: HALF_ENDED },
+  ) {
     const fetchMock = mockFetch(events);
     const answer = fetchMock.getMockImplementation()!;
     fetchMock.mockImplementation(async (url: string) =>
@@ -883,7 +887,7 @@ describe("getLeagueResults, at halftime", () => {
             ok: true,
             json: async () =>
               url.includes("page=")
-                ? { items: [{ type: { id: "65" }, wallclock: HALF_ENDED }] }
+                ? { items: [last] }
                 : {
                     pageCount: 87,
                     items: [
@@ -935,27 +939,29 @@ describe("getLeagueResults, at halftime", () => {
     expect(game.halftimeEndsAt).toEqual(new Date("2026-10-04T18:34:59Z"));
   });
 
+  /** A kickoff ESPN's scoreboard shows as the half's clock runs out. */
+  const kickoffAtTheHalf = (id: string) =>
+    espnEvent({
+      home: "BUF",
+      away: "KC",
+      id,
+      status: GameStatus.LIVE,
+      clock: HALF,
+      situation: {
+        downDistanceText: "1st & 10 at BUF 20",
+        lastPlay: {
+          type: { text: "Kickoff" },
+          start: { team: { id: "KC" } },
+          end: { team: { id: "BUF" } },
+        },
+      },
+    });
+
   it("starts the second half at its kickoff, though ESPN still holds the half's clock", async () => {
-    const fetchMock = mockFetchWithToss(
-      [
-        espnEvent({
-          home: "BUF",
-          away: "KC",
-          id: "h4",
-          status: GameStatus.LIVE,
-          clock: HALF,
-          situation: {
-            downDistanceText: "1st & 10 at BUF 20",
-            lastPlay: {
-              type: { text: "Kickoff" },
-              start: { team: { id: "KC" } },
-              end: { team: { id: "BUF" } },
-            },
-          },
-        }),
-      ],
-      "KC",
-    );
+    mockFetchWithToss([kickoffAtTheHalf("h4")], "KC", {
+      type: { id: "53" },
+      period: { number: 3 },
+    });
     const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
     expect([game.period, game.clock]).toEqual([3, undefined]);
     expect(game.possession).toEqual({
@@ -963,9 +969,16 @@ describe("getLeagueResults, at halftime", () => {
       downDistanceText: "1st & 10 @ BUF 20",
     });
     expect(game.halftimeEndsAt).toBeUndefined();
-    expect(
-      fetchMock.mock.calls.filter(([url]) => url.includes(PLAYS_HOST)),
-    ).toEqual([]);
+  });
+
+  it("keeps halftime after a kickoff that ran out the half", async () => {
+    mockFetchWithToss([kickoffAtTheHalf("h5")], "KC", {
+      type: { id: "53" },
+      period: { number: 2 },
+    });
+    const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+    expect([game.period, game.clock]).toEqual([2, "0:00"]);
+    expect(game.possession).toEqual({ between: "KC to receive" });
   });
 
   it("asks nothing about the opening kickoff before the half", async () => {

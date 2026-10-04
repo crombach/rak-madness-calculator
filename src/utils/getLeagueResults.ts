@@ -165,7 +165,11 @@ async function gameFinish(
   return known;
 }
 
-type CorePlay = { type?: { id?: string }; wallclock?: string };
+type CorePlay = {
+  type?: { id?: string };
+  wallclock?: string;
+  period?: { number?: number };
+};
 
 /**
  * An event's last play so far. Two requests, since the first only counts the plays.
@@ -338,17 +342,6 @@ function isHalfOver({
 
 /** What every kickoff's play type starts with, like `Kickoff Return (Offense)`. */
 const KICKOFF = "Kickoff";
-
-/**
- * A kickoff after the half or regulation ends starts the next period. Its clock is
- * not known yet, so it is left out.
- */
-function afterKickoff(status: EspnStatus, play?: EspnPlay): EspnStatus {
-  const { period } = status;
-  if (period == null || !isHalfOver(status)) return status;
-  if (!play?.type?.text?.startsWith(KICKOFF)) return status;
-  return { ...status, period: period + 1, displayClock: undefined };
-}
 
 /**
  * Whether the clock has run well past the last play, which ESPN's scoreboard can
@@ -567,11 +560,7 @@ export function toLeagueResult(event: EspnEvent): LeagueResult | null {
   // margin just because there is no winner yet.
   const scoreMargin = Math.abs(homeScore - awayScore);
 
-  const periodStatus = afterKickoff(
-    event.status,
-    competition.situation?.lastPlay,
-  );
-  const possession = readPossession(competition.situation, periodStatus, [
+  const possession = readPossession(competition.situation, event.status, [
     home,
     away,
   ]);
@@ -583,8 +572,8 @@ export function toLeagueResult(event: EspnEvent): LeagueResult | null {
     date: new Date(event.date),
     status,
     detailMessage: event.status.type.shortDetail,
-    period: periodStatus.period,
-    clock: periodStatus.displayClock,
+    period: event.status.period,
+    clock: event.status.displayClock,
     home: homeSide,
     away: awaySide,
     isNeutralSite: competition.neutralSite ?? false,
@@ -685,6 +674,23 @@ export async function getLeagueResults(
   await Promise.all(
     [...found].map(async ([key, result]) => {
       const event = events.find(({ id }) => id === result?.id);
+      const status = event?.status;
+      const kickoff = event?.competitions[0].situation?.lastPlay?.type?.text;
+      if (
+        result != null &&
+        event != null &&
+        status?.period != null &&
+        isHalfOver(status) &&
+        kickoff?.startsWith(KICKOFF)
+      ) {
+        // The kickoff may be the one that ran the clock out, or the next period's,
+        // which ESPN can show before it moves the clock on. The plays feed says which.
+        const period = (await lastPlay(league, result.id))?.period?.number;
+        if (period != null && period > status.period) {
+          const next = { ...status, period, displayClock: undefined };
+          Object.assign(result, toLeagueResult({ ...event, status: next }));
+        }
+      }
       if (
         result != null &&
         event != null &&
