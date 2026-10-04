@@ -24,7 +24,7 @@
 - `matching`: case-folded substring search, for both dialogs' lists
 - `readFileToBuffer`: an upload's bytes
 - `lazyPreloadable`: a lazy route that can be fetched ahead, and skips its fallback once in
-- `reloadForNewBuild`: reloads a tab whose chunk a deploy removed, once
+- `reloadForNewBuild`: reloads a tab whose chunk a deploy removed, at most every 10s
 - `warmImage`: an image into the browser's cache, once, where prefetch does not reach
 
 ## Subdirectories
