@@ -235,6 +235,17 @@ const PLAY_BY_PLAY_ABBREVIATIONS: Record<string, string> = {
 };
 
 /**
+ * Whether a half or regulation has just run out. The kickoff after the break goes to
+ * whoever the coin toss favors, not to the last play's side, and ESPN can still show
+ * this clock after the second half has started.
+ */
+function isHalfOver({ period, displayClock }: EspnStatus) {
+  const ends =
+    period === REGULATION_PERIODS / 2 || period === REGULATION_PERIODS;
+  return ends && displayClock === "0:00";
+}
+
+/**
  * Whether the clock has run well past the last play, which ESPN's scoreboard can
  * lag behind by minutes. Both count down the seconds left in regulation.
  */
@@ -271,7 +282,12 @@ function readPossession(
   };
   const play = situation?.lastPlay;
   const type = play?.type?.text;
-  if (play == null || type == null || isStale(play, status)) {
+  if (
+    play == null ||
+    type == null ||
+    isStale(play, status) ||
+    isHalfOver(status)
+  ) {
     return possession;
   }
   // After a score short of a touchdown, the side that started the play kicks off.

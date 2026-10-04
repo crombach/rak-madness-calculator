@@ -485,6 +485,26 @@ describe("getLeagueResults, mapping", () => {
       expect(possession).toEqual({});
     });
 
+    it.each([
+      ["the half", 2],
+      ["regulation", 4],
+    ])(
+      "reads nothing off the last play once %s runs out",
+      async (_, period) => {
+        const possession = await readLive(
+          {
+            type: { text: "Field Goal Good" },
+            scoreValue: 3,
+            start: { team: { id: "KC" } },
+            end: { team: { id: "KC" } },
+          },
+          { downDistanceText: "2nd & 10 at KC 25" },
+          { period, displayClock: "0:00" },
+        );
+        expect(possession).toEqual({ downDistanceText: "2nd & 10 at KC 25" });
+      },
+    );
+
     it("drops a last play the clock has run well past", async () => {
       const possession = await readLive(
         {
