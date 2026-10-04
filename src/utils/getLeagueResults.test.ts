@@ -396,7 +396,7 @@ describe("getLeagueResults, mapping", () => {
       });
       expect(possession).toEqual({
         homeAway: HomeAway.AWAY,
-        lastPlay: "Passing Touchdown",
+        lastPlay: "Passing TD",
       });
     });
 
