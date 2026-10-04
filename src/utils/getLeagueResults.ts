@@ -291,12 +291,13 @@ function readPossession(
     return possession;
   }
   // After a score short of a touchdown, the side that started the play kicks off.
-  // That is the kicker after a field goal and the offense after a safety.
+  // That is the kicker after a field goal and the offense after a safety. The score
+  // ended the drive, so whatever down ESPN still holds is over.
   const points = play.scoreValue ?? 0;
   if (points > 0 && points < TOUCHDOWN_POINTS) {
     const kicker = byId(play.start?.team?.id);
     const between = kicker && `${teamAbbreviation(kicker)} to kick off`;
-    return { ...possession, between };
+    return { homeAway: possession.homeAway, between };
   }
   if (BREAK_PLAYS.has(type)) {
     const [, pro, college] = TIMEOUT_CALLER.exec(play.text ?? "") ?? [];

@@ -410,6 +410,21 @@ describe("getLeagueResults, mapping", () => {
       expect(possession).toEqual({ between: "KC to kick off" });
     });
 
+    it("drops the down a field goal ended", async () => {
+      const possession = await readLive(
+        {
+          type: { text: "Field Goal Good" },
+          scoreValue: 3,
+          start: { team: { id: "KC" } },
+        },
+        { downDistanceText: "4th & 5 at BUF 20", possession: "KC" },
+      );
+      expect(possession).toEqual({
+        homeAway: HomeAway.AWAY,
+        between: "KC to kick off",
+      });
+    });
+
     it("has the side that gave up a safety kick off, whatever ESPN typed it", async () => {
       const possession = await readLive({
         type: { text: "Pass Incompletion" },
