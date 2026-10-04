@@ -13,9 +13,10 @@ export type Possession = {
   homeAway?: HomeAway;
   downDistanceText?: string;
   /**
-   * What is happening between plays, like `KC timeout` or `BUF to kick off`. Absent
-   * where ESPN does not say, at the half and the end of regulation, and where the
-   * clock has run on past its last play.
+   * What is happening between plays, like `KC timeout`, `BUF to kick off` or
+   * `Official timeout`. Shown over any down it interrupts. Absent where ESPN does not
+   * say, at the half and the end of regulation, and where the clock has run on past
+   * its last play.
    */
   between?: string;
 };

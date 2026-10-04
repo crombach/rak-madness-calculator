@@ -491,13 +491,34 @@ describe("getLeagueResults, mapping", () => {
       expect(result.possession.between).toBe("KC timeout");
     });
 
-    it("names no caller for a timeout the officials called", async () => {
-      const possession = await readLive({
-        type: { text: "Official Timeout" },
-        text: "Official Timeout at 11:42.",
-        team: { id: "KC" },
+    it("says the officials stopped play, with the down they stopped", async () => {
+      const possession = await readLive(
+        {
+          type: { text: "Official Timeout" },
+          text: "Official Timeout at 11:42.",
+          team: { id: "KC" },
+        },
+        { down: 2, downDistanceText: "2nd & 4 at BUF 22", possession: "KC" },
+      );
+      expect(possession).toEqual({
+        homeAway: HomeAway.AWAY,
+        downDistanceText: "2nd & 4 at BUF 22",
+        between: "Official timeout",
       });
-      expect(possession).toEqual({});
+    });
+
+    it("names the kicker for a timeout the officials called after a score", async () => {
+      const possession = await readLive(
+        {
+          type: { text: "Official Timeout" },
+          text: "Official Timeout at 07:01.",
+          team: { id: "KC" },
+        },
+        { down: -1 },
+      );
+      expect(possession).toEqual({
+        between: "Official timeout • KC to kick off",
+      });
     });
 
     it.each([

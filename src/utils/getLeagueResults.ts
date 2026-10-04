@@ -12,6 +12,7 @@ import {
 import { League, SeasonType, WeekInfo } from "../types/League";
 import { GameSide, LeagueResult, Possession } from "../types/LeagueResult";
 import debugLog from "./debugLog";
+import SEPARATOR from "./separator";
 import {
   CachedGame,
   isSettled,
@@ -206,11 +207,15 @@ const QUARTER_SECONDS = 15 * 60;
 /** Seconds the clock may run past a play before the play counts as stale. */
 const STALE_PLAY_SECONDS = 60;
 const TOUCHDOWN_POINTS = 6;
+/** ESPN's down between a score and the kickoff after it. */
+const AFTER_SCORE_DOWN = -1;
+const OFFICIAL_TIMEOUT = "Official Timeout";
+const OFFICIAL_TIMEOUT_LINE = "Official timeout";
 
 /** Plays that say nothing about who has the ball. */
 const BREAK_PLAYS = new Set([
   "Timeout",
-  "Official Timeout",
+  OFFICIAL_TIMEOUT,
   "Two-minute warning",
   "End Period",
   "End of Half",
@@ -280,6 +285,8 @@ function readPossession(
     downDistanceText: situation?.downDistanceText,
     homeAway: byId(situation?.possession)?.homeAway,
   };
+  const kickOff = (side: EspnCompetitor) =>
+    `${teamAbbreviation(side)} to kick off`;
   const play = situation?.lastPlay;
   const type = play?.type?.text;
   if (
@@ -296,8 +303,18 @@ function readPossession(
   const points = play.scoreValue ?? 0;
   if (points > 0 && points < TOUCHDOWN_POINTS) {
     const kicker = byId(play.start?.team?.id);
-    const between = kicker && `${teamAbbreviation(kicker)} to kick off`;
+    const between = kicker && kickOff(kicker);
     return { homeAway: possession.homeAway, between };
+  }
+  // The officials stop play mid-drive, or after a score until the kickoff. After a
+  // score, ESPN credits the stop to the side that kicks off.
+  if (type === OFFICIAL_TIMEOUT) {
+    const kicker =
+      situation?.down === AFTER_SCORE_DOWN ? byId(play.team?.id) : undefined;
+    const between = kicker
+      ? [OFFICIAL_TIMEOUT_LINE, kickOff(kicker)].join(SEPARATOR)
+      : OFFICIAL_TIMEOUT_LINE;
+    return { ...possession, between };
   }
   if (BREAK_PLAYS.has(type)) {
     const [, pro, college] = TIMEOUT_CALLER.exec(play.text ?? "") ?? [];
