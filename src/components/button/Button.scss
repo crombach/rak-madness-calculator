@@ -142,9 +142,13 @@
     //
     // Only under the pointer or keyboard focus, which is where a release
     // happens. A key coming out of `:disabled` on its own rises with every
-    // other key, not a pause behind them. `:where` keeps both out of the
-    // specificity, so the rules below still clear the pause.
-    &.--selectable:where(:hover, :focus-visible) {
+    // other key, not a pause behind them. Nor a key pressed while chosen. That
+    // press turns it off, so the pause only makes it slow to rise. `:where`
+    // keeps all three out of the specificity, so the rules below still clear
+    // the pause.
+    &.--selectable:where(:hover, :focus-visible):where(
+        :not([data-was-selected])
+      ) {
       transition-delay:
         var(--rak-duration-fast), 0s, var(--rak-duration-fast),
         var(--rak-duration-fast);

@@ -62,9 +62,18 @@ function markReleased(event: PointerEvent<HTMLButtonElement>) {
   }
 }
 
-/** Any new press, a key's included, can show again. */
-function clearReleased(event: SyntheticEvent<HTMLButtonElement>) {
-  delete event.currentTarget.dataset.released;
+/**
+ * Any new press, a key's included, can show again. A key pressed while chosen is
+ * being turned off, so `Button.scss` lets it rise without the pause that holds a
+ * key about to be chosen.
+ */
+function startPress(event: SyntheticEvent<HTMLButtonElement>) {
+  const key = event.currentTarget;
+  delete key.dataset.released;
+  key.toggleAttribute(
+    "data-was-selected",
+    key.getAttribute("aria-pressed") === "true",
+  );
 }
 
 export default function Button({
@@ -141,8 +150,8 @@ export default function Button({
       className={classes}
       disabled={disabled}
       onClick={ariaDisabled ? doNothing : onClick}
-      onPointerDown={clearReleased}
-      onKeyDown={clearReleased}
+      onPointerDown={startPress}
+      onKeyDown={startPress}
       onPointerUp={markReleased}
       onPointerCancel={markReleased}
     >
