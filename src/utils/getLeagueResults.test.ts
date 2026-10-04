@@ -394,7 +394,10 @@ describe("getLeagueResults, mapping", () => {
         team: { id: "KC" },
         end: { team: { id: "KC" } },
       });
-      expect(possession.homeAway).toBe(HomeAway.AWAY);
+      expect(possession).toEqual({
+        homeAway: HomeAway.AWAY,
+        lastPlay: "Passing Touchdown",
+      });
     });
 
     it("has the side that kicked a field goal kick off next", async () => {

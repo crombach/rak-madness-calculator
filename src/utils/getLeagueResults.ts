@@ -7,6 +7,7 @@ import {
   EspnVenue,
   GameStatus,
   HomeAway,
+  REGULATION_PERIODS,
 } from "../types/ESPN";
 import { League, SeasonType, WeekInfo } from "../types/League";
 import { GameSide, LeagueResult, Possession } from "../types/LeagueResult";
@@ -202,8 +203,7 @@ function teamAbbreviation(competitor: EspnCompetitor): string {
 }
 
 const QUARTER_SECONDS = 15 * 60;
-const REGULATION_PERIODS = 4;
-/** The clock ran at most 55 seconds between two plays in 264 finished games. */
+/** Seconds the clock may run past a play before the play counts as stale. */
 const STALE_PLAY_SECONDS = 60;
 const TOUCHDOWN_POINTS = 6;
 
@@ -255,8 +255,9 @@ function isStale(play: EspnPlay, { period, displayClock }: EspnStatus) {
 }
 
 /**
- * Who has the ball: ESPN's say where it gives one, else whoever held it when the
- * last play ended. Also what that play was, like `KC timeout` or `BUF to kick off`.
+ * Who has the ball. ESPN's `possession` wins where it gives one, else the side that
+ * held the ball when the last play ended. Also what that play was, like `KC timeout`
+ * or `BUF to kick off`.
  */
 function readPossession(
   situation: EspnSituation | undefined,
@@ -273,8 +274,8 @@ function readPossession(
   if (play == null || type == null || isStale(play, status)) {
     return possession;
   }
-  // A score short of a touchdown is followed by a kickoff from the side that
-  // started the play: the kicker after a field goal, the offense after a safety.
+  // After a score short of a touchdown, the side that started the play kicks off.
+  // That is the kicker after a field goal and the offense after a safety.
   const points = play.scoreValue ?? 0;
   if (points > 0 && points < TOUCHDOWN_POINTS) {
     const kicker = byId(play.start?.team?.id);

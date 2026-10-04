@@ -35,6 +35,9 @@ export const ESPN_STATE: Record<GameStatus, EspnState> = {
   [GameStatus.DELAYED]: "in",
 };
 
+/** Regulation is four quarters, and any period past them is overtime. */
+export const REGULATION_PERIODS = 4;
+
 export type EspnStatus = {
   /** Which quarter the game is in, counting on past four into overtime. */
   period?: number;
@@ -97,11 +100,11 @@ export type EspnSituation = {
   lastPlay?: EspnPlay;
 };
 
-/** The play's team is whoever ran it: the offense, or the side kicking. */
 export type EspnPlay = {
   type?: { text?: string };
   text?: string;
   scoreValue?: number;
+  /** The side that ran the play, the offense or the kicking side. */
   team?: EspnTeamRef;
   start?: { team?: EspnTeamRef };
   /** Who has the ball once the play is over. */
