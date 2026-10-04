@@ -13,10 +13,10 @@ export type Possession = {
   homeAway?: HomeAway;
   downDistanceText?: string;
   /**
-   * What ESPN last saw happen, like `KC timeout` or `BUF to kick off`. Absent where
-   * it sent none, or where the clock has run on past it.
+   * What is happening between plays, like `KC timeout` or `BUF to kick off`. Absent
+   * where ESPN does not say, or where the clock has run on past its last play.
    */
-  lastPlay?: string;
+  between?: string;
 };
 
 /**

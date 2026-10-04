@@ -207,18 +207,6 @@ const QUARTER_SECONDS = 15 * 60;
 const STALE_PLAY_SECONDS = 60;
 const TOUCHDOWN_POINTS = 6;
 
-/**
- * Short forms of the words in ESPN's longest play names. Spelled out, a name like
- * `Interception Return Touchdown` widens the line under the scores past a phone.
- */
-const SHORT_WORDS: Array<[string, string]> = [
-  ["Touchdown", "TD"],
-  ["Field Goal", "FG"],
-  ["Interception", "INT"],
-  ["Recovery", "Rec"],
-  ["Opponent", "Opp"],
-];
-
 /** Plays that say nothing about who has the ball. */
 const BREAK_PLAYS = new Set([
   "Timeout",
@@ -268,8 +256,8 @@ function isStale(play: EspnPlay, { period, displayClock }: EspnStatus) {
 
 /**
  * Who has the ball. ESPN's `possession` wins where it gives one, else the side that
- * held the ball when the last play ended. Also what that play was, like `KC timeout`
- * or `BUF to kick off`.
+ * held the ball when the last play ended. Also what is happening between plays,
+ * like `KC timeout` or `BUF to kick off`.
  */
 function readPossession(
   situation: EspnSituation | undefined,
@@ -286,17 +274,13 @@ function readPossession(
   if (play == null || type == null || isStale(play, status)) {
     return possession;
   }
-  const label = SHORT_WORDS.reduce(
-    (text, [long, short]) => text.replaceAll(long, short),
-    type,
-  );
   // After a score short of a touchdown, the side that started the play kicks off.
   // That is the kicker after a field goal and the offense after a safety.
   const points = play.scoreValue ?? 0;
   if (points > 0 && points < TOUCHDOWN_POINTS) {
     const kicker = byId(play.start?.team?.id);
-    const lastPlay = kicker ? `${teamAbbreviation(kicker)} to kick off` : label;
-    return { ...possession, lastPlay };
+    const between = kicker && `${teamAbbreviation(kicker)} to kick off`;
+    return { ...possession, between };
   }
   if (BREAK_PLAYS.has(type)) {
     const [, pro, college] = TIMEOUT_CALLER.exec(play.text ?? "") ?? [];
@@ -306,14 +290,13 @@ function readPossession(
         name != null &&
         (side.team.location === name || teamAbbreviation(side) === name),
     );
-    const lastPlay = caller ? `${teamAbbreviation(caller)} timeout` : label;
-    return { ...possession, lastPlay };
+    const between = caller && `${teamAbbreviation(caller)} timeout`;
+    return { ...possession, between };
   }
   const holder = byId((play.end?.team ?? play.team)?.id);
   return {
     ...possession,
     homeAway: possession.homeAway ?? holder?.homeAway,
-    lastPlay: label,
   };
 }
 

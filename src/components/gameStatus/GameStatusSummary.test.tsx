@@ -550,8 +550,8 @@ describe("GameStatusSummary, a game still being played", () => {
     expect(screen.getByText("Between plays")).toBeInTheDocument();
   });
 
-  it("says the last play where there is no down", () => {
-    const between = { ...live, possession: { lastPlay: "KC to kick off" } };
+  it("says what is happening between plays where there is no down", () => {
+    const between = { ...live, possession: { between: "KC to kick off" } };
     render(<GameStatusSummary game={game(between)} result={between} />);
     expect(screen.getByText("KC to kick off")).toBeInTheDocument();
   });

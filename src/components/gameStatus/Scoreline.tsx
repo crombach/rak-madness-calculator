@@ -48,8 +48,8 @@ function useMinuteClock(ticking: boolean): Date {
 const HAS_BALL_LABEL = "Has the ball";
 
 /**
- * Said in place of the down and distance while a game being played has none, and ESPN
- * names no last play, or one the clock has run on past.
+ * Said in place of the down and distance while a game being played has none, and
+ * nothing else is known to be happening, like a kickoff or a timeout.
  *
  * A line either way, rather than one that comes and goes. The game is asked about again
  * every `POLL_MS`, and an answer with no down in it would otherwise take the line away
@@ -119,7 +119,7 @@ function Note({
   }
   return (
     <p className="game-status__down">
-      {down ?? result.possession.lastPlay ?? NO_DOWN}
+      {down ?? result.possession.between ?? NO_DOWN}
     </p>
   );
 }

@@ -383,7 +383,6 @@ describe("getLeagueResults, mapping", () => {
       expect(possession).toEqual({
         homeAway: HomeAway.HOME,
         downDistanceText: "1st & 10 at BUF 25",
-        lastPlay: "Kickoff",
       });
     });
 
@@ -394,10 +393,7 @@ describe("getLeagueResults, mapping", () => {
         team: { id: "KC" },
         end: { team: { id: "KC" } },
       });
-      expect(possession).toEqual({
-        homeAway: HomeAway.AWAY,
-        lastPlay: "Passing TD",
-      });
+      expect(possession).toEqual({ homeAway: HomeAway.AWAY });
     });
 
     it("has the side that kicked a field goal kick off next", async () => {
@@ -408,7 +404,7 @@ describe("getLeagueResults, mapping", () => {
         start: { team: { id: "KC" } },
         end: { team: { id: "KC" } },
       });
-      expect(possession).toEqual({ lastPlay: "KC to kick off" });
+      expect(possession).toEqual({ between: "KC to kick off" });
     });
 
     it("has the side that gave up a safety kick off, whatever ESPN typed it", async () => {
@@ -419,7 +415,7 @@ describe("getLeagueResults, mapping", () => {
         start: { team: { id: "BUF" } },
         end: { team: { id: "KC" } },
       });
-      expect(possession.lastPlay).toBe("BUF to kick off");
+      expect(possession.between).toBe("BUF to kick off");
     });
 
     it("reads a timeout's caller from the text, not the play's team", async () => {
@@ -429,7 +425,7 @@ describe("getLeagueResults, mapping", () => {
         team: { id: "KC" },
         end: { team: { id: "KC" } },
       });
-      expect(possession).toEqual({ lastPlay: "BUF timeout" });
+      expect(possession).toEqual({ between: "BUF timeout" });
     });
 
     it("reads a caller the pro play-by-play spells its own way", async () => {
@@ -449,7 +445,7 @@ describe("getLeagueResults, mapping", () => {
       const [result] = await getLeagueResults(League.PRO, WEEK, [
         new Set(["BAL", "KC"]),
       ]);
-      expect(result.possession.lastPlay).toBe("BAL timeout");
+      expect(result.possession.between).toBe("BAL timeout");
     });
 
     it("reads a college caller by the team's location", async () => {
@@ -474,7 +470,7 @@ describe("getLeagueResults, mapping", () => {
         }),
       ]);
       const [result] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
-      expect(result.possession.lastPlay).toBe("KC timeout");
+      expect(result.possession.between).toBe("KC timeout");
     });
 
     it("names no caller for a timeout the officials called", async () => {
@@ -483,7 +479,7 @@ describe("getLeagueResults, mapping", () => {
         text: "Official Timeout at 11:42.",
         team: { id: "KC" },
       });
-      expect(possession).toEqual({ lastPlay: "Official Timeout" });
+      expect(possession).toEqual({});
     });
 
     it("drops a last play the clock has run well past", async () => {
