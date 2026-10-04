@@ -414,9 +414,28 @@ describe("getLeagueResults, mapping", () => {
       expect(possession).toEqual({ between: "KC to kick off" });
     });
 
-    it("says the kickoff is next after the coin toss", async () => {
+    it("says the game is over before ESPN marks it final", async () => {
+      const possession = await readLive(
+        { type: { text: "End of Game" }, text: "END GAME" },
+        { downDistanceText: "1st & 10 at BUF 25", possession: "KC" },
+        { period: 4, displayClock: "0:00" },
+      );
+      expect(possession).toEqual({ between: "End of Game" });
+    });
+
+    it("names the kicker once the coin toss is done", async () => {
+      const possession = await readLive({
+        type: { text: "Coin Toss" },
+        text: "GAME",
+        start: { team: { id: "KC" } },
+        end: { team: { id: "BUF" } },
+      });
+      expect(possession).toEqual({ between: "KC to kick off" });
+    });
+
+    it("says the coin toss where ESPN names no kicker", async () => {
       const possession = await readLive({ type: { text: "Coin Toss" } });
-      expect(possession).toEqual({ between: "Kickoff" });
+      expect(possession).toEqual({ between: "Coin Toss" });
     });
 
     it("has the side that kicked a field goal kick off next", async () => {
@@ -545,7 +564,7 @@ describe("getLeagueResults, mapping", () => {
       ["the half", 2],
       ["regulation", 4],
     ])(
-      "reads nothing off the last play once %s runs out",
+      "says no side has the ball, and no down, once %s runs out",
       async (_, period) => {
         const possession = await readLive(
           {
@@ -554,10 +573,10 @@ describe("getLeagueResults, mapping", () => {
             start: { team: { id: "KC" } },
             end: { team: { id: "KC" } },
           },
-          { downDistanceText: "2nd & 10 at KC 25" },
+          { downDistanceText: "1st & 10 at JAX 45", possession: "KC" },
           { period, displayClock: "0:00" },
         );
-        expect(possession).toEqual({ downDistanceText: "2nd & 10 @ KC 25" });
+        expect(possession).toEqual({});
       },
     );
 
@@ -847,6 +866,93 @@ describe("getLeagueResults, a scoreboard request ESPN could not answer", () => {
     await expect(
       getLeagueResults(League.COLLEGE, WEEK, [new Set(["OSU", "MICH"])]),
     ).rejects.toThrow("500");
+  });
+});
+
+describe("getLeagueResults, at halftime", () => {
+  const HALF = { period: 2, displayClock: "0:00" };
+  const HALF_ENDED = "2026-10-04T18:21:59Z";
+
+  /** `mockFetch`, but the first play is a coin toss `kicker` started. */
+  function mockFetchWithToss(events: Array<EspnEvent>, kicker: string) {
+    const fetchMock = mockFetch(events);
+    const answer = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (url: string) =>
+      url.includes(PLAYS_HOST)
+        ? {
+            ok: true,
+            json: async () =>
+              url.includes("page=")
+                ? { items: [{ type: { id: "65" }, wallclock: HALF_ENDED }] }
+                : {
+                    pageCount: 87,
+                    items: [
+                      {
+                        type: { text: "Coin Toss" },
+                        start: {
+                          team: { $ref: `http://x/teams/${kicker}?lang=en` },
+                        },
+                      },
+                    ],
+                  },
+          }
+        : answer(url),
+    );
+    return fetchMock;
+  }
+
+  it("has the side that kicked off the game receive after the break", async () => {
+    mockFetchWithToss(
+      [
+        espnEvent({
+          home: "BUF",
+          away: "KC",
+          id: "h1",
+          status: GameStatus.LIVE,
+          clock: HALF,
+        }),
+      ],
+      "KC",
+    );
+    const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+    expect(game.possession.between).toBe("KC to receive");
+  });
+
+  it("ends a pro halftime 13 minutes after the half did", async () => {
+    mockFetchWithToss(
+      [
+        espnEvent({
+          home: "BUF",
+          away: "KC",
+          id: "h3",
+          status: GameStatus.LIVE,
+          clock: HALF,
+        }),
+      ],
+      "KC",
+    );
+    const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+    expect(game.halftimeEndsAt).toEqual(new Date("2026-10-04T18:34:59Z"));
+  });
+
+  it("asks nothing about the opening kickoff before the half", async () => {
+    const fetchMock = mockFetchWithToss(
+      [
+        espnEvent({
+          home: "BUF",
+          away: "KC",
+          id: "h2",
+          status: GameStatus.LIVE,
+          clock: { period: 2, displayClock: "4:12" },
+        }),
+      ],
+      "KC",
+    );
+    const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+    expect(game.possession.between).toBeUndefined();
+    expect(
+      fetchMock.mock.calls.filter(([url]) => url.includes(PLAYS_HOST)),
+    ).toEqual([]);
   });
 });
 

@@ -155,20 +155,97 @@ async function gameFinish(
   if (finishes.has(eventId)) {
     return finishes.get(eventId);
   }
+  const last = await lastPlay(league, eventId);
+  if (last === undefined) return undefined;
+  if (last != null && last.type?.id !== PLAY_TYPE_END_OF_GAME) {
+    return undefined;
+  }
+  const known = wallclockOf(last);
+  finishes.set(eventId, known);
+  return known;
+}
+
+type CorePlay = { type?: { id?: string }; wallclock?: string };
+
+/**
+ * An event's last play so far. Two requests, since the first only counts the plays.
+ * Null where ESPN has no plays. Undefined on a failed request.
+ */
+async function lastPlay(
+  league: League,
+  eventId: string,
+): Promise<CorePlay | null | undefined> {
   try {
     const count = await fetch(playPageUrl(league, eventId));
     if (!count.ok) return undefined;
     const { pageCount } = await count.json();
     const page = await fetch(playPageUrl(league, eventId, pageCount));
     if (!page.ok) return undefined;
-    const last = (await page.json()).items?.[0];
-    if (last != null && last.type?.id !== PLAY_TYPE_END_OF_GAME) {
-      return undefined;
-    }
-    const finish = new Date(last?.wallclock);
-    const known = Number.isNaN(finish.getTime()) ? null : finish;
-    finishes.set(eventId, known);
-    return known;
+    return (await page.json()).items?.[0] ?? null;
+  } catch {
+    return undefined;
+  }
+}
+
+function wallclockOf(play: CorePlay | null): Date | null {
+  const at = new Date(play?.wallclock ?? NaN);
+  return Number.isNaN(at.getTime()) ? null : at;
+}
+
+/** When each pro halftime runs out, by event id. */
+const halftimeEnds = new Map<string, Date | null>();
+/** ESPN's play type for the end of the first half. */
+const PLAY_TYPE_END_OF_HALF = "65";
+/** A pro halftime runs this long from the end of the half, as ESPN's Gamecast counts it. */
+const PRO_HALFTIME_MS = 13 * 60 * 1000;
+
+/**
+ * When a pro halftime runs out, off the wall clock of the play that ended the half.
+ * Undefined in college, on a failed request, and while ESPN has not posted the end of
+ * the half. Nothing is remembered then, so it is asked again.
+ */
+async function halftimeEnd(
+  league: League,
+  eventId: string,
+): Promise<Date | null | undefined> {
+  if (league !== League.PRO) return undefined;
+  if (halftimeEnds.has(eventId)) {
+    return halftimeEnds.get(eventId);
+  }
+  const last = await lastPlay(league, eventId);
+  if (last?.type?.id !== PLAY_TYPE_END_OF_HALF) return undefined;
+  const ended = wallclockOf(last);
+  const end = ended && new Date(ended.getTime() + PRO_HALFTIME_MS);
+  halftimeEnds.set(eventId, end);
+  return end;
+}
+
+/** Who kicked off to open each game, by event id. */
+const openingKickers = new Map<string, string | null>();
+/** The team id at the end of a play's team link, like `.../teams/9?lang=en`. */
+const TEAM_REF_ID = /\/teams\/([^/?]+)/;
+
+/**
+ * The id of the side that kicked off to open the game, off the start of its first
+ * play, the coin toss. That side receives the kickoff after the half.
+ *
+ * Null where the first play names no side. Undefined on a failed request. Nothing
+ * is remembered then, so it is asked again.
+ */
+async function openingKicker(
+  league: League,
+  eventId: string,
+): Promise<string | null | undefined> {
+  if (openingKickers.has(eventId)) {
+    return openingKickers.get(eventId);
+  }
+  try {
+    const response = await fetch(playPageUrl(league, eventId));
+    if (!response.ok) return undefined;
+    const first = (await response.json()).items?.[0];
+    const id = TEAM_REF_ID.exec(first?.start?.team?.$ref ?? "")?.[1] ?? null;
+    openingKickers.set(eventId, id);
+    return id;
   } catch {
     return undefined;
   }
@@ -216,7 +293,7 @@ const OFFICIAL_TIMEOUT_LINE = "Official T/O";
 /** A try after a touchdown, like `Extra Point Missed`, `Blocked PAT` or `Two Point Pass`. */
 const TRY_PLAY = /Extra Point|Two.?Point|\bPAT\b/i;
 const COIN_TOSS = "Coin Toss";
-const COIN_TOSS_LINE = "Kickoff";
+const END_OF_GAME = "End of Game";
 
 /** Plays that say nothing about who has the ball. */
 const BREAK_PLAYS = new Set([
@@ -226,8 +303,8 @@ const BREAK_PLAYS = new Set([
   "End Period",
   "End of Half",
   "End of Regulation",
-  "End of Game",
   COIN_TOSS,
+  END_OF_GAME,
 ]);
 
 /**
@@ -298,12 +375,15 @@ function readPossession(
     `${teamAbbreviation(side)} to kick off`;
   const play = situation?.lastPlay;
   const type = play?.type?.text;
-  if (
-    play == null ||
-    type == null ||
-    isStale(play, status) ||
-    isHalfOver(status)
-  ) {
+  // Once the half or the game runs out nobody has the ball, though ESPN can hold
+  // the last side and down for a poll or two.
+  if (type === END_OF_GAME) {
+    return { between: END_OF_GAME };
+  }
+  if (isHalfOver(status)) {
+    return {};
+  }
+  if (play == null || type == null || isStale(play, status)) {
     return possession;
   }
   // After a score short of a touchdown, or any try, the side that started the play
@@ -326,8 +406,10 @@ function readPossession(
     }
     return { ...possession, timeout: OFFICIAL_TIMEOUT_LINE };
   }
+  // ESPN starts the coin toss play with the side that kicks off.
   if (type === COIN_TOSS) {
-    return { ...possession, between: COIN_TOSS_LINE };
+    const kicker = byId(play.start?.team?.id);
+    return { ...possession, between: kicker ? kickOff(kicker) : COIN_TOSS };
   }
   if (BREAK_PLAYS.has(type)) {
     const [, pro, college] = TIMEOUT_CALLER.exec(play.text ?? "") ?? [];
@@ -581,6 +663,28 @@ export async function getLeagueResults(
 
   await Promise.all(
     [...found].map(async ([key, result]) => {
+      const event = events.find(({ id }) => id === result?.id);
+      if (
+        result != null &&
+        event != null &&
+        event.status.period === REGULATION_PERIODS / 2 &&
+        isHalfOver(event.status)
+      ) {
+        const [kicker, end] = await Promise.all([
+          openingKicker(league, result.id),
+          halftimeEnd(league, result.id),
+        ]);
+        result.halftimeEndsAt = end ?? undefined;
+        const receiver = event.competitions[0].competitors.find(
+          ({ id }) => id === kicker,
+        );
+        if (receiver != null) {
+          result.possession = {
+            ...result.possession,
+            between: `${teamAbbreviation(receiver)} to receive`,
+          };
+        }
+      }
       if (result?.status === GameStatus.FINAL) {
         const heldFinish = held[key]?.finishedAt;
         result.finishedAt =

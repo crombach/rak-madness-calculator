@@ -572,6 +572,22 @@ describe("GameStatusSummary, a game still being played", () => {
     expect(screen.getByText("4th & 2 @ NE 41")).toBeInTheDocument();
   });
 
+  it("counts down what is left of halftime", () => {
+    vi.useFakeTimers({ now: new Date("2026-10-04T18:29:19Z") });
+    const half = {
+      ...live,
+      period: 2,
+      clock: "0:00",
+      possession: {},
+      halftimeEndsAt: new Date("2026-10-04T18:34:59Z"),
+    };
+    render(<GameStatusSummary game={game(half)} result={half} />);
+    expect(screen.getByText("Halftime 5:40")).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(1000));
+    expect(screen.getByText("Halftime 5:39")).toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
   it("drops the last down at the half, where no side has the ball", () => {
     // ESPN leaves the down that ended the half standing, with the side that ran it
     // cleared. Nobody is facing it, so the line says the break instead.

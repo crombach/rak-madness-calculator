@@ -30,18 +30,25 @@ const SCORE_DASH = "-";
  */
 const DSEG7_ALL_SEGMENTS = "8";
 
+const SECOND_MS = 1000;
+
 /**
- * The time now, moved on every minute while `ticking`, which is as fine as a
- * countdown says it. A poll waiting out a kickoff renders nothing on its own.
+ * The time now, refreshed every `everyMs` while `ticking`. A poll waiting out a
+ * kickoff renders nothing on its own.
  */
-function useMinuteClock(ticking: boolean): Date {
+function useClock(ticking: boolean, everyMs: number): Date {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     if (!ticking) return;
-    const timer = window.setInterval(() => setNow(new Date()), MINUTE_MS);
+    const timer = window.setInterval(() => setNow(new Date()), everyMs);
     return () => window.clearInterval(timer);
-  }, [ticking]);
+  }, [ticking, everyMs]);
   return now;
+}
+
+/** Seconds as `5:40`. */
+function minutesAndSeconds(seconds: number): string {
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
 /** What the mark beside a score is called, for anyone who cannot see it. */
@@ -80,7 +87,26 @@ export function outcomeClasses(outcome?: SideOutcome): Record<string, boolean> {
 
 /** Where the game is up to, over the scores. */
 function Detail({ result }: { result: LeagueResult }) {
-  return <p className="game-status__detail">{detailText(result)}</p>;
+  const text = detailText(result);
+  return (
+    <p className="game-status__detail">
+      {result.halftimeEndsAt != null ? (
+        <HalftimeLeft text={text} endsAt={result.halftimeEndsAt} />
+      ) : (
+        text
+      )}
+    </p>
+  );
+}
+
+/**
+ * Halftime and what is left of it, ticking. Its own component, so its clock starts
+ * when the countdown does rather than when the game was first drawn.
+ */
+function HalftimeLeft({ text, endsAt }: { text: string; endsAt: Date }) {
+  const now = useClock(true, SECOND_MS);
+  const left = Math.ceil((endsAt.getTime() - now.getTime()) / SECOND_MS);
+  return left > 0 ? `${text} ${minutesAndSeconds(left)}` : text;
 }
 
 /**
@@ -98,7 +124,7 @@ function Note({
   spread?: GameSpread;
 }) {
   const isPregame = result.status === GameStatus.UPCOMING;
-  const now = useMinuteClock(isPregame);
+  const now = useClock(isPregame, MINUTE_MS);
   if (isPregame) {
     const countdown = countdownText(result.date, now);
     return countdown == null ? null : (
