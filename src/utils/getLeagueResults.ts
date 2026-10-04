@@ -12,7 +12,6 @@ import {
 import { League, SeasonType, WeekInfo } from "../types/League";
 import { GameSide, LeagueResult, Possession } from "../types/LeagueResult";
 import debugLog from "./debugLog";
-import SEPARATOR from "./separator";
 import {
   CachedGame,
   isSettled,
@@ -307,13 +306,16 @@ function readPossession(
     return { homeAway: possession.homeAway, between };
   }
   // The officials stop play mid-drive, or after a score until the kickoff. After a
-  // score, ESPN credits the stop to the side that kicks off.
+  // score, ESPN credits the stop to the side that kicks off. The stop itself is
+  // said only where neither a kicker nor a down is known.
   if (type === OFFICIAL_TIMEOUT) {
     const kicker =
       situation?.down === AFTER_SCORE_DOWN ? byId(play.team?.id) : undefined;
-    const between = kicker
-      ? [OFFICIAL_TIMEOUT_LINE, kickOff(kicker)].join(SEPARATOR)
-      : OFFICIAL_TIMEOUT_LINE;
+    if (kicker) {
+      return { homeAway: possession.homeAway, between: kickOff(kicker) };
+    }
+    const between =
+      possession.downDistanceText == null ? OFFICIAL_TIMEOUT_LINE : undefined;
     return { ...possession, between };
   }
   if (BREAK_PLAYS.has(type)) {

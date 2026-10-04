@@ -491,7 +491,7 @@ describe("getLeagueResults, mapping", () => {
       expect(result.possession.between).toBe("KC timeout");
     });
 
-    it("says the officials stopped play, with the down they stopped", async () => {
+    it("keeps the down the officials stopped", async () => {
       const possession = await readLive(
         {
           type: { text: "Official Timeout" },
@@ -503,8 +503,16 @@ describe("getLeagueResults, mapping", () => {
       expect(possession).toEqual({
         homeAway: HomeAway.AWAY,
         downDistanceText: "2nd & 4 at BUF 22",
-        between: "Official timeout",
       });
+    });
+
+    it("says the officials stopped play where nothing else is known", async () => {
+      const possession = await readLive({
+        type: { text: "Official Timeout" },
+        text: "Official Timeout at 11:42.",
+        team: { id: "KC" },
+      });
+      expect(possession).toEqual({ between: "Official timeout" });
     });
 
     it("names the kicker for a timeout the officials called after a score", async () => {
@@ -517,7 +525,7 @@ describe("getLeagueResults, mapping", () => {
         { down: -1 },
       );
       expect(possession).toEqual({
-        between: "Official timeout • KC to kick off",
+        between: "KC to kick off",
       });
     });
 
