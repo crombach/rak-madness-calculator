@@ -215,9 +215,10 @@ const OFFICIAL_TIMEOUT = "Official Timeout";
 const OFFICIAL_TIMEOUT_LINE = "Official T/O";
 /** A try after a touchdown, like `Extra Point Missed`, `Blocked PAT` or `Two Point Pass`. */
 const TRY_PLAY = /Extra Point|Two.?Point|\bPAT\b/i;
-/** Break plays that say what comes next, and the line each one shows. */
+const COIN_TOSS = "Coin Toss";
+/** Break plays that say where the game is, and the line each one shows. */
 const BREAK_LINES: Record<string, string> = {
-  "Coin Toss": "Kickoff",
+  [COIN_TOSS]: COIN_TOSS,
   "End of Game": "End of Game",
 };
 
@@ -327,6 +328,12 @@ function readPossession(
       return { homeAway: possession.homeAway, between: kickOff(kicker) };
     }
     return { ...possession, timeout: OFFICIAL_TIMEOUT_LINE };
+  }
+  // ESPN starts the coin toss play with the side that kicks off.
+  const tossKicker =
+    type === COIN_TOSS ? byId(play.start?.team?.id) : undefined;
+  if (tossKicker) {
+    return { ...possession, between: kickOff(tossKicker) };
   }
   if (Object.hasOwn(BREAK_LINES, type)) {
     return { ...possession, between: BREAK_LINES[type] };

@@ -422,9 +422,19 @@ describe("getLeagueResults, mapping", () => {
       expect(possession).toEqual({ between: "End of Game" });
     });
 
-    it("says the kickoff is next after the coin toss", async () => {
+    it("names the kicker once the coin toss is done", async () => {
+      const possession = await readLive({
+        type: { text: "Coin Toss" },
+        text: "GAME",
+        start: { team: { id: "KC" } },
+        end: { team: { id: "BUF" } },
+      });
+      expect(possession).toEqual({ between: "KC to kick off" });
+    });
+
+    it("says the coin toss where ESPN names no kicker", async () => {
       const possession = await readLive({ type: { text: "Coin Toss" } });
-      expect(possession).toEqual({ between: "Kickoff" });
+      expect(possession).toEqual({ between: "Coin Toss" });
     });
 
     it("has the side that kicked a field goal kick off next", async () => {
