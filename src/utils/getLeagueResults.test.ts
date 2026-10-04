@@ -355,6 +355,7 @@ describe("getLeagueResults, mapping", () => {
       lastPlay: EspnPlay,
       situation: Omit<EspnSituation, "lastPlay"> = {},
       clock?: Pick<EspnStatus, "period" | "displayClock">,
+      scores?: { homeScore: number; awayScore: number },
     ) => {
       mockFetch([
         espnEvent({
@@ -363,6 +364,7 @@ describe("getLeagueResults, mapping", () => {
           status: GameStatus.LIVE,
           situation: { ...situation, lastPlay },
           clock,
+          ...scores,
         }),
       ]);
       const [result] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
@@ -560,25 +562,67 @@ describe("getLeagueResults, mapping", () => {
       });
     });
 
+    /** A last play ESPN still holds a side and a down for, at `period`'s 0:00. */
+    const readAtZero = (period: number, homeScore = 30, awayScore = 20) =>
+      readLive(
+        {
+          type: { text: "Field Goal Good" },
+          scoreValue: 3,
+          start: { team: { id: "KC" } },
+          end: { team: { id: "KC" } },
+        },
+        { downDistanceText: "1st & 10 at JAX 45", possession: "KC" },
+        { period, displayClock: "0:00" },
+        { homeScore, awayScore },
+      );
+
+    it("says no side has the ball, and no down, once the half runs out", async () => {
+      expect(await readAtZero(2)).toEqual({});
+    });
+
+    it("says the game is over once regulation runs out with a side ahead", async () => {
+      expect(await readAtZero(4)).toEqual({ between: "End of Game" });
+    });
+
+    it("says regulation is over once it runs out level", async () => {
+      expect(await readAtZero(4, 20, 20)).toEqual({
+        between: "End of Regulation",
+      });
+    });
+
+    it("waits on the try after a touchdown levels the game as regulation runs out", async () => {
+      const possession = await readLive(
+        {
+          type: { text: "Passing Touchdown" },
+          scoreValue: 6,
+          start: { team: { id: "KC" } },
+          end: { team: { id: "KC" } },
+        },
+        {},
+        { period: 4, displayClock: "0:00" },
+        { homeScore: 20, awayScore: 20 },
+      );
+      expect(possession).toEqual({
+        homeAway: HomeAway.AWAY,
+        between: "KC extra point",
+      });
+    });
+
     it.each([
-      ["the half", 2],
-      ["regulation", 4],
-    ])(
-      "says no side has the ball, and no down, once %s runs out",
-      async (_, period) => {
-        const possession = await readLive(
-          {
-            type: { text: "Field Goal Good" },
-            scoreValue: 3,
-            start: { team: { id: "KC" } },
-            end: { team: { id: "KC" } },
-          },
-          { downDistanceText: "1st & 10 at JAX 45", possession: "KC" },
-          { period, displayClock: "0:00" },
-        );
-        expect(possession).toEqual({});
-      },
-    );
+      ["the kickoff", "Kickoff"],
+      ["a penalty on the kickoff", "Penalty"],
+    ])("names the kicker while %s is to be kicked again", async (_, type) => {
+      const possession = await readLive(
+        {
+          type: { text: type },
+          text: "C.Dicker kicks 65 yards from KC 35 to landing zone to end zone, Touchback to the BUF 20.",
+          start: { team: { id: "KC" } },
+          end: { team: { id: "BUF" } },
+        },
+        { down: -1 },
+      );
+      expect(possession).toEqual({ between: "KC to kick off" });
+    });
 
     it("drops a last play the clock has run well past", async () => {
       const possession = await readLive(
