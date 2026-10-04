@@ -165,7 +165,11 @@ async function gameFinish(
   return known;
 }
 
-type CorePlay = { type?: { id?: string }; wallclock?: string };
+type CorePlay = {
+  type?: { id?: string };
+  wallclock?: string;
+  period?: { number?: number };
+};
 
 /**
  * An event's last play so far. Two requests, since the first only counts the plays.
@@ -327,11 +331,17 @@ const PLAY_BY_PLAY_ABBREVIATIONS: Record<string, string> = {
  * whoever the coin toss favors, not to the last play's side, and ESPN can still show
  * this clock after the second half has started.
  */
-function isHalfOver({ period, displayClock }: EspnStatus) {
+function isHalfOver({
+  period,
+  displayClock,
+}: Pick<EspnStatus, "period" | "displayClock">) {
   const ends =
     period === REGULATION_PERIODS / 2 || period === REGULATION_PERIODS;
   return ends && displayClock === "0:00";
 }
+
+/** What every kickoff's play type starts with, like `Kickoff Return (Offense)`. */
+const KICKOFF = "Kickoff";
 
 /**
  * Whether the clock has run well past the last play, which ESPN's scoreboard can
@@ -664,11 +674,28 @@ export async function getLeagueResults(
   await Promise.all(
     [...found].map(async ([key, result]) => {
       const event = events.find(({ id }) => id === result?.id);
+      const status = event?.status;
+      const kickoff = event?.competitions[0].situation?.lastPlay?.type?.text;
       if (
         result != null &&
         event != null &&
-        event.status.period === REGULATION_PERIODS / 2 &&
-        isHalfOver(event.status)
+        status?.period != null &&
+        isHalfOver(status) &&
+        kickoff?.startsWith(KICKOFF)
+      ) {
+        // The kickoff may be the one that ran the clock out, or the next period's,
+        // which ESPN can show before it moves the clock on. The plays feed says which.
+        const period = (await lastPlay(league, result.id))?.period?.number;
+        if (period != null && period > status.period) {
+          const next = { ...status, period, displayClock: undefined };
+          Object.assign(result, toLeagueResult({ ...event, status: next }));
+        }
+      }
+      if (
+        result != null &&
+        event != null &&
+        result.period === REGULATION_PERIODS / 2 &&
+        isHalfOver({ period: result.period, displayClock: result.clock })
       ) {
         const [kicker, end] = await Promise.all([
           openingKicker(league, result.id),
