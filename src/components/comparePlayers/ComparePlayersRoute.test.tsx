@@ -65,7 +65,7 @@ function compareScores() {
 
 /**
  * Opens the dialog the pickers are in, unless it is open already. The page opens
- * it itself when fewer than two players come back from last time.
+ * it itself when no player comes back from last time.
  */
 async function openDialog(user: ReturnType<typeof mountApp>) {
   const opener = await waitFor(
@@ -91,6 +91,11 @@ async function choose(
   name: string,
 ) {
   await openDialog(user);
+  // The dialog opens on one picker, so a later one needs adding first.
+  await screen.findAllByRole("combobox");
+  if (!screen.queryByRole("combobox", { name: picker })) {
+    await user.click(screen.getByRole("button", { name: "Add Player" }));
+  }
   await user.click(await screen.findByRole("combobox", { name: picker }));
   await user.click(await screen.findByRole("option", { name }));
 }
@@ -117,7 +122,7 @@ describe("the compare players route", () => {
     ).toBeInTheDocument();
   });
 
-  it("opens on the pickers, with no picks, until two players are chosen", async () => {
+  it("opens on the pickers, with no picks, until a player is chosen", async () => {
     mountApp(COMPARE_PATH);
 
     expect(
@@ -190,6 +195,7 @@ describe("the compare players route", () => {
   it("leaves the player already chosen out of the other list", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
+    await user.click(screen.getByRole("button", { name: "Add Player" }));
 
     await user.click(screen.getByRole("combobox", { name: "Player 2" }));
 
@@ -308,12 +314,33 @@ describe("the compare players route", () => {
     expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveValue(
       "Bob",
     );
-    for (const remove of screen.getAllByRole("button", { name: /Remove/ })) {
-      expect(remove).toBeDisabled();
-    }
     expect(
       JSON.parse(localStorage.getItem(COMPARED_PLAYERS_KEY) ?? ""),
     ).toEqual(["Alice", "Bob"]);
+  });
+
+  it("removes players down to one picker", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Carol");
+
+    await user.click(screen.getByRole("button", { name: "Remove Player 2" }));
+
+    expect(screen.getAllByRole("combobox")).toHaveLength(1);
+    expect(
+      screen.getByRole("button", { name: "Remove Player 1" }),
+    ).toBeDisabled();
+  });
+
+  it("shows one chosen player alone, with no games to split", async () => {
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(["Bob"]));
+    mountApp(COMPARE_PATH);
+
+    expect(
+      await screen.findByRole("table", { name: "Picks of Bob" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Different" })).toBeDisabled();
   });
 
   it("moves focus to the picker that takes a removed one's place", async () => {
@@ -385,9 +412,9 @@ describe("the compare players route", () => {
     expect(screen.getAllByRole("combobox")).toHaveLength(2);
   });
 
-  it("keeps two pickers when the dialog opens again with fewer chosen", async () => {
+  it("keeps one picker when the dialog opens again with none chosen", async () => {
     const user = mountApp(COMPARE_PATH);
-    await choose(user, "Player 1", "Alice");
+    await screen.findByRole("dialog", { name: "Compare Players" });
     await user.click(screen.getByRole("button", { name: "Add Player" }));
     await closeDialog(user);
 
@@ -395,12 +422,11 @@ describe("the compare players route", () => {
 
     expect(
       await screen.findByRole("combobox", { name: "Player 1" }),
-    ).toHaveValue("Alice");
-    expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveValue("");
-    expect(screen.getAllByRole("combobox")).toHaveLength(2);
+    ).toHaveValue("");
+    expect(screen.getAllByRole("combobox")).toHaveLength(1);
   });
 
-  it("holds a saved scope with no table and no message until two are chosen", async () => {
+  it("holds a saved scope with no table and no message until a player is chosen", async () => {
     localStorage.setItem(GAME_SCOPE_KEY, "different");
     const user = mountApp(COMPARE_PATH);
     await screen.findByRole("dialog", { name: "Compare Players" });
@@ -438,14 +464,15 @@ describe("the compare players route", () => {
     await openDialog(user);
     await user.click(await screen.findByRole("button", { name: "Add Player" }));
 
-    expect(screen.getByRole("combobox", { name: "Player 3" })).toHaveFocus();
+    expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveFocus();
   });
 
   it("hides Add Player once every player has a picker", async () => {
     const user = mountApp(COMPARE_PATH);
     await openDialog(user);
-
     await user.click(await screen.findByRole("button", { name: "Add Player" }));
+
+    await user.click(screen.getByRole("button", { name: "Add Player" }));
 
     expect(
       screen.queryByRole("button", { name: "Add Player" }),
@@ -464,7 +491,7 @@ describe("the compare players route", () => {
     await openDialog(user);
     await screen.findByRole("button", { name: "Add Player" });
 
-    for (let added = 0; added < 8; added++) {
+    for (let added = 0; added < 9; added++) {
       await user.click(screen.getByRole("button", { name: "Add Player" }));
     }
 

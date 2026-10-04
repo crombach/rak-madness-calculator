@@ -1,13 +1,13 @@
 # comparePlayers
 
-The `/:season/:week/compare` route: two to ten players' picks in one table,
+The `/:season/:week/compare` route: one to ten players' picks in one table,
 plus the week's leader when shown.
 
 - `ComparePlayersRoute`: `ComparePlayers` behind `ExperimentalGate`.
 - `ComparePlayersPage`: `lazyPreloadable` over `ComparePlayersRoute`, mounted
   by `App.tsx`.
 - `ComparePlayers`: `PicksTable` with every tiebreaker, on every game or only
-  the `differingGames` or `sameGames`. With fewer than two players chosen, it
+  the `differingGames` or `sameGames`. With no player chosen, it
   opens the dialog over a `SkeletonTable`.
 - `ComparePlayersDialog`: a `PlayerCombobox` per player, added and removed by
   the reader.

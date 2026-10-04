@@ -12,6 +12,7 @@ import {
   MAX_PICKERS,
   GameScope,
   MIN_PICKERS,
+  MIN_SCOPED,
   readComparedPlayers,
   readGameScope,
   readShowsLeader,
@@ -106,7 +107,7 @@ function startingSlots(
 }
 
 /**
- * Two to ten players' picks in one table, on every game or those they split or
+ * One to ten players' picks in one table, on every game or those they split or
  * share. The week's leader can join them beyond the ten-player limit.
  */
 export default function ComparePlayers({
@@ -126,7 +127,7 @@ export default function ComparePlayers({
   const top = scores?.scores[0];
   const leader =
     showsLeader && top != null && !picked.includes(top) ? top : undefined;
-  // Opens on the pickers when fewer than two players come back from last time.
+  // Opens on the pickers when no player comes back from last time.
   const [isOpen, setIsOpen] = useState(
     () => slots.filter(isFilled).length + (leader ? 1 : 0) < MIN_PICKERS,
   );
@@ -153,7 +154,7 @@ export default function ComparePlayers({
   const isReady = chosen.length + missing.length >= MIN_PICKERS;
   // A player with no picks this week neither splits nor shares a game, so the
   // scope reads only the players with picks.
-  const canScope = chosen.length >= MIN_PICKERS;
+  const canScope = chosen.length >= MIN_SCOPED;
   // Undefined shows every game.
   const games = useMemo(() => {
     if (!canScope || scope === "all") return undefined;

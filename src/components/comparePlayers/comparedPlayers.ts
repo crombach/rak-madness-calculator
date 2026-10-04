@@ -5,8 +5,11 @@ const SETTING = "comparedPlayers";
 /** The exact key the chosen names are saved under, for a test to seed or read. */
 export const COMPARED_PLAYERS_KEY = PREFIX + SETTING;
 
-/** The fewest pickers the page shows, padded up to when fewer names were saved. */
-export const MIN_PICKERS = 2;
+/** The fewest pickers the page shows, padded up to when no name was saved. */
+export const MIN_PICKERS = 1;
+
+/** The fewest players with picks whose games can split or agree. */
+export const MIN_SCOPED = 2;
 
 /** The most players the page compares at once. */
 export const MAX_PICKERS = 10;
