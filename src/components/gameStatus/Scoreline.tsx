@@ -119,7 +119,7 @@ function Note({
   }
   return (
     <p className="game-status__down">
-      {result.possession.between ?? down ?? NO_DOWN}
+      {down ?? result.possession.between ?? NO_DOWN}
     </p>
   );
 }

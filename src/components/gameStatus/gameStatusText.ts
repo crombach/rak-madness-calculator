@@ -3,6 +3,7 @@ import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import { GameSpread } from "../../types/WeekGame";
 import plural from "../../utils/plural";
+import SEPARATOR from "../../utils/separator";
 import marginAgainstSpread from "../../utils/scoring/marginAgainstSpread";
 
 /**
@@ -185,7 +186,12 @@ export function detailText(result: LeagueResult): string {
   if (!running && result.period === HALFTIME_PERIOD) {
     return HALFTIME_DETAIL;
   }
-  return running ? `${period} ${result.clock}` : period;
+  if (!running) {
+    return period;
+  }
+  const clock = `${period} ${result.clock}`;
+  const { timeout } = result.possession;
+  return timeout == null ? clock : [clock, timeout].join(SEPARATOR);
 }
 
 /** The other team in the game, which the line is only ever written against one of. */
