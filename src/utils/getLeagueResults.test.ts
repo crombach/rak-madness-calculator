@@ -871,6 +871,7 @@ describe("getLeagueResults, a scoreboard request ESPN could not answer", () => {
 
 describe("getLeagueResults, at halftime", () => {
   const HALF = { period: 2, displayClock: "0:00" };
+  const HALF_ENDED = "2026-10-04T18:21:59Z";
 
   /** `mockFetch`, but the first play is a coin toss `kicker` started. */
   function mockFetchWithToss(events: Array<EspnEvent>, kicker: string) {
@@ -880,14 +881,20 @@ describe("getLeagueResults, at halftime", () => {
       url.includes(PLAYS_HOST)
         ? {
             ok: true,
-            json: async () => ({
-              items: [
-                {
-                  type: { text: "Coin Toss" },
-                  start: { team: { $ref: `http://x/teams/${kicker}?lang=en` } },
-                },
-              ],
-            }),
+            json: async () =>
+              url.includes("page=")
+                ? { items: [{ type: { id: "65" }, wallclock: HALF_ENDED }] }
+                : {
+                    pageCount: 87,
+                    items: [
+                      {
+                        type: { text: "Coin Toss" },
+                        start: {
+                          team: { $ref: `http://x/teams/${kicker}?lang=en` },
+                        },
+                      },
+                    ],
+                  },
           }
         : answer(url),
     );
@@ -909,6 +916,23 @@ describe("getLeagueResults, at halftime", () => {
     );
     const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
     expect(game.possession.between).toBe("KC to receive");
+  });
+
+  it("ends a pro halftime 13 minutes after the half did", async () => {
+    mockFetchWithToss(
+      [
+        espnEvent({
+          home: "BUF",
+          away: "KC",
+          id: "h3",
+          status: GameStatus.LIVE,
+          clock: HALF,
+        }),
+      ],
+      "KC",
+    );
+    const [game] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+    expect(game.halftimeEndsAt).toEqual(new Date("2026-10-04T18:34:59Z"));
   });
 
   it("asks nothing about the opening kickoff before the half", async () => {

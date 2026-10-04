@@ -56,6 +56,11 @@ export type LeagueResult = {
    * game. Absent before the game is final, and while ESPN has not answered.
    */
   finishedAt?: Date | null;
+  /**
+   * When halftime runs out, for a pro game at the half. Absent in college, whose
+   * halftime runs no set length, and while ESPN has not posted the end of the half.
+   */
+  halftimeEndsAt?: Date;
   status: GameStatus;
   detailMessage: string;
   period?: number;

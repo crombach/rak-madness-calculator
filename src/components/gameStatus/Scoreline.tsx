@@ -30,18 +30,25 @@ const SCORE_DASH = "-";
  */
 const DSEG7_ALL_SEGMENTS = "8";
 
+const SECOND_MS = 1000;
+
 /**
- * The time now, moved on every minute while `ticking`, which is as fine as a
+ * The time now, moved on every `everyMs` while `ticking`, which is as fine as a
  * countdown says it. A poll waiting out a kickoff renders nothing on its own.
  */
-function useMinuteClock(ticking: boolean): Date {
+function useClock(ticking: boolean, everyMs: number): Date {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     if (!ticking) return;
-    const timer = window.setInterval(() => setNow(new Date()), MINUTE_MS);
+    const timer = window.setInterval(() => setNow(new Date()), everyMs);
     return () => window.clearInterval(timer);
-  }, [ticking]);
+  }, [ticking, everyMs]);
   return now;
+}
+
+/** Seconds as `5:40`. */
+function minutesAndSeconds(seconds: number): string {
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
 /** What the mark beside a score is called, for anyone who cannot see it. */
@@ -80,7 +87,18 @@ export function outcomeClasses(outcome?: SideOutcome): Record<string, boolean> {
 
 /** Where the game is up to, over the scores. */
 function Detail({ result }: { result: LeagueResult }) {
-  return <p className="game-status__detail">{detailText(result)}</p>;
+  const endsAt = result.halftimeEndsAt;
+  const now = useClock(endsAt != null, SECOND_MS);
+  const left =
+    endsAt == null
+      ? 0
+      : Math.ceil((endsAt.getTime() - now.getTime()) / SECOND_MS);
+  const text = detailText(result);
+  return (
+    <p className="game-status__detail">
+      {left > 0 ? `${text} ${minutesAndSeconds(left)}` : text}
+    </p>
+  );
 }
 
 /**
@@ -98,7 +116,7 @@ function Note({
   spread?: GameSpread;
 }) {
   const isPregame = result.status === GameStatus.UPCOMING;
-  const now = useMinuteClock(isPregame);
+  const now = useClock(isPregame, MINUTE_MS);
   if (isPregame) {
     const countdown = countdownText(result.date, now);
     return countdown == null ? null : (

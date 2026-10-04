@@ -155,23 +155,69 @@ async function gameFinish(
   if (finishes.has(eventId)) {
     return finishes.get(eventId);
   }
+  const last = await lastPlay(league, eventId);
+  if (last === undefined) return undefined;
+  if (last != null && last.type?.id !== PLAY_TYPE_END_OF_GAME) {
+    return undefined;
+  }
+  const known = wallclockOf(last);
+  finishes.set(eventId, known);
+  return known;
+}
+
+type CorePlay = { type?: { id?: string }; wallclock?: string };
+
+/**
+ * An event's last play so far. Two requests, since the first only counts the plays.
+ * Null where ESPN has no plays. Undefined on a failed request.
+ */
+async function lastPlay(
+  league: League,
+  eventId: string,
+): Promise<CorePlay | null | undefined> {
   try {
     const count = await fetch(playPageUrl(league, eventId));
     if (!count.ok) return undefined;
     const { pageCount } = await count.json();
     const page = await fetch(playPageUrl(league, eventId, pageCount));
     if (!page.ok) return undefined;
-    const last = (await page.json()).items?.[0];
-    if (last != null && last.type?.id !== PLAY_TYPE_END_OF_GAME) {
-      return undefined;
-    }
-    const finish = new Date(last?.wallclock);
-    const known = Number.isNaN(finish.getTime()) ? null : finish;
-    finishes.set(eventId, known);
-    return known;
+    return (await page.json()).items?.[0] ?? null;
   } catch {
     return undefined;
   }
+}
+
+function wallclockOf(play: CorePlay | null): Date | null {
+  const at = new Date(play?.wallclock ?? NaN);
+  return Number.isNaN(at.getTime()) ? null : at;
+}
+
+/** When each pro halftime runs out, by event id. */
+const halftimeEnds = new Map<string, Date | null>();
+/** ESPN's play type for the end of the first half. */
+const PLAY_TYPE_END_OF_HALF = "65";
+/** A pro halftime runs this long from the end of the half, as ESPN's Gamecast counts it. */
+const PRO_HALFTIME_MS = 13 * 60 * 1000;
+
+/**
+ * When a pro halftime runs out, off the wall clock of the play that ended the half.
+ * Undefined in college, on a failed request, and while ESPN has not posted the end of
+ * the half, which is asked again.
+ */
+async function halftimeEnd(
+  league: League,
+  eventId: string,
+): Promise<Date | null | undefined> {
+  if (league !== League.PRO) return undefined;
+  if (halftimeEnds.has(eventId)) {
+    return halftimeEnds.get(eventId);
+  }
+  const last = await lastPlay(league, eventId);
+  if (last?.type?.id !== PLAY_TYPE_END_OF_HALF) return undefined;
+  const ended = wallclockOf(last);
+  const end = ended && new Date(ended.getTime() + PRO_HALFTIME_MS);
+  halftimeEnds.set(eventId, end);
+  return end;
 }
 
 /** Who kicked off to open each game, by event id. */
@@ -629,7 +675,11 @@ export async function getLeagueResults(
         event.status.period === REGULATION_PERIODS / 2 &&
         isHalfOver(event.status)
       ) {
-        const kicker = await openingKicker(league, result.id);
+        const [kicker, end] = await Promise.all([
+          openingKicker(league, result.id),
+          halftimeEnd(league, result.id),
+        ]);
+        result.halftimeEndsAt = end ?? undefined;
         const receiver = event.competitions[0].competitors.find(
           ({ id }) => id === kicker,
         );
