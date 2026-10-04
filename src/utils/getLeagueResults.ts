@@ -255,9 +255,9 @@ function isStale(play: EspnPlay, { period, displayClock }: EspnStatus) {
 }
 
 /**
- * Who has the ball. ESPN's `possession` wins where it gives one, else the side that
- * held the ball when the last play ended. Also what is happening between plays,
- * like `KC timeout` or `BUF to kick off`.
+ * Who has the ball, and what is happening between plays, like `KC timeout` or
+ * `BUF to kick off`. ESPN's `possession` wins where it gives one, else the side that
+ * held the ball when the last play ended.
  */
 function readPossession(
   situation: EspnSituation | undefined,
