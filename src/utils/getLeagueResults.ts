@@ -327,10 +327,28 @@ const PLAY_BY_PLAY_ABBREVIATIONS: Record<string, string> = {
  * whoever the coin toss favors, not to the last play's side, and ESPN can still show
  * this clock after the second half has started.
  */
-function isHalfOver({ period, displayClock }: EspnStatus) {
+function isHalfOver({
+  period,
+  displayClock,
+}: Pick<EspnStatus, "period" | "displayClock">) {
   const ends =
     period === REGULATION_PERIODS / 2 || period === REGULATION_PERIODS;
   return ends && displayClock === "0:00";
+}
+
+/** The play type of every kickoff, like `Kickoff` or `Kickoff Return (Offense)`. */
+const KICKOFF = "Kickoff";
+
+/**
+ * A kickoff once the half or regulation runs out starts the next period, though ESPN
+ * can hold the old period's `0:00` for a minute after it. The period moves on, and
+ * the clock, not yet known, is left out.
+ */
+function afterKickoff(status: EspnStatus, play?: EspnPlay): EspnStatus {
+  const { period } = status;
+  if (period == null || !isHalfOver(status)) return status;
+  if (!play?.type?.text?.startsWith(KICKOFF)) return status;
+  return { ...status, period: period + 1, displayClock: undefined };
 }
 
 /**
@@ -550,10 +568,8 @@ export function toLeagueResult(event: EspnEvent): LeagueResult | null {
   // margin just because there is no winner yet.
   const scoreMargin = Math.abs(homeScore - awayScore);
 
-  const possession = readPossession(competition.situation, event.status, [
-    home,
-    away,
-  ]);
+  const clock = afterKickoff(event.status, competition.situation?.lastPlay);
+  const possession = readPossession(competition.situation, clock, [home, away]);
 
   return {
     id: event.id,
@@ -562,8 +578,8 @@ export function toLeagueResult(event: EspnEvent): LeagueResult | null {
     date: new Date(event.date),
     status,
     detailMessage: event.status.type.shortDetail,
-    period: event.status.period,
-    clock: event.status.displayClock,
+    period: clock.period,
+    clock: clock.displayClock,
     home: homeSide,
     away: awaySide,
     isNeutralSite: competition.neutralSite ?? false,
@@ -667,8 +683,8 @@ export async function getLeagueResults(
       if (
         result != null &&
         event != null &&
-        event.status.period === REGULATION_PERIODS / 2 &&
-        isHalfOver(event.status)
+        result.period === REGULATION_PERIODS / 2 &&
+        isHalfOver({ period: result.period, displayClock: result.clock })
       ) {
         const [kicker, end] = await Promise.all([
           openingKicker(league, result.id),
