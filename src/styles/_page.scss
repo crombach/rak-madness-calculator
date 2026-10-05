@@ -15,6 +15,18 @@
   gap: var(--rak-space-4);
 }
 
+/**
+ * The scrolling box's fill, for a page body that runs its whole length. Firefox
+ * paints a region it has not drawn yet in that box's own fill. `PageLayout.scss`
+ * sets that fill to the table's frame on a results page, which is not what the body
+ * stands on.
+ */
+@mixin page-body-scroll-fill {
+  @at-root .page__content.--results:has(#{&}) {
+    background-color: var(--rak-surface);
+  }
+}
+
 /** A game's card, framed the way the tables are, so it reads as a panel of the device. */
 @mixin game-card-frame {
   overflow: hidden;
