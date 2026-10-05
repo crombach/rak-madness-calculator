@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { WeekGame } from "../types/WeekGame";
 import warmImage from "../utils/warmImage";
+import useTeamLogoUrl from "./useTeamLogoUrl";
 
 /**
  * Every logo the week could show, asked for as soon as the week is scored rather
@@ -15,13 +16,14 @@ import warmImage from "../utils/warmImage";
  * React may throw away.
  */
 export default function useWarmTeamLogos(games: Array<WeekGame> | undefined) {
+  const logoUrl = useTeamLogoUrl();
   useEffect(() => {
     games?.forEach((it) => {
       [it.result?.home.team.logoUrl, it.result?.away.team.logoUrl].forEach(
         (url) => {
-          if (url != null) warmImage(url);
+          if (url != null) warmImage(logoUrl(url));
         },
       );
     });
-  }, [games]);
+  }, [games, logoUrl]);
 }

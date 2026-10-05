@@ -198,12 +198,6 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
   object-fit: contain;
   width: 32px;
   height: 32px;
-  // None outside dark mode, so this only ever draws the edge `--rak-logo-outline`
-  // gives a crest that mode cannot otherwise be sure will show. A filter rather
-  // than an outline or a border. Both of those trace the image's own rectangular
-  // box, where this traces the crest's own alpha channel, so a round logo gets a
-  // round edge instead of a square one.
-  filter: var(--rak-logo-outline);
 
   @include roomy-screen {
     width: 44px;

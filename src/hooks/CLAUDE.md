@@ -17,6 +17,7 @@ The data layer, plus the page measurements. The first four mount once in
 - `useMyPick`: the reader's own pick on a game
 - `useArrival`: an outside value, taken as it arrives
 - `useWarmTeamLogos`: the week's logos, fetched before a game is opened
+- `useTeamLogoUrl`: a team logo, or ESPN's dark variant in the dark theme
 - `useMediaQuery`: whether a media query holds, kept in step
 - `cssMediaQuery`: a query off a `--rak-*` token, shared with the navbar menu
 - `usePullToRefresh`: a phone's pull on a scrolling box, written to the root

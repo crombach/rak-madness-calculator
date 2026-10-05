@@ -3,6 +3,7 @@ import { GameStatus, HomeAway } from "../../types/ESPN";
 import { GameSide, LeagueResult } from "../../types/LeagueResult";
 import { PlayerScore } from "../../types/RakMadnessScores";
 import { GameSpread, WeekGame } from "../../types/WeekGame";
+import useTeamLogoUrl from "../../hooks/useTeamLogoUrl";
 import getClasses from "../../utils/getClasses";
 import observeResize from "../../utils/observeResize";
 import parsePick from "../../utils/scoring/parsePick";
@@ -321,6 +322,7 @@ export default function GameStatusSummary({
   // Which game's marks failed to load, rather than a flag, so moving to another
   // game asks about its marks instead of inheriting a verdict on the last one's.
   const [logolessId, setLogolessId] = useState<string>();
+  const logoUrl = useTeamLogoUrl();
 
   if (game == null) {
     return null;
@@ -352,7 +354,7 @@ export default function GameStatusSummary({
             ? (side) => (
                 <img
                   className="game-status__logo"
-                  src={side.team.logoUrl as string}
+                  src={logoUrl(side.team.logoUrl as string)}
                   // The team's name is beside it, so the mark says nothing a
                   // reader of the page in words is missing.
                   alt=""
@@ -361,7 +363,16 @@ export default function GameStatusSummary({
                   // the frame goes up puts the mark on screen with the name beside
                   // it rather than a frame behind it.
                   decoding="sync"
-                  onError={() => setLogolessId(shown.id)}
+                  onError={(event) => {
+                    // A team ESPN drew no dark variant for falls back to its own
+                    // logo before the game gives up both marks.
+                    const light = side.team.logoUrl as string;
+                    if (event.currentTarget.getAttribute("src") !== light) {
+                      event.currentTarget.src = light;
+                    } else {
+                      setLogolessId(shown.id);
+                    }
+                  }}
                 />
               )
             : undefined

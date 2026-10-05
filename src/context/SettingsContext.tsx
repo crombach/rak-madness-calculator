@@ -125,7 +125,7 @@ function useStoredSetting<T>(
   return [value, set];
 }
 
-const DARK_QUERY = "(prefers-color-scheme: dark)";
+export const DARK_QUERY = "(prefers-color-scheme: dark)";
 
 /** The frame that clears the freeze below, while one is outstanding. */
 let thaw: number | undefined;

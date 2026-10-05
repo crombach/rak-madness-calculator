@@ -449,11 +449,6 @@
   --rak-toast-warning-text: var(--rak-warning-700);
   --rak-toast-danger-bg: var(--rak-danger-100);
   --rak-toast-danger-text: var(--rak-danger-700);
-  // An edge around a team's own crest in the game dialog. None here: a crest is
-  // ESPN's own art, not a color this app chose, and on white every one of them
-  // already reads. Only the dark override below draws one, since that is the mode
-  // a crest built for white can lose itself against.
-  --rak-logo-outline: none;
 
   --rak-text: #1a1a1a;
   --rak-text-secondary: #373737;
@@ -852,16 +847,6 @@ html {
   --rak-toast-success-text: var(--rak-text);
   --rak-toast-warning-text: var(--rak-text);
   --rak-toast-danger-text: var(--rak-text);
-  // Told from the page regardless of its own colors, so a navy helmet on a navy
-  // background still has an edge against a page it did not draw itself for. The
-  // same boundary any control's own edge is told from its surface with. Four
-  // hard-edged shadows, one per side, rather than one soft `drop-shadow` blur:
-  // this follows the crest's own alpha channel like a blur would, but reads as
-  // a 1px line around the ink instead of a glow past it.
-  --rak-logo-outline: drop-shadow(1px 0 0 var(--rak-border))
-    drop-shadow(-1px 0 0 var(--rak-border))
-    drop-shadow(0 1px 0 var(--rak-border))
-    drop-shadow(0 -1px 0 var(--rak-border));
   // An even row is mixed toward this. `--rak-primary-800` is nearly the fill's
   // own darkness once the fill goes dark too, so mixing toward it stopped
   // reading as a row apart from its neighbor. Light instead, the same distance
