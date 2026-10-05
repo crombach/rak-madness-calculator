@@ -12,6 +12,7 @@
 
 .games {
   @include page-body;
+  @include page-body-scroll-fill;
 
   display: flex;
   flex-direction: column;

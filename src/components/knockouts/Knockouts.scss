@@ -26,6 +26,7 @@ $names-wide-from: 2 * (2 * 192px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 
 .knockouts {
   @include page-body;
+  @include page-body-scroll-fill;
 
   display: flex;
   flex-direction: column;

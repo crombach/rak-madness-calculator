@@ -15,6 +15,18 @@
   gap: var(--rak-space-4);
 }
 
+/**
+ * Paints the `.page__content.--results` box that holds this page body in `--rak-surface`.
+ * Firefox fills a region it has not drawn yet with that box's own background.
+ * `PageLayout.scss` sets that background to `--rak-band-caption`, which would flash
+ * behind the cards. Keep in sync with `PageLayout.scss`.
+ */
+@mixin page-body-scroll-fill {
+  @at-root .page__content.--results:has(#{&}) {
+    background-color: var(--rak-surface);
+  }
+}
+
 /** A game's card, framed the way the tables are, so it reads as a panel of the device. */
 @mixin game-card-frame {
   overflow: hidden;

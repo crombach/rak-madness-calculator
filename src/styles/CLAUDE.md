@@ -20,7 +20,8 @@ The `ui-style` skill maps each piece of UI to its token, mixin, or class.
 - `_a11y.scss`: `visually-hidden`
 - `_layout.scss`: `$content-width`, the column the navbar and pages stand in,
   `stacked`, and `dialog-column`
-- `_page.scss`: `page-body`, and the game card frame and band, shared by the card pages
+- `_page.scss`: `page-body` and its scroll fill, and the game card frame and band,
+  shared by the card pages
 - `_interactive.scss`: `interactive-fill`, the hover and press fill, and
   `press-lands-at-once`, a press with no ease in
 - `_fold.scss`: `fold-toggle`, the Show More button
