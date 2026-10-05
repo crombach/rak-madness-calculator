@@ -47,7 +47,7 @@
   box-shadow: var(--rak-shadow-overlay);
   overflow: auto;
   // A fling in the table stops at the table. It never chained anywhere worth
-  // going, since `<html>` does not scroll, and on a phone it is what the pull
+  // going, since `<html>` does not scroll, and on a touch screen it is what the pull
   // below competes with.
   overscroll-behavior: contain;
   // The room a scrollbar needs, held whether or not there is one, so a week long
@@ -110,7 +110,7 @@
 // Where the pull is drawn, this box gives up its own bounce as well. At the top
 // of a table the rubber-band and the gesture answer the same finger, and the one
 // the app draws has to win. `index.scss` gave the same thing up document-wide.
-@include phone-touch {
+@include touch-screen {
   .page__content {
     overscroll-behavior-y: none;
   }

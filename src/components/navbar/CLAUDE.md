@@ -9,7 +9,7 @@
   then unmounts them.
 - `NavMenu`: the hamburger every page mounts. Every `ITEMS` entry, then Settings
   opening `SettingsDialog`. Knockouts and Compare Players show only with
-  experimental features on. A wide-screen popup, a drawer below it. An item
+  experimental features on. A drawer on a touch screen, a popup elsewhere. An item
   that does not apply is disabled, never hidden. Its reason sits under its name.
 - `LogoButton`: `APP_NAME`, which it exports, as a target that goes home, set
   in `--rak-font-display`.

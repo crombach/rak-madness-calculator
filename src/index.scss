@@ -68,11 +68,9 @@
   // The one question asked outside a stylesheet as well as inside one. The
   // breakpoints themselves stay Sass, because a media query cannot read a custom
   // property, so what crosses over is written here for `matchMedia` to ask. It is
-  // the whole query `phone-touch` guards, quoted because a custom property holding
+  // the whole query `touch-screen` guards, quoted because a custom property holding
   // a bare media query is not a valid declaration.
-  --rak-phone-touch: "#{$phone-touch-query}";
-  // Everything short of `wide-screen`, quoted for the same reason.
-  --rak-below-wide: "#{$below-wide-query}";
+  --rak-touch-screen: "#{$touch-screen-query}";
 
   // What a label set in capitals is opened up by. Capitals are drawn on one
   // height and run together without it, and every small label in the app is set

@@ -94,7 +94,7 @@ export default async function run({ page, context, baseUrl }) {
 
     await openIn(page, baseUrl, theme, "/");
     await page.getByRole("button", { name: "Menu" }).click();
-    // A menu item in the wide popup, a plain button in the phone drawer.
+    // A menu item in the popup, a plain button in the touch-screen drawer.
     await page
       .getByRole("menuitem", { name: "Settings" })
       .or(page.getByRole("button", { name: "Settings" }))
