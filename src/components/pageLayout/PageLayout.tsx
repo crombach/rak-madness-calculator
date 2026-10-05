@@ -31,7 +31,7 @@ export default function PageLayout({
    */
   scrollable?: boolean;
   /**
-   * The refresh a pull on the content offers, which is a phone's replacement for
+   * The refresh a pull on the content offers, which is a touch screen's replacement for
    * the refresh button. Left out by a page with nothing to refetch, and by one
    * with nothing on it to pull yet.
    */

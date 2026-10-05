@@ -20,7 +20,7 @@ The data layer, plus the page measurements. The first four mount once in
 - `useTeamLogoUrl`: a team logo, or ESPN's dark variant in the dark theme
 - `useMediaQuery`: whether a media query holds, kept in step
 - `cssMediaQuery`: a query off a `--rak-*` token, shared with the navbar menu
-- `usePullToRefresh`: a phone's pull on a scrolling box, written to the root
+- `usePullToRefresh`: a touch screen's pull on a scrolling box, written to the root
 - `useExportScores`: the scores, as a workbook
 - `useWeekRouteGuard`: whether a `/:season/:week` URL has anything to show
 - `useFillerRows`: the empty rows carrying a table to the viewport bottom

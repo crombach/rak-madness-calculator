@@ -75,8 +75,8 @@ export type Pull = { onRefresh: () => void; isRefreshing: boolean };
 /**
  * Pull down from the top of the scrolling box to refresh what is in it.
  *
- * A phone's replacement for the refresh button, which `phone-touch` takes off the
- * bar at the same width. Not the browser's own pull-to-refresh, which `index.scss`
+ * A touch screen's replacement for the refresh button, which `touch-screen` takes
+ * off the bar. Not the browser's own pull-to-refresh, which `index.scss`
  * turns off. That reloads the document. The scores are rescored from a workbook
  * held in memory, which a reload would throw away.
  *
@@ -94,9 +94,9 @@ export default function usePullToRefresh({
   /** Left out by a page with nothing to refetch, which disarms the gesture. */
   pull?: Pull;
 }): boolean {
-  const [query] = useState(() => cssMediaQuery("--rak-phone-touch"));
-  const isPhone = useMediaQuery(query);
-  const isArmed = isPhone && pull != null;
+  const [query] = useState(() => cssMediaQuery("--rak-touch-screen"));
+  const isTouch = useMediaQuery(query);
+  const isArmed = isTouch && pull != null;
 
   // Held open from the finger coming off until the refresh has been seen to run.
   const [isHolding, setHolding] = useState(false);
