@@ -414,7 +414,7 @@ describe("NavMenu", () => {
     });
   });
 
-  describe("on a touch-only screen", () => {
+  describe("on a touch screen", () => {
     const realMatchMedia = window.matchMedia;
     beforeEach(() => {
       window.matchMedia = ((media: string) => ({

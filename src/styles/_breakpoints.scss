@@ -70,10 +70,11 @@ $breakpoint-short: 540px;
 }
 
 /**
- * A screen touch is the only pointer for, at any width. Attaching a mouse or a
- * trackpad makes `any-hover` answer `hover`, which swaps back to click controls.
+ * A screen whose main pointer is touch, at any width. Asks about the main pointer
+ * only: Firefox on Android counts a stylus that can hover, such as the S Pen, in
+ * `any-hover`, so `any-hover: none` would hand a phone the click controls.
  */
-$touch-screen-query: "(pointer: coarse) and (any-hover: none)";
+$touch-screen-query: "(pointer: coarse) and (hover: none)";
 
 @mixin touch-screen {
   @media #{$touch-screen-query} {

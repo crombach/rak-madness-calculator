@@ -94,7 +94,7 @@ const TRIGGER_CLASSES = buttonClasses({ compact: true, iconOnly: true });
 
 /**
  * The hamburger every page opens beside the scoreboard/picks switch. A drawer
- * from the right edge on a touch-only screen, a popup menu anywhere else. An
+ * from the right edge on a touch screen, a popup menu anywhere else. An
  * experimental item only with the opt-in, marked β after its name.
  */
 export default function NavMenu({

@@ -12,7 +12,7 @@ The `ui-style` skill maps each piece of UI to its token, mixin, or class.
   than custom properties, because a custom property does not work inside a media
   query. Reach them with `@use "…/styles/breakpoints" as *;`. Every width one is
   `min-width` and the phone's rules are the base, except `short-screen`, a
-  `max-height`. `touch-screen` asks for touch as the only pointer, at any width.
+  `max-height`. `touch-screen` asks for touch as the main pointer, at any width.
 - `_focus.scss`: `focus-ring`, the app's one focus ring, and `$focus-ring-reach`,
   the room it needs outside a control a scrolling ancestor would clip it against
 - `_ink.scss`: `ink-height`, an icon drawn as tall as the text beside it, the
