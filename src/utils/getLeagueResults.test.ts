@@ -615,6 +615,42 @@ describe("getLeagueResults, mapping", () => {
     );
 
     it.each([
+      ["four short of the lead, past what a try can make up", 30, undefined],
+      ["from minutes before the clock ran out", 27, 240],
+    ])("ends the game on a touchdown %s", async (_, homeScore, secondsLeft) => {
+      const possession = await readLive(
+        {
+          type: { text: "Passing Touchdown" },
+          scoreValue: 6,
+          start: { team: { id: "KC" } },
+          end: { team: { id: "KC" } },
+          probability: { secondsLeft },
+        },
+        {},
+        { period: 4, displayClock: "0:00" },
+        { homeScore, awayScore: homeScore - 4 },
+      );
+      expect(possession).toEqual({ between: "End of Game" });
+    });
+
+    it("gives the try to the side that returned a kickoff for a touchdown", async () => {
+      const possession = await readLive(
+        {
+          type: { text: "Kickoff Return Touchdown" },
+          scoreValue: 6,
+          text: "C.Dicker kicks 65 yards from KC 35 to BUF 0. J.Cook for 100 yards, TOUCHDOWN.",
+          start: { team: { id: "KC" } },
+          end: { team: { id: "BUF" } },
+        },
+        { down: -1 },
+      );
+      expect(possession).toEqual({
+        homeAway: HomeAway.HOME,
+        between: "BUF extra point",
+      });
+    });
+
+    it.each([
       ["the kickoff", "Kickoff"],
       ["a penalty on the kickoff", "Penalty"],
     ])("names the kicker while %s is to be kicked again", async (_, type) => {

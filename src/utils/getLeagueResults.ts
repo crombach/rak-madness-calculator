@@ -299,6 +299,8 @@ const TRY_PLAY = /Extra Point|Two.?Point|\bPAT\b/i;
 const COIN_TOSS = "Coin Toss";
 const END_OF_GAME = "End of Game";
 const END_OF_REGULATION = "End of Regulation";
+/** A two-point try, the most a try can score. */
+const MOST_A_TRY_SCORES = 2;
 const KICKS = /\bkicks\b/;
 
 /** Plays that say nothing about who has the ball. */
@@ -393,17 +395,19 @@ function readPossession(
     return { between: END_OF_GAME };
   }
   // Regulation that runs out is the end of the game, or level, of regulation. A
-  // touchdown that leaves its side short of the lead still has its try to play.
+  // touchdown just scored that leaves its side a try short still has it to play.
   const regulation = status.period === REGULATION_PERIODS;
   const [first, second] = sides.map((side) => Number(side.score));
   const level = first === second;
   const scorer = byId((play?.end?.team ?? play?.team)?.id);
   const other = sides.find((side) => side !== scorer);
+  const short = Number(other?.score) - Number(scorer?.score);
   const tryToCome =
-    (play?.scoreValue ?? 0) >= TOUCHDOWN_POINTS &&
-    scorer != null &&
-    other != null &&
-    Number(scorer.score) <= Number(other.score);
+    play != null &&
+    !isStale(play, status) &&
+    (play.scoreValue ?? 0) >= TOUCHDOWN_POINTS &&
+    short >= 0 &&
+    short <= MOST_A_TRY_SCORES;
   if (isHalfOver(status) && !(regulation && tryToCome)) {
     if (!regulation) return {};
     return { between: level ? END_OF_REGULATION : END_OF_GAME };
@@ -422,7 +426,11 @@ function readPossession(
   }
   // A kick with the down still after the score is to be kicked again. The kicking
   // side starts the play.
-  if (situation?.down === AFTER_SCORE_DOWN && KICKS.test(play.text ?? "")) {
+  if (
+    situation?.down === AFTER_SCORE_DOWN &&
+    points < TOUCHDOWN_POINTS &&
+    KICKS.test(play.text ?? "")
+  ) {
     const kicker = byId(play.start?.team?.id);
     if (kicker) return { between: kickOff(kicker) };
   }
