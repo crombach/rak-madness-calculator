@@ -131,6 +131,25 @@ describe("getKnockouts", () => {
     });
   });
 
+  it("shows a final side's pick as an open side's, with its spread signed", () => {
+    const scores = week(
+      [
+        player({ name: "Alice", total: 5, pro: [pick("KC -3", "yes")] }),
+        player({
+          name: "Bob",
+          total: 4,
+          pro: [pick("DEN 3", "no")],
+          isKnockedOut: true,
+        }),
+      ],
+      41,
+    );
+
+    expect(getKnockouts(scores).games[0].sides).toEqual([
+      { team: "DEN", pick: "DEN +3", players: ["Bob"] },
+    ]);
+  });
+
   it("names who a won week's final games knocked out, and no open game", () => {
     // KC left Bob unable to pass Alice, which won her the week with P2 to come.
     const scores = week([
@@ -498,6 +517,12 @@ describe("getKnockouts", () => {
     ];
 
     expect(knockoutPicks(getKnockouts(scores), "Bob")).toEqual(["P2 LAR"]);
+  });
+
+  it("credits a player two final games knocked out to the first in table order, where ESPN listed neither", () => {
+    const scores = bobNeedsBoth([pick("MIA"), pick("MIA"), pick("NYJ")]);
+
+    expect(knockoutPicks(getKnockouts(scores), "Bob")).toEqual(["P1 DEN"]);
   });
 
   it("keeps a knockout's game once a later game ends", () => {
