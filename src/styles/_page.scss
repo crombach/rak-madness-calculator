@@ -16,10 +16,10 @@
 }
 
 /**
- * The scrolling box's fill, for a page body that runs its whole length. Firefox
- * paints a region it has not drawn yet in that box's own fill. `PageLayout.scss`
- * sets that fill to the table's frame on a results page, which is not what the body
- * stands on.
+ * Paints the `.page__content.--results` box that holds this page body in `--rak-surface`.
+ * Firefox fills a region it has not drawn yet with that box's own background.
+ * `PageLayout.scss` sets that background to `--rak-band-caption`, which would flash
+ * behind the cards. Keep in sync with `PageLayout.scss`.
  */
 @mixin page-body-scroll-fill {
   @at-root .page__content.--results:has(#{&}) {
