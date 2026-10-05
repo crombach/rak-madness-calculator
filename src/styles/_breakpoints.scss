@@ -70,14 +70,6 @@ $breakpoint-short: 540px;
 }
 
 /**
- * Everything short of `wide-screen`, for `matchMedia` rather than a stylesheet.
- * `index.scss` exports it. A `<` range meets `wide-screen` exactly, where
- * `max-width: 600px` would leave fractional widths matching neither. Still a
- * positive query, so a test's no-to-everything `matchMedia` lands on the wide screen.
- */
-$below-wide-query: "(width < #{$breakpoint-wide})";
-
-/**
  * A screen touch is the only pointer for, at any width. Attaching a mouse or a
  * trackpad makes `any-hover` answer `hover`, which swaps back to click controls.
  */

@@ -94,7 +94,7 @@ const TRIGGER_CLASSES = buttonClasses({ compact: true, iconOnly: true });
 
 /**
  * The hamburger every page opens beside the scoreboard/picks switch. A drawer
- * from the right edge below `wide-screen`, a popup menu at it and above. An
+ * from the right edge on a touch-only screen, a popup menu anywhere else. An
  * experimental item only with the opt-in, marked β after its name.
  */
 export default function NavMenu({
@@ -107,8 +107,8 @@ export default function NavMenu({
   /** True to disable every item but Home and Settings, with no reason given. */
   pagesDisabled?: boolean;
 }) {
-  const [query] = useState(() => cssMediaQuery("--rak-below-wide"));
-  const isNarrow = useMediaQuery(query);
+  const [query] = useState(() => cssMediaQuery("--rak-touch-screen"));
+  const isTouch = useMediaQuery(query);
   const { pathname } = useLocation();
   const isWeekSettled = useIsWeekSettled();
   const knockouts = useKnockouts();
@@ -148,7 +148,7 @@ export default function NavMenu({
   return (
     <>
       <div className="navbar__divider" />
-      {isNarrow ? (
+      {isTouch ? (
         <NavDrawer
           links={links}
           settings={settings}

@@ -94,7 +94,7 @@ describe("NavMenu", () => {
     expect(trigger()).toBeInTheDocument();
   });
 
-  describe("at wide-screen", () => {
+  describe("with a mouse", () => {
     it("lists Home, Games, Knockouts, Compare Players, then Settings", async () => {
       const user = mount();
       await user.click(trigger());
@@ -414,7 +414,7 @@ describe("NavMenu", () => {
     });
   });
 
-  describe("below wide-screen", () => {
+  describe("on a touch-only screen", () => {
     const realMatchMedia = window.matchMedia;
     beforeEach(() => {
       window.matchMedia = ((media: string) => ({
