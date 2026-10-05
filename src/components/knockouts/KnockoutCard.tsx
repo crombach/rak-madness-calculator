@@ -1,4 +1,4 @@
-import { ReactNode, useMemo, useRef, useState } from "react";
+import { ReactNode, memo, useMemo, useRef, useState } from "react";
 import { useShowGameStatus } from "../../context/GameStatusContext";
 import { useShowPlayerAnalysis } from "../../context/PlayerAnalysisContext";
 import { isMyPlayer, useSettings } from "../../context/SettingsContext";
@@ -113,7 +113,7 @@ function Side({
 }
 
 /** One knockout game as a card: its band, then a side per team it knocks out. */
-export default function KnockoutCard({
+function KnockoutCard({
   game,
   weekGame,
   status,
@@ -190,3 +190,6 @@ export default function KnockoutCard({
     </li>
   );
 }
+
+// A poll toggles the page's busy bar twice, with no card's props changed.
+export default memo(KnockoutCard);
