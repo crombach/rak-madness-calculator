@@ -2,13 +2,16 @@ import { useCallback } from "react";
 import { DARK_QUERY, useSettings } from "../context/SettingsContext";
 import useMediaQuery from "./useMediaQuery";
 
-/** The size directory every ESPN team logo URL is served from. */
+/** The size directory of an ESPN team logo URL. */
 const LIGHT_LOGOS = "/500/";
 
 /** ESPN's own variant of each logo, drawn to stand on a dark ground. */
 const DARK_LOGOS = "/500-dark/";
 
-/** ESPN's dark variant of a team logo, or the URL as given where it has none. */
+/**
+ * The URL with its size directory swapped for ESPN's dark one. A URL with no size
+ * directory comes back unchanged.
+ */
 export function darkLogoUrl(url: string): string {
   return url.replace(LIGHT_LOGOS, DARK_LOGOS);
 }
