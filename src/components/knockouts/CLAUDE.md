@@ -4,12 +4,13 @@ The `/:season/:week/knockouts` route: each open game, with the players it would
 knock out on either side, grouped by which team they need, and each final game
 with the players it knocked out.
 
-- `KnockoutsRoute`: behind `ExperimentalGate`, hands `Knockouts` the scores,
-  `useKnockouts`, `rescore` and `fetchingLeagues`.
+- `KnockoutsRoute`: hands `Knockouts` the scores, `useKnockouts`, `rescore`
+  and `fetchingLeagues`.
 - `KnockoutsPage`: `lazyPreloadable` over `KnockoutsRoute` and `getKnockouts`,
   mounted by `App.tsx`.
 - `Knockouts`: polls as `Games` does, and draws its busy bar. A week with no
-  game to show, settled or not, redirects to the scoreboard with `replace`.
+  game to show, settled or not, or one it could not read, redirects to the
+  scoreboard with `replace`.
   Its games are grouped by `gameSections`, as on Games.
 - `KnockoutCard`: one game to a row. Its band opens `useShowGameStatus`. Each side
   lists its players. An open game's names open `useShowPlayerAnalysis`. The sides sit beside

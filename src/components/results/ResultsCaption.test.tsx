@@ -14,7 +14,6 @@ import {
   setUpAppTest,
   spreadsheetResponse,
 } from "../../appTestFixtures";
-import { EXPERIMENTAL_FEATURES_KEY } from "../../context/SettingsContext";
 import { League } from "../../types/League";
 import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
 import { PAGES, RESULTS_PAGE, ResultsPage, weekName } from "./resultsPath";
@@ -32,7 +31,6 @@ function knockoutScores() {
 beforeEach(() => {
   setUpAppTest().mockResolvedValue(spreadsheetResponse());
   getPlayerScoresMock.mockResolvedValue(knockoutScores());
-  localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
 });
 
 afterEach(() => {

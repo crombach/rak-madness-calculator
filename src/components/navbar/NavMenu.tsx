@@ -71,7 +71,6 @@ const KNOCKOUTS: NavItem = {
   label: RESULTS_PAGE.knockouts,
   icon: <SkullOutlinedIcon />,
   path: (season, week) => resultsPath(season, week, RESULTS_PAGE.knockouts),
-  experimental: true,
   // Scores still loading, which is soon over and needs no word. A complete
   // week needs none either.
   disabled: ({ knockouts }) =>

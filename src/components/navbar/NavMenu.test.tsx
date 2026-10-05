@@ -71,17 +71,15 @@ function trigger() {
   return screen.getByRole("button", { name: "Menu" });
 }
 
-// Knockouts and Compare Players are experimental, so each ends in the β mark,
-// which a screen reader hears as its word.
-const KNOCKOUTS_NAME = `Knockouts ${BETA_WORD}`;
-const KNOCKOUTS_TEXT = `Knockouts${BETA_MARK} ${BETA_WORD}`;
+// Compare Players is experimental, so it ends in the β mark, which a screen
+// reader hears as its word.
 const COMPARE_PLAYERS_NAME = `Compare Players ${BETA_WORD}`;
 const COMPARE_PLAYERS_TEXT = `Compare Players${BETA_MARK} ${BETA_WORD}`;
 
 describe("NavMenu", () => {
   beforeEach(() => {
     localStorage.clear();
-    // Knockouts and Compare Players show only with this opt-in.
+    // Compare Players shows only with this opt-in.
     localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
     mockIsWeekSettled.mockReturnValue(false);
     mockKnockouts.mockReturnValue({ games: [A_KNOCKOUT_GAME] });
@@ -104,13 +102,13 @@ describe("NavMenu", () => {
       expect(items.map((item) => item.textContent)).toEqual([
         "Home",
         "Games",
-        KNOCKOUTS_TEXT,
+        "Knockouts",
         COMPARE_PLAYERS_TEXT,
         "Settings",
       ]);
     });
 
-    it("leaves out Knockouts and Compare Players with experimental features off", async () => {
+    it("leaves out Compare Players with experimental features off", async () => {
       localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
       const user = mount();
       await user.click(trigger());
@@ -120,6 +118,7 @@ describe("NavMenu", () => {
       expect(items.map((item) => item.textContent)).toEqual([
         "Home",
         "Games",
+        "Knockouts",
         "Settings",
       ]);
     });
@@ -144,7 +143,7 @@ describe("NavMenu", () => {
       await user.click(trigger());
 
       expect(
-        await screen.findByRole("menuitem", { name: KNOCKOUTS_NAME }),
+        await screen.findByRole("menuitem", { name: "Knockouts" }),
       ).not.toHaveAccessibleDescription();
     });
 
@@ -232,7 +231,7 @@ describe("NavMenu", () => {
         await screen.findByRole("menuitem", { name: "Home" }),
       ).toHaveAttribute("aria-current", "page");
       expect(
-        screen.getByRole("menuitem", { name: KNOCKOUTS_NAME }),
+        screen.getByRole("menuitem", { name: "Knockouts" }),
       ).not.toHaveAttribute("aria-current");
     });
 
@@ -249,7 +248,7 @@ describe("NavMenu", () => {
     it("returns focus to the trigger on Escape", async () => {
       const user = mount();
       await user.click(trigger());
-      await screen.findByRole("menuitem", { name: KNOCKOUTS_NAME });
+      await screen.findByRole("menuitem", { name: "Knockouts" });
 
       await user.keyboard("{Escape}");
 
@@ -261,7 +260,7 @@ describe("NavMenu", () => {
       const user = mount();
       await user.click(trigger());
       await user.click(
-        await screen.findByRole("menuitem", { name: KNOCKOUTS_NAME }),
+        await screen.findByRole("menuitem", { name: "Knockouts" }),
       );
 
       expect(await screen.findByTestId("landed")).toHaveTextContent(
@@ -334,7 +333,7 @@ describe("NavMenu", () => {
       await user.click(trigger());
 
       const item = await screen.findByRole("menuitem", {
-        name: KNOCKOUTS_NAME,
+        name: "Knockouts",
       });
 
       expect(item).not.toHaveAttribute("data-disabled");
@@ -420,7 +419,7 @@ describe("NavMenu", () => {
       await user.click(trigger());
 
       const item = await screen.findByRole("menuitem", {
-        name: KNOCKOUTS_NAME,
+        name: "Knockouts",
       });
 
       expect(item).not.toHaveAttribute("data-disabled");
@@ -457,7 +456,7 @@ describe("NavMenu", () => {
         within(drawer)
           .getAllByRole("link")
           .map((link) => link.textContent),
-      ).toEqual(["Home", "Games", KNOCKOUTS_TEXT, COMPARE_PLAYERS_TEXT]);
+      ).toEqual(["Home", "Games", "Knockouts", COMPARE_PLAYERS_TEXT]);
       expect(
         within(drawer).getByRole("button", { name: "Settings" }),
       ).toBeInTheDocument();
@@ -487,7 +486,7 @@ describe("NavMenu", () => {
         within(drawer).getByRole("link", { name: "Home" }),
       ).toHaveAttribute("href");
       const knockouts = within(drawer).getByRole("link", {
-        name: KNOCKOUTS_NAME,
+        name: "Knockouts",
       });
       expect(knockouts).toHaveAttribute("aria-disabled", "true");
       expect(knockouts).not.toHaveAccessibleDescription();
@@ -508,7 +507,7 @@ describe("NavMenu", () => {
       const { drawer } = await openDrawer();
 
       expect(
-        within(drawer).getByRole("link", { name: KNOCKOUTS_NAME }),
+        within(drawer).getByRole("link", { name: "Knockouts" }),
       ).toHaveAccessibleDescription("No game knocks anyone out");
     });
 
@@ -516,7 +515,7 @@ describe("NavMenu", () => {
       const { drawer } = await openDrawer();
 
       expect(
-        within(drawer).getByRole("link", { name: KNOCKOUTS_NAME }),
+        within(drawer).getByRole("link", { name: "Knockouts" }),
       ).toBeVisible();
     });
 
@@ -524,7 +523,7 @@ describe("NavMenu", () => {
       const { drawer } = await openDrawer({ at: KNOCKOUTS_PATH });
 
       expect(
-        within(drawer).getByRole("link", { name: KNOCKOUTS_NAME }),
+        within(drawer).getByRole("link", { name: "Knockouts" }),
       ).toHaveAttribute("aria-current", "page");
       expect(
         within(drawer).getByRole("link", { name: "Home" }),
@@ -542,9 +541,7 @@ describe("NavMenu", () => {
     it("goes to the knockouts page and closes on a tap", async () => {
       const { user, drawer } = await openDrawer();
 
-      await user.click(
-        within(drawer).getByRole("link", { name: KNOCKOUTS_NAME }),
-      );
+      await user.click(within(drawer).getByRole("link", { name: "Knockouts" }));
 
       expect(await screen.findByTestId("landed")).toHaveTextContent(
         KNOCKOUTS_PATH,
@@ -557,9 +554,7 @@ describe("NavMenu", () => {
     it("closes on a tap of the page it is on", async () => {
       const { user, drawer } = await openDrawer({ at: KNOCKOUTS_PATH });
 
-      await user.click(
-        within(drawer).getByRole("link", { name: KNOCKOUTS_NAME }),
-      );
+      await user.click(within(drawer).getByRole("link", { name: "Knockouts" }));
 
       await waitFor(() =>
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
