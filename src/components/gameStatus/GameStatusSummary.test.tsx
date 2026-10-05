@@ -3,6 +3,7 @@ import { GameStatus, HomeAway } from "../../types/ESPN";
 import { LeagueResult } from "../../types/LeagueResult";
 import { League } from "../../types/League";
 import { WeekGame } from "../../types/WeekGame";
+import { stubMatchMedia } from "../../setupTests";
 import GameStatusSummary from "./GameStatusSummary";
 
 const KICKOFF = new Date("2024-10-06T17:00:00Z");
@@ -496,6 +497,31 @@ describe("GameStatusSummary, a team with no mark", () => {
   it("drops both marks where one of them fails to load", () => {
     render(<GameStatusSummary game={game(result())} result={result()} />);
     fireEvent.error(document.querySelectorAll("img")[0]);
+    expect(logos()).toEqual([]);
+  });
+
+  it("falls back to a team's own mark where its dark variant fails to load", () => {
+    stubMatchMedia(true);
+    const espn = (dir: string, team: string) =>
+      `https://a.espncdn.com/i/teamlogos/nfl/${dir}/${team}.png`;
+    const base = result();
+    const darkFirst = result({
+      home: {
+        ...base.home,
+        team: { ...base.home.team, logoUrl: espn("500", "buf") },
+      },
+    });
+    render(<GameStatusSummary game={game(darkFirst)} result={darkFirst} />);
+    const home = () =>
+      [...document.querySelectorAll("img")].find((logo) =>
+        logo.getAttribute("src")?.endsWith("/buf.png"),
+      );
+    expect(home()).toHaveAttribute("src", espn("500-dark", "buf"));
+
+    fireEvent.error(home()!);
+    expect(home()).toHaveAttribute("src", espn("500", "buf"));
+
+    fireEvent.error(home()!);
     expect(logos()).toEqual([]);
   });
 });

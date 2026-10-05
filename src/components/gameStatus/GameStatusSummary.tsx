@@ -363,7 +363,16 @@ export default function GameStatusSummary({
                   // the frame goes up puts the mark on screen with the name beside
                   // it rather than a frame behind it.
                   decoding="sync"
-                  onError={() => setLogolessId(shown.id)}
+                  onError={(event) => {
+                    // A team ESPN drew no dark variant for falls back to its own
+                    // logo before the game gives up both marks.
+                    const light = side.team.logoUrl as string;
+                    if (event.currentTarget.getAttribute("src") !== light) {
+                      event.currentTarget.src = light;
+                    } else {
+                      setLogolessId(shown.id);
+                    }
+                  }}
                 />
               )
             : undefined
