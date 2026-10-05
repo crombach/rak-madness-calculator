@@ -52,4 +52,9 @@ export type KnockoutGames = {
    * included, each with the players it knocked out.
    */
   games: Array<KnockoutGame>;
+  /**
+   * True when the week could not be read, or the code that reads it could not
+   * load. `games` is then empty, though some game may knock someone out.
+   */
+  isUnreadable?: boolean;
 };

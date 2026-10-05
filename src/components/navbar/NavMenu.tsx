@@ -76,10 +76,12 @@ const KNOCKOUTS: NavItem = {
   // week needs none either.
   disabled: ({ knockouts }) =>
     knockouts == null || knockouts.games.length === 0,
-  disabledReason: ({ isWeekSettled, knockouts }) =>
-    !isWeekSettled && knockouts?.games.length === 0
+  disabledReason: ({ isWeekSettled, knockouts }) => {
+    if (knockouts?.isUnreadable) return "Knockouts could not load";
+    return !isWeekSettled && knockouts?.games.length === 0
       ? "No game knocks anyone out"
-      : undefined,
+      : undefined;
+  },
 };
 
 // Home leads, then the pages. Settings renders after them, outside this list.

@@ -33,13 +33,13 @@ beforeEach(() => {
   vi.spyOn(console, "warn").mockImplementation(() => {});
 });
 
-it("mounts the page when the knockouts' code fails, so a poll can ask again", async () => {
+it("sends the page to the scoreboard when the knockouts' code fails, rather than leave it blank", async () => {
   mountApp(`/${SEASON}/${CURRENT_WEEK}/knockouts`);
 
   expect(
-    await screen.findByRole("heading", { level: 1, name: /Knockouts/ }),
+    await screen.findByRole("heading", {
+      level: 1,
+      name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
+    }),
   ).toBeInTheDocument();
-  await vi.waitFor(() =>
-    expect(document.querySelector(".knockouts.--loading")).toBeNull(),
-  );
 });

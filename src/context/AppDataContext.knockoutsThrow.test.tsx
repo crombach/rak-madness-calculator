@@ -1,4 +1,5 @@
 import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 vi.mock("../utils/getLeagueInfo");
 vi.mock("../utils/readFileToBuffer");
@@ -49,6 +50,18 @@ it("keeps the scoreboard up when the knockouts throw", async () => {
       name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
     }),
   ).toBeInTheDocument();
+});
+
+it("says in the menu that the knockouts could not load when they throw", async () => {
+  vi.spyOn(console, "warn").mockImplementation(() => {});
+  const user = userEvent.setup();
+  mountApp(`/${SEASON}/${CURRENT_WEEK}`);
+
+  await user.click(await screen.findByRole("button", { name: "Menu" }));
+
+  expect(
+    await screen.findByRole("menuitem", { name: /Knockouts/ }),
+  ).toHaveAccessibleDescription("Knockouts could not load");
 });
 
 it("sends a direct link to Knockouts to the scoreboard when the knockouts throw", async () => {

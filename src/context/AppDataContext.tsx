@@ -305,11 +305,11 @@ export function useScoreChanges(): ScoreChanges {
 
 type GetKnockouts = (scores: RakMadnessScores) => KnockoutGames;
 
-/**
- * A week the knockouts cannot read, or a reader not opted into experimental
- * features, answered as one with nothing to show.
- */
+/** A reader not opted into experimental features, answered as a week with nothing to show. */
 const NO_KNOCKOUTS: KnockoutGames = { games: [] };
+
+/** A week the knockouts cannot read, or whose code would not download. */
+const UNREADABLE_KNOCKOUTS: KnockoutGames = { games: [], isUnreadable: true };
 
 /** Set once `loadGetKnockouts` lands, so a render after it can read it at once. */
 let loadedGetKnockouts: GetKnockouts | undefined;
@@ -336,11 +336,12 @@ function useWeekKnockouts(
   scores: RakMadnessScores | undefined,
 ): KnockoutGames | undefined {
   const [getKnockouts, setGetKnockouts] = useState(() => loadedGetKnockouts);
+  const [hasLoadFailed, setLoadFailed] = useState(false);
   const { experimentalFeatures } = useSettings();
   const isNeeded = scores != null && experimentalFeatures;
 
   // Asks again on each new set of scores until the code arrives, so one failed
-  // download costs one poll rather than the page.
+  // download costs the knockouts only until the next poll.
   useEffect(() => {
     if (!isNeeded || getKnockouts != null) return;
     let isCurrent = true;
@@ -348,7 +349,10 @@ function useWeekKnockouts(
       (module) => {
         if (isCurrent) setGetKnockouts(() => module.default);
       },
-      (error) => console.warn("Could not load the knockouts", error),
+      (error) => {
+        console.warn("Could not load the knockouts", error);
+        if (isCurrent) setLoadFailed(true);
+      },
     );
     return () => {
       isCurrent = false;
@@ -361,16 +365,16 @@ function useWeekKnockouts(
   return useMemo(() => {
     if (scores == null) return undefined;
     if (!experimentalFeatures) return NO_KNOCKOUTS;
-    if (ready == null) return undefined;
+    if (ready == null) return hasLoadFailed ? UNREADABLE_KNOCKOUTS : undefined;
     // Every page sits under this provider, so a week the knockouts cannot read
     // costs only the knockouts. The page sends a link to it to the scoreboard.
     try {
       return ready(scores);
     } catch (error) {
       console.warn("Could not work out the knockouts", error);
-      return NO_KNOCKOUTS;
+      return UNREADABLE_KNOCKOUTS;
     }
-  }, [scores, experimentalFeatures, ready]);
+  }, [scores, experimentalFeatures, ready, hasLoadFailed]);
 }
 
 /** The week's knockouts, or undefined while its scores or the code that reads them load. */

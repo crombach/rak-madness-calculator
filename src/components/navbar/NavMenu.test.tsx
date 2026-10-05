@@ -387,6 +387,19 @@ describe("NavMenu", () => {
       expect(item).toHaveAccessibleDescription("No game knocks anyone out");
     });
 
+    it("says the knockouts could not load rather than that none knock anyone out", async () => {
+      mockKnockouts.mockReturnValue({ games: [], isUnreadable: true });
+      const user = mount();
+      await user.click(trigger());
+
+      const item = await screen.findByRole("menuitem", {
+        name: /Knockouts/,
+      });
+
+      expect(item).toHaveAttribute("data-disabled");
+      expect(item).toHaveAccessibleDescription("Knockouts could not load");
+    });
+
     it("reaches the disabled item by keyboard", async () => {
       mockKnockouts.mockReturnValue({ games: [] });
       const user = mount();
