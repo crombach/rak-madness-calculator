@@ -3,6 +3,7 @@ import { GameStatus, HomeAway } from "../../types/ESPN";
 import { GameSide, LeagueResult } from "../../types/LeagueResult";
 import { PlayerScore } from "../../types/RakMadnessScores";
 import { GameSpread, WeekGame } from "../../types/WeekGame";
+import useTeamLogoUrl from "../../hooks/useTeamLogoUrl";
 import getClasses from "../../utils/getClasses";
 import observeResize from "../../utils/observeResize";
 import parsePick from "../../utils/scoring/parsePick";
@@ -321,6 +322,7 @@ export default function GameStatusSummary({
   // Which game's marks failed to load, rather than a flag, so moving to another
   // game asks about its marks instead of inheriting a verdict on the last one's.
   const [logolessId, setLogolessId] = useState<string>();
+  const logoUrl = useTeamLogoUrl();
 
   if (game == null) {
     return null;
@@ -352,7 +354,7 @@ export default function GameStatusSummary({
             ? (side) => (
                 <img
                   className="game-status__logo"
-                  src={side.team.logoUrl as string}
+                  src={logoUrl(side.team.logoUrl as string)}
                   // The team's name is beside it, so the mark says nothing a
                   // reader of the page in words is missing.
                   alt=""

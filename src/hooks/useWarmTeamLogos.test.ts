@@ -3,6 +3,7 @@ import { League } from "../types/League";
 import { LeagueResult } from "../types/LeagueResult";
 import { WeekGame } from "../types/WeekGame";
 import { finalGame, upcomingGame } from "../utils/scoring/leagueResultFixtures";
+import { stubMatchMedia } from "../setupTests";
 import { warmedImageUrls } from "../utils/warmImage";
 import useWarmTeamLogos from "./useWarmTeamLogos";
 
@@ -40,6 +41,31 @@ describe("useWarmTeamLogos", () => {
       "https://espn.com/PHI.png",
       "https://espn.com/DAL.png",
     ]);
+  });
+
+  it("asks for the dark variant the dark theme draws", () => {
+    stubMatchMedia(true);
+    const dark = upcomingGame({ home: "CAR", away: "NO" });
+    const logo = (abbreviation: string) =>
+      `https://a.espncdn.com/i/teamlogos/nfl/500/${abbreviation}.png`;
+    const result: LeagueResult = {
+      ...dark,
+      home: { ...dark.home, team: { ...dark.home.team, logoUrl: logo("car") } },
+      away: { ...dark.away, team: { ...dark.away.team, logoUrl: logo("no") } },
+    };
+
+    renderHook(() =>
+      useWarmTeamLogos([
+        { label: "P2", league: League.PRO, name: "NO @ CAR", result },
+      ]),
+    );
+
+    expect(warmedImageUrls()).toEqual(
+      expect.arrayContaining([
+        "https://a.espncdn.com/i/teamlogos/nfl/500-dark/car.png",
+        "https://a.espncdn.com/i/teamlogos/nfl/500-dark/no.png",
+      ]),
+    );
   });
 
   it("asks for nothing while the week is still loading", () => {
