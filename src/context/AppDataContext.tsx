@@ -6,6 +6,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  useSyncExternalStore,
 } from "react";
 import { useLocation } from "react-router";
 import useCurrentSeason from "../hooks/useCurrentSeason";
@@ -17,10 +18,10 @@ import { prefetchStoredPicks } from "../utils/loadStoredPicks";
 import { RakMadnessScores } from "../types/RakMadnessScores";
 import { KnockoutGames } from "../utils/scoring/knockoutTypes";
 import cachedImport from "../utils/cachedImport";
+import doNothing from "../utils/doNothing";
 import isWeekSettled, { isWeekWon } from "../utils/scoring/isWeekSettled";
 import { readSettledWeek } from "../utils/settledWeeksCache";
 import { NO_SCORE_CHANGES, ScoreChanges } from "../utils/scoring/scoreChanges";
-import { useSettings } from "./SettingsContext";
 
 /** The season and week lists, and which of each is selected. */
 type Calendar = ReturnType<typeof useLeagueWeeks> &
@@ -305,14 +306,19 @@ export function useScoreChanges(): ScoreChanges {
 
 type GetKnockouts = (scores: RakMadnessScores) => KnockoutGames;
 
-/**
- * A week the knockouts cannot read, or a reader not opted into experimental
- * features, answered as one with nothing to show.
- */
-const NO_KNOCKOUTS: KnockoutGames = { games: [] };
+/** A week the knockouts cannot read, or whose code would not download. */
+const UNREADABLE_KNOCKOUTS: KnockoutGames = { games: [], isUnreadable: true };
 
 /** Set once `loadGetKnockouts` lands, so a render after it can read it at once. */
 let loadedGetKnockouts: GetKnockouts | undefined;
+
+/** Told when `loadedGetKnockouts` is set, whoever asked for the code. */
+const getKnockoutsListeners = new Set<() => void>();
+
+function subscribeToGetKnockouts(listener: () => void): () => void {
+  getKnockoutsListeners.add(listener);
+  return () => getKnockoutsListeners.delete(listener);
+}
 
 /**
  * Loaded on first use. `getKnockouts` pulls in all of `getPlayerAnalysis`, which
@@ -322,6 +328,7 @@ let loadedGetKnockouts: GetKnockouts | undefined;
 export const loadGetKnockouts = cachedImport(() =>
   import("../utils/scoring/getKnockouts").then((module) => {
     loadedGetKnockouts = module.default;
+    getKnockoutsListeners.forEach((listener) => listener());
     return module;
   }),
 );
@@ -329,48 +336,44 @@ export const loadGetKnockouts = cachedImport(() =>
 /**
  * The week's knockouts, or undefined while its scores or the code that reads
  * them load. The provider calls it once, so each set of scores is read once.
- * Answers `NO_KNOCKOUTS` without loading `getKnockouts` while experimental
- * features are off.
  */
 function useWeekKnockouts(
   scores: RakMadnessScores | undefined,
 ): KnockoutGames | undefined {
-  const [getKnockouts, setGetKnockouts] = useState(() => loadedGetKnockouts);
-  const { experimentalFeatures } = useSettings();
-  const isNeeded = scores != null && experimentalFeatures;
+  // The page loads the code too. Its load, landing after this hook's own one
+  // failed, still re-renders the provider.
+  const ready = useSyncExternalStore(
+    subscribeToGetKnockouts,
+    () => loadedGetKnockouts,
+  );
+  const [hasLoadFailed, setLoadFailed] = useState(false);
 
   // Asks again on each new set of scores until the code arrives, so one failed
-  // download costs one poll rather than the page.
+  // download costs the knockouts only until the next poll.
   useEffect(() => {
-    if (!isNeeded || getKnockouts != null) return;
+    if (scores == null || ready != null) return;
     let isCurrent = true;
-    loadGetKnockouts().then(
-      (module) => {
-        if (isCurrent) setGetKnockouts(() => module.default);
-      },
-      (error) => console.warn("Could not load the knockouts", error),
-    );
+    loadGetKnockouts().then(doNothing, (error) => {
+      console.warn("Could not load the knockouts", error);
+      if (isCurrent) setLoadFailed(true);
+    });
     return () => {
       isCurrent = false;
     };
-  }, [isNeeded, scores, getKnockouts]);
+  }, [scores, ready]);
 
-  // The page can land the code before this hook's own request answers. Reading
-  // the module's copy too keeps that render from drawing the skeleton again.
-  const ready = getKnockouts ?? loadedGetKnockouts;
   return useMemo(() => {
     if (scores == null) return undefined;
-    if (!experimentalFeatures) return NO_KNOCKOUTS;
-    if (ready == null) return undefined;
+    if (ready == null) return hasLoadFailed ? UNREADABLE_KNOCKOUTS : undefined;
     // Every page sits under this provider, so a week the knockouts cannot read
     // costs only the knockouts. The page sends a link to it to the scoreboard.
     try {
       return ready(scores);
     } catch (error) {
       console.warn("Could not work out the knockouts", error);
-      return NO_KNOCKOUTS;
+      return UNREADABLE_KNOCKOUTS;
     }
-  }, [scores, experimentalFeatures, ready]);
+  }, [scores, ready, hasLoadFailed]);
 }
 
 /** The week's knockouts, or undefined while its scores or the code that reads them load. */

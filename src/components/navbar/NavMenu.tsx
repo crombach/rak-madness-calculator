@@ -71,15 +71,16 @@ const KNOCKOUTS: NavItem = {
   label: RESULTS_PAGE.knockouts,
   icon: <SkullOutlinedIcon />,
   path: (season, week) => resultsPath(season, week, RESULTS_PAGE.knockouts),
-  experimental: true,
   // Scores still loading, which is soon over and needs no word. A complete
   // week needs none either.
   disabled: ({ knockouts }) =>
     knockouts == null || knockouts.games.length === 0,
-  disabledReason: ({ isWeekSettled, knockouts }) =>
-    !isWeekSettled && knockouts?.games.length === 0
+  disabledReason: ({ isWeekSettled, knockouts }) => {
+    if (knockouts?.isUnreadable) return "Knockouts could not load";
+    return !isWeekSettled && knockouts?.games.length === 0
       ? "No game knocks anyone out"
-      : undefined,
+      : undefined;
+  },
 };
 
 // Home leads, then the pages. Settings renders after them, outside this list.

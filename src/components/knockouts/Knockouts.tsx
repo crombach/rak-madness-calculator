@@ -59,7 +59,7 @@ export default function Knockouts({
   );
 
   if (knockouts == null) return null;
-  // No game knocked anyone out, and none open can.
+  // No game knocked anyone out and none open can, or the week could not be read.
   if (knockouts.games.length === 0) {
     return (
       <Navigate

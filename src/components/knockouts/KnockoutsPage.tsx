@@ -6,7 +6,8 @@ import KnockoutsSkeleton from "./KnockoutsSkeleton";
 // Lazy for the must-win search it reaches, which `ResultsFrame` keeps out of the
 // chunk every route waits on. That search comes with it, so the page never
 // mounts with nothing to draw. A failed download of it still mounts the page,
-// since `lazy` keeps a failure for good, and `useKnockouts` asks again on a poll.
+// since `lazy` keeps a failure for good. `useKnockouts` then answers unreadable,
+// so the page redirects to the scoreboard. It asks again on the next scores.
 export const knockoutsPage = lazyPreloadable(
   async () => {
     const [route] = await Promise.all([

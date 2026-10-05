@@ -17,13 +17,11 @@ import {
   setUpAppTest,
   spreadsheetResponse,
 } from "../../appTestFixtures";
-import { EXPERIMENTAL_FEATURES_KEY } from "../../context/SettingsContext";
 import { League } from "../../types/League";
 import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
 
 beforeEach(() => {
   setUpAppTest().mockResolvedValue(spreadsheetResponse());
-  localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
   const scores = week([
     player({ name: "Alice", total: 5, pro: [pick("KC -3")] }),
     player({ name: "Bob", total: 5, pro: [pick("DEN 3")] }),
@@ -33,13 +31,13 @@ beforeEach(() => {
   vi.spyOn(console, "warn").mockImplementation(() => {});
 });
 
-it("mounts the page when the knockouts' code fails, so a poll can ask again", async () => {
+it("sends the page to the scoreboard when the knockouts' code fails, rather than leave it blank", async () => {
   mountApp(`/${SEASON}/${CURRENT_WEEK}/knockouts`);
 
   expect(
-    await screen.findByRole("heading", { level: 1, name: /Knockouts/ }),
+    await screen.findByRole("heading", {
+      level: 1,
+      name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
+    }),
   ).toBeInTheDocument();
-  await vi.waitFor(() =>
-    expect(document.querySelector(".knockouts.--loading")).toBeNull(),
-  );
 });

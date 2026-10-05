@@ -186,7 +186,8 @@ function knockoutSides(scores: RakMadnessScores): {
     .sort(
       (a, b) =>
         Number(b.finish.hasFinish) - Number(a.finish.hasFinish) ||
-        a.finish.at - b.finish.at ||
+        // Compared, not subtracted: two games with no time are both Infinity.
+        Number(a.finish.at > b.finish.at) - Number(a.finish.at < b.finish.at) ||
         a.order - b.order,
     )
     .map(({ column }) => column);
@@ -255,7 +256,7 @@ function knockoutSides(scores: RakMadnessScores): {
       }
       let side = sides.get(team);
       if (side == null) {
-        side = { team, pick: cell.pick, players: [] };
+        side = { team, pick: formatPickDisplay(cell.pick), players: [] };
         sides.set(team, side);
       }
       side.players.push(player.name);

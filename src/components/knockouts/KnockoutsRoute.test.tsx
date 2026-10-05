@@ -5,12 +5,6 @@ vi.mock("../../utils/getLeagueInfo");
 vi.mock("../../utils/readFileToBuffer");
 vi.mock("../../utils/scoring/getPlayerScores");
 vi.mock("../../utils/buildSpreadsheetBuffer");
-// Spy on the page, so the gate test can prove the page never mounted. A
-// redirect alone could come from the page itself.
-vi.mock("./Knockouts", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("./Knockouts")>();
-  return { default: vi.fn(actual.default) };
-});
 
 import {
   CURRENT_WEEK,
@@ -21,14 +15,10 @@ import {
   setUpAppTest,
   spreadsheetResponse,
 } from "../../appTestFixtures";
-import {
-  EXPERIMENTAL_FEATURES_KEY,
-  PLAYER_NAME_KEY,
-} from "../../context/SettingsContext";
+import { PLAYER_NAME_KEY } from "../../context/SettingsContext";
 import { League } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import plural from "../../utils/plural";
-import Knockouts from "./Knockouts";
 import {
   delayedGame,
   finalGame,
@@ -134,7 +124,6 @@ function playerButtons(pickName: string) {
 
 beforeEach(() => {
   setUpAppTest().mockResolvedValue(spreadsheetResponse());
-  localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
   getPlayerScoresMock.mockResolvedValue(knockoutScores());
 });
 
@@ -428,7 +417,7 @@ describe("the knockouts route", () => {
     expect(
       playerButtons(mustWinHeading(9, "KC -3")).map((it) => it.textContent),
     ).toEqual(KC_BACKERS.slice(0, 6));
-    const more = screen.getByRole("button", { name: "Show More" });
+    const more = screen.getByRole("button", { name: "Show More, KC -3" });
     expect(more).toHaveAttribute("aria-expanded", "false");
 
     await user.click(more);
@@ -436,10 +425,9 @@ describe("the knockouts route", () => {
     expect(
       playerButtons(mustWinHeading(9, "KC -3")).map((it) => it.textContent),
     ).toEqual(KC_BACKERS);
-    expect(screen.getByRole("button", { name: "Show Fewer" })).toHaveAttribute(
-      "aria-expanded",
-      "true",
-    );
+    expect(
+      screen.getByRole("button", { name: "Show Fewer, KC -3" }),
+    ).toHaveAttribute("aria-expanded", "true");
   });
 
   it("offers no toggle for a side that fits in three rows", async () => {
@@ -549,29 +537,6 @@ describe("the knockouts route", () => {
           name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
         }),
       ).toBeInTheDocument();
-
-      await user.click(screen.getByRole("button", { name: "Back" }));
-
-      expect(
-        await screen.findByText("Use Local Spreadsheet"),
-      ).toBeInTheDocument();
-    });
-
-    it("sends a reader without experimental features to the scoreboard in place of the page", async () => {
-      localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
-      vi.mocked(Knockouts).mockClear();
-      const user = mountApp(KNOCKOUTS_PATH, {
-        earlier: ["/"],
-        beside: <BackButton />,
-      });
-
-      expect(
-        await screen.findByRole("heading", {
-          level: 1,
-          name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
-        }),
-      ).toBeInTheDocument();
-      expect(Knockouts).not.toHaveBeenCalled();
 
       await user.click(screen.getByRole("button", { name: "Back" }));
 
