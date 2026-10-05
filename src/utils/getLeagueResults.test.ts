@@ -590,23 +590,29 @@ describe("getLeagueResults, mapping", () => {
       });
     });
 
-    it("waits on the try after a touchdown levels the game as regulation runs out", async () => {
-      const possession = await readLive(
-        {
-          type: { text: "Passing Touchdown" },
-          scoreValue: 6,
-          start: { team: { id: "KC" } },
-          end: { team: { id: "KC" } },
-        },
-        {},
-        { period: 4, displayClock: "0:00" },
-        { homeScore: 20, awayScore: 20 },
-      );
-      expect(possession).toEqual({
-        homeAway: HomeAway.AWAY,
-        between: "KC extra point",
-      });
-    });
+    it.each([
+      ["levels the game", 20],
+      ["leaves its side two short", 22],
+    ])(
+      "waits on the try after a touchdown %s as regulation runs out",
+      async (_, homeScore) => {
+        const possession = await readLive(
+          {
+            type: { text: "Passing Touchdown" },
+            scoreValue: 6,
+            start: { team: { id: "KC" } },
+            end: { team: { id: "KC" } },
+          },
+          {},
+          { period: 4, displayClock: "0:00" },
+          { homeScore, awayScore: 20 },
+        );
+        expect(possession).toEqual({
+          homeAway: HomeAway.AWAY,
+          between: "KC extra point",
+        });
+      },
+    );
 
     it.each([
       ["the kickoff", "Kickoff"],

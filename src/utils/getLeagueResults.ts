@@ -299,7 +299,6 @@ const TRY_PLAY = /Extra Point|Two.?Point|\bPAT\b/i;
 const COIN_TOSS = "Coin Toss";
 const END_OF_GAME = "End of Game";
 const END_OF_REGULATION = "End of Regulation";
-/** A kick's play text, like `C.Dicker kicks 65 yards from LAC 35`. */
 const KICKS = /\bkicks\b/;
 
 /** Plays that say nothing about who has the ball. */
@@ -309,7 +308,7 @@ const BREAK_PLAYS = new Set([
   "Two-minute warning",
   "End Period",
   "End of Half",
-  "End of Regulation",
+  END_OF_REGULATION,
   COIN_TOSS,
   END_OF_GAME,
 ]);
@@ -393,13 +392,19 @@ function readPossession(
   if (type === END_OF_GAME) {
     return { between: END_OF_GAME };
   }
-  // Regulation that runs out with a side ahead is the end of the game, though
-  // ESPN can take a poll or two to say so. Level, overtime is still to come,
-  // unless a touchdown just leveled it and its try can still win it.
+  // Regulation that runs out is the end of the game, or level, of regulation. A
+  // touchdown that leaves its side short of the lead still has its try to play.
   const regulation = status.period === REGULATION_PERIODS;
-  const level = sides[0]?.score === sides[1]?.score;
-  const touchdown = (play?.scoreValue ?? 0) >= TOUCHDOWN_POINTS;
-  if (isHalfOver(status) && !(regulation && level && touchdown)) {
+  const [first, second] = sides.map((side) => Number(side.score));
+  const level = first === second;
+  const scorer = byId((play?.end?.team ?? play?.team)?.id);
+  const other = sides.find((side) => side !== scorer);
+  const tryToCome =
+    (play?.scoreValue ?? 0) >= TOUCHDOWN_POINTS &&
+    scorer != null &&
+    other != null &&
+    Number(scorer.score) <= Number(other.score);
+  if (isHalfOver(status) && !(regulation && tryToCome)) {
     if (!regulation) return {};
     return { between: level ? END_OF_REGULATION : END_OF_GAME };
   }
@@ -415,8 +420,8 @@ function readPossession(
     const between = kicker && kickOff(kicker);
     return { homeAway: possession.homeAway, between };
   }
-  // A kickoff ESPN still counts as after the score is to be kicked again, most
-  // often for a penalty on it. The kicking side starts the play.
+  // A kick with the down still after the score is to be kicked again. The kicking
+  // side starts the play.
   if (situation?.down === AFTER_SCORE_DOWN && KICKS.test(play.text ?? "")) {
     const kicker = byId(play.start?.team?.id);
     if (kicker) return { between: kickOff(kicker) };
