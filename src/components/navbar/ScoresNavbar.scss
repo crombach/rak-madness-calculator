@@ -54,8 +54,9 @@
 //
 // Back on the bar the moment it is tabbed to, the way `.page__skip-link` comes
 // back. Clipped to a pixel it is still in the tab order, so a keyboard on a
-// tablet would otherwise land focus on something nobody can see. The bar shifts
-// when it returns, which is the whole of what a reader tabbing to it is asking for.
+// touch screen would otherwise land focus on something nobody can see. The bar
+// shifts when it returns, which is the whole of what a reader tabbing to it is
+// asking for.
 @include touch-screen {
   .scores-nav__live:not(:focus-within) {
     @include visually-hidden;

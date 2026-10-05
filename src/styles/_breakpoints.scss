@@ -70,9 +70,10 @@ $breakpoint-short: 540px;
 }
 
 /**
- * A screen whose main pointer is touch, at any width. Asks about the main pointer
- * only: Firefox on Android counts a stylus that can hover, such as the S Pen, in
- * `any-hover`, so `any-hover: none` would hand a phone the click controls.
+ * A screen whose main pointer is touch, at any width. `index.scss` exports it for
+ * `matchMedia`. Asks about the main pointer only. Firefox on Android counts a
+ * stylus that can hover, such as the S Pen, in `any-hover`, so `any-hover: none`
+ * would hand a phone the click controls.
  */
 $touch-screen-query: "(pointer: coarse) and (hover: none)";
 
