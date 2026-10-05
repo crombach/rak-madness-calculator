@@ -428,7 +428,7 @@ describe("the knockouts route", () => {
     expect(
       playerButtons(mustWinHeading(9, "KC -3")).map((it) => it.textContent),
     ).toEqual(KC_BACKERS.slice(0, 6));
-    const more = screen.getByRole("button", { name: "Show More" });
+    const more = screen.getByRole("button", { name: "Show More, KC -3" });
     expect(more).toHaveAttribute("aria-expanded", "false");
 
     await user.click(more);
@@ -436,10 +436,9 @@ describe("the knockouts route", () => {
     expect(
       playerButtons(mustWinHeading(9, "KC -3")).map((it) => it.textContent),
     ).toEqual(KC_BACKERS);
-    expect(screen.getByRole("button", { name: "Show Fewer" })).toHaveAttribute(
-      "aria-expanded",
-      "true",
-    );
+    expect(
+      screen.getByRole("button", { name: "Show Fewer, KC -3" }),
+    ).toHaveAttribute("aria-expanded", "true");
   });
 
   it("offers no toggle for a side that fits in three rows", async () => {

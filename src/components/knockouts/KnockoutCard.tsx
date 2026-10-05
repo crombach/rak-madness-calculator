@@ -41,11 +41,14 @@ const BASE_COLUMNS = 2;
  */
 function Side({
   heading,
+  sideName,
   players: ranked,
   isFinal,
   knockedOut,
 }: {
   heading: ReactNode;
+  /** The pick or tier the side is under, as its fold toggle names it. */
+  sideName: string;
   players: Array<string>;
   isFinal: boolean;
   knockedOut: ReadonlySet<string>;
@@ -54,8 +57,10 @@ function Side({
   const { playerName } = useSettings();
   const [isExpanded, setIsExpanded] = useState(false);
   const players = useMemo(() => {
-    const mine = ranked.filter((name) => isMyPlayer(name, playerName));
-    return [...mine, ...ranked.filter((name) => !mine.includes(name))];
+    const mine = new Set(
+      ranked.filter((player) => isMyPlayer(player, playerName)),
+    );
+    return [...mine, ...ranked.filter((player) => !mine.has(player))];
   }, [ranked, playerName]);
   const grid = useRef<HTMLUListElement>(null);
   const limit = FOLDED_ROWS * useGridColumns(grid, BASE_COLUMNS);
@@ -100,6 +105,7 @@ function Side({
           onClick={() => setIsExpanded(!isExpanded)}
         >
           {isExpanded ? "Show Fewer" : "Show More"}
+          <span className="knockouts__sr-only">, {sideName}</span>
         </Button>
       )}
     </div>
@@ -164,6 +170,7 @@ export default function KnockoutCard({
                 />
               </>
             }
+            sideName={side.pick}
             players={side.players}
             isFinal={game.isFinal}
             knockedOut={knockedOut}
@@ -173,6 +180,7 @@ export default function KnockoutCard({
           <Side
             key={tier.tiebreaker}
             heading={`${KNOCKED_OUT} ${TIEBREAKER_NAMES[tier.tiebreaker]}`}
+            sideName={TIEBREAKER_NAMES[tier.tiebreaker]}
             players={tier.players}
             isFinal
             knockedOut={knockedOut}
