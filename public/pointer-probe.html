@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pointer Probe</title>
+<style>
+  /* One column of rows: query on the left, answer on the right. */
+  :root {
+    --bg: #f5f7f6; --fg: #1b2420; --muted: #5d6b65; --line: #d6dedb;
+    --yes: #1f7a4d; --no: #a33a2c; --surface: #ffffff;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg: #121816; --fg: #e3ebe7; --muted: #92a39b; --line: #2a3530;
+    --yes: #5cc98f; --no: #f08a7a; --surface: #1a2220; color-scheme: dark } }
+  :root[data-theme="dark"] {
+    --bg: #121816; --fg: #e3ebe7; --muted: #92a39b; --line: #2a3530;
+    --yes: #5cc98f; --no: #f08a7a; --surface: #1a2220; color-scheme: dark }
+  body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--sans);
+    padding: 24px 16px; max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; text-wrap: balance; }
+  p { color: var(--muted); margin: 0 0 16px; }
+  .verdict { background: var(--surface); border: 1px solid var(--line);
+    border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  td { padding: 8px 12px; border-top: 1px solid var(--line); vertical-align: top; }
+  tr:first-child td { border-top: 0; }
+  td:first-child { font-family: var(--mono); font-size: 13px; word-break: break-word; }
+  td:last-child { text-align: right; font-weight: 600; white-space: nowrap; }
+  .yes { color: var(--yes); } .no { color: var(--no); }
+  button { margin-top: 16px; font: inherit; padding: 10px 16px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  button:focus-visible { outline: 2px solid var(--yes); outline-offset: 2px; }
+  textarea { width: 100%; box-sizing: border-box; margin-top: 8px; font: 12px var(--mono);
+    background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Pointer Probe</h1>
+<p>What this browser reports about its inputs. The answers update when a mouse or keyboard is attached or removed.</p>
+<div class="verdict" id="verdict"></div>
+<table id="rows"></table>
+<button id="copy" type="button">Copy report</button>
+<textarea id="report" rows="6" readonly hidden></textarea>
+
+<script>
+  const GATE = "(pointer: coarse) and (any-hover: none)";
+  const QUERIES = [
+    GATE,
+    "(pointer: coarse)", "(pointer: fine)", "(pointer: none)",
+    "(any-pointer: coarse)", "(any-pointer: fine)", "(any-pointer: none)",
+    "(hover: hover)", "(hover: none)",
+    "(any-hover: hover)", "(any-hover: none)",
+  ];
+  const lists = QUERIES.map((q) => matchMedia(q));
+
+  function render() {
+    const rows = lists.map((m) =>
+      `<tr><td>${m.media}</td><td class="${m.matches ? "yes" : "no"}">${m.matches ? "yes" : "no"}</td></tr>`);
+    rows.push(`<tr><td>navigator.maxTouchPoints</td><td>${navigator.maxTouchPoints}</td></tr>`);
+    rows.push(`<tr><td>ontouchstart in window</td><td>${"ontouchstart" in window ? "yes" : "no"}</td></tr>`);
+    rows.push(`<tr><td>pointerType seen</td><td>${[...seen].join(", ") || "tap anywhere"}</td></tr>`);
+    rows.push(`<tr><td>viewport</td><td>${innerWidth}×${innerHeight}</td></tr>`);
+    rows.push(`<tr><td>userAgent</td><td style="white-space:normal;font-weight:400;font-size:12px">${navigator.userAgent}</td></tr>`);
+    document.getElementById("rows").innerHTML = rows.join("");
+    const touch = lists[0].matches;
+    document.getElementById("verdict").textContent = touch
+      ? "Touch controls: the app shows pull-to-refresh and the menu drawer."
+      : "Mouse controls: the app shows the refresh button and the menu popup.";
+  }
+
+  function report() {
+    return [
+      ...lists.map((m) => `${m.media}: ${m.matches}`),
+      `maxTouchPoints: ${navigator.maxTouchPoints}`,
+      `ontouchstart: ${"ontouchstart" in window}`,
+      `pointerType seen: ${[...seen].join(", ")}`,
+      `viewport: ${innerWidth}x${innerHeight}`,
+      `userAgent: ${navigator.userAgent}`,
+    ].join("\n");
+  }
+
+  const seen = new Set();
+  addEventListener("pointerdown", (e) => { seen.add(e.pointerType); render(); });
+  lists.forEach((m) => m.addEventListener("change", render));
+  addEventListener("resize", render);
+  render();
+
+  document.getElementById("copy").addEventListener("click", () => {
+    const text = report();
+    const box = document.getElementById("report");
+    navigator.clipboard.writeText(text).then(
+      () => { document.getElementById("copy").textContent = "Copied"; },
+      () => { box.value = text; box.hidden = false; box.select(); },
+    );
+  });
+</script>
+</body>
+</html>
