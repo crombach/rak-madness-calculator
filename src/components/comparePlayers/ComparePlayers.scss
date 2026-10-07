@@ -77,9 +77,15 @@
   gap: var(--rak-space-2);
 }
 
-// Each key as wide as its label, so all three fit one phone-width row.
+// Choose, the key a reader needs most, is the widest. On a phone it takes what
+// Presets and Best leave. In the toolbar, sized to its keys, it is a quarter
+// wider than the other two.
 .compare-players__keys--players {
-  grid-auto-columns: auto;
+  grid-template-columns: 1fr auto auto;
+
+  @include compare-toolbar {
+    grid-template-columns: 1.25fr 1fr 1fr;
+  }
 }
 
 .compare-players__pickers {

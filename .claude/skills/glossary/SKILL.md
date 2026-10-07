@@ -9,29 +9,29 @@ One concept, one name. Reader means the person viewing, in prose and comments. N
 
 ## Names
 
-| Concept                     | UI word           | Code word                                                                     | Never                            |
-| --------------------------- | ----------------- | ----------------------------------------------------------------------------- | -------------------------------- |
-| Pool member                 | player            | `player`, `name`                                                              | user                             |
-| One player's call on a game | pick              | `pick`                                                                        | bet, vote                        |
-| One football game           | game              | `game`                                                                        | matchup                          |
-| Two teams as an index key   | none              | `matchup`, `matchupKey` in `getLeagueResults.ts`                              | a game                           |
-| Pool week                   | week              | `week` (`WeekInfo`), `weekNumber`, `weekParam`                                | round                            |
-| Year of the pool            | season            | `season`                                                                      | year                             |
-| Ranked table page           | Scoreboard        | route `scoreboard`, `ScoresTable`, `ScoreboardRoute`, xlsx sheet "Scoreboard" | standings, leaderboard, rankings |
-| Every game of a week        | Games             | route `games`, `Games*`                                                       | Live Games                       |
-| Games that move the ranking | Knockouts         | route `knockouts`, `Knockouts*`, `Knockout*`                                  | Swing Games, swings, upsets      |
-| Monday night points guess   | MNF Points        | `tiebreaker`                                                                  | tiebreak                         |
-| Spreadsheet column for it   | Pts               | column header only                                                            |                                  |
-| Point spread                | spread            | `spread`                                                                      | line                             |
-| Against the spread          | ATS               | `proAgainstTheSpread`                                                         |                                  |
-| Uploaded picks file         | picks spreadsheet | `workbook`                                                                    |                                  |
-| Where picks persist         | picks store       | R2 bucket behind `/api/picks`                                                 | database                         |
-| NFL or college              | league            | `League` enum                                                                 | pool                             |
-| The Rak Madness group       | pool              | none                                                                          | league                           |
-| Finished week               | Week complete     | `settled`                                                                     | done, over                       |
-| Week's top row              | Leader, or Winner | `leader`. Winner once the week is complete                                    | first place                      |
-| Per-player win analysis     | Player Analysis   | `playerAnalysis`, `PlayerAnalysis*`                                           |                                  |
-| Players saved under a name  | preset            | `Preset`, `ComparePresetsDialog`, setting `comparePresets`                    | group, favorites, list           |
+| Concept                     | UI word                                  | Code word                                                                     | Never                            |
+| --------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------- |
+| Pool member                 | player                                   | `player`, `name`                                                              | user                             |
+| One player's call on a game | pick                                     | `pick`                                                                        | bet, vote                        |
+| One football game           | game                                     | `game`                                                                        | matchup                          |
+| Two teams as an index key   | none                                     | `matchup`, `matchupKey` in `getLeagueResults.ts`                              | a game                           |
+| Pool week                   | week                                     | `week` (`WeekInfo`), `weekNumber`, `weekParam`                                | round                            |
+| Year of the pool            | season                                   | `season`                                                                      | year                             |
+| Ranked table page           | Scoreboard                               | route `scoreboard`, `ScoresTable`, `ScoreboardRoute`, xlsx sheet "Scoreboard" | standings, leaderboard, rankings |
+| Every game of a week        | Games                                    | route `games`, `Games*`                                                       | Live Games                       |
+| Games that move the ranking | Knockouts                                | route `knockouts`, `Knockouts*`, `Knockout*`                                  | Swing Games, swings, upsets      |
+| Monday night points guess   | MNF Points                               | `tiebreaker`                                                                  | tiebreak                         |
+| Spreadsheet column for it   | Pts                                      | column header only                                                            |                                  |
+| Point spread                | spread                                   | `spread`                                                                      | line                             |
+| Against the spread          | ATS                                      | `proAgainstTheSpread`                                                         |                                  |
+| Uploaded picks file         | picks spreadsheet                        | `workbook`                                                                    |                                  |
+| Where picks persist         | picks store                              | R2 bucket behind `/api/picks`                                                 | database                         |
+| NFL or college              | league                                   | `League` enum                                                                 | pool                             |
+| The Rak Madness group       | pool                                     | none                                                                          | league                           |
+| Finished week               | Week complete                            | `settled`                                                                     | done, over                       |
+| Week's top row              | Leader, or Winner. Its toggle reads Best | `leader`. Winner once the week is complete                                    | first place                      |
+| Per-player win analysis     | Player Analysis                          | `playerAnalysis`, `PlayerAnalysis*`                                           |                                  |
+| Players saved under a name  | preset                                   | `Preset`, `ComparePresetsDialog`, setting `comparePresets`                    | group, favorites, list           |
 
 The "Player rankings" caption on the Scoreboard table is the screen-reader name. Keep it.
 

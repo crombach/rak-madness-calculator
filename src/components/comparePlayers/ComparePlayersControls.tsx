@@ -59,7 +59,7 @@ function DialogKey({
 
 type DialogKeyProps = Omit<Parameters<typeof DialogKey>[0], "label">;
 
-/** Choose, Presets and the leader toggle, each as wide as its label. */
+/** Choose, Presets and the leader toggle, Choose taking the room the other two leave. */
 export function PlayersGroup({
   choose,
   leader,
@@ -81,26 +81,19 @@ export function PlayersGroup({
   );
 }
 
-/** Adds the week's leader to the players chosen. Reads "Show Winner" once the week is complete. */
+/** Adds the week's leader, or its winner once complete, to the players chosen. */
 export function LeaderToggle({
   on,
-  isSettled = false,
   onChange = doNothing,
   disabled = false,
 }: {
   on: boolean;
-  isSettled?: boolean;
   onChange?: (on: boolean) => void;
   disabled?: boolean;
 }) {
   return (
-    <Button
-      compact
-      disabled={disabled}
-      selected={on}
-      onClick={() => onChange(!on)}
-    >
-      {isSettled ? "Show Winner" : "Show Leader"}
+    <Button disabled={disabled} selected={on} onClick={() => onChange(!on)}>
+      Best
     </Button>
   );
 }

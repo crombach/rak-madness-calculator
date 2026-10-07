@@ -744,7 +744,7 @@ describe("the compare players route", () => {
     const [choose, presets, leader] = within(players).getAllByRole("button");
     expect(choose).toHaveAccessibleName("Choose");
     expect(presets).toHaveAccessibleName("Presets");
-    expect(leader).toHaveAccessibleName("Show Leader");
+    expect(leader).toHaveAccessibleName("Best");
   });
 
   it("adds the leader to the players chosen", async () => {
@@ -755,7 +755,7 @@ describe("the compare players route", () => {
     const user = mountApp(COMPARE_PATH);
     await screen.findByRole("table", { name: "Picks of Bob and Carol" });
 
-    await user.click(screen.getByRole("button", { name: "Show Leader" }));
+    await user.click(screen.getByRole("button", { name: "Best" }));
 
     const table = await screen.findByRole("table", {
       name: "Picks of Bob, Carol, and Alice",
@@ -843,7 +843,7 @@ describe("the compare players route", () => {
     );
     const user = mountApp(COMPARE_PATH);
     await screen.findByRole("table");
-    const toggle = screen.getByRole("button", { name: "Show Leader" });
+    const toggle = screen.getByRole("button", { name: "Best" });
 
     await user.click(toggle);
     expect(toggle).toHaveAttribute("aria-pressed", "true");
@@ -854,7 +854,7 @@ describe("the compare players route", () => {
     expect(localStorage.getItem(LEADER_KEY)).toBeNull();
   });
 
-  it("calls the leader the winner once the week is complete", async () => {
+  it("adds the winner once the week is complete", async () => {
     getPlayerScoresMock.mockResolvedValue(
       week(
         [
@@ -869,9 +869,7 @@ describe("the compare players route", () => {
     await openDialog(user);
     await closeDialog(user);
 
-    await user.click(
-      await screen.findByRole("button", { name: "Show Winner" }),
-    );
+    await user.click(await screen.findByRole("button", { name: "Best" }));
 
     expect(
       await screen.findByRole("table", { name: "Picks of Bob and Alice" }),

@@ -1,5 +1,4 @@
 import { useMemo, useRef, useState } from "react";
-import { useIsWeekSettled } from "../../context/AppDataContext";
 import { isMyPlayer, useSettings } from "../../context/SettingsContext";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import differingGames, { sameGames } from "../../utils/scoring/differingGames";
@@ -122,7 +121,6 @@ export default function ComparePlayers({
   scores?: RakMadnessScores;
 }) {
   const { playerName } = useSettings();
-  const isSettled = useIsWeekSettled();
   const options = useMemo(() => playerOptions(scores), [scores]);
   const [slots, setSlots] = useState(() =>
     startingSlots(scores?.scores ?? [], playerName),
@@ -195,7 +193,6 @@ export default function ComparePlayers({
             }}
             leader={{
               on: showsLeader,
-              isSettled,
               onChange: (on) => {
                 setShowsLeader(on);
                 writeShowsLeader(on);
