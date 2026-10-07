@@ -77,24 +77,9 @@
   gap: var(--rak-space-2);
 }
 
-// Choose Players over the leader toggle and Presets, until the toolbar fits on
-// one line.
+// Each key as wide as its label, so all three fit one phone-width row.
 .compare-players__keys--players {
-  grid-template-columns: 1fr 1fr;
-  grid-auto-flow: row;
-
-  @include compare-toolbar {
-    grid-template-columns: none;
-    grid-auto-flow: column;
-  }
-}
-
-.compare-players__choose {
-  grid-column: 1 / -1;
-
-  @include compare-toolbar {
-    grid-column: auto;
-  }
+  grid-auto-columns: auto;
 }
 
 .compare-players__pickers {

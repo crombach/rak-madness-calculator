@@ -73,7 +73,7 @@ async function openDialog(user: ReturnType<typeof mountApp>) {
   const opener = await waitFor(
     () =>
       screen.queryByRole("dialog") ??
-      screen.getByRole("button", { name: "Choose Players" }),
+      screen.getByRole("button", { name: "Choose" }),
   );
   if (opener.getAttribute("role") !== "dialog") await user.click(opener);
 }
@@ -364,9 +364,7 @@ describe("the compare players route", () => {
     await closeDialog(user);
 
     await waitFor(() =>
-      expect(
-        screen.getByRole("button", { name: "Choose Players" }),
-      ).toHaveFocus(),
+      expect(screen.getByRole("button", { name: "Choose" })).toHaveFocus(),
     );
   });
 
@@ -374,7 +372,7 @@ describe("the compare players route", () => {
     const user = mountApp(COMPARE_PATH);
     await screen.findByRole("dialog", { name: "Compare Players" });
     const choose = screen.getByRole("button", {
-      name: "Choose Players",
+      name: "Choose",
       hidden: true,
     });
     expect(choose).toHaveAttribute("data-popup-open");
@@ -394,7 +392,7 @@ describe("the compare players route", () => {
     await choose(user, "Player 3", "Bob");
     await closeDialog(user);
 
-    await user.click(screen.getByRole("button", { name: "Choose Players" }));
+    await user.click(screen.getByRole("button", { name: "Choose" }));
 
     expect(
       await screen.findByRole("combobox", { name: "Player 3" }),
@@ -408,7 +406,7 @@ describe("the compare players route", () => {
     await choose(user, "Player 3", "Carol");
     await closeDialog(user);
 
-    await user.click(screen.getByRole("button", { name: "Choose Players" }));
+    await user.click(screen.getByRole("button", { name: "Choose" }));
 
     expect(
       await screen.findByRole("combobox", { name: "Player 1" }),
@@ -425,7 +423,7 @@ describe("the compare players route", () => {
     await user.click(screen.getByRole("button", { name: "Add Player" }));
     await closeDialog(user);
 
-    await user.click(screen.getByRole("button", { name: "Choose Players" }));
+    await user.click(screen.getByRole("button", { name: "Choose" }));
 
     expect(
       await screen.findByRole("combobox", { name: "Player 1" }),
@@ -735,7 +733,7 @@ describe("the compare players route", () => {
     );
   });
 
-  it("groups Choose Players, the leader toggle and Presets under Players", async () => {
+  it("groups Choose, Presets and the leader toggle under Players", async () => {
     localStorage.setItem(
       COMPARED_PLAYERS_KEY,
       JSON.stringify(["Alice", "Carol"]),
@@ -743,11 +741,10 @@ describe("the compare players route", () => {
     mountApp(COMPARE_PATH);
 
     const players = await screen.findByRole("group", { name: "Players" });
-    expect(
-      within(players)
-        .getAllByRole("button")
-        .map((button) => button.textContent),
-    ).toEqual(["Choose Players", "Show Leader", "Presets"]);
+    const [choose, presets, leader] = within(players).getAllByRole("button");
+    expect(choose).toHaveAccessibleName("Choose");
+    expect(presets).toHaveAccessibleName("Presets");
+    expect(leader).toHaveAccessibleName("Show Leader");
   });
 
   it("adds the leader to the players chosen", async () => {
@@ -1053,13 +1050,25 @@ describe("compare presets", () => {
     const save = within(dialog).getByRole("button", {
       name: "Save Current Players",
     });
-    expect(save).toHaveAccessibleDescription("Name the preset first");
-    await user.type(
-      within(dialog).getByRole("textbox", { name: "New Preset" }),
-      "Empty",
-    );
     expect(save).toBeDisabled();
     expect(save).toHaveAccessibleDescription("Choose a player first");
+  });
+
+  it("saves no preset without a name, and gives no reason", async () => {
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(["Alice"]));
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+
+    const save = within(dialog).getByRole("button", {
+      name: "Save Current Players",
+    });
+    expect(save).toBeDisabled();
+    expect(save).not.toHaveAccessibleDescription();
+    await user.type(
+      within(dialog).getByRole("textbox", { name: "New Preset" }),
+      "Mine",
+    );
+    expect(save).toBeEnabled();
   });
 
   it("takes no more of a name than a preset holds", async () => {

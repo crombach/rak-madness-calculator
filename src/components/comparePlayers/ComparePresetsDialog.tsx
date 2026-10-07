@@ -14,7 +14,6 @@ import { isSameName, MAX_PRESET_NAME, Preset } from "./comparedPlayers";
 import "./ComparePlayers.scss";
 
 const NO_PRESETS = "No presets saved";
-const NO_NAME = "Name the preset first";
 const NO_PLAYERS = "Choose a player first";
 const NAME_TAKEN = "Another preset has this name";
 
@@ -40,7 +39,6 @@ function onEnter(action?: () => void) {
 
 /** Why a preset cannot take `draft` as its name, or nothing when it can. */
 function renameReason(preset: Preset, presets: Array<Preset>, draft: string) {
-  if (draft.trim() === "") return NO_NAME;
   const taken = presets.some(
     (other) => other !== preset && isSameName(other.name, draft),
   );
@@ -185,10 +183,9 @@ export default function ComparePresetsDialog({
   const inputId = useId();
   const saveReasonId = useId();
   const match = presets.find((preset) => isSameName(preset.name, name));
-  const saveReason =
-    name.trim() === "" ? NO_NAME : !canSave ? NO_PLAYERS : undefined;
+  const saveReason = canSave ? undefined : NO_PLAYERS;
   const save =
-    saveReason == null
+    name.trim() !== "" && saveReason == null
       ? () => {
           setStatus(`Saved ${name.trim()}`);
           onSave(name);
@@ -216,7 +213,7 @@ export default function ComparePresetsDialog({
         }
       },
       onRename:
-        draft != null && reason == null
+        draft != null && draft.trim() !== "" && reason == null
           ? () => {
               setStatus(`Renamed ${preset.name} to ${draft.trim()}`);
               onRename(preset.name, draft);

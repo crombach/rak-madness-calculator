@@ -41,24 +41,17 @@ export function ControlGroup({
 /** A key that opens a dialog. Here, so the wireframe draws the same button. */
 function DialogKey({
   label,
-  className,
   onClick = doNothing,
   isOpen = false,
   ref,
 }: {
   label: string;
-  className?: string;
   onClick?: () => void;
   isOpen?: boolean;
   ref?: Ref<HTMLButtonElement>;
 }) {
   return (
-    <Button
-      className={className}
-      onClick={onClick}
-      popupOpen={isOpen}
-      ref={ref}
-    >
+    <Button compact onClick={onClick} popupOpen={isOpen} ref={ref}>
       {label}
     </Button>
   );
@@ -66,10 +59,7 @@ function DialogKey({
 
 type DialogKeyProps = Omit<Parameters<typeof DialogKey>[0], "label">;
 
-/**
- * Choose Players, the leader toggle and Presets. Choose Players spans the
- * other two until the toolbar fits on one line.
- */
+/** Choose, Presets and the leader toggle, each as wide as its label. */
 export function PlayersGroup({
   choose,
   leader,
@@ -84,13 +74,9 @@ export function PlayersGroup({
       label="Players"
       keysClassName="compare-players__keys--players"
     >
-      <DialogKey
-        label="Choose Players"
-        className="compare-players__choose"
-        {...choose}
-      />
-      <LeaderToggle {...leader} />
+      <DialogKey label="Choose" {...choose} />
       <DialogKey label="Presets" {...presets} />
+      <LeaderToggle {...leader} />
     </ControlGroup>
   );
 }
@@ -108,7 +94,12 @@ export function LeaderToggle({
   disabled?: boolean;
 }) {
   return (
-    <Button disabled={disabled} selected={on} onClick={() => onChange(!on)}>
+    <Button
+      compact
+      disabled={disabled}
+      selected={on}
+      onClick={() => onChange(!on)}
+    >
       {isSettled ? "Show Winner" : "Show Leader"}
     </Button>
   );

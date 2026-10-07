@@ -18,5 +18,5 @@ plus the week's leader when shown.
   lacks stays, struck through in its picker and drawn as an N/A row.
 - `ComparePlayersSkeleton`: the controls over a `SkeletonTable`, while the week
   or the page chunk loads.
-- `ComparePlayersControls`: `PlayersGroup`, Choose Players, `LeaderToggle` and
-  Presets, then `GamesToggle`, drawn by the page and its skeleton.
+- `ComparePlayersControls`: `PlayersGroup`, Choose, Presets and
+  `LeaderToggle`, then `GamesToggle`, drawn by the page and its skeleton.
