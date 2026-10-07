@@ -4,7 +4,8 @@ import DialogShell from "../dialog/DialogShell";
 import { AddIcon, DeleteIcon } from "../icon/Icon";
 import { PlayerOption } from "../playerAnalysis/playerOptions";
 import PlayerCombobox from "../playerAnalysis/PlayerCombobox";
-import { MIN_PICKERS, pickerLabel } from "./comparedPlayers";
+import { MIN_PICKERS, pickerLabel, Preset } from "./comparedPlayers";
+import ComparePresets from "./ComparePresets";
 // For the section and label rules, which this dialog shares with Settings.
 import "./ComparePlayers.scss";
 
@@ -91,6 +92,11 @@ export default function ComparePlayersDialog({
   onRemove,
   addedKey,
   finalFocus,
+  presets,
+  canSavePreset,
+  onLoadPreset,
+  onSavePreset,
+  onDeletePreset,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -103,6 +109,11 @@ export default function ComparePlayersDialog({
   /** The picker "Add Player" made last, which takes the focus as it mounts. */
   addedKey?: number;
   finalFocus?: RefObject<HTMLElement | null>;
+  presets: Array<Preset>;
+  canSavePreset: boolean;
+  onLoadPreset: (preset: Preset) => void;
+  onSavePreset: (name: string) => void;
+  onDeletePreset: (name: string) => void;
 }) {
   return (
     <DialogShell
@@ -142,6 +153,13 @@ export default function ComparePlayersDialog({
             </Button>
           )}
         </section>
+        <ComparePresets
+          presets={presets}
+          canSave={canSavePreset}
+          onLoad={onLoadPreset}
+          onSave={onSavePreset}
+          onDelete={onDeletePreset}
+        />
       </div>
     </DialogShell>
   );

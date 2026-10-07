@@ -23,6 +23,7 @@ import {
   COMPARED_PLAYERS_KEY,
   GAME_SCOPE_KEY,
   LEADER_KEY,
+  PRESETS_KEY,
 } from "./comparedPlayers";
 
 const COMPARE_PATH = `/${SEASON}/${CURRENT_WEEK}/compare`;
@@ -884,5 +885,130 @@ describe("the compare players route", () => {
         name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
       }),
     ).toBeInTheDocument();
+  });
+});
+
+async function savePresetAs(user: ReturnType<typeof mountApp>, name: string) {
+  const field = screen.getByRole("textbox", { name: "Preset Name" });
+  await user.clear(field);
+  await user.type(field, name);
+  await user.click(screen.getByRole("button", { name: /^(Save|Replace)$/ }));
+}
+
+async function loadPreset(user: ReturnType<typeof mountApp>, name: string) {
+  await user.click(screen.getByRole("button", { name: "Load Preset" }));
+  await user.click(await screen.findByRole("menuitem", { name }));
+}
+
+describe("compare presets", () => {
+  it("loads the players saved under a name", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Carol");
+    await choose(user, "Player 2", "Alice");
+    await savePresetAs(user, "Rivals");
+    await user.click(screen.getByRole("button", { name: "Remove Player 2" }));
+
+    await loadPreset(user, "Rivals");
+
+    expect(screen.getByRole("combobox", { name: "Player 1" })).toHaveValue(
+      "Carol",
+    );
+    expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveValue(
+      "Alice",
+    );
+    expect(
+      JSON.parse(localStorage.getItem(COMPARED_PLAYERS_KEY) ?? ""),
+    ).toEqual(["Carol", "Alice"]);
+  });
+
+  it("loads a preset saved before the page opened", async () => {
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([{ name: "Family", players: ["Bob"] }]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    await openDialog(user);
+
+    await loadPreset(user, "Family");
+
+    expect(screen.getByRole("combobox", { name: "Player 1" })).toHaveValue(
+      "Bob",
+    );
+    expect(screen.getByRole("textbox", { name: "Preset Name" })).toHaveValue(
+      "Family",
+    );
+  });
+
+  it("keeps a preset's player this week lacks, marked as having no picks", async () => {
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([{ name: "Old", players: ["Gone", "Alice"] }]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    await openDialog(user);
+
+    await loadPreset(user, "Old");
+
+    const gone = screen.getByRole("combobox", { name: "Player 1" });
+    expect(gone).toHaveValue("Gone");
+    expect(gone).toHaveAccessibleDescription("No picks this week");
+  });
+
+  it("replaces a preset saved under the same name in any case", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Carol");
+    await savePresetAs(user, "Rivals");
+    await choose(user, "Player 1", "Bob");
+    await user.clear(screen.getByRole("textbox", { name: "Preset Name" }));
+    await user.type(
+      screen.getByRole("textbox", { name: "Preset Name" }),
+      "rivals",
+    );
+
+    await user.click(screen.getByRole("button", { name: "Replace" }));
+
+    expect(JSON.parse(localStorage.getItem(PRESETS_KEY) ?? "")).toEqual([
+      { name: "rivals", players: ["Bob"] },
+    ]);
+  });
+
+  it("deletes the preset the name field names", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Carol");
+    await savePresetAs(user, "Rivals");
+
+    await user.click(screen.getByRole("button", { name: "Delete" }));
+
+    expect(localStorage.getItem(PRESETS_KEY)).toBeNull();
+    expect(screen.getByRole("button", { name: "Load Preset" })).toBeDisabled();
+    expect(screen.getByRole("textbox", { name: "Preset Name" })).toHaveFocus();
+  });
+
+  it("says why each preset action is unavailable", async () => {
+    await openDialog(mountApp(COMPARE_PATH));
+
+    expect(
+      await screen.findByRole("button", { name: "Load Preset" }),
+    ).toHaveAccessibleDescription("No presets saved");
+    expect(
+      screen.getByRole("button", { name: "Save" }),
+    ).toHaveAccessibleDescription("Name the preset first");
+    expect(
+      screen.getByRole("button", { name: "Delete" }),
+    ).toHaveAccessibleDescription("No preset by this name");
+  });
+
+  it("saves no preset while no picker holds a player", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await openDialog(user);
+
+    await user.type(
+      await screen.findByRole("textbox", { name: "Preset Name" }),
+      "Empty",
+    );
+
+    const save = screen.getByRole("button", { name: "Save" });
+    expect(save).toBeDisabled();
+    expect(save).toHaveAccessibleDescription("Choose a player first");
   });
 });

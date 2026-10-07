@@ -31,6 +31,75 @@ export function writeComparedPlayers(names: Array<string>): void {
   writeSetting(SETTING, names.length > 0 ? JSON.stringify(names) : "");
 }
 
+/** Whether two names are one, so a name re-cased between weeks still matches. */
+export function isSameName(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
+/** Players saved under a name the reader chose, in picker order. */
+export type Preset = { name: string; players: Array<string> };
+
+const PRESETS_SETTING = "comparePresets";
+
+/** The exact key the presets are saved under, for a test to seed or read. */
+export const PRESETS_KEY = PREFIX + PRESETS_SETTING;
+
+const byName = (a: Preset, b: Preset) => a.name.localeCompare(b.name);
+
+function isPreset(saved: unknown): saved is Preset {
+  return (
+    typeof saved === "object" &&
+    saved != null &&
+    "name" in saved &&
+    typeof saved.name === "string" &&
+    "players" in saved &&
+    Array.isArray(saved.players)
+  );
+}
+
+/** The saved presets, by name. Empty when none were saved. */
+export function readPresets(): Array<Preset> {
+  try {
+    const saved: unknown = JSON.parse(readSetting(PRESETS_SETTING) ?? "[]");
+    if (!Array.isArray(saved)) return [];
+    return saved
+      .filter(isPreset)
+      .map(({ name, players }) => ({
+        name,
+        players: players
+          .filter((player) => typeof player === "string")
+          .slice(0, MAX_PICKERS),
+      }))
+      .sort(byName);
+  } catch {
+    return [];
+  }
+}
+
+/** Saves the presets, returned by name even when storage refuses them. */
+function writePresets(presets: Array<Preset>): Array<Preset> {
+  writeSetting(
+    PRESETS_SETTING,
+    presets.length > 0 ? JSON.stringify(presets) : "",
+  );
+  return [...presets].sort(byName);
+}
+
+/** Saves the players under the name, replacing a preset of that name. */
+export function savePreset(name: string, players: Array<string>) {
+  const others = readPresets().filter(
+    (preset) => !isSameName(preset.name, name),
+  );
+  return writePresets([...others, { name: name.trim(), players }]);
+}
+
+/** Forgets the preset of that name. */
+export function deletePreset(name: string) {
+  return writePresets(
+    readPresets().filter((preset) => !isSameName(preset.name, name)),
+  );
+}
+
 /** Which games the table shows, in the order the toggle offers them. */
 export const GAME_SCOPES = ["all", "different", "same"] as const;
 export type GameScope = (typeof GAME_SCOPES)[number];

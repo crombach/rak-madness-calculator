@@ -10,9 +10,10 @@ plus the week's leader when shown.
   the `differingGames` or `sameGames`. With no player or leader to show, it
   opens the dialog over a `SkeletonTable`.
 - `ComparePlayersDialog`: a `PlayerCombobox` per player, added and removed by
-  the reader.
-- `comparedPlayers`: the chosen names, the game scope, and the leader toggle in
-  `settingsStore`, names restored by name in any case. A name the week
+  the reader, over `ComparePresets`.
+- `ComparePresets`: saves the players under a name, loads or deletes them by it.
+- `comparedPlayers`: the chosen names, the presets, the game scope, and the
+  leader toggle in `settingsStore`, names restored by name in any case. A name the week
   lacks stays, struck through in its picker and drawn as an N/A row.
 - `ComparePlayersSkeleton`: the controls over a `SkeletonTable`, while the week
   or the page chunk loads.

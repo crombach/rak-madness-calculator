@@ -2,8 +2,12 @@ import {
   COMPARED_PLAYERS_KEY,
   GAME_SCOPE_KEY,
   MAX_PICKERS,
+  PRESETS_KEY,
+  deletePreset,
   readComparedPlayers,
   readGameScope,
+  readPresets,
+  savePreset,
 } from "./comparedPlayers";
 
 afterEach(() => localStorage.clear());
@@ -34,5 +38,62 @@ describe("readGameScope", () => {
     localStorage.setItem(GAME_SCOPE_KEY, "bogus");
 
     expect(readGameScope()).toBe("all");
+  });
+});
+
+describe("presets", () => {
+  it.each([
+    ["text that is not JSON", "{oops"],
+    ["JSON that is not a list", '{"a":1}'],
+  ])("reads %s as no presets", (_, saved) => {
+    localStorage.setItem(PRESETS_KEY, saved);
+
+    expect(readPresets()).toEqual([]);
+  });
+
+  it("drops malformed presets, and players beyond what the page compares", () => {
+    const names = Array.from({ length: 12 }, (_, index) => `P${index}`);
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([
+        null,
+        { name: 1, players: ["Alice"] },
+        { name: "No list", players: "Alice" },
+        { name: "Many", players: [1, ...names] },
+      ]),
+    );
+
+    expect(readPresets()).toEqual([
+      { name: "Many", players: names.slice(0, MAX_PICKERS) },
+    ]);
+  });
+
+  it("lists presets by name", () => {
+    savePreset("rivals", ["Bob"]);
+    savePreset("Family", ["Alice"]);
+
+    expect(readPresets().map(({ name }) => name)).toEqual(["Family", "rivals"]);
+  });
+
+  it("replaces a preset saved under the same name in any case", () => {
+    savePreset("Family", ["Alice"]);
+
+    expect(savePreset(" family ", ["Bob", "Carol"])).toEqual([
+      { name: "family", players: ["Bob", "Carol"] },
+    ]);
+    expect(readPresets()).toEqual([
+      { name: "family", players: ["Bob", "Carol"] },
+    ]);
+  });
+
+  it("deletes a preset by name in any case, and forgets the last one", () => {
+    savePreset("Family", ["Alice"]);
+    savePreset("Rivals", ["Bob"]);
+
+    expect(deletePreset("FAMILY")).toEqual([
+      { name: "Rivals", players: ["Bob"] },
+    ]);
+    deletePreset("rivals");
+    expect(localStorage.getItem(PRESETS_KEY)).toBeNull();
   });
 });

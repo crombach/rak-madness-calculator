@@ -1,7 +1,10 @@
 @use "../../styles/a11y" as *;
 @use "../../styles/breakpoints" as *;
+@use "../../styles/focus" as *;
 @use "../../styles/label" as *;
 @use "../../styles/layout" as *;
+@use "../../styles/lcd" as *;
+@use "../../styles/listbox" as *;
 @use "../../styles/page" as *;
 
 // Pinned to the screen's left edge while a wide table pans under it.
@@ -156,4 +159,53 @@
 // them.
 .compare-players__section {
   @include stacked(var(--rak-space-4));
+}
+
+.compare-players__presets {
+  @include stacked(var(--rak-space-2));
+}
+
+.compare-players__positioner {
+  // Above the dialog it opens inside of, as `DialogCombobox`'s list is.
+  z-index: calc(var(--rak-z-dialog) + 2);
+}
+
+.compare-players__preset-list {
+  @include listbox-popup;
+}
+
+.compare-players__preset {
+  @include listbox-item;
+}
+
+.compare-players__preset-label {
+  @include section-title(xs);
+}
+
+.compare-players__preset-name {
+  @include lcd-field;
+  @include focus-ring;
+
+  min-height: var(--rak-touch-target);
+  padding-inline: var(--rak-space-3);
+  font-family: var(--rak-font-mono);
+  font-size: var(--rak-text-md);
+}
+
+// Even halves, as the toolbar's keys are.
+.compare-players__preset-actions {
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  gap: var(--rak-space-2);
+}
+
+.compare-players__preset-action {
+  @include stacked(var(--rak-space-1));
+}
+
+.compare-players__reason {
+  margin: 0;
+  color: var(--rak-text-secondary);
+  font-size: var(--rak-text-xs);
 }

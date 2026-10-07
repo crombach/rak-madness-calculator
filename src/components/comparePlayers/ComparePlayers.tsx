@@ -11,11 +11,15 @@ import SkeletonTable from "../table/SkeletonTable";
 import {
   MAX_PICKERS,
   GameScope,
+  isSameName,
   MIN_PICKERS,
   MIN_SCOPED,
+  deletePreset,
   readComparedPlayers,
   readGameScope,
+  readPresets,
   readShowsLeader,
+  savePreset,
   writeComparedPlayers,
   writeGameScope,
   writeShowsLeader,
@@ -71,23 +75,14 @@ function namesIn(slots: Array<Slot>, scores?: RakMadnessScores) {
   );
 }
 
-/** Whether two names are one player's, so a name re-cased between weeks still matches. */
-function isSameName(a: string, b: string): boolean {
-  return a.trim().toLowerCase() === b.trim().toLowerCase();
-}
-
 /**
- * A picker per saved name, holding this week's row for it or, where the week has
- * no row by that name, the name alone. A name saved more often than the week has
- * rows for it keeps only the rows. Falls back to the reader's own row when nothing
- * is saved.
+ * A picker per name, holding this week's row for it or, where the week has no row
+ * by that name, the name alone. A name given more often than the week has rows for
+ * it keeps only the rows.
  */
-function startingSlots(
-  players: Array<PlayerScore>,
-  myName: string,
-): Array<Slot> {
+function slotsFor(names: Array<string>, players: Array<PlayerScore>) {
   const slots: Array<Slot> = [];
-  for (const name of readComparedPlayers()) {
+  for (const name of names) {
     const row = players.find(
       (player) =>
         isSameName(player.name, name) &&
@@ -98,12 +93,26 @@ function startingSlots(
       slots.push(newSlot({ missingName: name }));
     }
   }
+  return slots;
+}
+
+/** Pads the pickers up to `MIN_PICKERS`. */
+function padded(slots: Array<Slot>): Array<Slot> {
+  while (slots.length < MIN_PICKERS) slots.push(newSlot());
+  return slots;
+}
+
+/** The saved names' pickers, or the reader's own row when nothing is saved. */
+function startingSlots(
+  players: Array<PlayerScore>,
+  myName: string,
+): Array<Slot> {
+  const slots = slotsFor(readComparedPlayers(), players);
   if (slots.length === 0) {
     const mine = players.find((player) => isMyPlayer(player.name, myName));
     if (mine != null) slots.push(newSlot({ id: mine.id }));
   }
-  while (slots.length < MIN_PICKERS) slots.push(newSlot());
-  return slots;
+  return padded(slots);
 }
 
 /**
@@ -122,6 +131,7 @@ export default function ComparePlayers({
     startingSlots(scores?.scores ?? [], playerName),
   );
   const [showsLeader, setShowsLeader] = useState(readShowsLeader);
+  const [presets, setPresets] = useState(readPresets);
   const picked = useMemo(() => playersIn(slots, scores), [slots, scores]);
   // The week's leader, when shown and not picked already. It holds no picker.
   const top = scores?.scores[0];
@@ -254,6 +264,15 @@ export default function ComparePlayers({
           if (removed == null || !isFilled(removed)) setSlots(next);
           else changeSlots(next);
         }}
+        presets={presets}
+        canSavePreset={slots.some(isFilled)}
+        onLoadPreset={({ players }) =>
+          changeSlots(padded(slotsFor(players, scores?.scores ?? [])))
+        }
+        onSavePreset={(name) =>
+          setPresets(savePreset(name, namesIn(slots, scores)))
+        }
+        onDeletePreset={(name) => setPresets(deletePreset(name))}
       />
     </>
   );
