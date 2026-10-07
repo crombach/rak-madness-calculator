@@ -41,6 +41,14 @@ export type Preset = { name: string; players: Array<string> };
 
 const PRESETS_SETTING = "comparePresets";
 
+/** The most characters a preset's name holds. */
+export const MAX_PRESET_NAME = 16;
+
+/** A typed name as a preset keeps it. */
+function presetName(name: string): string {
+  return name.trim().slice(0, MAX_PRESET_NAME);
+}
+
 /** The exact key the presets are saved under, for a test to seed or read. */
 export const PRESETS_KEY = PREFIX + PRESETS_SETTING;
 
@@ -66,7 +74,7 @@ export function readPresets(): Array<Preset> {
     return saved
       .filter(isPreset)
       .map(({ name, players }) => ({
-        name,
+        name: presetName(name),
         players: players
           .filter((player) => typeof player === "string")
           .slice(0, MAX_PICKERS),
@@ -93,17 +101,20 @@ function writePresets(presets: Array<Preset>): Array<Preset> {
 
 /** Saves the players under the name, replacing a preset of that name. */
 export function savePreset(name: string, players: Array<string>) {
+  const kept = presetName(name);
   const others = readPresets().filter(
-    (preset) => !isSameName(preset.name, name),
+    (preset) => !isSameName(preset.name, kept),
   );
-  return writePresets([...others, { name: name.trim(), players }]);
+  return writePresets([...others, { name: kept, players }]);
 }
 
 /** Gives the preset of one name another, keeping its players. */
 export function renamePreset(from: string, to: string) {
   return writePresets(
     readPresets().map((preset) =>
-      isSameName(preset.name, from) ? { ...preset, name: to.trim() } : preset,
+      isSameName(preset.name, from)
+        ? { ...preset, name: presetName(to) }
+        : preset,
     ),
   );
 }

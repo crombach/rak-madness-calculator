@@ -23,6 +23,7 @@ import {
   COMPARED_PLAYERS_KEY,
   GAME_SCOPE_KEY,
   LEADER_KEY,
+  MAX_PRESET_NAME,
   PRESETS_KEY,
 } from "./comparedPlayers";
 
@@ -1059,5 +1060,29 @@ describe("compare presets", () => {
     );
     expect(save).toBeDisabled();
     expect(save).toHaveAccessibleDescription("Choose a player first");
+  });
+
+  it("takes no more of a name than a preset holds", async () => {
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([{ name: "Family", players: ["Bob"] }]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+    const long = "A".repeat(MAX_PRESET_NAME + 4);
+
+    const field = within(dialog).getByRole("textbox", { name: "New Preset" });
+    await user.type(field, long);
+    expect(field).toHaveValue(long.slice(0, MAX_PRESET_NAME));
+
+    await user.click(
+      within(dialog).getByRole("button", { name: "Rename Family" }),
+    );
+    const draft = within(dialog).getByRole("textbox", {
+      name: "New name for Family",
+    });
+    await user.clear(draft);
+    await user.type(draft, long);
+    expect(draft).toHaveValue(long.slice(0, MAX_PRESET_NAME));
   });
 });

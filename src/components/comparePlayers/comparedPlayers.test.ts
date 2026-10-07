@@ -2,6 +2,7 @@ import {
   COMPARED_PLAYERS_KEY,
   GAME_SCOPE_KEY,
   MAX_PICKERS,
+  MAX_PRESET_NAME,
   PRESETS_KEY,
   deletePreset,
   readComparedPlayers,
@@ -109,6 +110,24 @@ describe("presets", () => {
     expect(readPresets()).toEqual([
       { name: "Kin", players: ["Alice"] },
       { name: "Rivals", players: ["Bob"] },
+    ]);
+  });
+
+  it("cuts a preset's name to the longest it takes", () => {
+    const long = "A".repeat(MAX_PRESET_NAME + 4);
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([{ name: long, players: ["Bob"] }]),
+    );
+
+    expect(readPresets()).toEqual([
+      { name: long.slice(0, MAX_PRESET_NAME), players: ["Bob"] },
+    ]);
+    expect(savePreset(`  ${long}`, ["Alice"])).toEqual([
+      { name: long.slice(0, MAX_PRESET_NAME), players: ["Alice"] },
+    ]);
+    expect(renamePreset(long.slice(0, MAX_PRESET_NAME), `B${long}`)).toEqual([
+      { name: `B${long}`.slice(0, MAX_PRESET_NAME), players: ["Alice"] },
     ]);
   });
 });

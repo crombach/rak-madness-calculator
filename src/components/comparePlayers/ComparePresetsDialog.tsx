@@ -10,7 +10,7 @@ import doNothing from "../../utils/doNothing";
 import Button from "../button/Button";
 import DialogShell from "../dialog/DialogShell";
 import { CheckIcon, CloseIcon, DeleteIcon, EditIcon } from "../icon/Icon";
-import { isSameName, Preset } from "./comparedPlayers";
+import { isSameName, MAX_PRESET_NAME, Preset } from "./comparedPlayers";
 import "./ComparePlayers.scss";
 
 const NO_PRESETS = "No presets saved";
@@ -91,6 +91,7 @@ function PresetRow({
               aria-label={`New name for ${preset.name}`}
               aria-describedby={reason && reasonId}
               type="text"
+              maxLength={MAX_PRESET_NAME}
               autoComplete="off"
               spellCheck={false}
               value={draft}
@@ -269,6 +270,7 @@ export default function ComparePresetsDialog({
             id={inputId}
             className="compare-players__preset-name"
             type="text"
+            maxLength={MAX_PRESET_NAME}
             autoComplete="off"
             spellCheck={false}
             value={name}
