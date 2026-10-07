@@ -8,7 +8,7 @@ const NO_NAME = "Name the preset first";
 const NO_PLAYERS = "Choose a player first";
 const NO_MATCH = "No preset by this name";
 
-const TRIGGER_CLASSES = buttonClasses({ className: "compare-players__load" });
+const TRIGGER_CLASSES = buttonClasses();
 
 /** Saves the players chosen under a name, and loads or deletes them by it. */
 export default function ComparePresets({
@@ -26,6 +26,7 @@ export default function ComparePresets({
   onDelete: (name: string) => void;
 }) {
   const [name, setName] = useState("");
+  const [status, setStatus] = useState("");
   const nameInput = useRef<HTMLInputElement>(null);
   const labelId = useId();
   const inputId = useId();
@@ -67,6 +68,7 @@ export default function ComparePresets({
                   className="compare-players__preset"
                   onClick={() => {
                     setName(preset.name);
+                    setStatus(`Loaded ${preset.name}`);
                     onLoad(preset);
                   }}
                 >
@@ -96,7 +98,10 @@ export default function ComparePresets({
           <Button
             disabled={saveReason != null}
             ariaDescribedBy={saveReason && saveReasonId}
-            onClick={() => onSave(name)}
+            onClick={() => {
+              setStatus(`Saved ${name.trim()}`);
+              onSave(name);
+            }}
           >
             {match == null ? "Save" : "Replace"}
           </Button>
@@ -109,6 +114,7 @@ export default function ComparePresets({
             onClick={() => {
               // Deleting disables this button, which would drop the focus to `<body>`.
               nameInput.current?.focus();
+              setStatus(`Deleted ${name.trim()}`);
               onDelete(name);
             }}
           >
@@ -117,6 +123,9 @@ export default function ComparePresets({
           <Reason id={deleteReasonId} reason={deleteReason} />
         </div>
       </div>
+      <p role="status" className="compare-players__status">
+        {status}
+      </p>
     </section>
   );
 }

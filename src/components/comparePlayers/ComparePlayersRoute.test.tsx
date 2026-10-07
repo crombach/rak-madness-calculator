@@ -959,13 +959,7 @@ describe("compare presets", () => {
     await choose(user, "Player 1", "Carol");
     await savePresetAs(user, "Rivals");
     await choose(user, "Player 1", "Bob");
-    await user.clear(screen.getByRole("textbox", { name: "Preset Name" }));
-    await user.type(
-      screen.getByRole("textbox", { name: "Preset Name" }),
-      "rivals",
-    );
-
-    await user.click(screen.getByRole("button", { name: "Replace" }));
+    await savePresetAs(user, "rivals");
 
     expect(JSON.parse(localStorage.getItem(PRESETS_KEY) ?? "")).toEqual([
       { name: "rivals", players: ["Bob"] },

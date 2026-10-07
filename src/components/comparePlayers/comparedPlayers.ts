@@ -52,6 +52,7 @@ function isPreset(saved: unknown): saved is Preset {
     saved != null &&
     "name" in saved &&
     typeof saved.name === "string" &&
+    saved.name.trim() !== "" &&
     "players" in saved &&
     Array.isArray(saved.players)
   );
@@ -70,6 +71,11 @@ export function readPresets(): Array<Preset> {
           .filter((player) => typeof player === "string")
           .slice(0, MAX_PICKERS),
       }))
+      .filter(
+        (preset, index, all) =>
+          all.findIndex((other) => isSameName(other.name, preset.name)) ===
+          index,
+      )
       .sort(byName);
   } catch {
     return [];
