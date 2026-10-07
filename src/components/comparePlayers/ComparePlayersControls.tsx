@@ -1,5 +1,6 @@
 import { ReactNode, Ref, useId } from "react";
 import doNothing from "../../utils/doNothing";
+import getClasses from "../../utils/getClasses";
 import Button from "../button/Button";
 import { GAME_SCOPES, GameScope } from "./comparedPlayers";
 import "./ComparePlayers.scss";
@@ -11,10 +12,12 @@ import "./ComparePlayers.scss";
 export function ControlGroup({
   label,
   divided = false,
+  keysClassName,
   children,
 }: {
   label: string;
   divided?: boolean;
+  keysClassName?: string;
   children: ReactNode;
 }) {
   const labelId = useId();
@@ -25,7 +28,7 @@ export function ControlGroup({
         {label}
       </span>
       <div
-        className="compare-players__keys"
+        className={getClasses("compare-players__keys", keysClassName)}
         role="group"
         aria-labelledby={labelId}
       >
@@ -35,25 +38,60 @@ export function ControlGroup({
   );
 }
 
-/** Opens the dialog. Here, so the wireframe draws the same button. */
-export function ChooseButton({
+/** A key that opens a dialog. Here, so the wireframe draws the same button. */
+function DialogKey({
+  label,
+  className,
   onClick = doNothing,
   isOpen = false,
   ref,
 }: {
+  label: string;
+  className?: string;
   onClick?: () => void;
   isOpen?: boolean;
   ref?: Ref<HTMLButtonElement>;
 }) {
   return (
     <Button
-      className="compare-players__choose"
+      className={className}
       onClick={onClick}
       popupOpen={isOpen}
       ref={ref}
     >
-      Choose
+      {label}
     </Button>
+  );
+}
+
+type DialogKeyProps = Omit<Parameters<typeof DialogKey>[0], "label">;
+
+/**
+ * Choose Players, the leader toggle and Presets. Choose Players spans the
+ * other two until the toolbar fits on one line.
+ */
+export function PlayersGroup({
+  choose,
+  leader,
+  presets,
+}: {
+  choose?: DialogKeyProps;
+  leader: Parameters<typeof LeaderToggle>[0];
+  presets?: DialogKeyProps;
+}) {
+  return (
+    <ControlGroup
+      label="Players"
+      keysClassName="compare-players__keys--players"
+    >
+      <DialogKey
+        label="Choose Players"
+        className="compare-players__choose"
+        {...choose}
+      />
+      <LeaderToggle {...leader} />
+      <DialogKey label="Presets" {...presets} />
+    </ControlGroup>
   );
 }
 

@@ -7,6 +7,7 @@ import {
   readComparedPlayers,
   readGameScope,
   readPresets,
+  renamePreset,
   savePreset,
 } from "./comparedPlayers";
 
@@ -95,5 +96,19 @@ describe("presets", () => {
     ]);
     deletePreset("rivals");
     expect(localStorage.getItem(PRESETS_KEY)).toBeNull();
+  });
+
+  it("renames a preset, keeping its players", () => {
+    savePreset("Family", ["Alice"]);
+    savePreset("Rivals", ["Bob"]);
+
+    expect(renamePreset("family", " Kin ")).toEqual([
+      { name: "Kin", players: ["Alice"] },
+      { name: "Rivals", players: ["Bob"] },
+    ]);
+    expect(readPresets()).toEqual([
+      { name: "Kin", players: ["Alice"] },
+      { name: "Rivals", players: ["Bob"] },
+    ]);
   });
 });

@@ -19,18 +19,15 @@ import {
   readGameScope,
   readPresets,
   readShowsLeader,
+  renamePreset,
   savePreset,
   writeComparedPlayers,
   writeGameScope,
   writeShowsLeader,
 } from "./comparedPlayers";
 import ComparePlayersDialog, { Slot } from "./ComparePlayersDialog";
-import {
-  ChooseButton,
-  ControlGroup,
-  GamesToggle,
-  LeaderToggle,
-} from "./ComparePlayersControls";
+import { GamesToggle, PlayersGroup } from "./ComparePlayersControls";
+import ComparePresetsDialog from "./ComparePresetsDialog";
 import "./ComparePlayers.scss";
 
 const NAMES = new Intl.ListFormat("en", { type: "conjunction" });
@@ -144,6 +141,8 @@ export default function ComparePlayers({
   const [scope, setScope] = useState(readGameScope);
   const [addedKey, setAddedKey] = useState<number>();
   const chooseRef = useRef<HTMLButtonElement>(null);
+  const [isPresetsOpen, setIsPresetsOpen] = useState(false);
+  const presetsRef = useRef<HTMLButtonElement>(null);
   const chosen = useMemo(
     () => (leader ? [...picked, leader] : picked),
     [picked, leader],
@@ -184,26 +183,31 @@ export default function ComparePlayers({
     <>
       <div className="compare-players">
         <div className="compare-players__controls">
-          <ControlGroup label="Players">
-            <ChooseButton
-              ref={chooseRef}
-              isOpen={isOpen}
-              onClick={() => {
+          <PlayersGroup
+            choose={{
+              ref: chooseRef,
+              isOpen,
+              onClick: () => {
                 // Here rather than on close, where the dialog would shrink as it fades.
                 setSlots(withoutEmptySlots(slots));
                 setIsOpen(true);
-              }}
-            />
-            <LeaderToggle
-              on={showsLeader}
-              isSettled={isSettled}
-              onChange={(on) => {
+              },
+            }}
+            leader={{
+              on: showsLeader,
+              isSettled,
+              onChange: (on) => {
                 setShowsLeader(on);
                 writeShowsLeader(on);
-              }}
-              disabled={top == null}
-            />
-          </ControlGroup>
+              },
+              disabled: top == null,
+            }}
+            presets={{
+              ref: presetsRef,
+              isOpen: isPresetsOpen,
+              onClick: () => setIsPresetsOpen(true),
+            }}
+          />
           <GamesToggle
             scope={scope}
             onChange={(next) => {
@@ -264,15 +268,19 @@ export default function ComparePlayers({
           if (removed == null || !isFilled(removed)) setSlots(next);
           else changeSlots(next);
         }}
+      />
+      <ComparePresetsDialog
+        open={isPresetsOpen}
+        onOpenChange={setIsPresetsOpen}
+        finalFocus={presetsRef}
         presets={presets}
-        canSavePreset={slots.some(isFilled)}
-        onLoadPreset={({ players }) =>
+        canSave={slots.some(isFilled)}
+        onLoad={({ players }) =>
           changeSlots(padded(slotsFor(players, scores?.scores ?? [])))
         }
-        onSavePreset={(name) =>
-          setPresets(savePreset(name, namesIn(slots, scores)))
-        }
-        onDeletePreset={(name) => setPresets(deletePreset(name))}
+        onSave={(name) => setPresets(savePreset(name, namesIn(slots, scores)))}
+        onRename={(from, to) => setPresets(renamePreset(from, to))}
+        onDelete={(name) => setPresets(deletePreset(name))}
       />
     </>
   );

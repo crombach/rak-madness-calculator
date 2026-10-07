@@ -72,7 +72,7 @@ async function openDialog(user: ReturnType<typeof mountApp>) {
   const opener = await waitFor(
     () =>
       screen.queryByRole("dialog") ??
-      screen.getByRole("button", { name: "Choose" }),
+      screen.getByRole("button", { name: "Choose Players" }),
   );
   if (opener.getAttribute("role") !== "dialog") await user.click(opener);
 }
@@ -363,14 +363,19 @@ describe("the compare players route", () => {
     await closeDialog(user);
 
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: "Choose" })).toHaveFocus(),
+      expect(
+        screen.getByRole("button", { name: "Choose Players" }),
+      ).toHaveFocus(),
     );
   });
 
   it("holds Choose down while the dialog is open", async () => {
     const user = mountApp(COMPARE_PATH);
     await screen.findByRole("dialog", { name: "Compare Players" });
-    const choose = screen.getByRole("button", { name: "Choose", hidden: true });
+    const choose = screen.getByRole("button", {
+      name: "Choose Players",
+      hidden: true,
+    });
     expect(choose).toHaveAttribute("data-popup-open");
     expect(choose).toHaveAttribute("aria-expanded", "true");
 
@@ -388,7 +393,7 @@ describe("the compare players route", () => {
     await choose(user, "Player 3", "Bob");
     await closeDialog(user);
 
-    await user.click(screen.getByRole("button", { name: "Choose" }));
+    await user.click(screen.getByRole("button", { name: "Choose Players" }));
 
     expect(
       await screen.findByRole("combobox", { name: "Player 3" }),
@@ -402,7 +407,7 @@ describe("the compare players route", () => {
     await choose(user, "Player 3", "Carol");
     await closeDialog(user);
 
-    await user.click(screen.getByRole("button", { name: "Choose" }));
+    await user.click(screen.getByRole("button", { name: "Choose Players" }));
 
     expect(
       await screen.findByRole("combobox", { name: "Player 1" }),
@@ -419,7 +424,7 @@ describe("the compare players route", () => {
     await user.click(screen.getByRole("button", { name: "Add Player" }));
     await closeDialog(user);
 
-    await user.click(screen.getByRole("button", { name: "Choose" }));
+    await user.click(screen.getByRole("button", { name: "Choose Players" }));
 
     expect(
       await screen.findByRole("combobox", { name: "Player 1" }),
@@ -729,7 +734,7 @@ describe("the compare players route", () => {
     );
   });
 
-  it("groups Choose and the leader toggle under Players", async () => {
+  it("groups Choose Players, the leader toggle and Presets under Players", async () => {
     localStorage.setItem(
       COMPARED_PLAYERS_KEY,
       JSON.stringify(["Alice", "Carol"]),
@@ -741,7 +746,7 @@ describe("the compare players route", () => {
       within(players)
         .getAllByRole("button")
         .map((button) => button.textContent),
-    ).toEqual(["Choose", "Show Leader"]);
+    ).toEqual(["Choose Players", "Show Leader", "Presets"]);
   });
 
   it("adds the leader to the players chosen", async () => {
@@ -888,55 +893,49 @@ describe("the compare players route", () => {
   });
 });
 
-async function savePresetAs(user: ReturnType<typeof mountApp>, name: string) {
-  const field = screen.getByRole("textbox", { name: "Preset Name" });
-  await user.clear(field);
-  await user.type(field, name);
-  await user.click(screen.getByRole("button", { name: /^(Save|Replace)$/ }));
+/** Opens the Presets dialog from the loaded page, closing the pickers first. */
+async function openPresets(user: ReturnType<typeof mountApp>) {
+  await openDialog(user);
+  await closeDialog(user);
+  await user.click(screen.getByRole("button", { name: "Presets" }));
+  return screen.findByRole("dialog", { name: "Presets" });
 }
 
-async function loadPreset(user: ReturnType<typeof mountApp>, name: string) {
-  await user.click(screen.getByRole("button", { name: "Load Preset" }));
-  await user.click(await screen.findByRole("menuitem", { name }));
+async function savePresetAs(user: ReturnType<typeof mountApp>, name: string) {
+  const dialog = await openPresets(user);
+  await user.type(
+    within(dialog).getByRole("textbox", { name: "New Preset" }),
+    name,
+  );
+  await user.click(
+    within(dialog).getByRole("button", {
+      name: /^(Save Current Players|Replace Preset)$/,
+    }),
+  );
+  await closeDialog(user);
 }
 
 describe("compare presets", () => {
-  it("loads the players saved under a name", async () => {
+  it("loads the players saved under a name and closes", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Carol");
     await choose(user, "Player 2", "Alice");
     await savePresetAs(user, "Rivals");
-    await user.click(screen.getByRole("button", { name: "Remove Player 2" }));
+    await choose(user, "Player 2", "Bob");
+    await closeDialog(user);
 
-    await loadPreset(user, "Rivals");
+    const dialog = await openPresets(user);
+    await user.click(within(dialog).getByRole("button", { name: "Rivals" }));
 
-    expect(screen.getByRole("combobox", { name: "Player 1" })).toHaveValue(
-      "Carol",
-    );
-    expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveValue(
-      "Alice",
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("dialog", { name: "Presets" }),
+      ).not.toBeInTheDocument(),
     );
     expect(
       JSON.parse(localStorage.getItem(COMPARED_PLAYERS_KEY) ?? ""),
     ).toEqual(["Carol", "Alice"]);
-  });
-
-  it("loads a preset saved before the page opened", async () => {
-    localStorage.setItem(
-      PRESETS_KEY,
-      JSON.stringify([{ name: "Family", players: ["Bob"] }]),
-    );
-    const user = mountApp(COMPARE_PATH);
-    await openDialog(user);
-
-    await loadPreset(user, "Family");
-
-    expect(screen.getByRole("combobox", { name: "Player 1" })).toHaveValue(
-      "Bob",
-    );
-    expect(screen.getByRole("textbox", { name: "Preset Name" })).toHaveValue(
-      "Family",
-    );
+    expect(screen.getByRole("button", { name: "Presets" })).toHaveFocus();
   });
 
   it("keeps a preset's player this week lacks, marked as having no picks", async () => {
@@ -945,11 +944,11 @@ describe("compare presets", () => {
       JSON.stringify([{ name: "Old", players: ["Gone", "Alice"] }]),
     );
     const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+    await user.click(within(dialog).getByRole("button", { name: "Old" }));
     await openDialog(user);
 
-    await loadPreset(user, "Old");
-
-    const gone = screen.getByRole("combobox", { name: "Player 1" });
+    const gone = await screen.findByRole("combobox", { name: "Player 1" });
     expect(gone).toHaveValue("Gone");
     expect(gone).toHaveAccessibleDescription("No picks this week");
   });
@@ -959,6 +958,7 @@ describe("compare presets", () => {
     await choose(user, "Player 1", "Carol");
     await savePresetAs(user, "Rivals");
     await choose(user, "Player 1", "Bob");
+
     await savePresetAs(user, "rivals");
 
     expect(JSON.parse(localStorage.getItem(PRESETS_KEY) ?? "")).toEqual([
@@ -966,42 +966,97 @@ describe("compare presets", () => {
     ]);
   });
 
-  it("deletes the preset the name field names", async () => {
+  it("renames a preset, and returns focus to its rename key", async () => {
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([{ name: "Family", players: ["Bob"] }]),
+    );
     const user = mountApp(COMPARE_PATH);
-    await choose(user, "Player 1", "Carol");
-    await savePresetAs(user, "Rivals");
+    const dialog = await openPresets(user);
 
-    await user.click(screen.getByRole("button", { name: "Delete" }));
+    await user.click(
+      within(dialog).getByRole("button", { name: "Rename Family" }),
+    );
+    const field = within(dialog).getByRole("textbox", {
+      name: "New name for Family",
+    });
+    expect(field).toHaveFocus();
+    await user.clear(field);
+    await user.type(field, "Kin{Enter}");
 
-    expect(localStorage.getItem(PRESETS_KEY)).toBeNull();
-    expect(screen.getByRole("button", { name: "Load Preset" })).toBeDisabled();
-    expect(screen.getByRole("textbox", { name: "Preset Name" })).toHaveFocus();
+    expect(JSON.parse(localStorage.getItem(PRESETS_KEY) ?? "")).toEqual([
+      { name: "Kin", players: ["Bob"] },
+    ]);
+    expect(
+      within(dialog).getByRole("button", { name: "Rename Kin" }),
+    ).toHaveFocus();
+    expect(within(dialog).getByRole("status")).toHaveTextContent(
+      "Renamed Family to Kin",
+    );
   });
 
-  it("says why each preset action is unavailable", async () => {
-    await openDialog(mountApp(COMPARE_PATH));
+  it("refuses a rename to another preset's name", async () => {
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([
+        { name: "Family", players: ["Bob"] },
+        { name: "Rivals", players: ["Carol"] },
+      ]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
 
+    await user.click(
+      within(dialog).getByRole("button", { name: "Rename Family" }),
+    );
+    const field = within(dialog).getByRole("textbox", {
+      name: "New name for Family",
+    });
+    await user.clear(field);
+    await user.type(field, "RIVALS");
+
+    expect(field).toHaveAccessibleDescription("Another preset has this name");
     expect(
-      await screen.findByRole("button", { name: "Load Preset" }),
-    ).toHaveAccessibleDescription("No presets saved");
-    expect(
-      screen.getByRole("button", { name: "Save" }),
-    ).toHaveAccessibleDescription("Name the preset first");
-    expect(
-      screen.getByRole("button", { name: "Delete" }),
-    ).toHaveAccessibleDescription("No preset by this name");
+      within(dialog).getByRole("button", { name: "Save the name of Family" }),
+    ).toBeDisabled();
   });
 
-  it("saves no preset while no picker holds a player", async () => {
+  it("deletes a preset, moving focus to the next one", async () => {
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([
+        { name: "Family", players: ["Bob"] },
+        { name: "Rivals", players: ["Carol"] },
+      ]),
+    );
     const user = mountApp(COMPARE_PATH);
-    await openDialog(user);
+    const dialog = await openPresets(user);
 
-    await user.type(
-      await screen.findByRole("textbox", { name: "Preset Name" }),
-      "Empty",
+    await user.click(
+      within(dialog).getByRole("button", { name: "Delete Family" }),
     );
 
-    const save = screen.getByRole("button", { name: "Save" });
+    expect(JSON.parse(localStorage.getItem(PRESETS_KEY) ?? "")).toEqual([
+      { name: "Rivals", players: ["Carol"] },
+    ]);
+    expect(
+      within(dialog).getByRole("button", { name: "Rivals" }),
+    ).toHaveFocus();
+  });
+
+  it("says when no preset is saved, and why none can be yet", async () => {
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+
+    expect(within(dialog).getByText("No presets saved")).toBeInTheDocument();
+    const save = within(dialog).getByRole("button", {
+      name: "Save Current Players",
+    });
+    expect(save).toHaveAccessibleDescription("Name the preset first");
+    await user.type(
+      within(dialog).getByRole("textbox", { name: "New Preset" }),
+      "Empty",
+    );
     expect(save).toBeDisabled();
     expect(save).toHaveAccessibleDescription("Choose a player first");
   });

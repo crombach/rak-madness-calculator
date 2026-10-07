@@ -99,6 +99,15 @@ export function savePreset(name: string, players: Array<string>) {
   return writePresets([...others, { name: name.trim(), players }]);
 }
 
+/** Gives the preset of one name another, keeping its players. */
+export function renamePreset(from: string, to: string) {
+  return writePresets(
+    readPresets().map((preset) =>
+      isSameName(preset.name, from) ? { ...preset, name: to.trim() } : preset,
+    ),
+  );
+}
+
 /** Forgets the preset of that name. */
 export function deletePreset(name: string) {
   return writePresets(

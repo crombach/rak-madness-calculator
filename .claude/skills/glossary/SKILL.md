@@ -31,7 +31,7 @@ One concept, one name. Reader means the person viewing, in prose and comments. N
 | Finished week               | Week complete     | `settled`                                                                     | done, over                       |
 | Week's top row              | Leader, or Winner | `leader`. Winner once the week is complete                                    | first place                      |
 | Per-player win analysis     | Player Analysis   | `playerAnalysis`, `PlayerAnalysis*`                                           |                                  |
-| Players saved under a name  | preset            | `Preset`, `ComparePresets`, setting `comparePresets`                          | group, favorites, list           |
+| Players saved under a name  | preset            | `Preset`, `ComparePresetsDialog`, setting `comparePresets`                    | group, favorites, list           |
 
 The "Player rankings" caption on the Scoreboard table is the screen-reader name. Keep it.
 
