@@ -170,15 +170,16 @@ function PresetRow({
                 }
                 // The row goes, so focus moves to the last key of the row that
                 // takes its place, or the one before it at the end of the list:
-                // its delete key, or its cancel key while it is renamed.
+                // its delete key, or its cancel key while it is renamed. With no
+                // row left, to the dialog, never into the name field.
                 const row = rowRef.current;
                 const neighbor =
                   row?.nextElementSibling ?? row?.previousElementSibling;
-                neighbor
-                  ?.querySelector<HTMLButtonElement>(
+                (
+                  neighbor?.querySelector<HTMLElement>(
                     ".compare-players__field > button:last-of-type",
-                  )
-                  ?.focus();
+                  ) ?? row?.closest<HTMLElement>('[role="dialog"]')
+                )?.focus();
                 onDelete();
               }}
             >

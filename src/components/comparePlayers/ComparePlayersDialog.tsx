@@ -97,6 +97,7 @@ export default function ComparePlayersDialog({
   finalFocus?: RefObject<HTMLElement | null>;
 }) {
   const addRef = useRef<HTMLButtonElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   return (
     <DialogShell
       open={open}
@@ -104,7 +105,7 @@ export default function ComparePlayersDialog({
       title="Choose Players"
       finalFocus={finalFocus}
     >
-      <div className="compare-players__dialog">
+      <div ref={bodyRef} className="compare-players__dialog">
         <section className="compare-players__section">
           <ul className="compare-players__pickers">
             {slots.map((slot, index) => {
@@ -125,9 +126,13 @@ export default function ComparePlayersDialog({
                   onRemove={() => {
                     // The removed key goes with its picker, so focus moves to Add
                     // Player, which stays put. Rendered first, since a full list
-                    // hides it until the remove.
+                    // hides it until the remove. To the dialog while it stays
+                    // hidden, which a removed missing player can leave it.
                     flushSync(() => onRemove(slot.key));
-                    addRef.current?.focus();
+                    (
+                      addRef.current ??
+                      bodyRef.current?.closest<HTMLElement>('[role="dialog"]')
+                    )?.focus();
                   }}
                   canRemove={slots.length > MIN_PICKERS}
                 />

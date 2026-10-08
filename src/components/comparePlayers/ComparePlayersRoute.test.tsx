@@ -487,6 +487,17 @@ describe("the compare players route", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("focuses Add Player once a remove brings it back", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await openDialog(user);
+    await user.click(await screen.findByRole("button", { name: "Add Player" }));
+    await user.click(screen.getByRole("button", { name: "Add Player" }));
+
+    await user.click(screen.getByRole("button", { name: "Remove Player 2" }));
+
+    expect(screen.getByRole("button", { name: "Add Player" })).toHaveFocus();
+  });
+
   it("stops at ten players", async () => {
     getPlayerScoresMock.mockResolvedValue(
       week(
@@ -1310,6 +1321,23 @@ describe("compare presets", () => {
     expect(
       within(dialog).getByRole("button", { name: "Delete Rivals" }),
     ).toHaveFocus();
+  });
+
+  it("moves focus to the dialog when the last preset is deleted", async () => {
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([{ name: "Family", players: ["Bob"] }]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+
+    const deleteFamily = within(dialog).getByRole("button", {
+      name: "Delete Family",
+    });
+    await user.click(deleteFamily);
+    await user.click(deleteFamily);
+
+    expect(dialog).toHaveFocus();
   });
 
   it("says when no preset is saved, and why none can be yet", async () => {
