@@ -17,17 +17,30 @@ const NO_PRESETS = "No presets saved";
 const NO_PLAYERS = "Choose a player first";
 const NAME_TAKEN = "Another preset has this name";
 
-function Reason({ id, reason }: { id: string; reason?: string }) {
+/** Why a key is disabled. `alert` announces a reason that appears as the reader types. */
+function Reason({
+  id,
+  reason,
+  alert = false,
+}: {
+  id: string;
+  reason?: string;
+  alert?: boolean;
+}) {
   return reason == null ? null : (
-    <p id={id} className="compare-players__reason">
+    <p
+      id={id}
+      className="compare-players__reason"
+      role={alert ? "alert" : undefined}
+    >
       {reason}
     </p>
   );
 }
 
 /**
- * Runs `action` when enter is pressed in a field, as a form's submit would. The
- * default goes, or the key the focus moves to takes the same press as a click.
+ * Runs `action` on Enter in a field, as a form's submit would. `preventDefault`
+ * stops the same press from clicking the key that takes focus.
  */
 function onEnter(action?: () => void) {
   return (event: KeyboardEvent<HTMLInputElement>) => {
@@ -135,7 +148,9 @@ function PresetRow({
                 const row = rowRef.current;
                 const neighbor =
                   row?.nextElementSibling ?? row?.previousElementSibling;
-                neighbor?.querySelector("button")?.focus();
+                neighbor
+                  ?.querySelector<HTMLButtonElement>("button:enabled")
+                  ?.focus();
                 onDelete();
               }}
             >
@@ -144,12 +159,12 @@ function PresetRow({
           </>
         )}
       </div>
-      <Reason id={reasonId} reason={reason} />
+      <Reason id={reasonId} reason={reason} alert />
     </li>
   );
 }
 
-/** The saved presets, each loaded, renamed or deleted, and a new one saved from the players chosen. */
+/** The saved presets, and a form that saves the chosen players as a new one. */
 export default function ComparePresetsDialog({
   open,
   onOpenChange,

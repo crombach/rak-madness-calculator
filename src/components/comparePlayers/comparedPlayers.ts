@@ -46,7 +46,7 @@ export const MAX_PRESET_NAME = 16;
 
 /** A typed name as a preset keeps it. */
 function presetName(name: string): string {
-  return name.trim().slice(0, MAX_PRESET_NAME);
+  return name.trim().slice(0, MAX_PRESET_NAME).trimEnd();
 }
 
 /** The exact key the presets are saved under, for a test to seed or read. */

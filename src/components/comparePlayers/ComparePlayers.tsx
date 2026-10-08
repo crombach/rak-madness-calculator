@@ -92,7 +92,6 @@ function slotsFor(names: Array<string>, players: Array<PlayerScore>) {
   return slots;
 }
 
-/** Pads the pickers up to `MIN_PICKERS`. */
 function padded(slots: Array<Slot>): Array<Slot> {
   while (slots.length < MIN_PICKERS) slots.push(newSlot());
   return slots;

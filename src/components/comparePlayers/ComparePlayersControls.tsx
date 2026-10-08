@@ -56,7 +56,7 @@ function DialogKey({
 
 type DialogKeyProps = Omit<Parameters<typeof DialogKey>[0], "label">;
 
-/** Choose, Presets and the leader toggle, Choose taking the room the other two leave. */
+/** Choose, Presets and the leader toggle, in keys of one width. */
 export function PlayersGroup({
   choose,
   leader,

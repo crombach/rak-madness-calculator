@@ -130,4 +130,12 @@ describe("presets", () => {
       { name: `B${long}`.slice(0, MAX_PRESET_NAME), players: ["Alice"] },
     ]);
   });
+
+  it("drops a space the cut leaves at a name's end", () => {
+    const name = `${"A".repeat(MAX_PRESET_NAME - 1)} Bee`;
+
+    expect(savePreset(name, ["Bob"])).toEqual([
+      { name: "A".repeat(MAX_PRESET_NAME - 1), players: ["Bob"] },
+    ]);
+  });
 });

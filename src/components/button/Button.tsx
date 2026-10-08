@@ -118,6 +118,7 @@ export default function Button({
   className?: string;
   /** The accessible name. Required of a button whose content is an icon alone. */
   ariaLabel?: string;
+  /** Names the element that describes this button, such as the reason it is disabled. */
   ariaDescribedBy?: string;
   /** Set where the button opens and closes something below it. */
   ariaExpanded?: boolean;
