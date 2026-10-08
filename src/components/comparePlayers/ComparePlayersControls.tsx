@@ -87,7 +87,7 @@ export function LeaderToggle({
 }) {
   return (
     <Button disabled={disabled} selected={on} onClick={() => onChange(!on)}>
-      Best
+      Leader
     </Button>
   );
 }

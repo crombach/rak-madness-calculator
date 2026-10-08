@@ -744,7 +744,7 @@ describe("the compare players route", () => {
     const [choose, presets, leader] = within(players).getAllByRole("button");
     expect(choose).toHaveAccessibleName("Choose");
     expect(presets).toHaveAccessibleName("Presets");
-    expect(leader).toHaveAccessibleName("Best");
+    expect(leader).toHaveAccessibleName("Leader");
   });
 
   it("adds the leader to the players chosen", async () => {
@@ -755,7 +755,7 @@ describe("the compare players route", () => {
     const user = mountApp(COMPARE_PATH);
     await screen.findByRole("table", { name: "Picks of Bob and Carol" });
 
-    await user.click(screen.getByRole("button", { name: "Best" }));
+    await user.click(screen.getByRole("button", { name: "Leader" }));
 
     const table = await screen.findByRole("table", {
       name: "Picks of Bob, Carol, and Alice",
@@ -843,7 +843,7 @@ describe("the compare players route", () => {
     );
     const user = mountApp(COMPARE_PATH);
     await screen.findByRole("table");
-    const toggle = screen.getByRole("button", { name: "Best" });
+    const toggle = screen.getByRole("button", { name: "Leader" });
 
     await user.click(toggle);
     expect(toggle).toHaveAttribute("aria-pressed", "true");
@@ -869,7 +869,7 @@ describe("the compare players route", () => {
     await openDialog(user);
     await closeDialog(user);
 
-    await user.click(await screen.findByRole("button", { name: "Best" }));
+    await user.click(await screen.findByRole("button", { name: "Leader" }));
 
     expect(
       await screen.findByRole("table", { name: "Picks of Bob and Alice" }),
