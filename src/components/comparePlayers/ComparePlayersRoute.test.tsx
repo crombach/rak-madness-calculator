@@ -346,7 +346,7 @@ describe("the compare players route", () => {
     expect(screen.getByRole("button", { name: "Different" })).toBeDisabled();
   });
 
-  it("moves focus to Add Player after a remove", async () => {
+  it("moves focus to the remove key that takes a removed one's place", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Carol");
@@ -355,7 +355,22 @@ describe("the compare players route", () => {
 
     await user.click(screen.getByRole("button", { name: "Remove Player 2" }));
 
-    expect(screen.getByRole("button", { name: "Add Player" })).toHaveFocus();
+    expect(
+      screen.getByRole("button", { name: "Remove Player 2" }),
+    ).toHaveFocus();
+  });
+
+  it("moves focus to the remove key before the last one removed", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await openDialog(user);
+    await user.click(await screen.findByRole("button", { name: "Add Player" }));
+    await user.click(screen.getByRole("button", { name: "Add Player" }));
+
+    await user.click(screen.getByRole("button", { name: "Remove Player 3" }));
+
+    expect(
+      screen.getByRole("button", { name: "Remove Player 2" }),
+    ).toHaveFocus();
   });
 
   it("returns focus to Choose from the dialog the page opened", async () => {
@@ -487,11 +502,10 @@ describe("the compare players route", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("focuses Add Player once a remove brings it back", async () => {
+  it("focuses Add Player when one picker is left", async () => {
     const user = mountApp(COMPARE_PATH);
-    await openDialog(user);
-    await user.click(await screen.findByRole("button", { name: "Add Player" }));
-    await user.click(screen.getByRole("button", { name: "Add Player" }));
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Carol");
 
     await user.click(screen.getByRole("button", { name: "Remove Player 2" }));
 
