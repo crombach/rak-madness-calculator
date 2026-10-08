@@ -346,7 +346,7 @@ describe("the compare players route", () => {
     expect(screen.getByRole("button", { name: "Different" })).toBeDisabled();
   });
 
-  it("moves focus nowhere after a remove", async () => {
+  it("focuses no element after a remove", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Carol");
@@ -1285,7 +1285,7 @@ describe("compare presets", () => {
     ).toBeInTheDocument();
   });
 
-  it("deletes a preset, moving focus nowhere", async () => {
+  it("deletes a preset, focusing no element", async () => {
     localStorage.setItem(
       PRESETS_KEY,
       JSON.stringify([
