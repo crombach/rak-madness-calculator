@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { useNavigate } from "react-router";
 
 vi.mock("../../utils/getLeagueInfo");
@@ -1074,6 +1074,23 @@ describe("compare presets", () => {
     expect(within(dialog).getByRole("alert")).toHaveTextContent(
       "Type a new name",
     );
+  });
+
+  it("announces a long name as the preset stores it", async () => {
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(["Bob"]));
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+    const field = within(dialog).getByRole("textbox", { name: "Preset Name" });
+    const long = "x".repeat(MAX_PRESET_NAME + 4);
+
+    // A paste or an input method can put more in a field than `maxLength` lets typing.
+    fireEvent.change(field, { target: { value: long } });
+    await user.type(field, "{Enter}");
+
+    expect(within(dialog).getByRole("status")).toHaveTextContent(
+      `Saved ${long.slice(0, MAX_PRESET_NAME)}`,
+    );
+    expect(within(dialog).getByRole("status")).not.toHaveTextContent(long);
   });
 
   it("announces a second save under the same name", async () => {

@@ -45,7 +45,7 @@ const PRESETS_SETTING = "comparePresets";
 export const MAX_PRESET_NAME = 16;
 
 /** A typed name as a preset keeps it, cut by character so no emoji splits. */
-function presetName(name: string): string {
+export function presetName(name: string): string {
   return Array.from(name.trim()).slice(0, MAX_PRESET_NAME).join("").trimEnd();
 }
 

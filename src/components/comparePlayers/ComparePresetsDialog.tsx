@@ -10,7 +10,12 @@ import doNothing from "../../utils/doNothing";
 import Button from "../button/Button";
 import DialogShell from "../dialog/DialogShell";
 import { CloseIcon, ConfirmIcon, DeleteIcon, EditIcon } from "../icon/Icon";
-import { isSameName, MAX_PRESET_NAME, Preset } from "./comparedPlayers";
+import {
+  isSameName,
+  MAX_PRESET_NAME,
+  Preset,
+  presetName,
+} from "./comparedPlayers";
 import "./ComparePlayers.scss";
 import useStatus from "./useStatus";
 
@@ -54,9 +59,10 @@ function onEnter(action?: () => void) {
 
 /** Why a preset cannot take `draft` as its name, or nothing when it can. */
 function renameReason(preset: Preset, presets: Array<Preset>, draft: string) {
-  if (draft.trim() === "") return NAME_BLANK;
+  const name = presetName(draft);
+  if (name === "") return NAME_BLANK;
   const taken = presets.some(
-    (other) => other !== preset && isSameName(other.name, draft),
+    (other) => other !== preset && isSameName(other.name, name),
   );
   return taken ? NAME_TAKEN : undefined;
 }
@@ -205,7 +211,7 @@ export default function ComparePresetsDialog({
   const save =
     name.trim() !== "" && saveReason == null
       ? () => {
-          announce(`Saved ${name.trim()}`);
+          announce(`Saved ${presetName(name)}`);
           setRefocus(undefined);
           onSave(name);
           setName("");
@@ -243,9 +249,9 @@ export default function ComparePresetsDialog({
       onRename:
         draft != null && reason == null
           ? () => {
-              announce(`Renamed ${preset.name} to ${draft.trim()}`);
+              announce(`Renamed ${preset.name} to ${presetName(draft)}`);
               onRename(preset.name, draft);
-              stop(draft.trim());
+              stop(presetName(draft));
             }
           : undefined,
     };
