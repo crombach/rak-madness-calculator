@@ -1041,9 +1041,11 @@ describe("compare presets", () => {
     });
     await user.clear(draft);
     await user.type(draft, "Kin{Enter}");
-    await user.click(
-      within(dialog).getByRole("button", { name: "Delete Kin" }),
-    );
+    const deleteKin = within(dialog).getByRole("button", {
+      name: "Delete Kin",
+    });
+    await user.click(deleteKin);
+    await user.click(deleteKin);
     const field = within(dialog).getByRole("textbox", { name: "Preset Name" });
     await user.type(field, "Kin{Enter}");
 
@@ -1134,6 +1136,35 @@ describe("compare presets", () => {
     ).toBeDisabled();
   });
 
+  it("deletes only on a second press, and a press elsewhere disarms", async () => {
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([{ name: "Family", players: ["Bob"] }]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+    const deleteFamily = within(dialog).getByRole("button", {
+      name: "Delete Family",
+    });
+
+    await user.click(deleteFamily);
+
+    expect(deleteFamily).toHaveAccessibleDescription(
+      "Press Delete again to delete",
+    );
+    expect(within(dialog).getByRole("alert")).toHaveTextContent(
+      "Press Delete again to delete",
+    );
+    await user.click(
+      within(dialog).getByRole("textbox", { name: "Preset Name" }),
+    );
+    expect(within(dialog).queryByRole("alert")).toBeNull();
+    await user.click(deleteFamily);
+    expect(
+      within(dialog).getByRole("button", { name: "Family" }),
+    ).toBeInTheDocument();
+  });
+
   it("deletes a preset, moving focus to the next one", async () => {
     localStorage.setItem(
       PRESETS_KEY,
@@ -1145,9 +1176,11 @@ describe("compare presets", () => {
     const user = mountApp(COMPARE_PATH);
     const dialog = await openPresets(user);
 
-    await user.click(
-      within(dialog).getByRole("button", { name: "Delete Family" }),
-    );
+    const deleteFamily = within(dialog).getByRole("button", {
+      name: "Delete Family",
+    });
+    await user.click(deleteFamily);
+    await user.click(deleteFamily);
 
     expect(JSON.parse(localStorage.getItem(PRESETS_KEY) ?? "")).toEqual([
       { name: "Rivals", players: ["Carol"] },
@@ -1161,7 +1194,7 @@ describe("compare presets", () => {
     const user = mountApp(COMPARE_PATH);
     const dialog = await openPresets(user);
 
-    expect(within(dialog).getByText("No presets saved")).toBeInTheDocument();
+    expect(within(dialog).getByText("No saved presets")).toBeInTheDocument();
     const save = within(dialog).getByRole("button", {
       name: "Save Current Players",
     });

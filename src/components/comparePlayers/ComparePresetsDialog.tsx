@@ -19,10 +19,11 @@ import {
 import "./ComparePlayers.scss";
 import useStatus from "./useStatus";
 
-const NO_PRESETS = "No presets saved";
+const NO_PRESETS = "No saved presets";
 const NO_PLAYERS = "Choose a player first";
 const NAME_TAKEN = "Another preset has this name";
 const NAME_BLANK = "Type a new name";
+const DELETE_AGAIN = "Press Delete again to delete";
 
 /** Why a key is disabled. `alert` announces a reason that appears as the reader types. */
 function Reason({
@@ -91,14 +92,31 @@ function PresetRow({
   const rowRef = useRef<HTMLLIElement>(null);
   const draftRef = useRef<HTMLInputElement>(null);
   const renameRef = useRef<HTMLButtonElement>(null);
+  const deleteRef = useRef<HTMLButtonElement>(null);
   const reasonId = useId();
   const isRenaming = draft != null;
+  // The first press on Delete arms it and the second deletes, so one stray tap
+  // loses nothing.
+  const [armed, setArmed] = useState(false);
+  const shownReason = armed ? DELETE_AGAIN : reason;
   useEffect(() => {
     if (isRenaming) draftRef.current?.focus();
   }, [isRenaming]);
   useEffect(() => {
     if (focusRename) renameRef.current?.focus();
   }, [focusRename]);
+  // A press or focus anywhere else disarms it. Both, since Safari does not focus
+  // a tapped button.
+  useEffect(() => {
+    if (!armed) return;
+    const disarm = (event: Event) => {
+      if (!deleteRef.current?.contains(event.target as Node)) setArmed(false);
+    };
+    const events = ["pointerdown", "focusin"];
+    events.forEach((type) => document.addEventListener(type, disarm));
+    return () =>
+      events.forEach((type) => document.removeEventListener(type, disarm));
+  }, [armed]);
 
   return (
     <li ref={rowRef} className="compare-players__preset-row">
@@ -109,7 +127,7 @@ function PresetRow({
               ref={draftRef}
               className="compare-players__preset-name"
               aria-label={`New name for ${preset.name}`}
-              aria-describedby={reason && reasonId}
+              aria-describedby={shownReason && reasonId}
               type="text"
               maxLength={MAX_PRESET_NAME}
               autoComplete="off"
@@ -150,9 +168,16 @@ function PresetRow({
               <EditIcon />
             </Button>
             <Button
+              ref={deleteRef}
               iconOnly
+              color={armed ? "danger" : "primary"}
               ariaLabel={`Delete ${preset.name}`}
+              ariaDescribedBy={armed ? reasonId : undefined}
               onClick={() => {
+                if (!armed) {
+                  setArmed(true);
+                  return;
+                }
                 // The row goes, so focus moves to the preset that takes its place.
                 const row = rowRef.current;
                 const neighbor =
@@ -168,7 +193,7 @@ function PresetRow({
           </>
         )}
       </div>
-      <Reason id={reasonId} reason={reason} alert />
+      <Reason id={reasonId} reason={shownReason} alert />
     </li>
   );
 }
