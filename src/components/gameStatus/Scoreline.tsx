@@ -111,9 +111,9 @@ function HalftimeLeft({ text, endsAt }: { text: string; endsAt: Date }) {
 }
 
 /**
- * Under the scores is how long until kickoff before the game starts, what the
- * offense is facing, or what is happening between plays, while it is being played,
- * and what the pool made of it once it is over.
+ * Under the scores is how long until kickoff, what the offense is facing or what is
+ * happening between plays, why play is stopped or the game is off, and what the pool
+ * made of it once it is over.
  *
  * Who has the ball is left to the marker beside their score.
  */

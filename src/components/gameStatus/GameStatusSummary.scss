@@ -176,8 +176,8 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
   text-decoration: underline;
 }
 
-// Held to a square whatever shape the mark is, so a wide logo and a tall one stand
-// the name under them at the same height.
+// Held to a square whatever shape the mark is, so a wide logo and a tall one take the
+// same room over the name.
 .game-status__logo {
   display: block;
   align-self: center;
@@ -209,9 +209,8 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
   padding-block: var(--rak-space-1);
 }
 
-// The mark over the name over the record, down the whole height of the block. A side is
-// as wide as the wider of the mark and the name rather than both, so the mark always
-// has room.
+// The mark over the name over the record, down the whole height of the block. The mark
+// is centered in the column, and the name and record stretch to it.
 //
 // The name and record stretch to the column, so one running over it is wider than its
 // box, which is what `useScorelineFit` measures.
@@ -459,7 +458,6 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
 
 // Set with the strip under the scoreline, which is the other thing the dialog says
 // about the game rather than about either side.
-// Against the glass rather than centered in a row grown by a tall side.
 .game-status__detail {
   grid-row: 1;
   align-self: end;

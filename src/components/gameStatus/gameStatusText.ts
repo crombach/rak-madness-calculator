@@ -75,7 +75,7 @@ export function gamecastUrl(league: League, id: string): string {
  * is now the only time the dialog shows, and a bare `1:00 PM` beside a game played
  * three zones away reads as ambiguous.
  *
- * None for a kickoff ESPN sent nothing to parse, which the line under the scores says.
+ * Empty for a kickoff ESPN sent nothing to parse.
  */
 export function kickoffParts(date: Date): Array<string> {
   if (Number.isNaN(date.getTime())) return [];
@@ -139,9 +139,9 @@ const CALLED_OFF_IDS: ReadonlySet<string> = new Set(["5", "6"]);
 export const GAMECAST_LABEL = "Gamecast";
 
 /**
- * Under the scores of a game neither being played nor over, with no down to say. The
- * line over the scores says why, and an id the app does not model sends the reader
- * to ESPN rather than guess.
+ * Text under the scores of a game that is neither live nor over and has no down.
+ * Delayed names the stoppage, a canceled or postponed id says it was not played, and
+ * any other status points to Gamecast.
  */
 export function stoppedText(result: LeagueResult): string {
   if (result.status === GameStatus.DELAYED) {
