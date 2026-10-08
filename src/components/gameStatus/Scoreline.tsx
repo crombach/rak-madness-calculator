@@ -67,12 +67,14 @@ const NO_DOWN = "Between plays";
 /** Said in place of the down while a game delayed after kickoff has none. */
 const PLAY_STOPPED = "Play stopped";
 
+/** Said under the scores of a game delayed before kickoff. */
+const KICKOFF_DELAYED = "Kickoff delayed";
+
 /**
- * Holds the line under the scores where there is nothing to say, as on a game postponed,
- * canceled, or delayed before kickoff. The line over the scores already says which, and
- * an empty line keeps the scores level with the middle of the sides.
+ * Said under the scores of a game ESPN postponed or canceled. The line over the scores
+ * says which.
  */
-const EMPTY_LINE = " ";
+const NOT_PLAYED = "Not played";
 
 /** Said in place of a countdown to a kickoff ESPN sent nothing to parse. */
 const KICKOFF_UNKNOWN = "Kickoff TBD";
@@ -161,16 +163,13 @@ function Note({
       </p>
     );
   }
-  const stoppedInPlay =
-    result.status === GameStatus.DELAYED && (result.period ?? 0) > 0;
-  if (down == null && !stoppedInPlay) {
-    return (
-      <p className="game-status__down" aria-hidden="true">
-        {EMPTY_LINE}
-      </p>
-    );
-  }
-  return <p className="game-status__down">{down ?? PLAY_STOPPED}</p>;
+  const stopped =
+    result.status !== GameStatus.DELAYED
+      ? NOT_PLAYED
+      : (result.period ?? 0) > 0
+        ? PLAY_STOPPED
+        : KICKOFF_DELAYED;
+  return <p className="game-status__down">{down ?? stopped}</p>;
 }
 
 /**

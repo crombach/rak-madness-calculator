@@ -199,14 +199,14 @@ describe("GameStatusSummary, the game it is given", () => {
   });
 
   it.each([
-    ["delayed before kickoff", GameStatus.DELAYED],
-    ["postponed", "6" as GameStatus],
-  ])("holds an empty line under the scores of a game %s", (_, status) => {
+    ["delayed before kickoff", GameStatus.DELAYED, "Kickoff delayed"],
+    ["postponed", "6" as GameStatus, "Not played"],
+  ])("says so under the scores of a game %s", (_, status, expected) => {
     const stopped = result({ status, period: 0, possession: {} });
     render(<GameStatusSummary game={game(stopped)} result={stopped} />);
-    const line = document.querySelector(".game-status__down");
-    expect(line).toHaveAttribute("aria-hidden", "true");
-    expect(line?.textContent?.trim()).toBe("");
+    expect(document.querySelector(".game-status__down")).toHaveTextContent(
+      expected,
+    );
   });
 
   it("leaves the kickoff out of the strip where ESPN sent nothing to parse", () => {
