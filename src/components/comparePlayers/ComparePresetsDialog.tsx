@@ -87,7 +87,6 @@ function PresetRow({
   onRename?: () => void;
   onDelete: () => void;
 }) {
-  const rowRef = useRef<HTMLLIElement>(null);
   const draftRef = useRef<HTMLInputElement>(null);
   const renameRef = useRef<HTMLButtonElement>(null);
   const deleteRef = useRef<HTMLButtonElement>(null);
@@ -103,7 +102,7 @@ function PresetRow({
   }, [focusRename]);
 
   return (
-    <li ref={rowRef} className="compare-players__preset-row">
+    <li className="compare-players__preset-row">
       <div className="compare-players__field">
         {isRenaming ? (
           <>
@@ -168,16 +167,6 @@ function PresetRow({
                   setArmed(true);
                   return;
                 }
-                // The row goes, so focus moves to the preset that takes its place:
-                // its name, or its draft while it is renamed.
-                const row = rowRef.current;
-                const neighbor =
-                  row?.nextElementSibling ?? row?.previousElementSibling;
-                neighbor
-                  ?.querySelector<HTMLElement>(
-                    ".compare-players__preset-load, input",
-                  )
-                  ?.focus();
                 onDelete();
               }}
             >
@@ -320,7 +309,6 @@ export default function ComparePresetsDialog({
                     changeOpen(false);
                   }}
                   onDelete={() => {
-                    if (presets.length === 1) nameInput.current?.focus();
                     announce(`Deleted ${preset.name}`);
                     setRefocus(undefined);
                     onDelete(preset.name);
