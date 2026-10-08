@@ -136,6 +136,23 @@ describe("presets", () => {
     ]);
   });
 
+  it("cuts a name by character, so an emoji stays whole", () => {
+    const name = `${"a".repeat(MAX_PRESET_NAME - 1)}🏀🏀`;
+
+    expect(savePreset([], name, ["Bob"])).toEqual([
+      { name: `${"a".repeat(MAX_PRESET_NAME - 1)}🏀`, players: ["Bob"] },
+    ]);
+  });
+
+  it("refuses a rename onto another preset's name", () => {
+    const presets = [
+      { name: "alpha", players: ["Alice"] },
+      { name: "zed", players: ["Bob"] },
+    ];
+
+    expect(renamePreset(presets, "zed", " Alpha ")).toBe(presets);
+  });
+
   it("drops a space the cut leaves at a name's end", () => {
     const name = `${"A".repeat(MAX_PRESET_NAME - 1)} Bee`;
 

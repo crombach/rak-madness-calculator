@@ -44,9 +44,9 @@ const PRESETS_SETTING = "comparePresets";
 /** The most characters a preset's name holds. */
 export const MAX_PRESET_NAME = 16;
 
-/** A typed name as a preset keeps it. */
+/** A typed name as a preset keeps it, cut by character so no emoji splits. */
 function presetName(name: string): string {
-  return name.trim().slice(0, MAX_PRESET_NAME).trimEnd();
+  return Array.from(name.trim()).slice(0, MAX_PRESET_NAME).join("").trimEnd();
 }
 
 /** The exact key the presets are saved under, for a test to seed or read. */
@@ -114,13 +114,19 @@ export function savePreset(
   return writePresets([...others, { name: kept, players }]);
 }
 
-/** Gives the preset of one name another, keeping its players. */
+/**
+ * Gives the preset of one name another, keeping its players. Leaves the presets
+ * as they are when another preset already holds the new name.
+ */
 export function renamePreset(presets: Array<Preset>, from: string, to: string) {
+  const name = presetName(to);
+  const taken = presets.some(
+    (preset) => !isSameName(preset.name, from) && isSameName(preset.name, name),
+  );
+  if (taken) return presets;
   return writePresets(
     presets.map((preset) =>
-      isSameName(preset.name, from)
-        ? { ...preset, name: presetName(to) }
-        : preset,
+      isSameName(preset.name, from) ? { ...preset, name } : preset,
     ),
   );
 }
