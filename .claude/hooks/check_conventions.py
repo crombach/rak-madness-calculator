@@ -12,7 +12,7 @@ Checks, all mechanical:
   - the body links the ticket its branch names, when the template asks for it
   - the punctuation the template bans stays out of the body
   - the body stays inside the word budget the template states
-  - a subject, a commit body and a PR body obey the Simplified Technical English
+  - a subject, a commit body, and a PR body obey the Simplified Technical English
     rules the template turns on: the sentence cap, the short word, no -ing form
     used as a noun
 
@@ -228,7 +228,7 @@ def headings(text):
 @functools.lru_cache(maxsize=128)
 def prose_words(body):
     """Words a reviewer reads. A fenced block, a table, a checklist, a heading, an
-    attribution footer and an embedded image or video are not prose the writer chose,
+    attribution footer, and an embedded image or video are not prose the writer chose,
     so none of them counts against the budget."""
     text = MEDIA.sub("", COMMENTS.sub("", FENCE.sub("", body)))
     kept, skipping_item = [], False
@@ -255,7 +255,7 @@ def sentences(body):
     """Prose split into sentences, for the sentence cap.
 
     A paragraph wraps, so lines are joined before the split. A list item, a table
-    row and a heading each end the one before it. A code span counts as one word,
+    row, and a heading each end the one before it. A code span counts as one word,
     since that is what a reader takes in.
     """
     text = MEDIA.sub("", COMMENTS.sub("", FENCE.sub("", body)))

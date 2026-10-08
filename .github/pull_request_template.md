@@ -18,7 +18,7 @@ One bullet is one line, however long.
 
 Shortest body a reviewer can review from, under 256 words. Bullets, one line
 each, not paragraphs. Delete a section marked optional when it has nothing to
-say. A heading, an attribution footer and an embedded screenshot or recording do
+say. A heading, an attribution footer, and an embedded screenshot or recording do
 not count against the budget. Add one where seeing the change beats reading
 about it, usually a UX change, not as a matter of course.
 
@@ -28,7 +28,7 @@ benchmark numbers nobody asked for, a tour of the code, or a note about your own
 machine. A reviewer reads the diff and can click the ticket.
 
 Write ASD-STE100 Simplified Technical English, for Zinsser's simplicity, brevity,
-clarity and humanity.
+clarity, and humanity.
 
 - Active voice, imperative for an instruction: "Run the test", not "The test should be run".
 - Simple present or past tense. No perfect and no progressive.
@@ -38,6 +38,7 @@ clarity and humanity.
 - No `-ing` form as a noun: "before you run it", not "before running it".
 - Condition before action: "If the check fails, the run stops."
 - Same word for the same thing every time. No synonym for variety.
+- Serial comma before the `and` or `or` closing a list: `a, b, and c`.
 - American English spellings: `color` not `colour`, `analyze` not `analyse`.
 - Short common word: `use` not `utilize`, `fix` not `remediate`, `start` not `initiate`.
 - Max three nouns in a row. Break a longer cluster with a preposition or a verb.
