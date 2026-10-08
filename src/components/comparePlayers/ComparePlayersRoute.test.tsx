@@ -907,7 +907,7 @@ async function savePresetAs(user: ReturnType<typeof mountApp>, name: string) {
   );
   await user.click(
     within(dialog).getByRole("button", {
-      name: /^(Save Current Players|Replace Preset)$/,
+      name: /^(Save Player Preset|Replace Preset)$/,
     }),
   );
   await closeDialog(user);
@@ -1196,7 +1196,7 @@ describe("compare presets", () => {
 
     expect(within(dialog).getByText("No saved presets")).toBeInTheDocument();
     const save = within(dialog).getByRole("button", {
-      name: "Save Current Players",
+      name: "Save Player Preset",
     });
     expect(save).toBeDisabled();
     expect(save).toHaveAccessibleDescription("Choose a player first");
@@ -1208,7 +1208,7 @@ describe("compare presets", () => {
     const dialog = await openPresets(user);
 
     const save = within(dialog).getByRole("button", {
-      name: "Save Current Players",
+      name: "Save Player Preset",
     });
     expect(save).toBeDisabled();
     expect(save).not.toHaveAccessibleDescription();
