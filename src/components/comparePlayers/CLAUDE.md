@@ -12,6 +12,7 @@ plus the week's leader when shown.
 - `ComparePlayersDialog`: a `PlayerCombobox` per player, added and removed by
   the reader.
 - `useStatus`: a `role="status"` message that speaks again when repeated.
+- `useArmed`: a key that loses data acts on its second press.
 - `ComparePresetsDialog`: the saved presets, each loaded, renamed or deleted,
   and a new one saved from the players chosen.
 - `comparedPlayers`: the chosen names, the presets, the game scope, and the

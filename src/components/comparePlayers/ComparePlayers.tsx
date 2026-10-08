@@ -140,8 +140,10 @@ export default function ComparePlayers({
   const [addedKey, setAddedKey] = useState<number>();
   const chooseRef = useRef<HTMLButtonElement>(null);
   const [isPresetsOpen, setIsPresetsOpen] = useState(false);
-  // The presets dialog's own status closes with it, so a load speaks here.
+  // The presets dialog's own status closes with it, so a load speaks here, once
+  // the close lets a screen reader hear the page again.
   const [status, announce] = useStatus();
+  const loaded = useRef<string>(undefined);
   const presetsRef = useRef<HTMLButtonElement>(null);
   const chosen = useMemo(
     () => (leader ? [...picked, leader] : picked),
@@ -276,7 +278,11 @@ export default function ComparePlayers({
         canSave={slots.some(isFilled)}
         onLoad={({ name, players }) => {
           changeSlots(padded(slotsFor(players, scores?.scores ?? [])));
-          announce(`Loaded ${name}`);
+          loaded.current = name;
+        }}
+        onCloseComplete={() => {
+          if (loaded.current != null) announce(`Loaded ${loaded.current}`);
+          loaded.current = undefined;
         }}
         onSave={(name) =>
           setPresets(savePreset(presets, name, namesIn(slots, scores)))

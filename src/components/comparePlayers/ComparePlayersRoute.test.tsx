@@ -906,11 +906,12 @@ async function savePresetAs(user: ReturnType<typeof mountApp>, name: string) {
     within(dialog).getByRole("textbox", { name: "Preset Name" }),
     name,
   );
-  await user.click(
-    within(dialog).getByRole("button", {
-      name: /^(Create Preset|Update Preset)$/,
-    }),
-  );
+  const save = within(dialog).getByRole("button", {
+    name: /^(Create Preset|Update Preset)$/,
+  });
+  // Update takes a second press to confirm.
+  const presses = save.textContent === "Update Preset" ? 2 : 1;
+  for (let press = 0; press < presses; press++) await user.click(save);
   await closeDialog(user);
 }
 
@@ -1096,6 +1097,113 @@ describe("compare presets", () => {
     expect(within(dialog).getByRole("status")).not.toHaveTextContent(long);
   });
 
+  it("updates a preset only on a second press", async () => {
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(["Alice"]));
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([{ name: "Kin", players: ["Bob"] }]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+    const field = within(dialog).getByRole("textbox", { name: "Preset Name" });
+    await user.type(field, "kin");
+    const update = within(dialog).getByRole("button", {
+      name: "Update Preset",
+    });
+
+    await user.click(update);
+
+    expect(update).toHaveAccessibleDescription(
+      "Press Update again to replace its players",
+    );
+    expect(JSON.parse(localStorage.getItem(PRESETS_KEY) ?? "")).toEqual([
+      { name: "Kin", players: ["Bob"] },
+    ]);
+    await user.type(field, "x");
+    await user.type(field, "{Backspace}");
+    expect(update).not.toHaveAccessibleDescription();
+    await user.click(update);
+    await user.click(update);
+    expect(JSON.parse(localStorage.getItem(PRESETS_KEY) ?? "")).toEqual([
+      { name: "kin", players: ["Alice"] },
+    ]);
+    expect(field).toHaveFocus();
+  });
+
+  it("keeps focus in the name field after a save by its key", async () => {
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(["Alice"]));
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+    const field = within(dialog).getByRole("textbox", { name: "Preset Name" });
+
+    await user.type(field, "Kin");
+    await user.click(
+      within(dialog).getByRole("button", { name: "Create Preset" }),
+    );
+
+    expect(field).toHaveFocus();
+  });
+
+  it("backs out of a rename on Escape and keeps the dialog open", async () => {
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([{ name: "Family", players: ["Bob"] }]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+
+    await user.click(
+      within(dialog).getByRole("button", { name: "Rename Family" }),
+    );
+    await user.type(
+      within(dialog).getByRole("textbox", { name: "New name for Family" }),
+      "Kin{Escape}",
+    );
+
+    expect(dialog).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("button", { name: "Rename Family" }),
+    ).toHaveFocus();
+  });
+
+  it("moves focus to a renamed neighbor's draft after a delete", async () => {
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([
+        { name: "Family", players: ["Bob"] },
+        { name: "Rivals", players: ["Carol"] },
+      ]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+    await user.click(
+      within(dialog).getByRole("button", { name: "Rename Rivals" }),
+    );
+    const draft = within(dialog).getByRole("textbox", {
+      name: "New name for Rivals",
+    });
+    await user.clear(draft);
+    const deleteFamily = within(dialog).getByRole("button", {
+      name: "Delete Family",
+    });
+
+    await user.click(deleteFamily);
+    await user.click(deleteFamily);
+
+    expect(draft).toHaveFocus();
+  });
+
+  it("counts an emoji as one character of a name", async () => {
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+    const field = within(dialog).getByRole("textbox", { name: "Preset Name" });
+    const name = "👨‍👩‍👧".repeat(MAX_PRESET_NAME);
+
+    fireEvent.change(field, { target: { value: `${name}🏀` } });
+
+    expect(field).toHaveValue(name);
+  });
+
   it("announces a second save under the same name", async () => {
     localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(["Bob"]));
     const user = mountApp(COMPARE_PATH);
@@ -1105,7 +1213,7 @@ describe("compare presets", () => {
 
     await user.type(field, "Kin{Enter}");
     const first = status.textContent;
-    await user.type(field, "Kin{Enter}");
+    await user.type(field, "Kin{Enter}{Enter}");
 
     expect(status).toHaveTextContent("Saved Kin");
     expect(status.textContent).not.toBe(first);

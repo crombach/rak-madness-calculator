@@ -44,9 +44,29 @@ const PRESETS_SETTING = "comparePresets";
 /** The most characters a preset's name holds. */
 export const MAX_PRESET_NAME = 16;
 
+const segmenter = new Intl.Segmenter();
+
+/** The characters a reader sees in `text`, so an emoji of any length is one. */
+function characters(text: string): Array<string> {
+  return Array.from(segmenter.segment(text), ({ segment }) => segment);
+}
+
 /** A typed name as a preset keeps it, cut by character so no emoji splits. */
 export function presetName(name: string): string {
-  return Array.from(name.trim()).slice(0, MAX_PRESET_NAME).join("").trimEnd();
+  return characters(name.trim()).slice(0, MAX_PRESET_NAME).join("").trimEnd();
+}
+
+/**
+ * What a name field holds after a change, in place of `maxLength`, which counts
+ * an emoji as two or more. A field already full refuses more, and a longer paste
+ * is cut.
+ */
+export function fieldName(last: string, next: string): string {
+  const typed = characters(next);
+  if (typed.length <= MAX_PRESET_NAME) return next;
+  return characters(last).length >= MAX_PRESET_NAME
+    ? last
+    : typed.slice(0, MAX_PRESET_NAME).join("");
 }
 
 /** The most presets the reader can save. */
