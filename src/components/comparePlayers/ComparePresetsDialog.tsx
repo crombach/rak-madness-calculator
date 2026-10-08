@@ -102,7 +102,7 @@ function PresetRow({
               disabled={onRename == null}
               onClick={onRename ?? doNothing}
             >
-              <CheckIcon />
+              <CheckIcon cropped={false} />
             </Button>
             <Button
               iconOnly

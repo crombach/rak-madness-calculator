@@ -141,11 +141,15 @@ export function SentimentVerySatisfiedOutlinedIcon() {
 
 /**
  * The tick alone, cropped to its own edges rather than Material's full
- * 960x960 box, which would otherwise sit empty around it.
+ * 960x960 box, which would otherwise sit empty around it. `cropped={false}`
+ * keeps the full box, so the tick's strokes match an icon beside it.
  */
-export function CheckIcon() {
+export function CheckIcon({ cropped = true }: { cropped?: boolean }) {
   return (
-    <Icon name="CheckIcon" viewBox="257 -654 451 333">
+    <Icon
+      name="CheckIcon"
+      viewBox={cropped ? "257 -654 451 333" : SYMBOLS_VIEW_BOX}
+    >
       <path d="m419-321 289-290-43-43-246 247-119-119-43 43 162 162Z" />
     </Icon>
   );
