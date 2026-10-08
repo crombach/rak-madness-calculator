@@ -74,8 +74,11 @@ export function gamecastUrl(league: League, id: string): string {
  * late kickoff falls on the day it falls on for them. The zone is named because this
  * is now the only time the dialog shows, and a bare `1:00 PM` beside a game played
  * three zones away reads as ambiguous.
+ *
+ * None for a kickoff ESPN sent nothing to parse, which the line under the scores says.
  */
 export function kickoffParts(date: Date): Array<string> {
+  if (Number.isNaN(date.getTime())) return [];
   return [
     date.toLocaleDateString("en-US", {
       weekday: "short",

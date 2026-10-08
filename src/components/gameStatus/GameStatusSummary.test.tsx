@@ -188,13 +188,34 @@ describe("GameStatusSummary, the game it is given", () => {
     expect(screen.getByText("Kickoff TBD")).toBeInTheDocument();
   });
 
-  it("says play stopped under the scores of a delayed game with no down", () => {
+  it("says play stopped under the scores of a game delayed after kickoff", () => {
     const delayed = result({
       status: GameStatus.DELAYED,
+      period: 4,
       possession: {},
     });
     render(<GameStatusSummary game={game(delayed)} result={delayed} />);
     expect(screen.getByText("Play stopped")).toBeInTheDocument();
+  });
+
+  it.each([
+    ["delayed before kickoff", GameStatus.DELAYED],
+    ["postponed", "6" as GameStatus],
+  ])("holds an empty line under the scores of a game %s", (_, status) => {
+    const stopped = result({ status, period: 0, possession: {} });
+    render(<GameStatusSummary game={game(stopped)} result={stopped} />);
+    const line = document.querySelector(".game-status__down");
+    expect(line).toHaveAttribute("aria-hidden", "true");
+    expect(line?.textContent?.trim()).toBe("");
+  });
+
+  it("leaves the kickoff out of the strip where ESPN sent nothing to parse", () => {
+    const pregame = result({
+      status: GameStatus.UPCOMING,
+      date: new Date(Number.NaN),
+    });
+    render(<GameStatusSummary game={game(pregame)} />);
+    expect(screen.queryByText(/Invalid Date/)).toBeNull();
   });
 
   it("says so where ESPN listed no game for the column", () => {
@@ -311,8 +332,8 @@ describe("GameStatusSummary, a game that is over", () => {
     renderFinal();
     expect(screen.getByText("Kansas City Chiefs")).toBeInTheDocument();
     expect(screen.getByText("Buffalo Bills")).toBeInTheDocument();
-    expect(screen.getByText("Away")).toBeInTheDocument();
-    expect(screen.getByText("Home")).toBeInTheDocument();
+    expect(screen.getByText("Away")).toHaveClass("game-status__sr-only");
+    expect(screen.getByText("Home")).toHaveClass("game-status__sr-only");
     expect(screen.getByText("3-2")).toBeInTheDocument();
     expect(screen.getByText("4-1")).toBeInTheDocument();
   });
@@ -320,6 +341,7 @@ describe("GameStatusSummary, a game that is over", () => {
   it("says neither side is home where neither of them is hosting", () => {
     const bowl = result({ isNeutralSite: true });
     render(<GameStatusSummary game={game(bowl)} result={bowl} />);
+    expect(screen.getByText("Kansas City Chiefs")).toBeInTheDocument();
     expect(screen.queryByText("Home")).toBeNull();
     expect(screen.queryByText("Away")).toBeNull();
   });

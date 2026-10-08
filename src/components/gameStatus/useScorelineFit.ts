@@ -9,11 +9,8 @@ import {
 import observeResize from "../../utils/observeResize";
 
 /**
- * The lines either side of the scores, each of which is one word on one line.
- *
- * A word is set on the line whether or not the line is wide enough to hold it, so a
- * name with too little room runs on over the mark beside it rather than wrapping under
- * it. That is what makes a line wider than the box it was given, which is the one
+ * The lines under each side's mark. A name wraps between its words and never inside
+ * one, so a word too long for the column runs past the line's box. That is the one
  * question asked of these.
  */
 const SIDE_LINES = ".game-status__team-name, .game-status__record";
@@ -26,53 +23,43 @@ function isCramped(scoreline: HTMLElement): boolean {
 }
 
 /**
- * The one cut a scoreline makes to fit: the full names go, down to the abbreviation
- * ESPN says the game in. The marks stand over the names rather than beside them, so a
- * side is only as wide as the wider of the two, and they never have to go.
- */
-export const SHORT_NAMES = 1;
-
-/**
- * How much of the scoreline there is room for, measured rather than read off a width.
+ * Whether the scoreline names its sides by abbreviation, measured rather than read off
+ * a width. The marks stand over the names rather than beside them, so they never have
+ * to go.
  *
  * What a side needs is what it is called, and no width tells `CONN` and `BUF` apart.
- * The same phone holds one game's scoreline and breaks the next one's. So the whole
- * thing goes in, the scoreline is measured, and it is cut back if a name is running over
+ * The same phone holds one game's scoreline and breaks the next one's. So the full
+ * names go in, the scoreline is measured, and the names are shortened if one runs over
  * the room it was given.
  *
  * The verdict is held against the game it was reached on and the width it was reached
- * at, rather than as a flag. Either one moving puts the whole scoreline back and asks
- * again. Another game is another pair of names, and another width is other room to hold
- * them.
+ * at, rather than as a flag. Either one moving puts the full names back and asks again.
+ * Another game is another pair of names, and another width is other room to hold them.
  *
  * @param id the game on screen, which is what the verdict is about.
  */
 export default function useScorelineFit(
   id: string,
-): [RefObject<HTMLDivElement | null>, number] {
+): [RefObject<HTMLDivElement | null>, boolean] {
   const scoreline = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState<number>();
-  const [cut, setCut] = useState<{
-    id: string;
-    width?: number;
-    step: number;
-  }>();
+  const [shortened, setShortened] = useState<{ id: string; width?: number }>();
 
-  const step =
-    cut != null && cut.id === id && cut.width === width ? cut.step : 0;
+  const shortNames =
+    shortened != null && shortened.id === id && shortened.width === width;
 
   const measure = useCallback(() => {
     const element = scoreline.current;
-    if (element == null || step >= SHORT_NAMES) {
+    if (element == null || shortNames) {
       return;
     }
     if (isCramped(element)) {
-      setCut({ id, width, step: step + 1 });
+      setShortened({ id, width });
     }
-  }, [id, step, width]);
+  }, [id, shortNames, width]);
 
   // Every render, since what the scoreline holds decides this, and going final rewrites
-  // half of it. Runs before paint, so a dropped step was never seen holding it.
+  // half of it. Runs before paint, so a name too long for its column is never seen.
   useLayoutEffect(measure);
 
   // A name measured in the fallback font was measured at the wrong width, and the swap
@@ -101,5 +88,5 @@ export default function useScorelineFit(
     [],
   );
 
-  return [scoreline, step];
+  return [scoreline, shortNames];
 }

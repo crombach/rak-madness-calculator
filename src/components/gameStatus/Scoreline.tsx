@@ -64,12 +64,15 @@ const HAS_BALL_LABEL = "Has the ball";
  */
 const NO_DOWN = "Between plays";
 
-/**
- * Said in place of the down while a game is not being played and not over: delayed,
- * postponed or canceled. Each of those is in the line over the scores, and this one only
- * holds the line under them, so the scores stand in the middle of the sides.
- */
+/** Said in place of the down while a game delayed after kickoff has none. */
 const PLAY_STOPPED = "Play stopped";
+
+/**
+ * Holds the line under the scores where there is nothing to say, as on a game postponed,
+ * canceled, or delayed before kickoff. The line over the scores already says which, and
+ * an empty line keeps the scores level with the middle of the sides.
+ */
+const EMPTY_LINE = " ";
 
 /** Said in place of a countdown to a kickoff ESPN sent nothing to parse. */
 const KICKOFF_UNKNOWN = "Kickoff TBD";
@@ -151,11 +154,23 @@ function Note({
   // ESPN clears the side but leaves the last down standing, and that down is over.
   const { homeAway, downDistanceText } = result.possession;
   const down = homeAway == null ? undefined : downDistanceText;
-  const idle =
-    result.status === GameStatus.LIVE
-      ? (result.possession.between ?? NO_DOWN)
-      : PLAY_STOPPED;
-  return <p className="game-status__down">{down ?? idle}</p>;
+  if (result.status === GameStatus.LIVE) {
+    return (
+      <p className="game-status__down">
+        {down ?? result.possession.between ?? NO_DOWN}
+      </p>
+    );
+  }
+  const stoppedInPlay =
+    result.status === GameStatus.DELAYED && (result.period ?? 0) > 0;
+  if (down == null && !stoppedInPlay) {
+    return (
+      <p className="game-status__down" aria-hidden="true">
+        {EMPTY_LINE}
+      </p>
+    );
+  }
+  return <p className="game-status__down">{down ?? PLAY_STOPPED}</p>;
 }
 
 /**

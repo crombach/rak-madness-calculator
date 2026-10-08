@@ -12,7 +12,7 @@ import { gamecastUrl, kickoffParts, scoringTeam } from "./gameStatusText";
 import CountBadge from "../countBadge/CountBadge";
 import PickBadge from "../pickBadge/PickBadge";
 import Scoreline, { outcomeClasses, SideOutcome } from "./Scoreline";
-import useScorelineFit, { SHORT_NAMES } from "./useScorelineFit";
+import useScorelineFit from "./useScorelineFit";
 import "./GameStatusSummary.scss";
 
 /** What the link out to ESPN is called, which is what ESPN calls the page. */
@@ -189,8 +189,9 @@ function Game({
   /** ESPN's page for the game. */
   gamecastHref: string;
 }) {
-  const [scoreline, fit] = useScorelineFit(result.id);
+  const [scoreline, shortNames] = useScorelineFit(result.id);
   const [lead, wrapped] = useWraps<HTMLDivElement>();
+  const kickoff = kickoffParts(result.date);
   // The link rides with the place, not the kickoff, so it holds the strip's end
   // when the halves stack. A game ESPN sent no address for still carries it.
   const placeParts = [
@@ -273,7 +274,7 @@ function Game({
       </div>
       <div
         className={getClasses("game-status__scoreline", {
-          "--short-names": fit >= SHORT_NAMES,
+          "--short-names": shortNames,
         })}
         ref={scoreline}
       >
@@ -284,7 +285,7 @@ function Game({
       {/* Under the scoreline rather than over it. The game is what the dialog was
           opened for, and when and where it is played is the footnote. */}
       <div className="game-status__meta">
-        <MetaGroup parts={kickoffParts(result.date)} />
+        {kickoff.length > 0 && <MetaGroup parts={kickoff} />}
         <MetaGroup parts={placeParts} />
       </div>
     </>
