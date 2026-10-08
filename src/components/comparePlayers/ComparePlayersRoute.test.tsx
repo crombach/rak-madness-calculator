@@ -991,6 +991,36 @@ describe("compare presets", () => {
     );
   });
 
+  it("drops an unsaved rename when the dialog closes", async () => {
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([{ name: "Family", players: ["Bob"] }]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    let dialog = await openPresets(user);
+
+    await user.click(
+      within(dialog).getByRole("button", { name: "Rename Family" }),
+    );
+    await user.type(
+      within(dialog).getByRole("textbox", { name: "New name for Family" }),
+      "Kin",
+    );
+    await closeDialog(user);
+    await user.click(screen.getByRole("button", { name: "Presets" }));
+    dialog = await screen.findByRole("dialog", { name: "Presets" });
+
+    expect(
+      within(dialog).queryByRole("textbox", { name: "New name for Family" }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("button", { name: "Rename Family" }),
+    ).toBeInTheDocument();
+    expect(JSON.parse(localStorage.getItem(PRESETS_KEY) ?? "")).toEqual([
+      { name: "Family", players: ["Bob"] },
+    ]);
+  });
+
   it("refuses a rename to another preset's name", async () => {
     localStorage.setItem(
       PRESETS_KEY,

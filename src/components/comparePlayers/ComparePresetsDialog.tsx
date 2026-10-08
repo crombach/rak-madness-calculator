@@ -193,6 +193,15 @@ export default function ComparePresetsDialog({
         }
       : undefined;
 
+  // A rename left open drops its draft when the dialog closes.
+  const changeOpen = (next: boolean) => {
+    if (!next) {
+      setRenaming(undefined);
+      setRefocus(undefined);
+    }
+    onOpenChange(next);
+  };
+
   const rowState = (preset: Preset) => {
     const draft = renaming?.name === preset.name ? renaming.draft : undefined;
     const reason =
@@ -226,7 +235,7 @@ export default function ComparePresetsDialog({
   return (
     <DialogShell
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={changeOpen}
       title="Presets"
       finalFocus={finalFocus}
     >
@@ -246,7 +255,7 @@ export default function ComparePresetsDialog({
                   {...rowState(preset)}
                   onLoad={() => {
                     onLoad(preset);
-                    onOpenChange(false);
+                    changeOpen(false);
                   }}
                   onDelete={() => {
                     if (presets.length === 1) nameInput.current?.focus();
