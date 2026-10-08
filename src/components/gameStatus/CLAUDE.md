@@ -11,6 +11,6 @@ How a game in the week is going, opened from a pick cell.
   `outcomeClasses` colors a side, its score, the pool line's teams and the
   reader's pick alike.
 - `gameStatusText`: the strings both read.
-- `useScorelineFit`: takes the names, then the marks, off a narrow one.
-- `GameStatusSummary.scss`: both sides in one grid, the dash in a track between two
-  equal ones. `--rak-score-size` sizes it.
+- `useScorelineFit`: takes the full names off a narrow one.
+- `GameStatusSummary.scss`: each side a column, mark over name over record, the
+  scores in a track between two equal ones. `--rak-score-size` sizes it.

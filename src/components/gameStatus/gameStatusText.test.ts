@@ -56,8 +56,8 @@ describe("countdownText", () => {
     expect(countdownText(inMinutes(-3), NOW)).toBe("Kicking off");
   });
 
-  it("says nothing for a kickoff with no time in it", () => {
-    expect(countdownText(new Date(Number.NaN), NOW)).toBeUndefined();
+  it("says the kickoff is to be decided where it has no time in it", () => {
+    expect(countdownText(new Date(Number.NaN), NOW)).toBe("Kickoff TBD");
   });
 });
 

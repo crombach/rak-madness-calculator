@@ -3,9 +3,23 @@ import { League } from "../../types/League";
 import { GameSide, LeagueResult } from "../../types/LeagueResult";
 import { WeekGame } from "../../types/WeekGame";
 
+/**
+ * A transparent pixel, so the stand-in draws the mark's box without a request for an
+ * image nobody sees.
+ */
+const BLANK_LOGO =
+  "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEAAAAALAAAAAABAAEAAAI=";
+
 function standInSide(abbreviation: string): GameSide {
   return {
-    team: { name: abbreviation, abbreviation },
+    // A place and a mascot, so the name takes the two lines a loaded one does.
+    team: {
+      name: abbreviation,
+      abbreviation,
+      location: abbreviation,
+      mascot: abbreviation,
+      logoUrl: BLANK_LOGO,
+    },
     score: 0,
     record: "0-0",
     linescores: [],

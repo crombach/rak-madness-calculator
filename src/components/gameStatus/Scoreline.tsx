@@ -9,6 +9,7 @@ import {
   countdownText,
   detailText,
   outcomeText,
+  stoppedText,
 } from "./gameStatusText";
 // The readout is part of the `game-status` block, which `GameStatusSummary.scss` owns.
 import "./GameStatusSummary.scss";
@@ -110,9 +111,9 @@ function HalftimeLeft({ text, endsAt }: { text: string; endsAt: Date }) {
 }
 
 /**
- * Under the scores is how long until kickoff before the game starts, what the
- * offense is facing, or what is happening between plays, while it is being played,
- * and what the pool made of it once it is over.
+ * Under the scores is how long until kickoff, what the offense is facing or what is
+ * happening between plays, why play is stopped or the game is off, and what the pool
+ * made of it once it is over.
  *
  * Who has the ball is left to the marker beside their score.
  */
@@ -126,9 +127,8 @@ function Note({
   const isPregame = result.status === GameStatus.UPCOMING;
   const now = useClock(isPregame, MINUTE_MS);
   if (isPregame) {
-    const countdown = countdownText(result.date, now);
-    return countdown == null ? null : (
-      <p className="game-status__down">{countdown}</p>
+    return (
+      <p className="game-status__down">{countdownText(result.date, now)}</p>
     );
   }
   if (result.status === GameStatus.FINAL) {
@@ -140,14 +140,14 @@ function Note({
   // ESPN clears the side but leaves the last down standing, and that down is over.
   const { homeAway, downDistanceText } = result.possession;
   const down = homeAway == null ? undefined : downDistanceText;
-  if (down == null && result.status !== GameStatus.LIVE) {
-    return null;
+  if (result.status === GameStatus.LIVE) {
+    return (
+      <p className="game-status__down">
+        {down ?? result.possession.between ?? NO_DOWN}
+      </p>
+    );
   }
-  return (
-    <p className="game-status__down">
-      {down ?? result.possession.between ?? NO_DOWN}
-    </p>
-  );
+  return <p className="game-status__down">{down ?? stoppedText(result)}</p>;
 }
 
 /**

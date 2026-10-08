@@ -8,29 +8,26 @@ import getClasses from "../../utils/getClasses";
 import observeResize from "../../utils/observeResize";
 import parsePick from "../../utils/scoring/parsePick";
 import pickSplit, { PickSplit } from "../../utils/scoring/pickSplit";
-import { gamecastUrl, kickoffParts, scoringTeam } from "./gameStatusText";
+import {
+  GAMECAST_LABEL,
+  gamecastUrl,
+  kickoffParts,
+  scoringTeam,
+} from "./gameStatusText";
 import CountBadge from "../countBadge/CountBadge";
 import PickBadge from "../pickBadge/PickBadge";
 import Scoreline, { outcomeClasses, SideOutcome } from "./Scoreline";
-import useScorelineFit, { MARKS_OFF, SHORT_NAMES } from "./useScorelineFit";
+import useScorelineFit from "./useScorelineFit";
 import "./GameStatusSummary.scss";
 
-/** What the link out to ESPN is called, which is what ESPN calls the page. */
-const GAMECAST_LABEL = "Gamecast";
-
 /**
- * What each side is called over its name.
- *
- * In a game played at neither side's own ground, nobody is hosting, so both are said
- * to be a team and nothing more. ESPN names a home side for one of them anyway, and
- * the pool scores the line against it, but the label would be wrong.
- *
- * One word, where a label of two would wrap in the room a phone leaves beside a score
- * and take the name below it down a line.
+ * Which side hosts, read out ahead of its name to a screen reader alone. The page shows
+ * it by placement, away on the left and home on the right. Left out at a neutral site,
+ * where ESPN names a home side the pool scores against but nobody is hosting.
  */
-const SIDE_LABEL: Record<"hosted" | "neutral", Record<HomeAway, string>> = {
-  hosted: { [HomeAway.AWAY]: "Away", [HomeAway.HOME]: "Home" },
-  neutral: { [HomeAway.AWAY]: "Team", [HomeAway.HOME]: "Team" },
+const SIDE_LABEL: Record<HomeAway, string> = {
+  [HomeAway.AWAY]: "Away",
+  [HomeAway.HOME]: "Home",
 };
 
 /** Each side's pool count and its line, over the scoreline. */
@@ -88,7 +85,7 @@ function Side({
 }: {
   side: GameSide;
   homeAway: HomeAway;
-  /** Says the sides by where they stand instead of by whose ground it is. */
+  /** Says nothing of which side hosts. */
   isNeutralSite: boolean;
   /** Left out where either side has no mark to draw, so neither draws one. */
   logo?: ReactNode;
@@ -100,9 +97,9 @@ function Side({
     <div className={`game-status__side --${homeAway}`}>
       {logo}
       <div className="game-status__team">
-        <span className="game-status__side-label">
-          {SIDE_LABEL[isNeutralSite ? "neutral" : "hosted"][homeAway]}
-        </span>
+        {!isNeutralSite && (
+          <span className="game-status__sr-only">{SIDE_LABEL[homeAway]} </span>
+        )}
         <span
           className={getClasses(
             "game-status__team-name",
@@ -189,13 +186,14 @@ function Game({
   spread?: GameSpread;
   myPick?: string;
   split?: PickSplit;
-  /** What a side wears beside its name, or nothing where the marks are dropped. */
+  /** What a side wears over its name, or nothing where either side has no mark. */
   logo?: (side: GameSide) => ReactNode;
   /** ESPN's page for the game. */
   gamecastHref: string;
 }) {
-  const [scoreline, fit] = useScorelineFit(result.id);
+  const [scoreline, shortNames] = useScorelineFit(result.id);
   const [lead, wrapped] = useWraps<HTMLDivElement>();
+  const kickoff = kickoffParts(result.date);
   // The link rides with the place, not the kickoff, so it holds the strip's end
   // when the halves stack. A game ESPN sent no address for still carries it.
   const placeParts = [
@@ -232,7 +230,7 @@ function Game({
   const sideProps = (side: GameSide) => ({
     side,
     isNeutralSite: result.isNeutralSite,
-    logo: fit < MARKS_OFF ? logo?.(side) : undefined,
+    logo: logo?.(side),
     outcome: outcomeOf(side),
     isPicked: isPicked(side),
   });
@@ -278,7 +276,7 @@ function Game({
       </div>
       <div
         className={getClasses("game-status__scoreline", {
-          "--short-names": fit >= SHORT_NAMES,
+          "--short-names": shortNames,
         })}
         ref={scoreline}
       >
@@ -289,7 +287,7 @@ function Game({
       {/* Under the scoreline rather than over it. The game is what the dialog was
           opened for, and when and where it is played is the footnote. */}
       <div className="game-status__meta">
-        <MetaGroup parts={kickoffParts(result.date)} />
+        {kickoff.length > 0 && <MetaGroup parts={kickoff} />}
         <MetaGroup parts={placeParts} />
       </div>
     </>

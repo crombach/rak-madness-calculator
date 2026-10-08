@@ -1,6 +1,5 @@
 @use "../../styles/a11y" as *;
 @use "../../styles/breakpoints" as *;
-@use "../../styles/label" as *;
 @use "../../styles/lcd" as *;
 @use "../../styles/picks" as *;
 @use "../../styles/text" as *;
@@ -72,7 +71,7 @@
 }
 
 // The reader's own pick, then each side's pool count and line, over the
-// scoreline they decide. Both take the gray the labels over the two names use,
+// scoreline they decide. Both take the gray the records under the two names use,
 // so they read as one tier of the dialog.
 .game-status__picks,
 .game-status__my-pick {
@@ -177,48 +176,31 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
   text-decoration: underline;
 }
 
-// Held to a square whatever shape the mark is, so a wide logo and a tall one take
-// the same room out of the name beside them. Smaller on a phone, where it stands
-// beside an abbreviation rather than a name.
-//
-// As big as the three lines of text beside it are tall, which is as much as either
-// can take without the name it stands over having to wrap sooner.
-//
-// Laid in the name's own row rather than across all three. Across them it centers on
-// the grid, whose first row is as tall as the line over the scores rather than as
-// tall as a side's label, which would stand the mark above the name, the record block
-// and the glass alike. In this row it is level with all three.
-//
-// Whether there is room for it at all is `useScorelineFit`'s to say, since what it costs
-// the name beside it is what that name is. The last thing that hook gives up, and only
-// where cutting the name to its abbreviation left the two still short.
+// Held to a square whatever shape the mark is, so a wide logo and a tall one take the
+// same room over the name.
 .game-status__logo {
   display: block;
   align-self: center;
   object-fit: contain;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
 
   @include roomy-screen {
-    width: 44px;
-    height: 44px;
+    width: 56px;
+    height: 56px;
   }
 }
 
 // Each side out on its own edge, and between them one block holding both scores and,
 // stacked over and under them, where the game is up to and what the offense faces.
-// Both sides are laid into the one grid rather than each into its own, so a label, a
-// mark, a name and a record line up with the other side's however many lines the name
-// beside them took.
 .game-status__scoreline {
   display: grid;
-  // Mark and text, then the block, then the same two mirrored. The two sides are given
-  // the same share of what is left, which is what holds the block in the middle.
-  grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr) auto;
-  grid-template-rows: auto auto auto;
-  // Every line sits in the middle of its row, so a line beside a taller one is level
-  // with it rather than sitting on its first line. Row 1 is the exception, where the
-  // two labels and the clock between them share a baseline instead.
+  // The two sides are given the same share of what the block leaves, which is what
+  // holds the block in the middle.
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  // A side taller than the three lines between them hands its extra height to the
+  // outer rows alone, so the glass keeps its own spacing.
+  grid-template-rows: 1fr auto 1fr;
   align-items: center;
   column-gap: var(--rak-space-2);
   row-gap: var(--rak-space-1);
@@ -227,61 +209,30 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
   padding-block: var(--rak-space-1);
 }
 
-// Both carry the grouping and nothing else, so what is inside them is the scoreline's
-// own to lay out against the other side.
-.game-status__side,
-.game-status__team {
-  display: contents;
-}
+// The mark over the name over the record, down the whole height of the block. The mark
+// is centered in the column, and the name and record stretch to it.
+//
+// The name and record stretch to the column, so one running over it is wider than its
+// box, which is what `useScorelineFit` measures.
+.game-status__side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--rak-space-1);
+  grid-row: 1 / -1;
+  text-align: center;
 
-// Each side's text reads off the edge it sits on, and the two mirror each other, so
-// both scores end up against the middle and both names against an outside edge.
-.game-status__side.--away {
-  text-align: left;
-
-  .game-status__logo {
-    grid-row: 2;
+  &.--away {
     grid-column: 1;
   }
 
-  .game-status__side-label {
-    grid-row: 1;
-    grid-column: 2;
-  }
-
-  .game-status__team-name {
-    grid-row: 2;
-    grid-column: 2;
-  }
-
-  .game-status__record {
-    grid-row: 3;
-    grid-column: 2;
+  &.--home {
+    grid-column: 3;
   }
 }
 
-.game-status__side.--home {
-  text-align: right;
-
-  .game-status__logo {
-    grid-row: 2;
-    grid-column: 5;
-  }
-
-  .game-status__side-label {
-    grid-row: 1;
-    grid-column: 4;
-  }
-
-  .game-status__team-name {
-    grid-row: 2;
-    grid-column: 4;
-  }
-
-  .game-status__record {
-    grid-row: 3;
-    grid-column: 4;
-  }
+.game-status__team {
+  display: contents;
 }
 
 // Held to the scores it joins, so it grows with them. Lit plain white rather than in
@@ -297,19 +248,6 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
   color: var(--rak-glass-ink);
   font-size: var(--rak-score-size);
   line-height: var(--rak-line-height-tight);
-}
-
-// Set with the record under the name, which is the other thing this column says about
-// the side in passing. Off the mixin's own bold, so the two read as one frame around
-// the name rather than as a heavy label over a light one.
-.game-status__side-label {
-  @include micro-label;
-
-  // Level with the clock across the row, at its size.
-  align-self: baseline;
-  color: var(--rak-text-secondary);
-  font-size: var(--rak-text-sm);
-  font-weight: normal;
 }
 
 // A step up on the rest of the side text, since the score beside it is what the row is
@@ -329,7 +267,7 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
 }
 
 // A phone gets the abbreviation, a name of three words wrapping to three lines in
-// the room left beside a mark and a score.
+// the room left beside a score.
 .game-status__name-full {
   display: none;
 }
@@ -353,9 +291,9 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
 }
 
 // Back to the abbreviation, whatever the width says, because `useScorelineFit` measured
-// a name running over its column. The first thing it gives up, so the marks are still
-// there. Only bites above `$breakpoint-roomy`, since that is the only place the full
-// name is shown at all, and the width gained there is spent on a bigger score row too.
+// a name running over its column. Only bites above `$breakpoint-roomy`, since that is
+// the only place the full name is shown at all, and the width gained there is spent on
+// a bigger score row too.
 .game-status__scoreline.--short-names {
   .game-status__name-full {
     display: none;
@@ -469,9 +407,8 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
   }
 }
 
-// The three lines between the two sides, each laid in the row of the side text it
-// belongs beside: where the game is up to against the labels, the scores against the
-// names, and the down or the outcome against the records.
+// The three lines between the two sides: where the game is up to, the scores, and the
+// down or the outcome.
 //
 // Carries the grouping and nothing else, so the scoreline lays out its lines itself.
 .game-status__center {
@@ -484,7 +421,7 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
 // or a score of two digits against one, would otherwise each move the dash.
 .game-status__scores {
   grid-row: 2;
-  grid-column: 3;
+  grid-column: 2;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
@@ -501,10 +438,6 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
   // The plate is a spread shadow, so it takes no room in the row and the row-gap is
   // spent clearing it rather than standing the lines off the glass. This is the gap
   // the reader sees above the clock and below the down.
-  //
-  // Row 2 is the sides' too, so this stands each side's label and record the same
-  // distance off its name. That is the price of the alignment: the three lines here
-  // are laid in the sides' own rows, so the readout cannot be spaced on its own.
   margin-block: var(--rak-space-2);
 
   @include lcd-glass;
@@ -513,7 +446,7 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
 .game-status__detail,
 .game-status__down,
 .game-status__outcome {
-  grid-column: 3;
+  grid-column: 2;
   justify-self: center;
   min-width: 0;
   margin: 0;
@@ -527,8 +460,7 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
 // about the game rather than about either side.
 .game-status__detail {
   grid-row: 1;
-  // Both sides of the row take their baseline from the same place, or neither does.
-  align-self: baseline;
+  align-self: end;
   // As wide as the scores and no wider, so `Q2 10:54 • Official T/O` never takes
   // room off the names. A line a little wider spills evenly either side.
   display: flex;
@@ -541,6 +473,7 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
 .game-status__down,
 .game-status__outcome {
   grid-row: 3;
+  align-self: start;
 }
 
 // Held to no width, so a line like `4th & Goal @ UCONN 10` never widens the middle
