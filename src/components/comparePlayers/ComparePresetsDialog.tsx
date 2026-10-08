@@ -339,7 +339,7 @@ export default function ComparePresetsDialog({
             ariaDescribedBy={saveReason && saveReasonId}
             onClick={save ?? doNothing}
           >
-            {match == null ? "Save Player Preset" : "Replace Preset"}
+            {match == null ? "Create Preset" : "Update Preset"}
           </Button>
           <Reason id={saveReasonId} reason={saveReason} />
         </section>
