@@ -199,7 +199,9 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
   // The two sides are given the same share of what the block leaves, which is what
   // holds the block in the middle.
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  grid-template-rows: auto auto auto;
+  // A side taller than the three lines between them hands its extra height to the
+  // outer rows alone, so the glass keeps its own spacing.
+  grid-template-rows: 1fr auto 1fr;
   align-items: center;
   column-gap: var(--rak-space-2);
   row-gap: var(--rak-space-1);
@@ -458,8 +460,10 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
 
 // Set with the strip under the scoreline, which is the other thing the dialog says
 // about the game rather than about either side.
+// Against the glass rather than centered in a row grown by a tall side.
 .game-status__detail {
   grid-row: 1;
+  align-self: end;
   // As wide as the scores and no wider, so `Q2 10:54 • Official T/O` never takes
   // room off the names. A line a little wider spills evenly either side.
   display: flex;
@@ -472,6 +476,7 @@ $lead-dot: calc(2 * var(--rak-space-2) + 0.35em);
 .game-status__down,
 .game-status__outcome {
   grid-row: 3;
+  align-self: start;
 }
 
 // Held to no width, so a line like `4th & Goal @ UCONN 10` never widens the middle
