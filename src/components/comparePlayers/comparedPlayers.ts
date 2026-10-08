@@ -49,6 +49,9 @@ export function presetName(name: string): string {
   return Array.from(name.trim()).slice(0, MAX_PRESET_NAME).join("").trimEnd();
 }
 
+/** The most presets the reader can save. */
+export const MAX_PRESETS = 8;
+
 /** The exact key the presets are saved under, for a test to seed or read. */
 export const PRESETS_KEY = PREFIX + PRESETS_SETTING;
 
@@ -85,6 +88,7 @@ export function readPresets(): Array<Preset> {
           all.findIndex((other) => isSameName(other.name, preset.name)) ===
           index,
       )
+      .slice(0, MAX_PRESETS)
       .sort(byName);
   } catch {
     return [];
@@ -103,7 +107,10 @@ function writePresets(presets: Array<Preset>): Array<Preset> {
 // Each change below starts from the presets on screen rather than from storage,
 // so a list storage refuses still holds every change this visit.
 
-/** Saves the players under the name, replacing a preset of that name. */
+/**
+ * Saves the players under the name, replacing a preset of that name. Leaves the
+ * presets as they are when a new name would go past `MAX_PRESETS`.
+ */
 export function savePreset(
   presets: Array<Preset>,
   name: string,
@@ -111,6 +118,7 @@ export function savePreset(
 ) {
   const kept = presetName(name);
   const others = presets.filter((preset) => !isSameName(preset.name, kept));
+  if (others.length >= MAX_PRESETS) return presets;
   return writePresets([...others, { name: kept, players }]);
 }
 

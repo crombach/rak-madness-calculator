@@ -13,6 +13,7 @@ import { CloseIcon, ConfirmIcon, DeleteIcon, EditIcon } from "../icon/Icon";
 import {
   isSameName,
   MAX_PRESET_NAME,
+  MAX_PRESETS,
   Preset,
   presetName,
 } from "./comparedPlayers";
@@ -23,6 +24,7 @@ const NO_PRESETS = "No saved presets";
 const NO_PLAYERS = "Choose a player first";
 const NAME_TAKEN = "Another preset has this name";
 const NAME_BLANK = "Type a new name";
+const PRESETS_FULL = "Delete a preset to save another";
 const DELETE_AGAIN = "Press Delete again to delete";
 
 /** Why a key is disabled. `alert` announces a reason that appears as the reader types. */
@@ -232,7 +234,11 @@ export default function ComparePresetsDialog({
   const inputId = useId();
   const saveReasonId = useId();
   const match = presets.find((preset) => isSameName(preset.name, name));
-  const saveReason = canSave ? undefined : NO_PLAYERS;
+  const saveReason = !canSave
+    ? NO_PLAYERS
+    : match == null && presets.length >= MAX_PRESETS
+      ? PRESETS_FULL
+      : undefined;
   const save =
     name.trim() !== "" && saveReason == null
       ? () => {

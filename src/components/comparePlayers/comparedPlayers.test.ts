@@ -3,6 +3,7 @@ import {
   GAME_SCOPE_KEY,
   MAX_PICKERS,
   MAX_PRESET_NAME,
+  MAX_PRESETS,
   PRESETS_KEY,
   deletePreset,
   readComparedPlayers,
@@ -191,5 +192,32 @@ describe("presets", () => {
     expect(
       deletePreset(renamePreset(saved, "Family", "Kin"), "Rivals"),
     ).toEqual([{ name: "Kin", players: ["Alice"] }]);
+  });
+
+  it("saves no preset past the most it keeps, but still replaces one", () => {
+    const presets = Array.from({ length: MAX_PRESETS }, (_, index) => ({
+      name: `P${index}`,
+      players: ["Bob"],
+    }));
+
+    expect(savePreset(presets, "New", ["Alice"])).toBe(presets);
+    expect(savePreset(presets, "p0", ["Alice"])).toContainEqual({
+      name: "p0",
+      players: ["Alice"],
+    });
+  });
+
+  it("reads no more presets than it keeps", () => {
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify(
+        Array.from({ length: MAX_PRESETS + 2 }, (_, index) => ({
+          name: `P${index}`,
+          players: ["Bob"],
+        })),
+      ),
+    );
+
+    expect(readPresets()).toHaveLength(MAX_PRESETS);
   });
 });

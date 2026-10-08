@@ -24,6 +24,7 @@ import {
   GAME_SCOPE_KEY,
   LEADER_KEY,
   MAX_PRESET_NAME,
+  MAX_PRESETS,
   PRESETS_KEY,
 } from "./comparedPlayers";
 
@@ -1200,6 +1201,36 @@ describe("compare presets", () => {
     });
     expect(save).toBeDisabled();
     expect(save).toHaveAccessibleDescription("Choose a player first");
+  });
+
+  it("creates no preset past the most it keeps, but still updates one", async () => {
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(["Alice"]));
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify(
+        Array.from({ length: MAX_PRESETS }, (_, index) => ({
+          name: `P${index}`,
+          players: ["Bob"],
+        })),
+      ),
+    );
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+    const field = within(dialog).getByRole("textbox", { name: "Preset Name" });
+
+    await user.type(field, "New");
+    const create = within(dialog).getByRole("button", {
+      name: "Create Preset",
+    });
+    expect(create).toBeDisabled();
+    expect(create).toHaveAccessibleDescription(
+      "Delete a preset to save another",
+    );
+    await user.clear(field);
+    await user.type(field, "p0");
+    expect(
+      within(dialog).getByRole("button", { name: "Update Preset" }),
+    ).toBeEnabled();
   });
 
   it("saves no preset without a name, and gives no reason", async () => {
