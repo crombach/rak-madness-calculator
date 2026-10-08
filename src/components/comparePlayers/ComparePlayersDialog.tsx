@@ -1,4 +1,4 @@
-import { RefObject, useId, useState } from "react";
+import { RefObject, useId, useRef, useState } from "react";
 import Button from "../button/Button";
 import DialogShell from "../dialog/DialogShell";
 import { AddIcon, DeleteIcon } from "../icon/Icon";
@@ -37,9 +37,10 @@ function PlayerPicker({
   focusOnMount?: boolean;
 }) {
   const [query, setQuery] = useState(value?.name ?? missingName ?? "");
+  const fieldRef = useRef<HTMLLIElement>(null);
   const noteId = useId();
   return (
-    <li className="compare-players__field">
+    <li ref={fieldRef} className="compare-players__field">
       <PlayerCombobox
         ariaLabel={label}
         ariaDescribedBy={missingName != null ? noteId : undefined}
@@ -56,7 +57,18 @@ function PlayerPicker({
         iconOnly
         ariaLabel={`Remove ${label}`}
         disabled={!canRemove}
-        onClick={onRemove}
+        onClick={() => {
+          // The key goes with its picker, so focus moves to the remove key that
+          // takes its place, or the one before it at the end of the list. Not to
+          // the picker, which would open its list or a phone's keyboard.
+          const field = fieldRef.current;
+          const neighbor =
+            field?.nextElementSibling ?? field?.previousElementSibling;
+          neighbor
+            ?.querySelector<HTMLButtonElement>(".compare-players__remove")
+            ?.focus();
+          onRemove();
+        }}
       >
         <DeleteIcon />
       </Button>
