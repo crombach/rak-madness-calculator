@@ -1113,9 +1113,7 @@ describe("compare presets", () => {
 
     await user.click(update);
 
-    expect(update).toHaveAccessibleDescription(
-      "Press Update again to replace its players",
-    );
+    expect(update).toHaveAccessibleDescription("Press again to confirm");
     expect(JSON.parse(localStorage.getItem(PRESETS_KEY) ?? "")).toEqual([
       { name: "Kin", players: ["Bob"] },
     ]);

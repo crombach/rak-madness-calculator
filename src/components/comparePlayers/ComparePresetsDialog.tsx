@@ -27,7 +27,7 @@ const NAME_TAKEN = "Another preset has this name";
 const NAME_BLANK = "Type a new name";
 const PRESETS_FULL = "Delete a preset to save another";
 const DELETE_AGAIN = "Press Delete again to delete";
-const UPDATE_AGAIN = "Press Update again to replace its players";
+const UPDATE_AGAIN = "Press again to confirm";
 
 /** Why a key is disabled. `alert` announces a reason that appears as the reader types. */
 function Reason({
