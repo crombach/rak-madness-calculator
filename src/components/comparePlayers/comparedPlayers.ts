@@ -79,6 +79,7 @@ export function readPresets(): Array<Preset> {
           .filter((player) => typeof player === "string")
           .slice(0, MAX_PICKERS),
       }))
+      .filter((preset) => preset.players.length > 0)
       .filter(
         (preset, index, all) =>
           all.findIndex((other) => isSameName(other.name, preset.name)) ===
@@ -99,19 +100,24 @@ function writePresets(presets: Array<Preset>): Array<Preset> {
   return [...presets].sort(byName);
 }
 
+// Each change below starts from the presets on screen rather than from storage,
+// so a list storage refuses still holds every change this visit.
+
 /** Saves the players under the name, replacing a preset of that name. */
-export function savePreset(name: string, players: Array<string>) {
+export function savePreset(
+  presets: Array<Preset>,
+  name: string,
+  players: Array<string>,
+) {
   const kept = presetName(name);
-  const others = readPresets().filter(
-    (preset) => !isSameName(preset.name, kept),
-  );
+  const others = presets.filter((preset) => !isSameName(preset.name, kept));
   return writePresets([...others, { name: kept, players }]);
 }
 
 /** Gives the preset of one name another, keeping its players. */
-export function renamePreset(from: string, to: string) {
+export function renamePreset(presets: Array<Preset>, from: string, to: string) {
   return writePresets(
-    readPresets().map((preset) =>
+    presets.map((preset) =>
       isSameName(preset.name, from)
         ? { ...preset, name: presetName(to) }
         : preset,
@@ -120,9 +126,9 @@ export function renamePreset(from: string, to: string) {
 }
 
 /** Forgets the preset of that name. */
-export function deletePreset(name: string) {
+export function deletePreset(presets: Array<Preset>, name: string) {
   return writePresets(
-    readPresets().filter((preset) => !isSameName(preset.name, name)),
+    presets.filter((preset) => !isSameName(preset.name, name)),
   );
 }
 

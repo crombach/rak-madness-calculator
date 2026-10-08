@@ -16,6 +16,7 @@ import "./ComparePlayers.scss";
 const NO_PRESETS = "No presets saved";
 const NO_PLAYERS = "Choose a player first";
 const NAME_TAKEN = "Another preset has this name";
+const NAME_BLANK = "Type a new name";
 
 /** Why a key is disabled. `alert` announces a reason that appears as the reader types. */
 function Reason({
@@ -52,6 +53,7 @@ function onEnter(action?: () => void) {
 
 /** Why a preset cannot take `draft` as its name, or nothing when it can. */
 function renameReason(preset: Preset, presets: Array<Preset>, draft: string) {
+  if (draft.trim() === "") return NAME_BLANK;
   const taken = presets.some(
     (other) => other !== preset && isSameName(other.name, draft),
   );
@@ -189,6 +191,10 @@ export default function ComparePresetsDialog({
 }) {
   const [name, setName] = useState("");
   const [status, setStatus] = useState("");
+  // A live region speaks only when its text changes, so a message repeated
+  // gains or loses a no-break space to be spoken again.
+  const announce = (message: string) =>
+    setStatus((last) => (last === message ? `${message}\u00A0` : message));
   // One preset renames at a time. `refocus` names the one whose rename key takes
   // the focus back, which a rename remounts under its new name.
   const [renaming, setRenaming] = useState<{ name: string; draft: string }>();
@@ -202,7 +208,8 @@ export default function ComparePresetsDialog({
   const save =
     name.trim() !== "" && saveReason == null
       ? () => {
-          setStatus(`Saved ${name.trim()}`);
+          announce(`Saved ${name.trim()}`);
+          setRefocus(undefined);
           onSave(name);
           setName("");
         }
@@ -237,9 +244,9 @@ export default function ComparePresetsDialog({
         }
       },
       onRename:
-        draft != null && draft.trim() !== "" && reason == null
+        draft != null && reason == null
           ? () => {
-              setStatus(`Renamed ${preset.name} to ${draft.trim()}`);
+              announce(`Renamed ${preset.name} to ${draft.trim()}`);
               onRename(preset.name, draft);
               stop(draft.trim());
             }
@@ -274,7 +281,8 @@ export default function ComparePresetsDialog({
                   }}
                   onDelete={() => {
                     if (presets.length === 1) nameInput.current?.focus();
-                    setStatus(`Deleted ${preset.name}`);
+                    announce(`Deleted ${preset.name}`);
+                    setRefocus(undefined);
                     onDelete(preset.name);
                   }}
                 />

@@ -1021,6 +1021,73 @@ describe("compare presets", () => {
     ]);
   });
 
+  it("leaves the focus in the name field when a renamed name is saved again", async () => {
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(["Bob"]));
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([{ name: "Family", players: ["Bob"] }]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+
+    await user.click(
+      within(dialog).getByRole("button", { name: "Rename Family" }),
+    );
+    const draft = within(dialog).getByRole("textbox", {
+      name: "New name for Family",
+    });
+    await user.clear(draft);
+    await user.type(draft, "Kin{Enter}");
+    await user.click(
+      within(dialog).getByRole("button", { name: "Delete Kin" }),
+    );
+    const field = within(dialog).getByRole("textbox", { name: "Preset Name" });
+    await user.type(field, "Kin{Enter}");
+
+    expect(
+      within(dialog).getByRole("button", { name: "Rename Kin" }),
+    ).toBeInTheDocument();
+    expect(field).toHaveFocus();
+  });
+
+  it("gives a reason when the new name is blank", async () => {
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([{ name: "Family", players: ["Bob"] }]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+
+    await user.click(
+      within(dialog).getByRole("button", { name: "Rename Family" }),
+    );
+    await user.clear(
+      within(dialog).getByRole("textbox", { name: "New name for Family" }),
+    );
+
+    expect(
+      within(dialog).getByRole("button", { name: "Save the name of Family" }),
+    ).toBeDisabled();
+    expect(within(dialog).getByRole("alert")).toHaveTextContent(
+      "Type a new name",
+    );
+  });
+
+  it("announces a second save under the same name", async () => {
+    localStorage.setItem(COMPARED_PLAYERS_KEY, JSON.stringify(["Bob"]));
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+    const field = within(dialog).getByRole("textbox", { name: "Preset Name" });
+    const status = within(dialog).getByRole("status");
+
+    await user.type(field, "Kin{Enter}");
+    const first = status.textContent;
+    await user.type(field, "Kin{Enter}");
+
+    expect(status).toHaveTextContent("Saved Kin");
+    expect(status.textContent).not.toBe(first);
+  });
+
   it("refuses a rename to another preset's name", async () => {
     localStorage.setItem(
       PRESETS_KEY,

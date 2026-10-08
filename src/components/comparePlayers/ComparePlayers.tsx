@@ -274,9 +274,11 @@ export default function ComparePlayers({
         onLoad={({ players }) =>
           changeSlots(padded(slotsFor(players, scores?.scores ?? [])))
         }
-        onSave={(name) => setPresets(savePreset(name, namesIn(slots, scores)))}
-        onRename={(from, to) => setPresets(renamePreset(from, to))}
-        onDelete={(name) => setPresets(deletePreset(name))}
+        onSave={(name) =>
+          setPresets(savePreset(presets, name, namesIn(slots, scores)))
+        }
+        onRename={(from, to) => setPresets(renamePreset(presets, from, to))}
+        onDelete={(name) => setPresets(deletePreset(presets, name))}
       />
     </>
   );
