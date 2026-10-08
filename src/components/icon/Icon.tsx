@@ -152,13 +152,14 @@ export function CheckIcon() {
 }
 
 /**
- * Floppy disk for beside `CloseIcon`. The box is widened around the disk's
- * center, so its 720-unit ink draws at the cross's 546-unit height.
+ * A tick for beside `CloseIcon`. Drawn here rather than copied from Material,
+ * whose tick at the cross's height has thicker strokes. This one shares the
+ * cross's ink height and its 42-unit diagonal step, so both strokes match.
  */
-export function SaveIcon() {
+export function ConfirmIcon() {
   return (
-    <Icon name="SaveIcon" viewBox="-153 -1113 1266 1266">
-      <path d="M840-680v560H120v-720h560l160 160Zm-80 34L646-760H200v560h560v-446ZM565-275q35-35 35-85t-35-85q-35-35-85-35t-85 35q-35 35-35 85t35 85q35 35 85 35t85-35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z" />
+    <Icon name="ConfirmIcon">
+      <path d="m370-207 504-504-42-42-462 462-241-241-42 42 283 283Z" />
     </Icon>
   );
 }

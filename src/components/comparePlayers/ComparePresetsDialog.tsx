@@ -9,7 +9,7 @@ import {
 import doNothing from "../../utils/doNothing";
 import Button from "../button/Button";
 import DialogShell from "../dialog/DialogShell";
-import { CloseIcon, DeleteIcon, EditIcon, SaveIcon } from "../icon/Icon";
+import { CloseIcon, ConfirmIcon, DeleteIcon, EditIcon } from "../icon/Icon";
 import {
   isSameName,
   MAX_PRESET_NAME,
@@ -142,7 +142,7 @@ function PresetRow({
               disabled={onRename == null}
               onClick={onRename ?? doNothing}
             >
-              <SaveIcon />
+              <ConfirmIcon />
             </Button>
             <Button
               iconOnly
