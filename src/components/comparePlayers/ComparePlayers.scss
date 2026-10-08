@@ -155,6 +155,12 @@
   @include dialog-column;
 }
 
+// Saved and Preset Name are two halves of one task, so they sit closer than a
+// dialog's sections do.
+.compare-players__dialog--presets {
+  gap: var(--rak-space-4);
+}
+
 // Add Player is an action on the list, not a row of it, so a block's gap parts
 // them.
 .compare-players__section {

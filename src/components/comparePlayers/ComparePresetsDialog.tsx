@@ -230,7 +230,7 @@ export default function ComparePresetsDialog({
       title="Presets"
       finalFocus={finalFocus}
     >
-      <div className="compare-players__dialog">
+      <div className="compare-players__dialog compare-players__dialog--presets">
         <section className="compare-players__presets" aria-labelledby={savedId}>
           <h3 id={savedId} className="compare-players__group-label">
             Saved
