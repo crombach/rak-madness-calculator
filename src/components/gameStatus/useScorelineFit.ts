@@ -78,8 +78,8 @@ export default function useScorelineFit(
     };
   }, [measure]);
 
-  // The width alone. Every cut makes the scoreline shorter, and a height this answered
-  // would put the question again on the strength of its own answer, forever.
+  // The width alone. Shortening the names changes the scoreline's height, and a height
+  // this answered would put the question again on the strength of its own answer.
   useEffect(
     () =>
       observeResize([scoreline.current], ([entry]) =>

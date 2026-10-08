@@ -200,7 +200,9 @@ describe("GameStatusSummary, the game it is given", () => {
 
   it.each([
     ["delayed before kickoff", GameStatus.DELAYED, "Kickoff delayed"],
+    ["canceled", "5" as GameStatus, "Not played"],
     ["postponed", "6" as GameStatus, "Not played"],
+    ["forfeited", "4" as GameStatus, "See Gamecast"],
   ])("says so under the scores of a game %s", (_, status, expected) => {
     const stopped = result({ status, period: 0, possession: {} });
     render(<GameStatusSummary game={game(stopped)} result={stopped} />);
@@ -215,7 +217,11 @@ describe("GameStatusSummary, the game it is given", () => {
       date: new Date(Number.NaN),
     });
     render(<GameStatusSummary game={game(pregame)} />);
-    expect(screen.queryByText(/Invalid Date/)).toBeNull();
+    const groups = document.querySelectorAll(
+      ".game-status__meta > .game-status__meta-group",
+    );
+    expect(groups).toHaveLength(1);
+    expect(groups[0]).toHaveTextContent("Gamecast");
   });
 
   it("says so where ESPN listed no game for the column", () => {

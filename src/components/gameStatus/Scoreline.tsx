@@ -9,6 +9,7 @@ import {
   countdownText,
   detailText,
   outcomeText,
+  stoppedText,
 } from "./gameStatusText";
 // The readout is part of the `game-status` block, which `GameStatusSummary.scss` owns.
 import "./GameStatusSummary.scss";
@@ -63,21 +64,6 @@ const HAS_BALL_LABEL = "Has the ball";
  * and move the scoreline under it.
  */
 const NO_DOWN = "Between plays";
-
-/** Said in place of the down while a game delayed after kickoff has none. */
-const PLAY_STOPPED = "Play stopped";
-
-/** Said under the scores of a game delayed before kickoff. */
-const KICKOFF_DELAYED = "Kickoff delayed";
-
-/**
- * Said under the scores of a game ESPN postponed or canceled. The line over the scores
- * says which.
- */
-const NOT_PLAYED = "Not played";
-
-/** Said in place of a countdown to a kickoff ESPN sent nothing to parse. */
-const KICKOFF_UNKNOWN = "Kickoff TBD";
 
 /**
  * How many cells a side's readout is, whatever it is showing. Two, because the room
@@ -142,9 +128,7 @@ function Note({
   const now = useClock(isPregame, MINUTE_MS);
   if (isPregame) {
     return (
-      <p className="game-status__down">
-        {countdownText(result.date, now) ?? KICKOFF_UNKNOWN}
-      </p>
+      <p className="game-status__down">{countdownText(result.date, now)}</p>
     );
   }
   if (result.status === GameStatus.FINAL) {
@@ -163,13 +147,7 @@ function Note({
       </p>
     );
   }
-  const stopped =
-    result.status !== GameStatus.DELAYED
-      ? NOT_PLAYED
-      : (result.period ?? 0) > 0
-        ? PLAY_STOPPED
-        : KICKOFF_DELAYED;
-  return <p className="game-status__down">{down ?? stopped}</p>;
+  return <p className="game-status__down">{down ?? stoppedText(result)}</p>;
 }
 
 /**

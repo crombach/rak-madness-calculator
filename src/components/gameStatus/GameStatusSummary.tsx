@@ -8,15 +8,17 @@ import getClasses from "../../utils/getClasses";
 import observeResize from "../../utils/observeResize";
 import parsePick from "../../utils/scoring/parsePick";
 import pickSplit, { PickSplit } from "../../utils/scoring/pickSplit";
-import { gamecastUrl, kickoffParts, scoringTeam } from "./gameStatusText";
+import {
+  GAMECAST_LABEL,
+  gamecastUrl,
+  kickoffParts,
+  scoringTeam,
+} from "./gameStatusText";
 import CountBadge from "../countBadge/CountBadge";
 import PickBadge from "../pickBadge/PickBadge";
 import Scoreline, { outcomeClasses, SideOutcome } from "./Scoreline";
 import useScorelineFit from "./useScorelineFit";
 import "./GameStatusSummary.scss";
-
-/** What the link out to ESPN is called, which is what ESPN calls the page. */
-const GAMECAST_LABEL = "Gamecast";
 
 /**
  * Which side hosts, read out ahead of its name to a screen reader alone. The page shows

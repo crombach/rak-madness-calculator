@@ -115,12 +115,12 @@ export function calendarDaysUntil(date: Date, now: Date): number {
 /**
  * How long until kickoff, for under a game's scores before it starts. Hours and
  * minutes on the day, rounded up to the minute so a kickoff seconds away is never
- * said as now. Tomorrow by name, and the days alone past it. Nothing for a kickoff
- * ESPN gave nothing to parse.
+ * said as now. Tomorrow by name, and the days alone past it. To be decided for a
+ * kickoff ESPN gave nothing to parse.
  */
-export function countdownText(kickoff: Date, now: Date): string | undefined {
+export function countdownText(kickoff: Date, now: Date): string {
   const left = kickoff.getTime() - now.getTime();
-  if (Number.isNaN(left)) return undefined;
+  if (Number.isNaN(left)) return `${KICKOFF} TBD`;
   if (left <= 0) return KICKING_OFF;
   const days = calendarDaysUntil(kickoff, now);
   if (days === 1) return `${KICKOFF} tomorrow`;
@@ -130,6 +130,26 @@ export function countdownText(kickoff: Date, now: Date): string | undefined {
   const minutes = total % HOUR_MINUTES;
   const parts = [hours > 0 && `${hours}h`, minutes > 0 && `${minutes}m`];
   return `${KICKOFF} in ${parts.filter(Boolean).join(" ")}`;
+}
+
+/** ESPN's ids for a game called off: canceled, then postponed. */
+const CALLED_OFF_IDS: ReadonlySet<string> = new Set(["5", "6"]);
+
+/** What the link out to ESPN is called, which is what ESPN calls the page. */
+export const GAMECAST_LABEL = "Gamecast";
+
+/**
+ * Under the scores of a game neither being played nor over, with no down to say. The
+ * line over the scores says why, and an id the app does not model sends the reader
+ * to ESPN rather than guess.
+ */
+export function stoppedText(result: LeagueResult): string {
+  if (result.status === GameStatus.DELAYED) {
+    return (result.period ?? 0) > 0 ? "Play stopped" : `${KICKOFF} delayed`;
+  }
+  return CALLED_OFF_IDS.has(result.status)
+    ? "Not played"
+    : `See ${GAMECAST_LABEL}`;
 }
 
 /** `OT` for the first period past regulation, `2OT` for the next, and so on. */
