@@ -65,6 +65,16 @@ const HAS_BALL_LABEL = "Has the ball";
 const NO_DOWN = "Between plays";
 
 /**
+ * Said in place of the down while a game is not being played and not over: delayed,
+ * postponed or canceled. Each of those is in the line over the scores, and this one only
+ * holds the line under them, so the scores stand in the middle of the sides.
+ */
+const PLAY_STOPPED = "Play stopped";
+
+/** Said in place of a countdown to a kickoff ESPN sent nothing to parse. */
+const KICKOFF_UNKNOWN = "Kickoff TBD";
+
+/**
  * How many cells a side's readout is, whatever it is showing. Two, because the room
  * for a second digit is held whether or not there is one, so a score going from 7 to
  * 14 between two polls moves neither the dash nor the sides either side of it.
@@ -126,9 +136,10 @@ function Note({
   const isPregame = result.status === GameStatus.UPCOMING;
   const now = useClock(isPregame, MINUTE_MS);
   if (isPregame) {
-    const countdown = countdownText(result.date, now);
-    return countdown == null ? null : (
-      <p className="game-status__down">{countdown}</p>
+    return (
+      <p className="game-status__down">
+        {countdownText(result.date, now) ?? KICKOFF_UNKNOWN}
+      </p>
     );
   }
   if (result.status === GameStatus.FINAL) {
@@ -140,14 +151,11 @@ function Note({
   // ESPN clears the side but leaves the last down standing, and that down is over.
   const { homeAway, downDistanceText } = result.possession;
   const down = homeAway == null ? undefined : downDistanceText;
-  if (down == null && result.status !== GameStatus.LIVE) {
-    return null;
-  }
-  return (
-    <p className="game-status__down">
-      {down ?? result.possession.between ?? NO_DOWN}
-    </p>
-  );
+  const idle =
+    result.status === GameStatus.LIVE
+      ? (result.possession.between ?? NO_DOWN)
+      : PLAY_STOPPED;
+  return <p className="game-status__down">{down ?? idle}</p>;
 }
 
 /**

@@ -16,8 +16,7 @@ import observeResize from "../../utils/observeResize";
  * it. That is what makes a line wider than the box it was given, which is the one
  * question asked of these.
  */
-const SIDE_LINES =
-  ".game-status__side-label, .game-status__team-name, .game-status__record";
+const SIDE_LINES = ".game-status__team-name, .game-status__record";
 
 /** Whether anything either side of the scores is wider than the room it was given. */
 function isCramped(scoreline: HTMLElement): boolean {
@@ -27,29 +26,19 @@ function isCramped(scoreline: HTMLElement): boolean {
 }
 
 /**
- * How far back a scoreline has been cut to fit, in the order it gives things up. The
- * full names go first, down to the abbreviation ESPN says the game in, which is the
- * same team said shorter. The marks go next, and only once shortening the names was not
- * enough, since a mark says which team this is at a glance and the abbreviation is what
- * a reader has left to go on.
- *
- * Each step leaves the names more room than the one before it, and the last is as
- * narrow as the scoreline goes.
+ * The one cut a scoreline makes to fit: the full names go, down to the abbreviation
+ * ESPN says the game in. The marks stand over the names rather than beside them, so a
+ * side is only as wide as the wider of the two, and they never have to go.
  */
 export const SHORT_NAMES = 1;
-export const MARKS_OFF = 2;
 
 /**
  * How much of the scoreline there is room for, measured rather than read off a width.
  *
  * What a side needs is what it is called, and no width tells `CONN` and `BUF` apart.
  * The same phone holds one game's scoreline and breaks the next one's. So the whole
- * thing goes in, the scoreline is measured, and it is cut back a step at a time for as
- * long as a name is still running over the room it was given.
- *
- * Two steps rather than one because a phone names both sides in full nowhere. Below
- * `$breakpoint-roomy` the first step is already what is on screen, so it changes nothing
- * and the marks are what has to go.
+ * thing goes in, the scoreline is measured, and it is cut back if a name is running over
+ * the room it was given.
  *
  * The verdict is held against the game it was reached on and the width it was reached
  * at, rather than as a flag. Either one moving puts the whole scoreline back and asks
@@ -74,7 +63,7 @@ export default function useScorelineFit(
 
   const measure = useCallback(() => {
     const element = scoreline.current;
-    if (element == null || step >= MARKS_OFF) {
+    if (element == null || step >= SHORT_NAMES) {
       return;
     }
     if (isCramped(element)) {

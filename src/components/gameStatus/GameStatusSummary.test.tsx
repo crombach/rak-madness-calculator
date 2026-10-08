@@ -124,6 +124,22 @@ describe("GameStatusSummary, the game it is given", () => {
     expect(home()).toEqual("30");
   });
 
+  it("keeps both marks on a scoreline too narrow for the full names", () => {
+    // jsdom lays nothing out, so every line reads as wider than its zero-width box.
+    const scrollWidth = vi
+      .spyOn(HTMLElement.prototype, "scrollWidth", "get")
+      .mockReturnValue(100);
+    try {
+      render(<GameStatusSummary game={game(result())} result={result()} />);
+      expect(document.querySelector(".game-status__scoreline")).toHaveClass(
+        "--short-names",
+      );
+      expect(logos()).toHaveLength(2);
+    } finally {
+      scrollWidth.mockRestore();
+    }
+  });
+
   it("shows the game without its marks rather than one that never loads", () => {
     render(<GameStatusSummary game={game(result())} result={result()} />);
     fireEvent.error(document.querySelectorAll("img")[0]);
@@ -163,13 +179,22 @@ describe("GameStatusSummary, the game it is given", () => {
     }
   });
 
-  it("says nothing under the scores for a kickoff ESPN sent nothing to parse", () => {
+  it("says the kickoff is to be decided where ESPN sent nothing to parse", () => {
     const pregame = result({
       status: GameStatus.UPCOMING,
       date: new Date(Number.NaN),
     });
     render(<GameStatusSummary game={game(pregame)} />);
-    expect(screen.queryByText(/Kickoff/)).toBeNull();
+    expect(screen.getByText("Kickoff TBD")).toBeInTheDocument();
+  });
+
+  it("says play stopped under the scores of a delayed game with no down", () => {
+    const delayed = result({
+      status: GameStatus.DELAYED,
+      possession: {},
+    });
+    render(<GameStatusSummary game={game(delayed)} result={delayed} />);
+    expect(screen.getByText("Play stopped")).toBeInTheDocument();
   });
 
   it("says so where ESPN listed no game for the column", () => {
@@ -292,10 +317,9 @@ describe("GameStatusSummary, a game that is over", () => {
     expect(screen.getByText("4-1")).toBeInTheDocument();
   });
 
-  it("calls both sides a team where neither of them is hosting", () => {
+  it("says neither side is home where neither of them is hosting", () => {
     const bowl = result({ isNeutralSite: true });
     render(<GameStatusSummary game={game(bowl)} result={bowl} />);
-    expect(screen.getAllByText("Team")).toHaveLength(2);
     expect(screen.queryByText("Home")).toBeNull();
     expect(screen.queryByText("Away")).toBeNull();
   });
