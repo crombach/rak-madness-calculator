@@ -14,7 +14,7 @@ Subcommands:
   dupes      <root>   Findings where a parent link restates its child's summary.
   length     <root>   Findings where a file's own prose exceeds the word ceiling.
   check      <root>   structure, dupes, length, all three always run.
-  count      <path>.. Words, headroom and the heaviest blocks. Takes files,
+  count      <path>.. Words, headroom, and the heaviest blocks. Takes files,
                       directories, or `-` to measure a draft on stdin before it
                       is written. Exit 1 when anything is over.
 
@@ -294,7 +294,7 @@ STOP = {
 
 
 def words(text):
-    """Lowercase content words, punctuation and stop words dropped."""
+    """Lowercase content words, punctuation, and stop words dropped."""
     toks = re.findall(r"[A-Za-z0-9_]+", text.lower())
     return {t for t in toks if t not in STOP and len(t) > 1}
 
@@ -548,7 +548,7 @@ TIGHT = 10
 
 
 def report_count(targets):
-    """Words, headroom and the heaviest blocks, for a draft or for files on disk.
+    """Words, headroom, and the heaviest blocks, for a draft or for files on disk.
 
     Exists so a rewrite is measured before it lands. Writing a file, running the
     linter, and shaving a word at a time is the loop this removes.
@@ -597,7 +597,7 @@ def main(argv):
     if len(argv) > 1 and argv[1] in ("-h", "--help"):
         print(__doc__.strip())
         return 0
-    # count takes files, directories or `-`, where every other subcommand takes one
+    # count takes files, directories, or `-`, where every other subcommand takes one
     # root, so it parses its own arguments.
     if len(argv) > 1 and argv[1] == "count":
         return report_count(argv[2:])
