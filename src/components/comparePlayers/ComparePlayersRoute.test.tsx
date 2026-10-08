@@ -128,7 +128,7 @@ describe("the compare players route", () => {
     mountApp(COMPARE_PATH);
 
     expect(
-      await screen.findByRole("dialog", { name: "Compare Players" }),
+      await screen.findByRole("dialog", { name: "Choose Players" }),
     ).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
@@ -359,7 +359,7 @@ describe("the compare players route", () => {
 
   it("returns focus to Choose from the dialog the page opened", async () => {
     const user = mountApp(COMPARE_PATH);
-    await screen.findByRole("dialog", { name: "Compare Players" });
+    await screen.findByRole("dialog", { name: "Choose Players" });
 
     await closeDialog(user);
 
@@ -370,7 +370,7 @@ describe("the compare players route", () => {
 
   it("holds Choose down while the dialog is open", async () => {
     const user = mountApp(COMPARE_PATH);
-    await screen.findByRole("dialog", { name: "Compare Players" });
+    await screen.findByRole("dialog", { name: "Choose Players" });
     const choose = screen.getByRole("button", {
       name: "Choose",
       hidden: true,
@@ -419,7 +419,7 @@ describe("the compare players route", () => {
 
   it("keeps one picker when the dialog opens again with none chosen", async () => {
     const user = mountApp(COMPARE_PATH);
-    await screen.findByRole("dialog", { name: "Compare Players" });
+    await screen.findByRole("dialog", { name: "Choose Players" });
     await user.click(screen.getByRole("button", { name: "Add Player" }));
     await closeDialog(user);
 
@@ -434,7 +434,7 @@ describe("the compare players route", () => {
   it("holds a saved scope with no table and no message until a player is chosen", async () => {
     localStorage.setItem(GAME_SCOPE_KEY, "different");
     const user = mountApp(COMPARE_PATH);
-    await screen.findByRole("dialog", { name: "Compare Players" });
+    await screen.findByRole("dialog", { name: "Choose Players" });
     await closeDialog(user);
 
     expect(screen.getByRole("button", { name: "Different" })).toBeDisabled();
@@ -894,7 +894,7 @@ async function openPresets(user: ReturnType<typeof mountApp>) {
   await openDialog(user);
   await closeDialog(user);
   await user.click(screen.getByRole("button", { name: "Presets" }));
-  return screen.findByRole("dialog", { name: "Presets" });
+  return screen.findByRole("dialog", { name: "Player Presets" });
 }
 
 async function savePresetAs(user: ReturnType<typeof mountApp>, name: string) {
@@ -925,7 +925,7 @@ describe("compare presets", () => {
 
     await waitFor(() =>
       expect(
-        screen.queryByRole("dialog", { name: "Presets" }),
+        screen.queryByRole("dialog", { name: "Player Presets" }),
       ).not.toBeInTheDocument(),
     );
     expect(
@@ -1008,7 +1008,7 @@ describe("compare presets", () => {
     );
     await closeDialog(user);
     await user.click(screen.getByRole("button", { name: "Presets" }));
-    dialog = await screen.findByRole("dialog", { name: "Presets" });
+    dialog = await screen.findByRole("dialog", { name: "Player Presets" });
 
     expect(
       within(dialog).queryByRole("textbox", { name: "New name for Family" }),

@@ -258,7 +258,7 @@ export default function ComparePresetsDialog({
     <DialogShell
       open={open}
       onOpenChange={changeOpen}
-      title="Presets"
+      title="Player Presets"
       finalFocus={finalFocus}
     >
       <div className="compare-players__dialog compare-players__dialog--presets">

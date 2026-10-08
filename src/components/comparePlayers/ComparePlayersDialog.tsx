@@ -108,7 +108,7 @@ export default function ComparePlayersDialog({
     <DialogShell
       open={open}
       onOpenChange={onOpenChange}
-      title="Compare Players"
+      title="Choose Players"
       finalFocus={finalFocus}
     >
       <div className="compare-players__dialog">
