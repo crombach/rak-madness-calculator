@@ -12,6 +12,7 @@ import DialogShell from "../dialog/DialogShell";
 import { CloseIcon, ConfirmIcon, DeleteIcon, EditIcon } from "../icon/Icon";
 import { isSameName, MAX_PRESET_NAME, Preset } from "./comparedPlayers";
 import "./ComparePlayers.scss";
+import useStatus from "./useStatus";
 
 const NO_PRESETS = "No presets saved";
 const NO_PLAYERS = "Choose a player first";
@@ -190,11 +191,7 @@ export default function ComparePresetsDialog({
   onDelete: (name: string) => void;
 }) {
   const [name, setName] = useState("");
-  const [status, setStatus] = useState("");
-  // A live region speaks only when its text changes, so a message repeated
-  // gains or loses a no-break space to be spoken again.
-  const announce = (message: string) =>
-    setStatus((last) => (last === message ? `${message}\u00A0` : message));
+  const [status, announce] = useStatus();
   // One preset renames at a time. `refocus` names the one whose rename key takes
   // the focus back, which a rename remounts under its new name.
   const [renaming, setRenaming] = useState<{ name: string; draft: string }>();

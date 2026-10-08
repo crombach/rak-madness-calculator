@@ -439,7 +439,9 @@ describe("the compare players route", () => {
 
     expect(screen.getByRole("button", { name: "Different" })).toBeDisabled();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
-    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+    for (const status of screen.getAllByRole("status")) {
+      expect(status).toBeEmptyDOMElement();
+    }
   });
 
   it("says so when the players picked every game differently", async () => {
@@ -932,6 +934,7 @@ describe("compare presets", () => {
       JSON.parse(localStorage.getItem(COMPARED_PLAYERS_KEY) ?? ""),
     ).toEqual(["Carol", "Alice"]);
     expect(screen.getByRole("button", { name: "Presets" })).toHaveFocus();
+    expect(screen.getByText("Loaded Rivals")).toHaveAttribute("role", "status");
   });
 
   it("keeps a preset's player this week lacks, marked as having no picks", async () => {

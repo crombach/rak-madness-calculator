@@ -11,6 +11,7 @@ plus the week's leader when shown.
   opens the dialog over a `SkeletonTable`.
 - `ComparePlayersDialog`: a `PlayerCombobox` per player, added and removed by
   the reader.
+- `useStatus`: a `role="status"` message that speaks again when repeated.
 - `ComparePresetsDialog`: the saved presets, each loaded, renamed or deleted,
   and a new one saved from the players chosen.
 - `comparedPlayers`: the chosen names, the presets, the game scope, and the

@@ -27,6 +27,7 @@ import {
 import ComparePlayersDialog, { Slot } from "./ComparePlayersDialog";
 import { GamesToggle, PlayersGroup } from "./ComparePlayersControls";
 import ComparePresetsDialog from "./ComparePresetsDialog";
+import useStatus from "./useStatus";
 import "./ComparePlayers.scss";
 
 const NAMES = new Intl.ListFormat("en", { type: "conjunction" });
@@ -139,6 +140,8 @@ export default function ComparePlayers({
   const [addedKey, setAddedKey] = useState<number>();
   const chooseRef = useRef<HTMLButtonElement>(null);
   const [isPresetsOpen, setIsPresetsOpen] = useState(false);
+  // The presets dialog's own status closes with it, so a load speaks here.
+  const [status, announce] = useStatus();
   const presetsRef = useRef<HTMLButtonElement>(null);
   const chosen = useMemo(
     () => (leader ? [...picked, leader] : picked),
@@ -271,15 +274,19 @@ export default function ComparePlayers({
         finalFocus={presetsRef}
         presets={presets}
         canSave={slots.some(isFilled)}
-        onLoad={({ players }) =>
-          changeSlots(padded(slotsFor(players, scores?.scores ?? [])))
-        }
+        onLoad={({ name, players }) => {
+          changeSlots(padded(slotsFor(players, scores?.scores ?? [])));
+          announce(`Loaded ${name}`);
+        }}
         onSave={(name) =>
           setPresets(savePreset(presets, name, namesIn(slots, scores)))
         }
         onRename={(from, to) => setPresets(renamePreset(presets, from, to))}
         onDelete={(name) => setPresets(deletePreset(presets, name))}
       />
+      <p role="status" className="compare-players__status">
+        {status}
+      </p>
     </>
   );
 }
