@@ -346,7 +346,7 @@ describe("the compare players route", () => {
     expect(screen.getByRole("button", { name: "Different" })).toBeDisabled();
   });
 
-  it("focuses no element after a remove", async () => {
+  it("moves focus to Add Player after a remove", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Carol");
@@ -355,7 +355,7 @@ describe("the compare players route", () => {
 
     await user.click(screen.getByRole("button", { name: "Remove Player 2" }));
 
-    expect(document.body).toHaveFocus();
+    expect(screen.getByRole("button", { name: "Add Player" })).toHaveFocus();
   });
 
   it("returns focus to Choose from the dialog the page opened", async () => {
@@ -1164,7 +1164,7 @@ describe("compare presets", () => {
     ).toHaveFocus();
   });
 
-  it("leaves a renamed neighbor's draft unfocused after a delete", async () => {
+  it("moves focus to a renamed neighbor's cancel key after a delete", async () => {
     localStorage.setItem(
       PRESETS_KEY,
       JSON.stringify([
@@ -1188,7 +1188,9 @@ describe("compare presets", () => {
     await user.click(deleteFamily);
     await user.click(deleteFamily);
 
-    expect(document.body).toHaveFocus();
+    expect(
+      within(dialog).getByRole("button", { name: "Keep the name Rivals" }),
+    ).toHaveFocus();
   });
 
   it("lists a preset another tab saves", async () => {
@@ -1285,7 +1287,7 @@ describe("compare presets", () => {
     ).toBeInTheDocument();
   });
 
-  it("deletes a preset, focusing no element", async () => {
+  it("deletes a preset, moving focus to the next one's delete key", async () => {
     localStorage.setItem(
       PRESETS_KEY,
       JSON.stringify([
@@ -1305,7 +1307,9 @@ describe("compare presets", () => {
     expect(JSON.parse(localStorage.getItem(PRESETS_KEY) ?? "")).toEqual([
       { name: "Rivals", players: ["Carol"] },
     ]);
-    expect(document.body).toHaveFocus();
+    expect(
+      within(dialog).getByRole("button", { name: "Delete Rivals" }),
+    ).toHaveFocus();
   });
 
   it("says when no preset is saved, and why none can be yet", async () => {

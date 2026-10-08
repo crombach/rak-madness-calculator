@@ -1,4 +1,5 @@
-import { RefObject, useId, useState } from "react";
+import { RefObject, useId, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import Button from "../button/Button";
 import DialogShell from "../dialog/DialogShell";
 import { AddIcon, DeleteIcon } from "../icon/Icon";
@@ -95,6 +96,7 @@ export default function ComparePlayersDialog({
   addedKey?: number;
   finalFocus?: RefObject<HTMLElement | null>;
 }) {
+  const addRef = useRef<HTMLButtonElement>(null);
   return (
     <DialogShell
       open={open}
@@ -120,14 +122,24 @@ export default function ComparePlayersDialog({
                   missingName={slot.missingName}
                   onValueChange={(option) => onChoose(slot.key, option.id)}
                   focusOnMount={slot.key === addedKey}
-                  onRemove={() => onRemove(slot.key)}
+                  onRemove={() => {
+                    // The removed key goes with its picker, so focus moves to Add
+                    // Player, which stays put. Rendered first, since a full list
+                    // hides it until the remove.
+                    flushSync(() => onRemove(slot.key));
+                    addRef.current?.focus();
+                  }}
                   canRemove={slots.length > MIN_PICKERS}
                 />
               );
             })}
           </ul>
           {canAdd && (
-            <Button className="compare-players__add" onClick={onAdd}>
+            <Button
+              ref={addRef}
+              className="compare-players__add"
+              onClick={onAdd}
+            >
               <AddIcon />
               Add Player
             </Button>

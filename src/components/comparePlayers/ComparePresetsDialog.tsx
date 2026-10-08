@@ -87,6 +87,7 @@ function PresetRow({
   onRename?: () => void;
   onDelete: () => void;
 }) {
+  const rowRef = useRef<HTMLLIElement>(null);
   const draftRef = useRef<HTMLInputElement>(null);
   const renameRef = useRef<HTMLButtonElement>(null);
   const deleteRef = useRef<HTMLButtonElement>(null);
@@ -102,7 +103,7 @@ function PresetRow({
   }, [focusRename]);
 
   return (
-    <li className="compare-players__preset-row">
+    <li ref={rowRef} className="compare-players__preset-row">
       <div className="compare-players__field">
         {isRenaming ? (
           <>
@@ -167,6 +168,17 @@ function PresetRow({
                   setArmed(true);
                   return;
                 }
+                // The row goes, so focus moves to the last key of the row that
+                // takes its place, or the one before it at the end of the list:
+                // its delete key, or its cancel key while it is renamed.
+                const row = rowRef.current;
+                const neighbor =
+                  row?.nextElementSibling ?? row?.previousElementSibling;
+                neighbor
+                  ?.querySelector<HTMLButtonElement>(
+                    ".compare-players__field > button:last-of-type",
+                  )
+                  ?.focus();
                 onDelete();
               }}
             >
