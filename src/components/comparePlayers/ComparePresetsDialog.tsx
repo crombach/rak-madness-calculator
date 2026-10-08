@@ -1,6 +1,5 @@
 import {
   ChangeEvent,
-  KeyboardEvent,
   RefObject,
   useEffect,
   useId,
@@ -8,6 +7,7 @@ import {
   useState,
 } from "react";
 import doNothing from "../../utils/doNothing";
+import onEnter from "../../utils/onEnter";
 import Button from "../button/Button";
 import DialogShell from "../dialog/DialogShell";
 import { CloseIcon, ConfirmIcon, DeleteIcon, EditIcon } from "../icon/Icon";
@@ -48,19 +48,6 @@ function Reason({
       {reason}
     </p>
   );
-}
-
-/**
- * Runs `action` on Enter in a field, as a form's submit would. `preventDefault`
- * stops the same press from clicking the key that takes focus.
- */
-function onEnter(action?: () => void) {
-  return (event: KeyboardEvent<HTMLInputElement>) => {
-    // An IME's Enter confirms the composed text, not the field.
-    if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
-    event.preventDefault();
-    action?.();
-  };
 }
 
 /** A field's new name, kept within `MAX_PRESET_NAME` characters. */

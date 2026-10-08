@@ -3,6 +3,7 @@ import { Theme, useSettings } from "../../context/SettingsContext";
 import Button from "../button/Button";
 import DialogShell from "../dialog/DialogShell";
 import { CloseIcon } from "../icon/Icon";
+import onEnter from "../../utils/onEnter";
 import "./SettingsDialog.scss";
 
 // Alphabetical, so the row has an order a reader can predict rather than one that
@@ -66,11 +67,7 @@ export default function SettingsDialog({
               onChange={(event) => setPlayerName(event.target.value)}
               // There is no form to submit, so enter would otherwise do nothing
               // and a phone would hold its keyboard over the rest of the dialog.
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.currentTarget.blur();
-                }
-              }}
+              onKeyDown={onEnter((event) => event.currentTarget.blur())}
             />
             {/* Nothing to clear while the field is empty, and a button that does
                 nothing is one more thing to tab past. Clearing therefore takes

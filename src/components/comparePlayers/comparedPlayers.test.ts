@@ -29,11 +29,11 @@ describe("readComparedPlayers", () => {
     expect(readComparedPlayers()).toEqual([]);
   });
 
-  it("keeps only the names, and no more than the page compares", () => {
+  it("keeps only the names, none blank, and no more than the page compares", () => {
     const names = Array.from({ length: 12 }, (_, index) => `P${index}`);
     localStorage.setItem(
       COMPARED_PLAYERS_KEY,
-      JSON.stringify([1, null, ...names]),
+      JSON.stringify([1, null, "", " ", ...names]),
     );
 
     expect(readComparedPlayers()).toEqual(names.slice(0, MAX_PICKERS));

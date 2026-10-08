@@ -18,6 +18,7 @@
 - `observeResize`: one ResizeObserver over several boxes, and its disposer
 - `getClasses`: className join, fixed and conditional names
 - `doNothing`: the no-op a default prop or context stands in with
+- `onEnter`: a field's Enter as a submit, skipping an input method's Enter
 - `plural`: a count and its noun, pluralized
 - `separator`: what splits facts on one line, `_text.scss`'s `$separator` spaced
 - `rangeWithPrefix`: labeled index arrays (C1, C2…)

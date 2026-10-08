@@ -14,12 +14,17 @@ export const MIN_SCOPED = 2;
 /** The most players the page compares at once. */
 export const MAX_PICKERS = 10;
 
+/** Whether a stored value is a player's name, and not blank. */
+function isName(saved: unknown): saved is string {
+  return typeof saved === "string" && saved.trim() !== "";
+}
+
 /** The names last chosen, in picker order. Empty when none were saved. */
 export function readComparedPlayers(): Array<string> {
   try {
     const saved: unknown = JSON.parse(readSetting(SETTING) ?? "[]");
     return Array.isArray(saved)
-      ? saved.filter((name) => typeof name === "string").slice(0, MAX_PICKERS)
+      ? saved.filter(isName).slice(0, MAX_PICKERS)
       : [];
   } catch {
     return [];
@@ -98,12 +103,7 @@ export function readPresets(): Array<Preset> {
       .filter(isPreset)
       .map(({ name, players }) => ({
         name: presetName(name),
-        players: players
-          .filter(
-            (player): player is string =>
-              typeof player === "string" && player.trim() !== "",
-          )
-          .slice(0, MAX_PICKERS),
+        players: players.filter(isName).slice(0, MAX_PICKERS),
       }))
       .filter((preset) => preset.players.length > 0)
       .filter(
