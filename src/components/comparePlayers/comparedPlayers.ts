@@ -14,12 +14,17 @@ export const MIN_SCOPED = 2;
 /** The most players the page compares at once. */
 export const MAX_PICKERS = 10;
 
+/** Whether a stored value is a player's name, and not blank. */
+function isName(saved: unknown): saved is string {
+  return typeof saved === "string" && saved.trim() !== "";
+}
+
 /** The names last chosen, in picker order. Empty when none were saved. */
 export function readComparedPlayers(): Array<string> {
   try {
     const saved: unknown = JSON.parse(readSetting(SETTING) ?? "[]");
     return Array.isArray(saved)
-      ? saved.filter((name) => typeof name === "string").slice(0, MAX_PICKERS)
+      ? saved.filter(isName).slice(0, MAX_PICKERS)
       : [];
   } catch {
     return [];
@@ -29,6 +34,139 @@ export function readComparedPlayers(): Array<string> {
 /** Saves the names chosen, or forgets them when there are none. */
 export function writeComparedPlayers(names: Array<string>): void {
   writeSetting(SETTING, names.length > 0 ? JSON.stringify(names) : "");
+}
+
+/** Whether two names are one, so a name re-cased between weeks still matches. */
+export function isSameName(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
+/** Players saved under a name the reader chose, in picker order. */
+export type Preset = { name: string; players: Array<string> };
+
+const PRESETS_SETTING = "comparePresets";
+
+/** The most characters a preset's name holds. */
+export const MAX_PRESET_NAME = 16;
+
+const segmenter = new Intl.Segmenter();
+
+/** The characters a reader sees in `text`, so an emoji of any length is one. */
+function characters(text: string): Array<string> {
+  return Array.from(segmenter.segment(text), ({ segment }) => segment);
+}
+
+/** A typed name as a preset keeps it, cut by character so no emoji splits. */
+export function presetName(name: string): string {
+  return characters(name.trim()).slice(0, MAX_PRESET_NAME).join("").trimEnd();
+}
+
+/**
+ * What a name field holds after a change, in place of `maxLength`, which counts
+ * an emoji as two or more. A full field refuses a typed character, and a paste
+ * is cut.
+ */
+export function fieldName(last: string, next: string, pasted: boolean): string {
+  const typed = characters(next);
+  if (typed.length <= MAX_PRESET_NAME) return next;
+  return !pasted && characters(last).length >= MAX_PRESET_NAME
+    ? last
+    : typed.slice(0, MAX_PRESET_NAME).join("");
+}
+
+/** The most presets the reader can save. */
+export const MAX_PRESETS = 8;
+
+/** The exact key the presets are saved under, for a test to seed or read. */
+export const PRESETS_KEY = PREFIX + PRESETS_SETTING;
+
+const byName = (a: Preset, b: Preset) => a.name.localeCompare(b.name);
+
+function isPreset(saved: unknown): saved is Preset {
+  return (
+    typeof saved === "object" &&
+    saved != null &&
+    "name" in saved &&
+    typeof saved.name === "string" &&
+    saved.name.trim() !== "" &&
+    "players" in saved &&
+    Array.isArray(saved.players)
+  );
+}
+
+/** The saved presets, by name. Empty when none were saved. */
+export function readPresets(): Array<Preset> {
+  try {
+    const saved: unknown = JSON.parse(readSetting(PRESETS_SETTING) ?? "[]");
+    if (!Array.isArray(saved)) return [];
+    return saved
+      .filter(isPreset)
+      .map(({ name, players }) => ({
+        name: presetName(name),
+        players: players.filter(isName).slice(0, MAX_PICKERS),
+      }))
+      .filter((preset) => preset.players.length > 0)
+      .filter(
+        (preset, index, all) =>
+          all.findIndex((other) => isSameName(other.name, preset.name)) ===
+          index,
+      )
+      .slice(0, MAX_PRESETS)
+      .sort(byName);
+  } catch {
+    return [];
+  }
+}
+
+/** Saves the presets, returned by name even when storage refuses them. */
+function writePresets(presets: Array<Preset>): Array<Preset> {
+  writeSetting(
+    PRESETS_SETTING,
+    presets.length > 0 ? JSON.stringify(presets) : "",
+  );
+  return [...presets].sort(byName);
+}
+
+// Each change below starts from the presets on screen rather than from storage,
+// so a list storage refuses still holds every change this visit.
+
+/**
+ * Saves the players under the name, replacing a preset of that name. Leaves the
+ * presets as they are when a new name would go past `MAX_PRESETS`.
+ */
+export function savePreset(
+  presets: Array<Preset>,
+  name: string,
+  players: Array<string>,
+) {
+  const kept = presetName(name);
+  const others = presets.filter((preset) => !isSameName(preset.name, kept));
+  if (others.length >= MAX_PRESETS) return presets;
+  return writePresets([...others, { name: kept, players }]);
+}
+
+/**
+ * Gives the preset of one name another, keeping its players. Leaves the presets
+ * as they are when another preset already holds the new name.
+ */
+export function renamePreset(presets: Array<Preset>, from: string, to: string) {
+  const name = presetName(to);
+  const taken = presets.some(
+    (preset) => !isSameName(preset.name, from) && isSameName(preset.name, name),
+  );
+  if (taken) return presets;
+  return writePresets(
+    presets.map((preset) =>
+      isSameName(preset.name, from) ? { ...preset, name } : preset,
+    ),
+  );
+}
+
+/** Forgets the preset of that name. */
+export function deletePreset(presets: Array<Preset>, name: string) {
+  return writePresets(
+    presets.filter((preset) => !isSameName(preset.name, name)),
+  );
 }
 
 /** Which games the table shows, in the order the toggle offers them. */

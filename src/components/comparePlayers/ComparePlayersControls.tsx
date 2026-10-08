@@ -35,43 +35,59 @@ export function ControlGroup({
   );
 }
 
-/** Opens the dialog. Here, so the wireframe draws the same button. */
-export function ChooseButton({
+/** A key that opens a dialog. Here, so the wireframe draws the same button. */
+function DialogKey({
+  label,
   onClick = doNothing,
   isOpen = false,
   ref,
 }: {
+  label: string;
   onClick?: () => void;
   isOpen?: boolean;
   ref?: Ref<HTMLButtonElement>;
 }) {
   return (
-    <Button
-      className="compare-players__choose"
-      onClick={onClick}
-      popupOpen={isOpen}
-      ref={ref}
-    >
-      Choose
+    <Button compact onClick={onClick} popupOpen={isOpen} ref={ref}>
+      {label}
     </Button>
   );
 }
 
-/** Adds the week's leader to the players chosen. Reads "Show Winner" once the week is complete. */
+type DialogKeyProps = Omit<Parameters<typeof DialogKey>[0], "label">;
+
+/** Choose, Presets and the leader toggle, in keys of one width. */
+export function PlayersGroup({
+  choose,
+  leader,
+  presets,
+}: {
+  choose?: DialogKeyProps;
+  leader: Parameters<typeof LeaderToggle>[0];
+  presets?: DialogKeyProps;
+}) {
+  return (
+    <ControlGroup label="Players">
+      <DialogKey label="Choose" {...choose} />
+      <DialogKey label="Presets" {...presets} />
+      <LeaderToggle {...leader} />
+    </ControlGroup>
+  );
+}
+
+/** Adds the week's leader, or its winner once complete, to the players chosen. */
 export function LeaderToggle({
   on,
-  isSettled = false,
   onChange = doNothing,
   disabled = false,
 }: {
   on: boolean;
-  isSettled?: boolean;
   onChange?: (on: boolean) => void;
   disabled?: boolean;
 }) {
   return (
     <Button disabled={disabled} selected={on} onClick={() => onChange(!on)}>
-      {isSettled ? "Show Winner" : "Show Leader"}
+      Leader
     </Button>
   );
 }

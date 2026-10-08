@@ -151,6 +151,19 @@ export function CheckIcon() {
   );
 }
 
+/**
+ * A tick for beside `CloseIcon`. Drawn here rather than copied from Material,
+ * whose tick at the cross's height has thicker strokes. This one shares the
+ * cross's ink height and its 42-unit diagonal step, so both strokes match.
+ */
+export function ConfirmIcon() {
+  return (
+    <Icon name="ConfirmIcon">
+      <path d="m370-207 504-504-42-42-462 462-241-241-42 42 283 283Z" />
+    </Icon>
+  );
+}
+
 export function EventIcon() {
   return (
     <Icon name="EventIcon">
@@ -192,6 +205,14 @@ export function CloseIcon() {
   return (
     <Icon name="CloseIcon">
       <path d="m249-207-42-42 231-231-231-231 42-42 231 231 231-231 42 42-231 231 231 231-42 42-231-231-231 231Z" />
+    </Icon>
+  );
+}
+
+export function EditIcon() {
+  return (
+    <Icon name="EditIcon">
+      <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l585-583 167 171-582 582H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z" />
     </Icon>
   );
 }

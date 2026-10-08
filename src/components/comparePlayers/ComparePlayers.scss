@@ -1,8 +1,11 @@
 @use "../../styles/a11y" as *;
 @use "../../styles/breakpoints" as *;
+@use "../../styles/focus" as *;
 @use "../../styles/label" as *;
 @use "../../styles/layout" as *;
+@use "../../styles/lcd" as *;
 @use "../../styles/page" as *;
+@use "../../styles/text" as *;
 
 // Pinned to the screen's left edge while a wide table pans under it.
 .compare-players {
@@ -152,8 +155,51 @@
   @include dialog-column;
 }
 
+// Saved and Preset Name are two halves of one task, so they sit closer than a
+// dialog's sections do.
+.compare-players__dialog--presets {
+  gap: var(--rak-space-4);
+}
+
 // Add Player is an action on the list, not a row of it, so a block's gap parts
 // them.
 .compare-players__section {
   @include stacked(var(--rak-space-4));
+}
+
+.compare-players__presets {
+  @include stacked(var(--rak-space-2));
+}
+
+.compare-players__preset-name {
+  @include lcd-field;
+  @include focus-ring;
+
+  min-height: var(--rak-touch-target);
+  padding-inline: var(--rak-space-3);
+  font-family: var(--rak-font-mono);
+  font-size: var(--rak-text-md);
+}
+
+.compare-players__preset-row {
+  @include stacked(var(--rak-space-1));
+}
+
+.compare-players__preset-load {
+  justify-content: flex-start;
+}
+
+// One line, cut short, so every row stands as tall as its keys.
+.compare-players__preset-label {
+  @include truncate-line;
+}
+
+.compare-players__reason {
+  margin: 0;
+  color: var(--rak-text-secondary);
+  font-size: var(--rak-text-xs);
+}
+
+.compare-players__status {
+  @include visually-hidden;
 }

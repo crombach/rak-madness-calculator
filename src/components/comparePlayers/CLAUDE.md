@@ -11,10 +11,14 @@ plus the week's leader when shown.
   opens the dialog over a `SkeletonTable`.
 - `ComparePlayersDialog`: a `PlayerCombobox` per player, added and removed by
   the reader.
-- `comparedPlayers`: the chosen names, the game scope, and the leader toggle in
-  `settingsStore`, names restored by name in any case. A name the week
+- `useStatus`: a `role="status"` message that speaks again when repeated.
+- `useArmed`: a key that loses data acts on its second press.
+- `ComparePresetsDialog`: the saved presets, each loaded, renamed or deleted,
+  and a new one saved from the players chosen.
+- `comparedPlayers`: the chosen names, the presets, the game scope, and the
+  leader toggle in `settingsStore`, names restored by name in any case. A name the week
   lacks stays, struck through in its picker and drawn as an N/A row.
 - `ComparePlayersSkeleton`: the controls over a `SkeletonTable`, while the week
   or the page chunk loads.
-- `ComparePlayersControls`: `ChooseButton` and `LeaderToggle` in a Players
-  `ControlGroup`, then `GamesToggle`, drawn by the page and its skeleton.
+- `ComparePlayersControls`: `PlayersGroup`, Choose, Presets and
+  `LeaderToggle`, then `GamesToggle`, drawn by the page and its skeleton.

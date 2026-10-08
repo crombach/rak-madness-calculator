@@ -91,6 +91,7 @@ export default function Button({
   selected,
   className = "",
   ariaLabel,
+  ariaDescribedBy,
   ariaExpanded,
   popupOpen,
   ref,
@@ -117,6 +118,8 @@ export default function Button({
   className?: string;
   /** The accessible name. Required of a button whose content is an icon alone. */
   ariaLabel?: string;
+  /** Names the element that describes this button, such as the reason it is disabled. */
+  ariaDescribedBy?: string;
   /** Set where the button opens and closes something below it. */
   ariaExpanded?: boolean;
   /**
@@ -142,6 +145,7 @@ export default function Button({
       ref={ref}
       type="button"
       aria-label={ariaLabel}
+      aria-describedby={ariaDescribedBy}
       aria-haspopup={popupOpen === undefined ? undefined : "dialog"}
       aria-expanded={ariaExpanded ?? popupOpen}
       aria-pressed={selected}

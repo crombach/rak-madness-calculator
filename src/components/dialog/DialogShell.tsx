@@ -26,6 +26,7 @@ export default function DialogShell({
   search,
   busy = false,
   finalFocus,
+  onCloseComplete,
   children,
 }: PropsWithChildren<{
   open: boolean;
@@ -49,13 +50,24 @@ export default function DialogShell({
    * which is nothing for a dialog the page opened itself.
    */
   finalFocus?: RefObject<HTMLElement | null>;
+  /**
+   * Runs once the close has finished animating, when the page around the dialog
+   * is no longer hidden from a screen reader.
+   */
+  onCloseComplete?: () => void;
 }>) {
   // A search opens a keyboard over the screen's bottom, which the sheet sizes and
   // pads against. Only while the dialog is up, since no other page has an input.
   useViewportInsets(open);
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={onOpenChange}
+      onOpenChangeComplete={(isOpen) => {
+        if (!isOpen) onCloseComplete?.();
+      }}
+    >
       <Dialog.Portal>
         <Dialog.Backdrop className="dialog__backdrop" />
         <Dialog.Popup className={DIALOG_POPUP_CLASS} finalFocus={finalFocus}>

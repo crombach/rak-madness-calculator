@@ -1,5 +1,4 @@
-import { useMemo, useRef, useState } from "react";
-import { useIsWeekSettled } from "../../context/AppDataContext";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { isMyPlayer, useSettings } from "../../context/SettingsContext";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import differingGames, { sameGames } from "../../utils/scoring/differingGames";
@@ -11,22 +10,25 @@ import SkeletonTable from "../table/SkeletonTable";
 import {
   MAX_PICKERS,
   GameScope,
+  isSameName,
   MIN_PICKERS,
   MIN_SCOPED,
+  deletePreset,
   readComparedPlayers,
   readGameScope,
+  PRESETS_KEY,
+  readPresets,
   readShowsLeader,
+  renamePreset,
+  savePreset,
   writeComparedPlayers,
   writeGameScope,
   writeShowsLeader,
 } from "./comparedPlayers";
 import ComparePlayersDialog, { Slot } from "./ComparePlayersDialog";
-import {
-  ChooseButton,
-  ControlGroup,
-  GamesToggle,
-  LeaderToggle,
-} from "./ComparePlayersControls";
+import { GamesToggle, PlayersGroup } from "./ComparePlayersControls";
+import ComparePresetsDialog from "./ComparePresetsDialog";
+import useStatus from "./useStatus";
 import "./ComparePlayers.scss";
 
 const NAMES = new Intl.ListFormat("en", { type: "conjunction" });
@@ -71,23 +73,14 @@ function namesIn(slots: Array<Slot>, scores?: RakMadnessScores) {
   );
 }
 
-/** Whether two names are one player's, so a name re-cased between weeks still matches. */
-function isSameName(a: string, b: string): boolean {
-  return a.trim().toLowerCase() === b.trim().toLowerCase();
-}
-
 /**
- * A picker per saved name, holding this week's row for it or, where the week has
- * no row by that name, the name alone. A name saved more often than the week has
- * rows for it keeps only the rows. Falls back to the reader's own row when nothing
- * is saved.
+ * A picker per name, holding this week's row for it or, where the week has no row
+ * by that name, the name alone. A name given more often than the week has rows for
+ * it keeps only the rows.
  */
-function startingSlots(
-  players: Array<PlayerScore>,
-  myName: string,
-): Array<Slot> {
+function slotsFor(names: Array<string>, players: Array<PlayerScore>) {
   const slots: Array<Slot> = [];
-  for (const name of readComparedPlayers()) {
+  for (const name of names) {
     const row = players.find(
       (player) =>
         isSameName(player.name, name) &&
@@ -98,12 +91,25 @@ function startingSlots(
       slots.push(newSlot({ missingName: name }));
     }
   }
+  return slots;
+}
+
+function padded(slots: Array<Slot>): Array<Slot> {
+  while (slots.length < MIN_PICKERS) slots.push(newSlot());
+  return slots;
+}
+
+/** The saved names' pickers, or the reader's own row when nothing is saved. */
+function startingSlots(
+  players: Array<PlayerScore>,
+  myName: string,
+): Array<Slot> {
+  const slots = slotsFor(readComparedPlayers(), players);
   if (slots.length === 0) {
     const mine = players.find((player) => isMyPlayer(player.name, myName));
     if (mine != null) slots.push(newSlot({ id: mine.id }));
   }
-  while (slots.length < MIN_PICKERS) slots.push(newSlot());
-  return slots;
+  return padded(slots);
 }
 
 /**
@@ -116,12 +122,22 @@ export default function ComparePlayers({
   scores?: RakMadnessScores;
 }) {
   const { playerName } = useSettings();
-  const isSettled = useIsWeekSettled();
   const options = useMemo(() => playerOptions(scores), [scores]);
   const [slots, setSlots] = useState(() =>
     startingSlots(scores?.scores ?? [], playerName),
   );
   const [showsLeader, setShowsLeader] = useState(readShowsLeader);
+  const [presets, setPresets] = useState(readPresets);
+  // Another tab's change reaches this one, so a save here starts from it.
+  useEffect(() => {
+    const sync = (event: StorageEvent) => {
+      if (event.key === PRESETS_KEY || event.key == null) {
+        setPresets(readPresets());
+      }
+    };
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
   const picked = useMemo(() => playersIn(slots, scores), [slots, scores]);
   // The week's leader, when shown and not picked already. It holds no picker.
   const top = scores?.scores[0];
@@ -134,6 +150,12 @@ export default function ComparePlayers({
   const [scope, setScope] = useState(readGameScope);
   const [addedKey, setAddedKey] = useState<number>();
   const chooseRef = useRef<HTMLButtonElement>(null);
+  const [isPresetsOpen, setIsPresetsOpen] = useState(false);
+  // The presets dialog's own status closes with it, so a load speaks here, once
+  // the close lets a screen reader hear the page again.
+  const [status, announce] = useStatus();
+  const loaded = useRef<string>(undefined);
+  const presetsRef = useRef<HTMLButtonElement>(null);
   const chosen = useMemo(
     () => (leader ? [...picked, leader] : picked),
     [picked, leader],
@@ -174,26 +196,30 @@ export default function ComparePlayers({
     <>
       <div className="compare-players">
         <div className="compare-players__controls">
-          <ControlGroup label="Players">
-            <ChooseButton
-              ref={chooseRef}
-              isOpen={isOpen}
-              onClick={() => {
+          <PlayersGroup
+            choose={{
+              ref: chooseRef,
+              isOpen,
+              onClick: () => {
                 // Here rather than on close, where the dialog would shrink as it fades.
                 setSlots(withoutEmptySlots(slots));
                 setIsOpen(true);
-              }}
-            />
-            <LeaderToggle
-              on={showsLeader}
-              isSettled={isSettled}
-              onChange={(on) => {
+              },
+            }}
+            leader={{
+              on: showsLeader,
+              onChange: (on) => {
                 setShowsLeader(on);
                 writeShowsLeader(on);
-              }}
-              disabled={top == null}
-            />
-          </ControlGroup>
+              },
+              disabled: top == null,
+            }}
+            presets={{
+              ref: presetsRef,
+              isOpen: isPresetsOpen,
+              onClick: () => setIsPresetsOpen(true),
+            }}
+          />
           <GamesToggle
             scope={scope}
             onChange={(next) => {
@@ -255,6 +281,29 @@ export default function ComparePlayers({
           else changeSlots(next);
         }}
       />
+      <ComparePresetsDialog
+        open={isPresetsOpen}
+        onOpenChange={setIsPresetsOpen}
+        finalFocus={presetsRef}
+        presets={presets}
+        canSave={slots.some(isFilled)}
+        onLoad={({ name, players }) => {
+          changeSlots(padded(slotsFor(players, scores?.scores ?? [])));
+          loaded.current = name;
+        }}
+        onCloseComplete={() => {
+          if (loaded.current != null) announce(`Loaded ${loaded.current}`);
+          loaded.current = undefined;
+        }}
+        onSave={(name) =>
+          setPresets(savePreset(presets, name, namesIn(slots, scores)))
+        }
+        onRename={(from, to) => setPresets(renamePreset(presets, from, to))}
+        onDelete={(name) => setPresets(deletePreset(presets, name))}
+      />
+      <p role="status" className="compare-players__status">
+        {status}
+      </p>
     </>
   );
 }
