@@ -498,6 +498,18 @@ describe("the compare players route", () => {
     expect(screen.getByRole("button", { name: "Add Player" })).toHaveFocus();
   });
 
+  it("adds no picker when a held Enter removes one", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Carol");
+    screen.getByRole("button", { name: "Remove Player 2" }).focus();
+
+    await user.keyboard("{Enter>3/}");
+
+    expect(screen.getAllByRole("combobox")).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "Add Player" })).toHaveFocus();
+  });
+
   it("stops at ten players", async () => {
     getPlayerScoresMock.mockResolvedValue(
       week(

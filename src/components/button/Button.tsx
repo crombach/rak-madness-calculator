@@ -1,5 +1,11 @@
 import { Button as BaseButton } from "@base-ui/react/button";
-import { PointerEvent, ReactNode, Ref, SyntheticEvent } from "react";
+import {
+  KeyboardEvent,
+  PointerEvent,
+  ReactNode,
+  Ref,
+  SyntheticEvent,
+} from "react";
 import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import "./Button.scss";
@@ -75,6 +81,18 @@ function startPress(event: SyntheticEvent<HTMLButtonElement>) {
     "data-was-selected",
     key.getAttribute("aria-pressed") === "true",
   );
+}
+
+/**
+ * A held Enter clicks again on each repeat. Focus that moves to a new key after a
+ * press would carry those clicks on to it, so a repeat clicks nothing.
+ */
+function pressKey(event: KeyboardEvent<HTMLButtonElement>) {
+  if (event.repeat && event.key === "Enter") {
+    event.preventDefault();
+    return;
+  }
+  startPress(event);
 }
 
 export default function Button({
@@ -156,7 +174,7 @@ export default function Button({
       disabled={disabled}
       onClick={ariaDisabled ? doNothing : onClick}
       onPointerDown={startPress}
-      onKeyDown={startPress}
+      onKeyDown={pressKey}
       onPointerUp={markReleased}
       onPointerCancel={markReleased}
     >

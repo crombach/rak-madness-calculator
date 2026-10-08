@@ -125,9 +125,10 @@ export default function ComparePlayersDialog({
                   focusOnMount={slot.key === addedKey}
                   onRemove={() => {
                     // The removed key goes with its picker, so focus moves to Add
-                    // Player, which stays put. Rendered first, since a full list
-                    // hides it until the remove. To the dialog while it stays
-                    // hidden, which a removed missing player can leave it.
+                    // Player, which stays put. The remove renders first, since a
+                    // full list shows Add Player only after it. Removing a missing
+                    // player can leave Add Player hidden, so focus then moves to
+                    // the dialog.
                     flushSync(() => onRemove(slot.key));
                     (
                       addRef.current ??
