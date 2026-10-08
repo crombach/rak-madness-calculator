@@ -1256,11 +1256,9 @@ describe("compare presets", () => {
 
     await user.click(deleteFamily);
 
-    expect(deleteFamily).toHaveAccessibleDescription(
-      "Press Delete again to delete",
-    );
+    expect(deleteFamily).toHaveAccessibleDescription("Press again to confirm");
     expect(within(dialog).getByRole("alert")).toHaveTextContent(
-      "Press Delete again to delete",
+      "Press again to confirm",
     );
     await user.click(
       within(dialog).getByRole("textbox", { name: "Preset Name" }),

@@ -26,8 +26,7 @@ const NO_PLAYERS = "Choose a player first";
 const NAME_TAKEN = "Another preset has this name";
 const NAME_BLANK = "Type a new name";
 const PRESETS_FULL = "Delete a preset to save another";
-const DELETE_AGAIN = "Press Delete again to delete";
-const UPDATE_AGAIN = "Press again to confirm";
+const PRESS_AGAIN = "Press again to confirm";
 
 /** Why a key is disabled. `alert` announces a reason that appears as the reader types. */
 function Reason({
@@ -100,7 +99,7 @@ function PresetRow({
   const reasonId = useId();
   const isRenaming = draft != null;
   const [armed, setArmed] = useArmed(deleteRef);
-  const shownReason = armed ? DELETE_AGAIN : reason;
+  const shownReason = armed ? PRESS_AGAIN : reason;
   useEffect(() => {
     if (isRenaming) draftRef.current?.focus();
   }, [isRenaming]);
@@ -243,7 +242,7 @@ export default function ComparePresetsDialog({
     : match == null && presets.length >= MAX_PRESETS
       ? PRESETS_FULL
       : undefined;
-  const saveReason = updateArmed ? UPDATE_AGAIN : blockReason;
+  const saveReason = updateArmed ? PRESS_AGAIN : blockReason;
   const save =
     name.trim() !== "" && blockReason == null
       ? () => {
