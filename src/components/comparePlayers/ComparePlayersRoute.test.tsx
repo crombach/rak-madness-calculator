@@ -1191,6 +1191,21 @@ describe("compare presets", () => {
     expect(draft).toHaveFocus();
   });
 
+  it("lists a preset another tab saves", async () => {
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([{ name: "Family", players: ["Bob"] }]),
+    );
+    fireEvent(window, new StorageEvent("storage", { key: PRESETS_KEY }));
+
+    expect(
+      await within(dialog).findByRole("button", { name: "Family" }),
+    ).toBeInTheDocument();
+  });
+
   it("counts an emoji as one character of a name", async () => {
     const user = mountApp(COMPARE_PATH);
     const dialog = await openPresets(user);

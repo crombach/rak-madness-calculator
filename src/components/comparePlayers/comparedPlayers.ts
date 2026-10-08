@@ -58,13 +58,13 @@ export function presetName(name: string): string {
 
 /**
  * What a name field holds after a change, in place of `maxLength`, which counts
- * an emoji as two or more. A field already full refuses more, and a longer paste
+ * an emoji as two or more. A full field refuses a typed character, and a paste
  * is cut.
  */
-export function fieldName(last: string, next: string): string {
+export function fieldName(last: string, next: string, pasted: boolean): string {
   const typed = characters(next);
   if (typed.length <= MAX_PRESET_NAME) return next;
-  return characters(last).length >= MAX_PRESET_NAME
+  return !pasted && characters(last).length >= MAX_PRESET_NAME
     ? last
     : typed.slice(0, MAX_PRESET_NAME).join("");
 }
@@ -99,7 +99,10 @@ export function readPresets(): Array<Preset> {
       .map(({ name, players }) => ({
         name: presetName(name),
         players: players
-          .filter((player) => typeof player === "string")
+          .filter(
+            (player): player is string =>
+              typeof player === "string" && player.trim() !== "",
+          )
           .slice(0, MAX_PICKERS),
       }))
       .filter((preset) => preset.players.length > 0)

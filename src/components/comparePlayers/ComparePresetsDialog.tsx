@@ -1,4 +1,5 @@
 import {
+  ChangeEvent,
   KeyboardEvent,
   RefObject,
   useEffect,
@@ -55,10 +56,17 @@ function Reason({
  */
 function onEnter(action?: () => void) {
   return (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key !== "Enter") return;
+    // An IME's Enter confirms the composed text, not the field.
+    if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
     event.preventDefault();
     action?.();
   };
+}
+
+/** A field's new name, kept within `MAX_PRESET_NAME` characters. */
+function changedName(last: string, event: ChangeEvent<HTMLInputElement>) {
+  const { inputType } = event.nativeEvent as InputEvent;
+  return fieldName(last, event.target.value, inputType === "insertFromPaste");
 }
 
 /** Why a preset cannot take `draft` as its name, or nothing when it can. */
@@ -121,12 +129,10 @@ function PresetRow({
               autoComplete="off"
               spellCheck={false}
               value={draft}
-              onChange={(event) =>
-                onDraft(fieldName(draft ?? "", event.target.value))
-              }
+              onChange={(event) => onDraft(changedName(draft ?? "", event))}
               onKeyDown={(event) => {
                 // Escape backs out of the rename alone, not the whole dialog.
-                if (event.key === "Escape") {
+                if (event.key === "Escape" && !event.nativeEvent.isComposing) {
                   event.preventDefault();
                   event.stopPropagation();
                   onDraft(undefined);
@@ -256,7 +262,7 @@ export default function ComparePresetsDialog({
           onSave(name);
           setName("");
           // The cleared name disables this key, so focus waits in the field. By
-          // id, since this runs from a handler built during render.
+          // id, since the React Compiler lint refuses a ref read here.
           document.getElementById(inputId)?.focus();
         }
       : undefined;
@@ -351,7 +357,7 @@ export default function ComparePresetsDialog({
             value={name}
             onChange={(event) => {
               setUpdateArmed(false);
-              setName(fieldName(name, event.target.value));
+              setName(changedName(name, event));
             }}
             onKeyDown={onEnter(save)}
           />

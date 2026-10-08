@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { isMyPlayer, useSettings } from "../../context/SettingsContext";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import differingGames, { sameGames } from "../../utils/scoring/differingGames";
@@ -16,6 +16,7 @@ import {
   deletePreset,
   readComparedPlayers,
   readGameScope,
+  PRESETS_KEY,
   readPresets,
   readShowsLeader,
   renamePreset,
@@ -127,6 +128,16 @@ export default function ComparePlayers({
   );
   const [showsLeader, setShowsLeader] = useState(readShowsLeader);
   const [presets, setPresets] = useState(readPresets);
+  // Another tab's change reaches this one, so a save here starts from it.
+  useEffect(() => {
+    const sync = (event: StorageEvent) => {
+      if (event.key === PRESETS_KEY || event.key == null) {
+        setPresets(readPresets());
+      }
+    };
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
   const picked = useMemo(() => playersIn(slots, scores), [slots, scores]);
   // The week's leader, when shown and not picked already. It holds no picker.
   const top = scores?.scores[0];

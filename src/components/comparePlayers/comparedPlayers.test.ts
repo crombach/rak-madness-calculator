@@ -6,6 +6,7 @@ import {
   MAX_PRESETS,
   PRESETS_KEY,
   deletePreset,
+  fieldName,
   readComparedPlayers,
   readGameScope,
   readPresets,
@@ -168,6 +169,7 @@ describe("presets", () => {
       JSON.stringify([
         { name: "Empty", players: [] },
         { name: "Numbers", players: [1, 2] },
+        { name: "Blank", players: ["", " "] },
         { name: "Kin", players: ["Bob"] },
       ]),
     );
@@ -219,5 +221,22 @@ describe("presets", () => {
     );
 
     expect(readPresets()).toHaveLength(MAX_PRESETS);
+  });
+
+  it.each([
+    [
+      "refuses a typed character in a full field",
+      false,
+      "A".repeat(MAX_PRESET_NAME),
+    ],
+    ["cuts a paste over a full field", true, "B".repeat(MAX_PRESET_NAME)],
+  ])("%s", (_, pasted, expected) => {
+    expect(
+      fieldName(
+        "A".repeat(MAX_PRESET_NAME),
+        "B".repeat(MAX_PRESET_NAME + 4),
+        pasted,
+      ),
+    ).toBe(expected);
   });
 });
