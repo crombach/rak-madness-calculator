@@ -1,4 +1,5 @@
 import { RefObject, useId, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import Button from "../button/Button";
 import DialogShell from "../dialog/DialogShell";
 import { AddIcon, DeleteIcon } from "../icon/Icon";
@@ -37,10 +38,9 @@ function PlayerPicker({
   focusOnMount?: boolean;
 }) {
   const [query, setQuery] = useState(value?.name ?? missingName ?? "");
-  const fieldRef = useRef<HTMLLIElement>(null);
   const noteId = useId();
   return (
-    <li ref={fieldRef} className="compare-players__field">
+    <li className="compare-players__field">
       <PlayerCombobox
         ariaLabel={label}
         ariaDescribedBy={missingName != null ? noteId : undefined}
@@ -57,15 +57,7 @@ function PlayerPicker({
         iconOnly
         ariaLabel={`Remove ${label}`}
         disabled={!canRemove}
-        onClick={() => {
-          // The key goes with its picker, so focus moves to the picker that takes
-          // its place, or the one before it at the end of the list.
-          const field = fieldRef.current;
-          const neighbor =
-            field?.nextElementSibling ?? field?.previousElementSibling;
-          neighbor?.querySelector("input")?.focus();
-          onRemove();
-        }}
+        onClick={onRemove}
       >
         <DeleteIcon />
       </Button>
@@ -104,6 +96,8 @@ export default function ComparePlayersDialog({
   addedKey?: number;
   finalFocus?: RefObject<HTMLElement | null>;
 }) {
+  const addRef = useRef<HTMLButtonElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   return (
     <DialogShell
       open={open}
@@ -111,7 +105,7 @@ export default function ComparePlayersDialog({
       title="Choose Players"
       finalFocus={finalFocus}
     >
-      <div className="compare-players__dialog">
+      <div ref={bodyRef} className="compare-players__dialog">
         <section className="compare-players__section">
           <ul className="compare-players__pickers">
             {slots.map((slot, index) => {
@@ -129,14 +123,37 @@ export default function ComparePlayersDialog({
                   missingName={slot.missingName}
                   onValueChange={(option) => onChoose(slot.key, option.id)}
                   focusOnMount={slot.key === addedKey}
-                  onRemove={() => onRemove(slot.key)}
+                  onRemove={() => {
+                    // The removed key goes with its picker, so focus moves to the
+                    // remove key that takes its place, or the one before it at the
+                    // end of the list. The last picker's key is disabled, so then
+                    // to Add Player. The remove renders first, since a full list
+                    // shows Add Player only after it. Removing a missing player
+                    // can leave Add Player hidden too, so then to the dialog.
+                    flushSync(() => onRemove(slot.key));
+                    const removeKeys = Array.from(
+                      bodyRef.current?.querySelectorAll<HTMLButtonElement>(
+                        ".compare-players__remove:enabled",
+                      ) ?? [],
+                    );
+                    (
+                      removeKeys[index] ??
+                      removeKeys.at(-1) ??
+                      addRef.current ??
+                      bodyRef.current?.closest<HTMLElement>('[role="dialog"]')
+                    )?.focus();
+                  }}
                   canRemove={slots.length > MIN_PICKERS}
                 />
               );
             })}
           </ul>
           {canAdd && (
-            <Button className="compare-players__add" onClick={onAdd}>
+            <Button
+              ref={addRef}
+              className="compare-players__add"
+              onClick={onAdd}
+            >
               <AddIcon />
               Add Player
             </Button>

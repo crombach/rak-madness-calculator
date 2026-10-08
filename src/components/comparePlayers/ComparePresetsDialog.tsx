@@ -168,16 +168,18 @@ function PresetRow({
                   setArmed(true);
                   return;
                 }
-                // The row goes, so focus moves to the preset that takes its place:
-                // its name, or its draft while it is renamed.
+                // The row goes, so focus moves to the last key of the row that
+                // takes its place, or the one before it at the end of the list:
+                // its delete key, or its cancel key while it is renamed. With no
+                // row left, to the dialog, never into the name field.
                 const row = rowRef.current;
                 const neighbor =
                   row?.nextElementSibling ?? row?.previousElementSibling;
-                neighbor
-                  ?.querySelector<HTMLElement>(
-                    ".compare-players__preset-load, input",
-                  )
-                  ?.focus();
+                (
+                  neighbor?.querySelector<HTMLElement>(
+                    ".compare-players__field > button:last-of-type",
+                  ) ?? row?.closest<HTMLElement>('[role="dialog"]')
+                )?.focus();
                 onDelete();
               }}
             >
@@ -320,7 +322,6 @@ export default function ComparePresetsDialog({
                     changeOpen(false);
                   }}
                   onDelete={() => {
-                    if (presets.length === 1) nameInput.current?.focus();
                     announce(`Deleted ${preset.name}`);
                     setRefocus(undefined);
                     onDelete(preset.name);

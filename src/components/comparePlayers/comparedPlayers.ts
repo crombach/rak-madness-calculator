@@ -47,7 +47,7 @@ export type Preset = { name: string; players: Array<string> };
 const PRESETS_SETTING = "comparePresets";
 
 /** The most characters a preset's name holds. */
-export const MAX_PRESET_NAME = 16;
+export const MAX_PRESET_NAME = 18;
 
 const segmenter = new Intl.Segmenter();
 

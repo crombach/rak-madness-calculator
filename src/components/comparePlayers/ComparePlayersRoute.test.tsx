@@ -346,7 +346,7 @@ describe("the compare players route", () => {
     expect(screen.getByRole("button", { name: "Different" })).toBeDisabled();
   });
 
-  it("moves focus to the picker that takes a removed one's place", async () => {
+  it("moves focus to the remove key that takes a removed one's place", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Carol");
@@ -355,7 +355,22 @@ describe("the compare players route", () => {
 
     await user.click(screen.getByRole("button", { name: "Remove Player 2" }));
 
-    expect(screen.getByRole("combobox", { name: "Player 2" })).toHaveFocus();
+    expect(
+      screen.getByRole("button", { name: "Remove Player 2" }),
+    ).toHaveFocus();
+  });
+
+  it("moves focus to the remove key before the last one removed", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await openDialog(user);
+    await user.click(await screen.findByRole("button", { name: "Add Player" }));
+    await user.click(screen.getByRole("button", { name: "Add Player" }));
+
+    await user.click(screen.getByRole("button", { name: "Remove Player 3" }));
+
+    expect(
+      screen.getByRole("button", { name: "Remove Player 2" }),
+    ).toHaveFocus();
   });
 
   it("returns focus to Choose from the dialog the page opened", async () => {
@@ -485,6 +500,28 @@ describe("the compare players route", () => {
     expect(
       screen.queryByRole("button", { name: "Add Player" }),
     ).not.toBeInTheDocument();
+  });
+
+  it("focuses Add Player when one picker is left", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Carol");
+
+    await user.click(screen.getByRole("button", { name: "Remove Player 2" }));
+
+    expect(screen.getByRole("button", { name: "Add Player" })).toHaveFocus();
+  });
+
+  it("adds no picker when a held Enter removes one", async () => {
+    const user = mountApp(COMPARE_PATH);
+    await choose(user, "Player 1", "Alice");
+    await choose(user, "Player 2", "Carol");
+    screen.getByRole("button", { name: "Remove Player 2" }).focus();
+
+    await user.keyboard("{Enter>3/}");
+
+    expect(screen.getAllByRole("combobox")).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "Add Player" })).toHaveFocus();
   });
 
   it("stops at ten players", async () => {
@@ -1164,7 +1201,7 @@ describe("compare presets", () => {
     ).toHaveFocus();
   });
 
-  it("moves focus to a renamed neighbor's draft after a delete", async () => {
+  it("moves focus to a renamed neighbor's cancel key after a delete", async () => {
     localStorage.setItem(
       PRESETS_KEY,
       JSON.stringify([
@@ -1188,7 +1225,9 @@ describe("compare presets", () => {
     await user.click(deleteFamily);
     await user.click(deleteFamily);
 
-    expect(draft).toHaveFocus();
+    expect(
+      within(dialog).getByRole("button", { name: "Keep the name Rivals" }),
+    ).toHaveFocus();
   });
 
   it("lists a preset another tab saves", async () => {
@@ -1285,7 +1324,7 @@ describe("compare presets", () => {
     ).toBeInTheDocument();
   });
 
-  it("deletes a preset, moving focus to the next one", async () => {
+  it("deletes a preset, moving focus to the next one's delete key", async () => {
     localStorage.setItem(
       PRESETS_KEY,
       JSON.stringify([
@@ -1306,8 +1345,25 @@ describe("compare presets", () => {
       { name: "Rivals", players: ["Carol"] },
     ]);
     expect(
-      within(dialog).getByRole("button", { name: "Rivals" }),
+      within(dialog).getByRole("button", { name: "Delete Rivals" }),
     ).toHaveFocus();
+  });
+
+  it("moves focus to the dialog when the last preset is deleted", async () => {
+    localStorage.setItem(
+      PRESETS_KEY,
+      JSON.stringify([{ name: "Family", players: ["Bob"] }]),
+    );
+    const user = mountApp(COMPARE_PATH);
+    const dialog = await openPresets(user);
+
+    const deleteFamily = within(dialog).getByRole("button", {
+      name: "Delete Family",
+    });
+    await user.click(deleteFamily);
+    await user.click(deleteFamily);
+
+    expect(dialog).toHaveFocus();
   });
 
   it("says when no preset is saved, and why none can be yet", async () => {
