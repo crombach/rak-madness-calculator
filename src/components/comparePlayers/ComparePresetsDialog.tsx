@@ -260,7 +260,7 @@ export default function ComparePresetsDialog({
         </section>
         <section className="compare-players__presets">
           <h3 className="compare-players__group-label">
-            <label htmlFor={inputId}>New Preset</label>
+            <label htmlFor={inputId}>Preset Name</label>
           </h3>
           <input
             ref={nameInput}

@@ -77,12 +77,6 @@
   gap: var(--rak-space-2);
 }
 
-// Choose, the key a reader needs most, is a quarter wider than Presets and
-// Best, which match.
-.compare-players__keys--players {
-  grid-template-columns: 1.25fr 1fr 1fr;
-}
-
 .compare-players__pickers {
   display: flex;
   flex-direction: column;

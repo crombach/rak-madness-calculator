@@ -1,6 +1,5 @@
 import { ReactNode, Ref, useId } from "react";
 import doNothing from "../../utils/doNothing";
-import getClasses from "../../utils/getClasses";
 import Button from "../button/Button";
 import { GAME_SCOPES, GameScope } from "./comparedPlayers";
 import "./ComparePlayers.scss";
@@ -12,12 +11,10 @@ import "./ComparePlayers.scss";
 export function ControlGroup({
   label,
   divided = false,
-  keysClassName,
   children,
 }: {
   label: string;
   divided?: boolean;
-  keysClassName?: string;
   children: ReactNode;
 }) {
   const labelId = useId();
@@ -28,7 +25,7 @@ export function ControlGroup({
         {label}
       </span>
       <div
-        className={getClasses("compare-players__keys", keysClassName)}
+        className="compare-players__keys"
         role="group"
         aria-labelledby={labelId}
       >
@@ -70,10 +67,7 @@ export function PlayersGroup({
   presets?: DialogKeyProps;
 }) {
   return (
-    <ControlGroup
-      label="Players"
-      keysClassName="compare-players__keys--players"
-    >
+    <ControlGroup label="Players">
       <DialogKey label="Choose" {...choose} />
       <DialogKey label="Presets" {...presets} />
       <LeaderToggle {...leader} />

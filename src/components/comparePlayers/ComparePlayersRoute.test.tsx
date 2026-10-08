@@ -900,7 +900,7 @@ async function openPresets(user: ReturnType<typeof mountApp>) {
 async function savePresetAs(user: ReturnType<typeof mountApp>, name: string) {
   const dialog = await openPresets(user);
   await user.type(
-    within(dialog).getByRole("textbox", { name: "New Preset" }),
+    within(dialog).getByRole("textbox", { name: "Preset Name" }),
     name,
   );
   await user.click(
@@ -1063,7 +1063,7 @@ describe("compare presets", () => {
     expect(save).toBeDisabled();
     expect(save).not.toHaveAccessibleDescription();
     await user.type(
-      within(dialog).getByRole("textbox", { name: "New Preset" }),
+      within(dialog).getByRole("textbox", { name: "Preset Name" }),
       "Mine",
     );
     expect(save).toBeEnabled();
@@ -1078,7 +1078,7 @@ describe("compare presets", () => {
     const dialog = await openPresets(user);
     const long = "A".repeat(MAX_PRESET_NAME + 4);
 
-    const field = within(dialog).getByRole("textbox", { name: "New Preset" });
+    const field = within(dialog).getByRole("textbox", { name: "Preset Name" });
     await user.type(field, long);
     expect(field).toHaveValue(long.slice(0, MAX_PRESET_NAME));
 
