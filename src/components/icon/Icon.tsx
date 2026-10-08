@@ -141,16 +141,25 @@ export function SentimentVerySatisfiedOutlinedIcon() {
 
 /**
  * The tick alone, cropped to its own edges rather than Material's full
- * 960x960 box, which would otherwise sit empty around it. `cropped={false}`
- * keeps the full box, so the tick's strokes match an icon beside it.
+ * 960x960 box, which would otherwise sit empty around it.
  */
-export function CheckIcon({ cropped = true }: { cropped?: boolean }) {
+export function CheckIcon() {
   return (
-    <Icon
-      name="CheckIcon"
-      viewBox={cropped ? "257 -654 451 333" : SYMBOLS_VIEW_BOX}
-    >
+    <Icon name="CheckIcon" viewBox="257 -654 451 333">
       <path d="m419-321 289-290-43-43-246 247-119-119-43 43 162 162Z" />
+    </Icon>
+  );
+}
+
+/**
+ * A tick for beside `CloseIcon`. Drawn here rather than copied from Material,
+ * whose tick at the cross's height has thicker strokes. This one shares the
+ * cross's ink height and its 42-unit diagonal step, so both strokes match.
+ */
+export function ConfirmIcon() {
+  return (
+    <Icon name="ConfirmIcon">
+      <path d="m370-207 504-504-42-42-462 462-241-241-42 42 283 283Z" />
     </Icon>
   );
 }

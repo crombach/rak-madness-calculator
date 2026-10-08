@@ -9,7 +9,7 @@ import {
 import doNothing from "../../utils/doNothing";
 import Button from "../button/Button";
 import DialogShell from "../dialog/DialogShell";
-import { CheckIcon, CloseIcon, DeleteIcon, EditIcon } from "../icon/Icon";
+import { CloseIcon, ConfirmIcon, DeleteIcon, EditIcon } from "../icon/Icon";
 import { isSameName, MAX_PRESET_NAME, Preset } from "./comparedPlayers";
 import "./ComparePlayers.scss";
 
@@ -115,7 +115,7 @@ function PresetRow({
               disabled={onRename == null}
               onClick={onRename ?? doNothing}
             >
-              <CheckIcon cropped={false} />
+              <ConfirmIcon />
             </Button>
             <Button
               iconOnly
