@@ -1196,3 +1196,136 @@ describe("getLeagueResults, finish times", () => {
     expect(urlsOf(fetchMock)).toHaveLength(2);
   });
 });
+
+describe("getLeagueResults, matchups still being read", () => {
+  const SEASON = 2024;
+
+  /** Matchups that arrive only once the case says so. */
+  function pendingMatchups() {
+    let resolve: (matchups: Array<Set<string>>) => void = () => undefined;
+    const matchups = new Promise<Array<Set<string>>>((done) => {
+      resolve = done;
+    });
+    return { matchups, resolve };
+  }
+
+  /** Lets the calendar read in front of the scoreboard request run. */
+  const settle = () => new Promise((done) => setTimeout(done, 0));
+
+  it("asks for the scoreboard before the matchups arrive", async () => {
+    const fetchMock = mockFetch([bufVsKc]);
+    const { matchups, resolve } = pendingMatchups();
+
+    const results = getLeagueResults(League.PRO, WEEK, matchups, SEASON);
+    await settle();
+
+    expect(urlsOf(fetchMock)).toHaveLength(1);
+    resolve([BUF_KC]);
+    expect((await results).map((game) => game.id)).toEqual([bufVsKc.id]);
+    expect(urlsOf(fetchMock)).toHaveLength(1);
+  });
+
+  it("asks for the scoreboard before matchups that are not a native Promise arrive", async () => {
+    const fetchMock = mockFetch([bufVsKc]);
+    const { matchups, resolve } = pendingMatchups();
+    const thenable: PromiseLike<Array<Set<string>>> = {
+      then: (onFulfilled, onRejected) => matchups.then(onFulfilled, onRejected),
+    };
+
+    const results = getLeagueResults(League.PRO, WEEK, thenable, SEASON);
+    await settle();
+
+    expect(urlsOf(fetchMock)).toHaveLength(1);
+    resolve([BUF_KC]);
+    await results;
+  });
+
+  it("waits for the matchups of a week its caller says may be held, and asks nothing", async () => {
+    const fetchMock = mockFetch([bufVsKc]);
+    const first = await getLeagueResults(League.PRO, WEEK, [BUF_KC], SEASON);
+    const { matchups, resolve } = pendingMatchups();
+
+    const again = getLeagueResults(League.PRO, WEEK, matchups, SEASON, {
+      mayBeHeld: true,
+    });
+    await settle();
+    resolve([BUF_KC]);
+
+    expect(await again).toEqual(first);
+    expect(urlsOf(fetchMock)).toHaveLength(1);
+  });
+
+  it("fails with the matchups when they cannot be read", async () => {
+    mockFetch([bufVsKc]);
+
+    await expect(
+      getLeagueResults(
+        League.PRO,
+        WEEK,
+        Promise.reject(new Error("not a workbook")),
+        SEASON,
+      ),
+    ).rejects.toThrow("not a workbook");
+  });
+});
+
+describe("getLeagueResults, an answer seconds old", () => {
+  const MAX_AGE_MS = 10_000;
+  const live = espnEvent({ home: "BUF", away: "KC", status: GameStatus.LIVE });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("takes the last scoreboard answer under the age it was handed", async () => {
+    const fetchMock = mockFetch([live]);
+
+    await getLeagueResults(League.PRO, WEEK, [BUF_KC], 3101);
+    const again = await getLeagueResults(League.PRO, WEEK, [BUF_KC], 3101, {
+      reuseWithinMs: MAX_AGE_MS,
+    });
+
+    expect(urlsOf(fetchMock)).toHaveLength(1);
+    expect(again.map((game) => game.id)).toEqual([live.id]);
+  });
+
+  it("asks again once that answer is as old as the age handed", async () => {
+    const fetchMock = mockFetch([live]);
+
+    await getLeagueResults(League.PRO, WEEK, [BUF_KC], 3102);
+    vi.setSystemTime(Date.now() + MAX_AGE_MS);
+    await getLeagueResults(League.PRO, WEEK, [BUF_KC], 3102, {
+      reuseWithinMs: MAX_AGE_MS,
+    });
+
+    expect(urlsOf(fetchMock)).toHaveLength(2);
+  });
+
+  it("asks again for a caller that hands no age", async () => {
+    const fetchMock = mockFetch([live]);
+
+    await getLeagueResults(League.PRO, WEEK, [BUF_KC], 3103);
+    await getLeagueResults(League.PRO, WEEK, [BUF_KC], 3103);
+
+    expect(urlsOf(fetchMock)).toHaveLength(2);
+  });
+
+  it("never takes an answer that failed", async () => {
+    stubFetch(
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 503,
+      }) as unknown as typeof fetch,
+    );
+    await expect(
+      getLeagueResults(League.PRO, WEEK, [BUF_KC], 3104),
+    ).rejects.toThrow("503");
+    const fetchMock = mockFetch([live]);
+
+    await getLeagueResults(League.PRO, WEEK, [BUF_KC], 3104, {
+      reuseWithinMs: MAX_AGE_MS,
+    });
+
+    expect(urlsOf(fetchMock)).toHaveLength(1);
+  });
+});

@@ -43,6 +43,43 @@ const COLLEGE_GROUPS = [
   22, // Ivy League (occasionally appears in Rak Madness)
 ];
 
+/** The last scoreboard answer each league's week was asked for, and when. */
+const recentEvents = new Map<
+  string,
+  { askedAt: number; events: Promise<Array<EspnEvent>> }
+>();
+
+/**
+ * `getLeagueEvents`, or its last answer for the week where that is under
+ * `reuseWithinMs` old. Every answer is held for a later caller, and a failed one
+ * is dropped.
+ */
+function askLeagueEvents(
+  league: League,
+  week: WeekInfo,
+  season: number | undefined,
+  reuseWithinMs: number | undefined,
+): Promise<Array<EspnEvent>> {
+  const key = `${league}:${season}:${week.value}`;
+  const recent = recentEvents.get(key);
+  if (
+    recent != null &&
+    reuseWithinMs != null &&
+    Date.now() - recent.askedAt < reuseWithinMs
+  ) {
+    return recent.events;
+  }
+  const entry = {
+    askedAt: Date.now(),
+    events: getLeagueEvents(league, week, season),
+  };
+  recentEvents.set(key, entry);
+  entry.events.catch(() => {
+    if (recentEvents.get(key) === entry) recentEvents.delete(key);
+  });
+  return entry.events;
+}
+
 /** A scoreboard URL's events, or thrown where ESPN answered with neither. */
 async function fetchEspnEvents(url: string): Promise<Array<EspnEvent>> {
   const response = await fetch(url);
@@ -651,21 +688,41 @@ function inDateOrder(
  * it. Changing the picks changes which matchups are asked about, and a matchup that
  * moved has nothing stored under its new name, so the week is fetched again.
  *
+ * Matchups still being read off the workbook start the scoreboard request beside
+ * them, since it asks nothing of the picks. A week the caller says `mayBeHeld`
+ * waits for them instead, where this browser holds any of it, as the cache likely
+ * answers it whole. Any other week sends that request even where the cache then
+ * answers every matchup.
+ *
  * @param week week in the season (week 1 is the first NFL week)
  * @param matchups the games the picks describe
  * @param season the year the season started in, current season if left out
+ * @param mayBeHeld whether the week was settled when this browser last scored it
+ * @param reuseWithinMs how old a scoreboard answer may be and still be taken
  */
 export async function getLeagueResults(
   league: League,
   week: WeekInfo,
-  matchups: Array<Set<string>>,
+  matchups: Array<Set<string>> | PromiseLike<Array<Set<string>>>,
   season?: number,
+  {
+    mayBeHeld = false,
+    reuseWithinMs,
+  }: { mayBeHeld?: boolean; reuseWithinMs?: number } = {},
 ): Promise<Array<LeagueResult>> {
-  const keys = matchups.map(matchupKey);
   // "Whichever season is running" is not something an answer can be filed under, so a
   // week with no season named is always fetched.
   const held =
     season != null ? readCachedResults(season, week.value, league) : {};
+  const ask = () => askLeagueEvents(league, week, season, reuseWithinMs);
+  const early =
+    !Array.isArray(matchups) && !(mayBeHeld && Object.keys(held).length > 0)
+      ? ask()
+      : undefined;
+  // Unread where the matchups fail or the cache answers them all.
+  early?.catch(() => undefined);
+  const wanted = await matchups;
+  const keys = wanted.map(matchupKey);
   if (keys.every((key) => key in held)) {
     const settled = [...new Set(keys)]
       .map((key) => held[key])
@@ -674,14 +731,14 @@ export async function getLeagueResults(
     return inDateOrder(league, settled);
   }
 
-  const events = await getLeagueEvents(league, week, season);
+  const events = await (early ?? ask());
   debugLog(`${league} events`, events);
 
   // The keys the picks ask about, split by how a column names its game.
   // A college answer runs hundreds of events, looked up not walked per game.
   const wantedPairs = new Set<string>();
   const wantedTeams = new Set<string>();
-  matchups.forEach((teams, index) => {
+  wanted.forEach((teams, index) => {
     if (teams.size === 2) wantedPairs.add(keys[index]);
     if (teams.size === 1) wantedTeams.add(keys[index]);
   });
@@ -695,7 +752,7 @@ export async function getLeagueResults(
   // already in fetch order, so it picks the same game every lookup by team will.
   const index = indexResults(results);
   const found = new Map<string, CachedGame>();
-  matchups.forEach((teams, position) => {
+  wanted.forEach((teams, position) => {
     if (found.has(keys[position])) return;
     found.set(keys[position], findMatchup(index, teams) ?? null);
   });

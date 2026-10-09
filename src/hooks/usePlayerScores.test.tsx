@@ -12,7 +12,7 @@ import { getPlayerScores } from "../utils/scoring/getPlayerScores";
 import { liveGame, weekOf } from "../utils/scoring/leagueResultFixtures";
 import { fetchLeagueResults } from "../utils/scoring/leagueResults";
 import { SEASON, week } from "../weekFixtures";
-import usePlayerScores from "./usePlayerScores";
+import usePlayerScores, { RESCORE_MAX_AGE_MS } from "./usePlayerScores";
 
 vi.mock("../utils/scoring/getPlayerScores", () => ({
   getPlayerScores: vi.fn(),
@@ -106,6 +106,10 @@ beforeEach(() => {
   fetchLeagueResultsMock.mockImplementation(async () =>
     movedWeek(fetches++ * 7),
   );
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("usePlayerScores", () => {
@@ -321,6 +325,33 @@ describe("usePlayerScores, refresh", () => {
     expect(result.current.isRefreshing).toBe(false);
   });
 
+  it("changes nothing the status reads for a poll that finds nothing moved", async () => {
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const seen: Array<boolean> = [];
+    const { result } = renderHook(
+      () => {
+        const scored = usePlayerScores(WEEK_5, SEASON);
+        seen.push(scored.isScoresLoading);
+        return scored;
+      },
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+    fetchLeagueResultsMock.mockResolvedValue(movedWeek(7));
+    await act(async () => {
+      await result.current.rescore([League.PRO]);
+    });
+    const attempted = result.current.attemptedFor;
+    seen.length = 0;
+
+    await act(async () => {
+      await result.current.rescore([League.PRO]);
+    });
+
+    expect(seen).not.toContain(true);
+    expect(result.current.attemptedFor).toBe(attempted);
+  });
+
   it("hands a poll back what it fetched, whether or not anything moved", async () => {
     // The dialog draws a clock and a down off this, and neither costs a rescore.
     getPlayerScoresMock.mockResolvedValue(scoresFor(5));
@@ -340,6 +371,28 @@ describe("usePlayerScores, refresh", () => {
 
     expect(first).toBe(standing);
     expect(second).toBe(standing);
+  });
+
+  it("lets a poll take a scoreboard answer seconds old, and a refresh none", async () => {
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+
+    await act(async () => {
+      await result.current.rescore([League.PRO]);
+    });
+    expect(fetchLeagueResultsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ reuseWithinMs: RESCORE_MAX_AGE_MS }),
+    );
+
+    await act(async () => {
+      await result.current.refresh();
+    });
+    expect(fetchLeagueResultsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ reuseWithinMs: undefined }),
+    );
   });
 
   it("scores a refresh the reader asked for even where no game moved", async () => {
@@ -453,6 +506,47 @@ describe("usePlayerScores, refresh", () => {
     // The refresh scored once, and the rescore it turned away scored after it.
     await waitFor(() =>
       expect(getPlayerScoresMock).toHaveBeenCalledTimes(scoringCallsBefore + 2),
+    );
+  });
+
+  it("turns away a rescore asked seconds after a fetch while a pass is in flight", async () => {
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+    const scoringCallsBefore = getPlayerScoresMock.mock.calls.length;
+
+    let releaseSheet: () => void = () => {};
+    stubFetch(
+      vi.fn(
+        async () =>
+          new Promise((resolve) => {
+            releaseSheet = () => resolve(spreadsheetResponse());
+          }),
+      ) as unknown as typeof fetch,
+    );
+
+    let asked: Promise<unknown> | undefined;
+    let polled: unknown = "unset";
+    await act(async () => {
+      asked = result.current.refresh();
+      polled = await result.current.rescore([League.PRO]);
+    });
+    expect(polled).toBeUndefined();
+
+    await act(async () => {
+      releaseSheet();
+      await asked;
+    });
+
+    await waitFor(() =>
+      expect(getPlayerScoresMock).toHaveBeenCalledTimes(scoringCallsBefore + 2),
+    );
+    // Fetched afresh, since the move it was asked for may be newer than the
+    // answer the pass in flight fetched.
+    expect(fetchLeagueResultsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ leagues: ["pro"], reuseWithinMs: undefined }),
     );
   });
 
@@ -664,6 +758,33 @@ describe("usePlayerScores, refresh", () => {
     const scoringCallsBefore = getPlayerScoresMock.mock.calls.length;
 
     getPlayerScoresMock.mockResolvedValue(scoresFor(6));
+    await act(async () => {
+      await result.current.rescore([League.PRO]);
+    });
+
+    expect(getPlayerScoresMock).toHaveBeenCalledTimes(scoringCallsBefore + 1);
+    expect(result.current.scores).toEqual(scoresFor(6));
+  });
+
+  it("scores a move again seconds after the pass that fetched it could not score it", async () => {
+    vi.setSystemTime(Date.now());
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+    const start = Date.now();
+
+    fetchLeagueResultsMock.mockResolvedValue(movedWeek(7));
+    getPlayerScoresMock.mockRejectedValueOnce(new Error("espn down"));
+    vi.setSystemTime(start + 5_000);
+    await act(async () => {
+      await result.current.refresh();
+    });
+    const scoringCallsBefore = getPlayerScoresMock.mock.calls.length;
+
+    getPlayerScoresMock.mockResolvedValue(scoresFor(6));
+    vi.setSystemTime(start + 7_000);
     await act(async () => {
       await result.current.rescore([League.PRO]);
     });

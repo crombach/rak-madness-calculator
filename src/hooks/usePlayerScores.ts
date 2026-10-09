@@ -21,6 +21,7 @@ import {
 import isWeekSettled from "../utils/scoring/isWeekSettled";
 import parsePicksWorkbook from "../utils/scoring/parsePicksWorkbook";
 import { writeSettledWeek } from "../utils/settledWeeksCache";
+import weekKey from "../utils/weekKey";
 import { createScoringPasses, NO_LEAGUES } from "./scoringPasses";
 import scoreChanges, {
   NO_SCORE_CHANGES,
@@ -36,6 +37,13 @@ import scoreChanges, {
  * coming back does that, and so does switching between the two tables.
  */
 export const WIPE_LIFETIME_MS = 350;
+
+/**
+ * How old a scoreboard answer a rescore takes in place of a fetch. Under
+ * `POLL_MS`, so only a view opened, or a rescore asked, seconds after the last
+ * fetch is spared one.
+ */
+export const RESCORE_MAX_AGE_MS = 10_000;
 
 /** The season and week a scoring attempt has finished, however it turned out. */
 type LastAttempt = { season: number; weekNumber: number };
@@ -114,6 +122,8 @@ type ScoringRequest = {
   gateOnMovement?: boolean;
   /** Turns the refresh button for as long as the pass runs, floored. */
   turnsButton?: boolean;
+  /** How old a scoreboard answer the fetch may take in place of a request. */
+  reuseWithinMs?: number;
 };
 
 /**
@@ -212,15 +222,18 @@ export default function usePlayerScores(
       quietFailure = false,
       gateOnMovement = false,
       turnsButton = false,
+      reuseWithinMs,
     }: ScoringRequest): Promise<LeagueResults | undefined> => {
       if (!selectedWeek || season == null) return undefined;
       const attempt = ++latestAttempt.current;
       const isLatest = () => latestAttempt.current === attempt;
       passes.setAttemptInFlight(true);
-      setScoresLoading(true);
+      // A gated pass says it is loading only once the gate lets it through, so a
+      // poll that finds nothing moved costs the tree no render.
+      if (!gateOnMovement) setScoresLoading(true);
 
       const attempted = { season, weekNumber: selectedWeek.value };
-      const key = `${attempted.season}:${attempted.weekNumber}`;
+      const key = weekKey(attempted.season, attempted.weekNumber);
 
       // A reader's pass turns the button before it reads anything, so a refresh
       // waiting on the sheet still says so while a poll pass runs beside it. A
@@ -255,17 +268,24 @@ export default function usePlayerScores(
         passes.beginFetching(leagues);
         const fetched = await step("fetch", async () => {
           try {
-            const parsed = await parsePicksWorkbook(buffer);
-            return await fetchLeagueResults({
-              leagues,
-              week: selectedWeek,
-              season,
-              matchups: {
-                college: parsed.collegeMatchups,
-                pro: parsed.proMatchups,
-              },
-              held,
-            });
+            const matchups = parsePicksWorkbook(buffer).then((parsed) => ({
+              college: parsed.collegeMatchups,
+              pro: parsed.proMatchups,
+            }));
+            // Awaited beside the fetch, so a workbook that will not parse fails
+            // the pass even where no league reads its matchups.
+            const [results] = await Promise.all([
+              fetchLeagueResults({
+                leagues,
+                week: selectedWeek,
+                season,
+                matchups,
+                held,
+                reuseWithinMs,
+              }),
+              matchups,
+            ]);
+            return results;
           } finally {
             passes.endFetching(leagues, asked);
           }
@@ -277,6 +297,7 @@ export default function usePlayerScores(
           return fetched;
         }
         turn.start();
+        setScoresLoading(true);
         scoredResults = fetched;
 
         const nextScores = await step("score", () =>
@@ -322,7 +343,13 @@ export default function usePlayerScores(
       } finally {
         if (isLatest()) {
           setScoresLoading(false);
-          setAttemptedFor(attempted);
+          // The same week kept as the same object, so the status memo holds.
+          setAttemptedFor((before) =>
+            before?.season === attempted.season &&
+            before.weekNumber === attempted.weekNumber
+              ? before
+              : attempted,
+          );
           passes.setAttemptInFlight(false);
           passes.drainRescore();
         }
@@ -399,6 +426,7 @@ export default function usePlayerScores(
     async (
       refetch: boolean,
       leagues: ReadonlyArray<LeagueKey> = LEAGUES,
+      reuseWithinMs?: number,
     ): Promise<LeagueResults | undefined> => {
       if (selectedWeek == null || season == null) return undefined;
       const inHand = picksBuffer;
@@ -436,6 +464,7 @@ export default function usePlayerScores(
         gateOnMovement: !refetch,
         quietFailure: !refetch,
         turnsButton: true,
+        reuseWithinMs,
       });
     },
     [picksBuffer, season, selectedWeek, attemptScoring, clearToasts],
@@ -464,6 +493,33 @@ export default function usePlayerScores(
     }
   }, [scoreWeek, passes]);
 
+  // Nobody asked for this one, so it yields to anything already running rather
+  // than superseding it. The request is held rather than dropped, and whichever
+  // pass turned it away runs it on its way out. The poll asks once for each state
+  // it finds, so it never asks again for a dropped one. The table would keep the
+  // state before it until the reader refreshed.
+  const rescoreUnlessRunning = useCallback(
+    async (
+      leagues?: ReadonlyArray<League>,
+      reuseWithinMs?: number,
+    ): Promise<LeagueResults | undefined> => {
+      if (passes.deferRescore(leagues)) return undefined;
+      passes.forgetRescore();
+      return scoreWeek(
+        false,
+        leagues?.map((league) => LEAGUE_KEY[league]) ?? LEAGUES,
+        reuseWithinMs,
+      );
+    },
+    [scoreWeek, passes],
+  );
+
+  // A rescore a pass turned away takes no answer already fetched, since the move
+  // it was asked for may have come after the turned-away pass's answer.
+  useEffect(() => {
+    passes.setRescore((leagues) => rescoreUnlessRunning(leagues));
+  }, [rescoreUnlessRunning, passes]);
+
   /**
    * What a poll asks for: the named leagues fetched, and the same workbook scored
    * against them if anything moved.
@@ -471,29 +527,14 @@ export default function usePlayerScores(
    * Resolves to the games it fetched, so a caller watching one of them can show a
    * clock and a down that `hasMoved` deliberately ignores, without a second
    * request. A pass in flight turns this away, and it resolves to nothing.
+   *
+   * A scoreboard answer under `RESCORE_MAX_AGE_MS` old stands in for a request.
    */
   const rescore = useCallback(
-    async (
-      leagues?: ReadonlyArray<League>,
-    ): Promise<LeagueResults | undefined> => {
-      // Nobody asked for this one, so it yields to anything already running rather
-      // than superseding it. The request is held rather than dropped, and whichever
-      // pass turned it away runs it on its way out. The poll asks once for each
-      // state it finds, so it never asks again for a dropped one. The table would
-      // keep the state before it until the reader refreshed.
-      if (passes.deferRescore(leagues)) return undefined;
-      passes.forgetRescore();
-      return scoreWeek(
-        false,
-        leagues?.map((league) => LEAGUE_KEY[league]) ?? LEAGUES,
-      );
-    },
-    [scoreWeek, passes],
+    (leagues?: ReadonlyArray<League>) =>
+      rescoreUnlessRunning(leagues, RESCORE_MAX_AGE_MS),
+    [rescoreUnlessRunning],
   );
-
-  useEffect(() => {
-    passes.setRescore(rescore);
-  }, [rescore, passes]);
 
   return useMemo(
     () => ({

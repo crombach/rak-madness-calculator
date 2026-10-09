@@ -2,12 +2,15 @@
 
 - `getLeagueInfo` / `getLeagueResults`: ESPN fetch, calendar, week mapping, and
   `getRegularSeasonWeekCount`, cached. A named season's answer is held five
-  minutes. `espnScoreboardUrl` builds both URLs
+  minutes. `espnScoreboardUrl` builds both URLs. The scoreboard request starts
+  while the picks parse, except for a week the caller's `mayBeHeld` hint marks
+  settled. `reuseWithinMs` takes a scoreboard answer that recent
 - `buildSpreadsheetBuffer`: the xlsx export and its content type
 - `pickStatusFill`: the export's pick and standing colors, held to the stylesheet
 - `picksCache` / `espnCache` / `settledWeeksCache`: an uploaded workbook, ESPN's
   fixed answers, and which weeks settled, on `localStorageCache`, a capped store
   under one prefix
+- `weekKey`: what a season's week is filed under
 - `settingsStore`: the reader's own preferences, kept whatever the caches drop
 - `loadStoredPicks`: a week's workbook from the API, or cache. `prefetchStoredPicks`
   starts a URL's week before the calendar lands

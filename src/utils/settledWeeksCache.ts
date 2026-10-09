@@ -3,6 +3,7 @@
 // scores replace this guess as soon as they load.
 
 import localStorageCache from "./localStorageCache";
+import weekKey from "./weekKey";
 
 /** A flag per week, a few bytes each. */
 const MAX_CACHED_WEEKS = 32;
@@ -16,7 +17,7 @@ const settledWeeks = localStorageCache<boolean>({
 });
 
 export function readSettledWeek(season: number, weekNumber: number): boolean {
-  return settledWeeks.read(`${season}:${weekNumber}`) ?? false;
+  return settledWeeks.read(weekKey(season, weekNumber)) ?? false;
 }
 
 /** Skips the write when the stored flag already matches. */
@@ -26,5 +27,5 @@ export function writeSettledWeek(
   isSettled: boolean,
 ): void {
   if (readSettledWeek(season, weekNumber) === isSettled) return;
-  settledWeeks.write(`${season}:${weekNumber}`, isSettled);
+  settledWeeks.write(weekKey(season, weekNumber), isSettled);
 }

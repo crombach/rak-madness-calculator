@@ -10,6 +10,7 @@ import {
   upcomingGame,
   weekOf,
 } from "./leagueResultFixtures";
+import { writeSettledWeek } from "../settledWeeksCache";
 import { fetchLeagueResults, hasMoved, LeagueResults } from "./leagueResults";
 
 vi.mock("../getLeagueResults");
@@ -17,7 +18,7 @@ vi.mock("../getLeagueResults");
 const getLeagueResultsMock = vi.mocked(getLeagueResults);
 
 const WEEK = week(5);
-const NO_MATCHUPS = { college: [], pro: [] };
+const NO_MATCHUPS = Promise.resolve({ college: [], pro: [] });
 
 function pro(...results: Array<LeagueResult>): LeagueResults {
   return weekOf("pro", ...results);
@@ -108,7 +109,47 @@ describe("hasMoved", () => {
 
 describe("fetchLeagueResults", () => {
   beforeEach(() => {
+    localStorage.clear();
     getLeagueResultsMock.mockResolvedValue([]);
+  });
+
+  it("tells the fetcher a week settled when this browser last scored it may be held", async () => {
+    writeSettledWeek(SEASON, WEEK.value, true);
+
+    await fetchLeagueResults({
+      leagues: ["pro"],
+      week: WEEK,
+      season: SEASON,
+      matchups: NO_MATCHUPS,
+      held: { college: [], pro: [] },
+    });
+
+    expect(getLeagueResultsMock).toHaveBeenCalledWith(
+      League.PRO,
+      WEEK,
+      expect.any(Promise),
+      SEASON,
+      expect.objectContaining({ mayBeHeld: true }),
+    );
+  });
+
+  it("hands the fetcher the age of answer it may take", async () => {
+    await fetchLeagueResults({
+      leagues: ["pro"],
+      week: WEEK,
+      season: SEASON,
+      matchups: NO_MATCHUPS,
+      held: { college: [], pro: [] },
+      reuseWithinMs: 10_000,
+    });
+
+    expect(getLeagueResultsMock).toHaveBeenCalledWith(
+      League.PRO,
+      WEEK,
+      expect.any(Promise),
+      SEASON,
+      expect.objectContaining({ reuseWithinMs: 10_000 }),
+    );
   });
 
   it("fetches only the league it was named, keeping the other from the pass before", async () => {
@@ -127,9 +168,11 @@ describe("fetchLeagueResults", () => {
     expect(getLeagueResultsMock).toHaveBeenCalledWith(
       League.PRO,
       WEEK,
-      [],
+      expect.any(Promise),
       SEASON,
+      { mayBeHeld: false, reuseWithinMs: undefined },
     );
+    expect(await getLeagueResultsMock.mock.calls[0][2]).toEqual([]);
     expect(fetched.college).toBe(held.college);
     expect(fetched.pro).toEqual([KICKED_OFF]);
   });

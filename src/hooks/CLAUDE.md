@@ -8,11 +8,13 @@ The data layer, plus the page measurements. The first four mount once in
 - `useLeagueWeeks`: the season's ESPN weeks, and which is selected
 - `usePlayerScores`: a week's scores, and the one refresh. `refresh` rereads the
   sheet and both leagues, `rescore` the named leagues, scoring only where a game
-  moved. `failedFor`: a week it could not score
+  moved, and taking a scoreboard answer under `RESCORE_MAX_AGE_MS` old.
+  `failedFor`: a week it could not score
 - `scoringPasses`: the button turn, fetch counts, held rescore
 - `useLatestAsync`: an async load's newest answer, and its status
 - `useLiveWeek`: the named leagues, `onPoll` every twenty seconds past kickoff,
-  or from the start with `holdForKickoff` off
+  or from the start with `holdForKickoff` off. Never while the tab is hidden.
+  A tick missed there asks at once when the tab is visible again
 - `useLiveGame`: one game, off `useLiveWeek` on its league
 - `useMyPick`: the reader's own pick on a game
 - `useArrival`: an outside value, taken as it arrives
