@@ -53,7 +53,7 @@ function isSameState(a: NavbarState, b: NavbarState) {
 /**
  * Sets the navbar for the page calling it. Before paint, so the bar never shows
  * a frame of the page before. Only a change reaches the navbar, so a page that
- * re-renders on every poll leaves the bar alone.
+ * re-renders on every poll leaves the bar alone. Unmounting resets the bar.
  */
 export function useAppNavbar(state: NavbarState) {
   const show = useContext(NavbarContext);
@@ -63,6 +63,15 @@ export function useAppNavbar(state: NavbarState) {
     shown.current = state;
     show(state);
   });
+  // React runs every cleanup in a commit before any setup, so the next page's
+  // state lands after this reset.
+  useLayoutEffect(
+    () => () => {
+      shown.current = undefined;
+      show(NO_WEEK);
+    },
+    [show],
+  );
 }
 
 /**
