@@ -17,7 +17,7 @@ The `ui-style` skill maps each piece of UI to its token, mixin, or class.
   the room it needs outside a control a scrolling ancestor would clip it against
 - `_ink.scss`: `ink-height`, an icon drawn as tall as the text beside it, the
   faces' cap shares, and `live-dot`, the one red dot for a game being played
-- `_a11y.scss`: `visually-hidden`
+- `_a11y.scss`: `visually-hidden` and `visually-hidden-reset`, which undoes it
 - `_layout.scss`: `$content-width`, the column the navbar and pages stand in,
   `stacked`, and `dialog-column`
 - `_page.scss`: `page-body` and its scroll fill, and the game card frame and band,

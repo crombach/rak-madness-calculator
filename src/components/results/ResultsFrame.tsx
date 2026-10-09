@@ -146,9 +146,8 @@ type Opened =
  * The page a week's results are shown on, and the wireframe that stands in for
  * them.
  *
- * Shared by every route that can end up waiting. A redirect shows this wireframe
- * while it works out where it is going. The results arrive in that same
- * wireframe.
+ * Rendered by `ResultsLayout` for every results route, including the shortcut
+ * routes and a bare week URL, so one frame stays mounted until the page lands.
  */
 export default memo(function ResultsFrame({
   view,

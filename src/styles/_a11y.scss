@@ -19,3 +19,16 @@
   white-space: nowrap;
   border: 0;
 }
+
+/** Undoes `visually-hidden`, for an element shown again at some widths. */
+@mixin visually-hidden-reset {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
+  border: 0;
+}

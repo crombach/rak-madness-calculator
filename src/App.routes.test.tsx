@@ -136,6 +136,7 @@ describe("the app: the URL decides which week is fetched, and what shows while i
     const frame = document.querySelector(".page");
     expect(frame).toBeInTheDocument();
     expect(document.querySelector(".results-caption")).toHaveClass("--loading");
+    expect(document.querySelector(".table.--skeleton")).toBeInTheDocument();
 
     await screen.findByText("MNF Points Pick");
     expect(document.querySelector(".page")).toBe(frame);
