@@ -14,7 +14,7 @@ import {
   useIsWeekSettled,
   useScoringStatus,
 } from "../../context/AppDataContext";
-import { useSettings } from "../../context/SettingsContext";
+import { useSetting } from "../../context/SettingsContext";
 import { errorToast, useToastActions } from "../../context/ToastContext";
 import { GameStatusContextProvider } from "../../context/GameStatusContext";
 import { PlayerAnalysisContextProvider } from "../../context/PlayerAnalysisContext";
@@ -204,7 +204,7 @@ export default memo(function ResultsFrame({
     showToast(errorToast("Failed to open that. Reload the page to try again."));
   }, [showToast]);
 
-  const { experimentalFeatures } = useSettings();
+  const experimentalFeatures = useSetting("experimentalFeatures");
 
   // Fetched ahead, alongside the week, so the menu's link lands on the page
   // rather than on a frame of wireframe while its chunk arrives.
