@@ -67,6 +67,10 @@ export default function ScoresNavbar({
 }: {
   /** `null` where neither view is open, so neither button reads as selected. */
   view: ScoresView | null;
+  /**
+   * Navigate synchronously. An update after an await leaves the transition and
+   * the tapped key falls back.
+   */
   onViewChange: (view: ScoresView) => void;
   onRefresh: () => void;
   isRefreshing: boolean;
