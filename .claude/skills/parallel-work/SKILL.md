@@ -36,9 +36,9 @@ One `package.json`, but two TypeScript roots. The root `tsconfig.json` excludes 
 
 - `src/components/results/` — imports `gameStatus/`, `navbar/`, `pageLayout/`, `playerAnalysis/`, and `table/`. `src/components/home/HomePage.tsx` imports `results/resultsPath`, and `src/App.tsx` imports four of its route files.
 - `src/components/settings/` — `navbar/NavMenu.tsx` imports its dialog and `useSettingsSeen`, so the settings and the menu's Settings item move together.
-- `src/components/navbar/` — four `.tsx` and `.scss` pairs (`Navbar`, `ScoresNavbar`, `NavMenu`, `LogoButton`), not one. `NavMenu` imports `settings/`. `pageLayout/` and `table/` both import it.
+- `src/components/navbar/` — four `.tsx` and `.scss` pairs (`Navbar`, `ScoresNavbar`, `NavMenu`, `LogoButton`) plus `AppNavbar.tsx`, the layout route `src/App.tsx` mounts. `NavMenu` imports `settings/`. `AppNavbar` and `ScoresNavbar` import `results/resultsPath`. `home/` and `results/` import `AppNavbar`.
 - `src/components/table/` — imports `table/playerName/`, and `playerAnalysis/` and `results/` import `table/`.
-- `src/components/pageLayout/` — imported by `home/` and `results/`.
+- `src/components/pageLayout/` — two-way with `navbar/`: `PageLayout` imports `navbar/Navbar`, `navbar/AppNavbar` imports `PageFrame`. Edit the two together. Also imported by `home/`, `results/`, `comparePlayers/`, `games/`, `knockouts/` and `table/`.
 - `src/components/gameStatus/` and `src/components/playerAnalysis/` — each a dialog over `dialog/`, and `results/` mounts both.
 
 ## Cleared
