@@ -104,7 +104,10 @@ describe("the app, results views", () => {
     });
     // A refresh that worked says nothing. The rescored table is the whole of the
     // answer, so a toast over it would only repeat what it shows.
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    // A toast still playing its exit is inert, and no longer counts.
+    expect(
+      document.querySelector(".toast-slot:not([data-leaving]) .toast"),
+    ).not.toBeInTheDocument();
   });
 
   it("reports a scoring failure instead of crashing", async () => {

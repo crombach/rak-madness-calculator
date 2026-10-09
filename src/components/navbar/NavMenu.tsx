@@ -11,6 +11,8 @@ import { useSettings } from "../../context/SettingsContext";
 import cssMediaQuery from "../../hooks/cssMediaQuery";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import getClasses from "../../utils/getClasses";
+import lazyPreloadable from "../../utils/lazyPreloadable";
+import doNothing from "../../utils/doNothing";
 import { buttonClasses } from "../button/Button";
 import {
   CloseIcon,
@@ -23,7 +25,6 @@ import {
 } from "../icon/Icon";
 import { BETA_MARK, BETA_WORD } from "./LogoButton";
 import resultsPath, { RESULTS_PAGE, weekName } from "../results/resultsPath";
-import SettingsDialog from "../settings/SettingsDialog";
 import useSettingsSeen from "../settings/useSettingsSeen";
 import "./NavMenu.scss";
 
@@ -89,7 +90,30 @@ const ITEMS: Array<NavItem> = [HOME, GAMES, KNOCKOUTS, COMPARE_PLAYERS];
 const SETTINGS_LABEL = "Settings";
 
 /** The one item that opens a dialog over the page rather than leading away. */
-type SettingsEntry = { onOpen: () => void; isUnseen: boolean };
+type SettingsEntry = {
+  onOpen: () => void;
+  isUnseen: boolean;
+  /** Fetches the dialog ahead of its first open. */
+  warm: () => void;
+  /** Settles once the dialog's chunk is in, so a first open never mounts it half-drawn. */
+  ready: () => Promise<void>;
+};
+
+// Out of the entry, since most visits never open it. Fetched when a menu opens, so
+// the Settings tap that follows finds it in.
+const settingsDialog = lazyPreloadable(
+  () => import("../settings/SettingsDialog"),
+  null,
+);
+const SettingsDialog = settingsDialog.Page;
+
+/** Opens or closes a menu, and fetches Settings as it opens. */
+function warmOnOpen(setOpen: (next: boolean) => void, warm: () => void) {
+  return (next: boolean) => {
+    setOpen(next);
+    if (next) warm();
+  };
+}
 
 const TRIGGER_CLASSES = buttonClasses({ compact: true, iconOnly: true });
 
@@ -116,6 +140,9 @@ export default function NavMenu({
   const playerCount = useScores()?.scores.length;
   const { experimentalFeatures } = useSettings();
   const [isSettingsOpen, setSettingsOpen] = useState(false);
+  // Mounted once its chunk is in, so the chunk waits for a menu to open and the
+  // dialog is already there, closed, for its first open to animate from.
+  const [isSettingsWarm, setSettingsWarm] = useState(settingsDialog.isLoaded);
   const [hasSeenSettings, markSettingsSeen] = useSettingsSeen();
 
   const context: NavContext = {
@@ -144,6 +171,16 @@ export default function NavMenu({
       markSettingsSeen();
     },
     isUnseen: !hasSeenSettings,
+    warm: () => {
+      if (settingsDialog.isLoaded()) return;
+      void settingsDialog
+        .preload()
+        .then(() => setSettingsWarm(true), doNothing);
+    },
+    ready: () =>
+      settingsDialog.isLoaded()
+        ? Promise.resolve()
+        : settingsDialog.preload().then(doNothing, doNothing),
   };
 
   return (
@@ -160,7 +197,9 @@ export default function NavMenu({
       ) : (
         <NavPopup links={links} settings={settings} />
       )}
-      <SettingsDialog open={isSettingsOpen} onOpenChange={setSettingsOpen} />
+      {(isSettingsWarm || isSettingsOpen) && (
+        <SettingsDialog open={isSettingsOpen} onOpenChange={setSettingsOpen} />
+      )}
     </>
   );
 }
@@ -226,7 +265,7 @@ function NavPopup({
   // that travel in the browsers that report it, so it hangs off a box that stays.
   const anchorRef = useRef<HTMLSpanElement>(null);
   return (
-    <Menu.Root open={open} onOpenChange={setOpen}>
+    <Menu.Root open={open} onOpenChange={warmOnOpen(setOpen, settings.warm)}>
       <span ref={anchorRef} className="nav-menu__anchor">
         <Menu.Trigger className={TRIGGER_CLASSES} aria-label="Menu">
           <MenuIcon />
@@ -275,7 +314,7 @@ function NavPopup({
               className={getClasses("nav-menu__item", {
                 "nav-menu__settings--unseen": settings.isUnseen,
               })}
-              onClick={settings.onOpen}
+              onClick={() => void settings.ready().then(settings.onOpen)}
             >
               <SettingsIcon />
               {SETTINGS_LABEL}
@@ -361,14 +400,27 @@ function NavDrawer({
   title?: string;
 }) {
   const [open, setOpen] = useOpenUntilNavigated();
+  // True from the Settings tap until the drawer is gone, so its scrim can hold.
+  const [isHandingOff, setHandingOff] = useState(false);
 
   return (
-    <Drawer.Root open={open} onOpenChange={setOpen} swipeDirection="right">
+    <Drawer.Root
+      open={open}
+      onOpenChange={warmOnOpen(setOpen, settings.warm)}
+      onOpenChangeComplete={(isOpen) => {
+        if (!isOpen) setHandingOff(false);
+      }}
+      swipeDirection="right"
+    >
       <Drawer.Trigger className={TRIGGER_CLASSES} aria-label="Menu">
         <MenuIcon />
       </Drawer.Trigger>
       <Drawer.Portal>
-        <Drawer.Backdrop className="nav-drawer__backdrop" />
+        <Drawer.Backdrop
+          className={getClasses("nav-drawer__backdrop", {
+            "nav-drawer__backdrop--handoff": isHandingOff,
+          })}
+        />
         <Drawer.Viewport className="nav-drawer__viewport">
           <Drawer.Popup className="nav-drawer__popup">
             <header className="nav-drawer__header">
@@ -425,10 +477,13 @@ function NavDrawer({
                     className={getClasses("nav-drawer__item", {
                       "nav-menu__settings--unseen": settings.isUnseen,
                     })}
-                    onClick={() => {
-                      setOpen(false);
-                      settings.onOpen();
-                    }}
+                    onClick={() =>
+                      void settings.ready().then(() => {
+                        setHandingOff(true);
+                        setOpen(false);
+                        settings.onOpen();
+                      })
+                    }
                   >
                     <SettingsIcon />
                     {SETTINGS_LABEL}

@@ -3,12 +3,10 @@
 $toasterWidth: min(calc(100% - 48px), 400px);
 
 .toaster {
-  // Above everything. A toast can be raised while the dialog is open, and it is
-  // the newest thing on screen wherever it lands.
+  // The top of the page's own layers. A dialog sits above it.
   z-index: var(--rak-z-toast);
   display: flex;
   flex-direction: column-reverse;
-  gap: var(--rak-space-3);
   position: fixed;
   bottom: 0;
   left: 50%;
@@ -22,7 +20,60 @@ $toasterWidth: min(calc(100% - 48px), 400px);
   margin-bottom: calc(var(--rak-space-6) + env(safe-area-inset-bottom, 0px));
 }
 
+@keyframes rak-toast-in {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+  to {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+}
+
+// The clip a collapsing slot needs, held through the entrance only. A slot at rest
+// leaves its toast's shadow uncut.
+@keyframes rak-toast-clip {
+  from,
+  to {
+    overflow: hidden;
+  }
+}
+
+// The grid row eases between the toast's height and nothing, the one way to
+// animate an auto height. A toast arriving or leaving moves the others on the same
+// easing instead of in one frame.
+.toast-slot {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows var(--toast-exit-duration) var(--rak-ease-standard),
+    opacity var(--toast-exit-duration) var(--rak-ease-standard);
+  animation: rak-toast-in var(--toast-exit-duration) var(--rak-ease-standard);
+
+  &[data-leaving] {
+    // The entrance would otherwise hold the rows and opacity it sets, so a toast
+    // leaving mid-entrance would grow on, then snap.
+    animation: none;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.toast-slot__inner {
+  // A grid item's automatic minimum is its content, which stops the row collapsing.
+  min-height: 0;
+  animation: rak-toast-clip var(--toast-exit-duration) var(--rak-ease-standard);
+
+  .toast-slot[data-leaving] > & {
+    overflow: hidden;
+  }
+}
+
 .toast {
+  // The gap above each toast sits inside its slot, so a collapsing slot takes it along.
+  margin-top: var(--rak-space-3);
   display: flex;
   align-items: flex-start;
   gap: var(--rak-space-3);
