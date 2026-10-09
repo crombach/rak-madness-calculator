@@ -21,6 +21,7 @@ import {
 } from "./espnCache";
 import espnScoreboardUrl from "./espnScoreboardUrl";
 import { getRegularSeasonWeekCount } from "./getLeagueInfo";
+import { readSettledWeek } from "./settledWeeksCache";
 import { findMatchup, indexResults } from "./scoring/resultsIndex";
 
 /**
@@ -651,6 +652,10 @@ function inDateOrder(
  * it. Changing the picks changes which matchups are asked about, and a matchup that
  * moved has nothing stored under its new name, so the week is fetched again.
  *
+ * Matchups still being read off the workbook start the scoreboard request beside
+ * them, since it asks nothing of the picks. A week that settled the last time this
+ * browser scored it waits for them instead, as the cache likely answers it whole.
+ *
  * @param week week in the season (week 1 is the first NFL week)
  * @param matchups the games the picks describe
  * @param season the year the season started in, current season if left out
@@ -658,14 +663,25 @@ function inDateOrder(
 export async function getLeagueResults(
   league: League,
   week: WeekInfo,
-  matchups: Array<Set<string>>,
+  matchups: Array<Set<string>> | Promise<Array<Set<string>>>,
   season?: number,
 ): Promise<Array<LeagueResult>> {
-  const keys = matchups.map(matchupKey);
   // "Whichever season is running" is not something an answer can be filed under, so a
   // week with no season named is always fetched.
   const held =
     season != null ? readCachedResults(season, week.value, league) : {};
+  const mayBeHeld =
+    season != null &&
+    readSettledWeek(season, week.value) &&
+    Object.keys(held).length > 0;
+  const early =
+    matchups instanceof Promise && !mayBeHeld
+      ? getLeagueEvents(league, week, season)
+      : undefined;
+  // Unread where the matchups fail or the cache answers them all.
+  early?.catch(() => undefined);
+  const wanted = await matchups;
+  const keys = wanted.map(matchupKey);
   if (keys.every((key) => key in held)) {
     const settled = [...new Set(keys)]
       .map((key) => held[key])
@@ -674,14 +690,14 @@ export async function getLeagueResults(
     return inDateOrder(league, settled);
   }
 
-  const events = await getLeagueEvents(league, week, season);
+  const events = await (early ?? getLeagueEvents(league, week, season));
   debugLog(`${league} events`, events);
 
   // The keys the picks ask about, split by how a column names its game.
   // A college answer runs hundreds of events, looked up not walked per game.
   const wantedPairs = new Set<string>();
   const wantedTeams = new Set<string>();
-  matchups.forEach((teams, index) => {
+  wanted.forEach((teams, index) => {
     if (teams.size === 2) wantedPairs.add(keys[index]);
     if (teams.size === 1) wantedTeams.add(keys[index]);
   });
@@ -695,7 +711,7 @@ export async function getLeagueResults(
   // already in fetch order, so it picks the same game every lookup by team will.
   const index = indexResults(results);
   const found = new Map<string, CachedGame>();
-  matchups.forEach((teams, position) => {
+  wanted.forEach((teams, position) => {
     if (found.has(keys[position])) return;
     found.set(keys[position], findMatchup(index, teams) ?? null);
   });

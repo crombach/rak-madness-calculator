@@ -12,6 +12,7 @@ import {
 import { League, WeekInfo } from "../types/League";
 import { getLeagueResults } from "./getLeagueResults";
 import { stubFetch } from "../appTestFixtures";
+import { writeSettledWeek } from "./settledWeeksCache";
 
 vi.mock("./getLeagueInfo");
 
@@ -1194,5 +1195,61 @@ describe("getLeagueResults, finish times", () => {
     expect(game.shortName).toBe("KC @ BUF");
     expect(game.finishedAt).toBeUndefined();
     expect(urlsOf(fetchMock)).toHaveLength(2);
+  });
+});
+
+describe("getLeagueResults, matchups still being read", () => {
+  const SEASON = 2024;
+
+  /** Matchups that arrive only once the case says so. */
+  function pendingMatchups() {
+    let resolve: (matchups: Array<Set<string>>) => void = () => undefined;
+    const matchups = new Promise<Array<Set<string>>>((done) => {
+      resolve = done;
+    });
+    return { matchups, resolve };
+  }
+
+  /** Lets the calendar read in front of the scoreboard request run. */
+  const settle = () => new Promise((done) => setTimeout(done, 0));
+
+  it("asks for the scoreboard before the matchups arrive", async () => {
+    const fetchMock = mockFetch([bufVsKc]);
+    const { matchups, resolve } = pendingMatchups();
+
+    const results = getLeagueResults(League.PRO, WEEK, matchups, SEASON);
+    await settle();
+
+    expect(urlsOf(fetchMock)).toHaveLength(1);
+    resolve([BUF_KC]);
+    expect((await results).map((game) => game.id)).toEqual([bufVsKc.id]);
+    expect(urlsOf(fetchMock)).toHaveLength(1);
+  });
+
+  it("waits for the matchups of a settled week it holds, and asks nothing", async () => {
+    const fetchMock = mockFetch([bufVsKc]);
+    const first = await getLeagueResults(League.PRO, WEEK, [BUF_KC], SEASON);
+    writeSettledWeek(SEASON, WEEK.value, true);
+    const { matchups, resolve } = pendingMatchups();
+
+    const again = getLeagueResults(League.PRO, WEEK, matchups, SEASON);
+    await settle();
+    resolve([BUF_KC]);
+
+    expect(await again).toEqual(first);
+    expect(urlsOf(fetchMock)).toHaveLength(1);
+  });
+
+  it("fails with the matchups when they cannot be read", async () => {
+    mockFetch([bufVsKc]);
+
+    await expect(
+      getLeagueResults(
+        League.PRO,
+        WEEK,
+        Promise.reject(new Error("not a workbook")),
+        SEASON,
+      ),
+    ).rejects.toThrow("not a workbook");
   });
 });

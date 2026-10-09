@@ -255,17 +255,23 @@ export default function usePlayerScores(
         passes.beginFetching(leagues);
         const fetched = await step("fetch", async () => {
           try {
-            const parsed = await parsePicksWorkbook(buffer);
-            return await fetchLeagueResults({
-              leagues,
-              week: selectedWeek,
-              season,
-              matchups: {
-                college: parsed.collegeMatchups,
-                pro: parsed.proMatchups,
-              },
-              held,
-            });
+            const matchups = parsePicksWorkbook(buffer).then((parsed) => ({
+              college: parsed.collegeMatchups,
+              pro: parsed.proMatchups,
+            }));
+            // Awaited beside the fetch, so a workbook that will not parse fails
+            // the pass even where no league reads its matchups.
+            const [results] = await Promise.all([
+              fetchLeagueResults({
+                leagues,
+                week: selectedWeek,
+                season,
+                matchups,
+                held,
+              }),
+              matchups,
+            ]);
+            return results;
           } finally {
             passes.endFetching(leagues, asked);
           }

@@ -37,6 +37,9 @@ function gameState(result: LeagueResult): string {
  * reason to fetch that league and no reason at all to fetch the other. A league
  * named here is always fetched, and so is a league `held` has nothing for, which
  * is what stops a week switch being served the week before it.
+ *
+ * `matchups` may still be on its way, so the scoreboard need not wait on the
+ * workbook it is read from.
  */
 export async function fetchLeagueResults({
   leagues,
@@ -48,7 +51,9 @@ export async function fetchLeagueResults({
   leagues: ReadonlyArray<LeagueKey>;
   week: WeekInfo;
   season?: number;
-  matchups: Record<LeagueKey, Array<Set<string>>>;
+  matchups:
+    | Record<LeagueKey, Array<Set<string>>>
+    | Promise<Record<LeagueKey, Array<Set<string>>>>;
   held?: LeagueResults;
 }): Promise<LeagueResults> {
   const fetched = await Promise.all(
@@ -62,7 +67,9 @@ export async function fetchLeagueResults({
         await getLeagueResults(
           ESPN_LEAGUE[league],
           week,
-          matchups[league],
+          matchups instanceof Promise
+            ? matchups.then((byLeague) => byLeague[league])
+            : matchups[league],
           season,
         ),
       ];
