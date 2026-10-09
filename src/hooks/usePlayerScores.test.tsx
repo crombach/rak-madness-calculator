@@ -335,6 +335,35 @@ describe("usePlayerScores, refresh", () => {
     expect(result.current.isRefreshing).toBe(false);
   });
 
+  it("changes nothing the status reads for a poll that finds nothing moved", async () => {
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const seen: Array<boolean> = [];
+    const { result } = renderHook(
+      () => {
+        const scored = usePlayerScores(WEEK_5, SEASON);
+        seen.push(scored.isScoresLoading);
+        return scored;
+      },
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+    fetchLeagueResultsMock.mockResolvedValue(movedWeek(7));
+    await act(async () => {
+      ageAnswers();
+      await result.current.rescore([League.PRO]);
+    });
+    const attempted = result.current.attemptedFor;
+    seen.length = 0;
+
+    await act(async () => {
+      ageAnswers();
+      await result.current.rescore([League.PRO]);
+    });
+
+    expect(seen).not.toContain(true);
+    expect(result.current.attemptedFor).toBe(attempted);
+  });
+
   it("hands a poll back what it fetched, whether or not anything moved", async () => {
     // The dialog draws a clock and a down off this, and neither costs a rescore.
     getPlayerScoresMock.mockResolvedValue(scoresFor(5));

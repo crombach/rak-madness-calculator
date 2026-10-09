@@ -233,7 +233,9 @@ export default function usePlayerScores(
       const attempt = ++latestAttempt.current;
       const isLatest = () => latestAttempt.current === attempt;
       passes.setAttemptInFlight(true);
-      setScoresLoading(true);
+      // A gated pass says it is loading only once the gate lets it through, so a
+      // poll that finds nothing moved costs the tree no render.
+      if (!gateOnMovement) setScoresLoading(true);
 
       const attempted = { season, weekNumber: selectedWeek.value };
       const key = weekKey(attempted.season, attempted.weekNumber);
@@ -311,6 +313,7 @@ export default function usePlayerScores(
           return fetched;
         }
         turn.start();
+        setScoresLoading(true);
         scoredResults = fetched;
 
         const nextScores = await step("score", () =>
@@ -356,7 +359,13 @@ export default function usePlayerScores(
       } finally {
         if (isLatest()) {
           setScoresLoading(false);
-          setAttemptedFor(attempted);
+          // The same week kept as the same object, so the status memo holds.
+          setAttemptedFor((before) =>
+            before?.season === attempted.season &&
+            before.weekNumber === attempted.weekNumber
+              ? before
+              : attempted,
+          );
           passes.setAttemptInFlight(false);
           passes.drainRescore();
         }
