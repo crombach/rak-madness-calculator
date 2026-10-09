@@ -6,11 +6,43 @@ import Navbar from "../navbar/Navbar";
 import PullIndicator from "./PullIndicator";
 import "./PageLayout.scss";
 
-/** The chrome every page shares: the navbar and the main area. */
-export default function PageLayout({
-  title,
+/**
+ * The box every page stands in: the navbar, then the page, then the note a
+ * sideways phone gets. Rendered once for the whole app, so the navbar stays
+ * mounted from one page to the next.
+ */
+export function PageFrame({
   navbarLeft,
   navbarRight,
+  children,
+}: PropsWithChildren<{ navbarLeft: ReactNode; navbarRight?: ReactNode }>) {
+  return (
+    <div className="page">
+      <a className="page__skip-link" href="#main">
+        Skip to results
+      </a>
+      <Navbar left={navbarLeft} right={navbarRight} />
+      {children}
+      {/*
+        Drawn only on a sideways phone, covering the page. Otherwise
+        `display: none`, out of the accessibility tree, not just off screen.
+      */}
+      <div className="page__rotate">
+        <span className="page__rotate-icon">
+          <ScreenRotationIcon />
+        </span>
+        <p className="page__rotate-message">Turn your phone upright</p>
+        <p className="page__rotate-detail">
+          Rakulator does not support landscape on a phone.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/** One page's main area, under the navbar `PageFrame` draws. */
+export default function PageLayout({
+  title,
   showingResults = false,
   scrollable = true,
   pull,
@@ -23,8 +55,6 @@ export default function PageLayout({
    * `<h1>` gives a screen reader nothing to say about where it has landed.
    */
   title: string;
-  navbarLeft: ReactNode;
-  navbarRight?: ReactNode;
   showingResults?: boolean;
   /**
    * Set false to refuse the pointer, so what is on screen cannot be scrolled or
@@ -53,11 +83,7 @@ export default function PageLayout({
   const isPullArmed = usePullToRefresh({ scrollRef: contentRef, pull });
 
   return (
-    <div className="page">
-      <a className="page__skip-link" href="#main">
-        Skip to results
-      </a>
-      <Navbar left={navbarLeft} right={navbarRight} />
+    <>
       {isPullArmed && <PullIndicator />}
       <main
         id="main"
@@ -70,19 +96,6 @@ export default function PageLayout({
         <h1 className="page__title">{title}</h1>
         {children}
       </main>
-      {/*
-        Drawn only on a sideways phone, covering the page. Otherwise
-        `display: none`, out of the accessibility tree, not just off screen.
-      */}
-      <div className="page__rotate">
-        <span className="page__rotate-icon">
-          <ScreenRotationIcon />
-        </span>
-        <p className="page__rotate-message">Turn your phone upright</p>
-        <p className="page__rotate-detail">
-          Rakulator does not support landscape on a phone.
-        </p>
-      </div>
-    </div>
+    </>
   );
 }

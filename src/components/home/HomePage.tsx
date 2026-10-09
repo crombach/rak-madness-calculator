@@ -11,9 +11,10 @@ import getClasses from "../../utils/getClasses";
 import Button from "../button/Button";
 import Footer from "../footer/Footer";
 import LabeledSelect from "./LabeledSelect";
-import AppNavbar from "../navbar/AppNavbar";
+import { useAppNavbar } from "../navbar/AppNavbar";
 import { APP_NAME } from "../navbar/LogoButton";
-import resultsPath, { RESULTS_PAGE } from "../results/resultsPath";
+import PageLayout from "../pageLayout/PageLayout";
+import resultsPath, { RESULTS_PAGE, ScoresView } from "../results/resultsPath";
 import "./HomePage.scss";
 
 /** Title case, to read like the week labels ESPN sends. */
@@ -58,22 +59,26 @@ export default function HomePage() {
   const isBusy = isWeeksLoading || isScoresLoading;
   const hasNoScoresYet = !selectedWeek || isBusy || !scores;
 
+  const weekValue = selectedWeek?.value;
+  const onViewChange = useCallback(
+    (view: ScoresView) => navigate(resultsPath(loadedSeason, weekValue, view)),
+    [navigate, loadedSeason, weekValue],
+  );
+  useAppNavbar({
+    view: null,
+    // Shown here too, disabled until there is a week to switch between. No live
+    // refresh: there is no week open yet to poll a game against.
+    disabled: hasNoScoresYet,
+    noWeekYet: hasNoScoresYet,
+    isWeekLive: false,
+    onViewChange,
+    season: loadedSeason,
+    week: weekValue,
+    pagesDisabled: hasNoScoresYet,
+  });
+
   return (
-    <AppNavbar
-      title={APP_NAME}
-      view={null}
-      // Shown here too, disabled until there is a week to switch between. No live
-      // refresh: there is no week open yet to poll a game against.
-      disabled={hasNoScoresYet}
-      noWeekYet={hasNoScoresYet}
-      isWeekLive={false}
-      onViewChange={(view) =>
-        navigate(resultsPath(loadedSeason, selectedWeek?.value, view))
-      }
-      season={loadedSeason}
-      week={selectedWeek?.value}
-      pagesDisabled={hasNoScoresYet}
-    >
+    <PageLayout title={APP_NAME}>
       {/*
         Only the first load hides the controls. Switching seasons disables them
         instead, so the picker the user just used does not vanish under them.
@@ -165,6 +170,6 @@ export default function HomePage() {
           <Footer />
         </>
       )}
-    </AppNavbar>
+    </PageLayout>
   );
 }

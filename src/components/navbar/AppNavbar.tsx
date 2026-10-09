@@ -1,36 +1,22 @@
-import { ComponentProps } from "react";
-import { useNavigate } from "react-router";
+import {
+  ComponentProps,
+  createContext,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Outlet, useNavigate } from "react-router";
 import doNothing from "../../utils/doNothing";
-import PageLayout from "../pageLayout/PageLayout";
+import { PageFrame } from "../pageLayout/PageLayout";
 import { ScoresView } from "../results/resultsPath";
 import LogoButton from "./LogoButton";
 import NavMenu from "./NavMenu";
 import ScoresNavbar from "./ScoresNavbar";
 
-type Chrome = Omit<
-  ComponentProps<typeof PageLayout>,
-  "navbarLeft" | "navbarRight"
->;
-
-/**
- * The page and the navbar every route puts on it: the logo home, the view
- * switch with its refresh, and the menu. Shown on the home page and the results
- * routes alike, so the bar looks the same before its own routes exist as it
- * does on them.
- */
-export default function AppNavbar({
-  view,
-  onViewChange,
-  onRefresh = doNothing,
-  isRefreshing = false,
-  disabled,
-  noWeekYet,
-  isWeekLive,
-  season,
-  week,
-  pagesDisabled,
-  ...page
-}: Chrome & {
+/** What the page on show sets in the navbar. */
+type NavbarState = {
   view: ScoresView | null;
   onViewChange: (view: ScoresView) => void;
   onRefresh?: () => void;
@@ -43,26 +29,96 @@ export default function AppNavbar({
   week: ComponentProps<typeof NavMenu>["week"];
   /** Disables every menu page but Home and Settings. */
   pagesDisabled: boolean;
-}) {
+};
+
+/** The navbar of a page with no week to show: every control disabled. */
+const NO_WEEK: NavbarState = {
+  view: null,
+  onViewChange: doNothing,
+  disabled: true,
+  noWeekYet: true,
+  isWeekLive: false,
+  season: undefined,
+  week: undefined,
+  pagesDisabled: true,
+};
+
+const NavbarContext = createContext<(state: NavbarState) => void>(doNothing);
+
+function isSameState(a: NavbarState, b: NavbarState) {
+  const keys = Object.keys({ ...a, ...b }) as Array<keyof NavbarState>;
+  return keys.every((key) => Object.is(a[key], b[key]));
+}
+
+/**
+ * Sets the navbar for the page calling it. Before paint, so the bar never shows
+ * a frame of the page before. Only a change reaches the navbar, so a page that
+ * re-renders on every poll leaves the bar alone.
+ */
+export function useAppNavbar(state: NavbarState) {
+  const show = useContext(NavbarContext);
+  const shown = useRef<NavbarState>(undefined);
+  useLayoutEffect(() => {
+    if (shown.current != null && isSameState(shown.current, state)) return;
+    shown.current = state;
+    show(state);
+  });
+}
+
+/**
+ * The layout route above every page: the logo home, the view switch with its
+ * refresh, and the menu. Mounted once, so an open menu closes the same way on
+ * every page it leads to. Each page sets what it shows through `useAppNavbar`.
+ */
+export default function AppNavbar() {
   const navigate = useNavigate();
+  const [
+    {
+      view,
+      onViewChange,
+      onRefresh = doNothing,
+      isRefreshing = false,
+      disabled,
+      noWeekYet,
+      isWeekLive,
+      season,
+      week,
+      pagesDisabled,
+    },
+    setState,
+  ] = useState(NO_WEEK);
+  // Held once, so a change to the navbar does not re-render the page.
+  const page = useMemo(() => <Outlet />, []);
   return (
-    <PageLayout
-      {...page}
-      navbarLeft={<LogoButton onClick={() => navigate("/")} />}
-      navbarRight={
-        <>
-          <ScoresNavbar
-            view={view}
-            disabled={disabled}
-            noWeekYet={noWeekYet}
-            isWeekLive={isWeekLive}
-            onViewChange={onViewChange}
-            onRefresh={onRefresh}
-            isRefreshing={isRefreshing}
-          />
-          <NavMenu season={season} week={week} pagesDisabled={pagesDisabled} />
-        </>
-      }
-    />
+    <NavbarContext.Provider value={setState}>
+      <PageFrame
+        navbarLeft={<LogoButton onClick={() => navigate("/")} />}
+        navbarRight={
+          <>
+            <ScoresNavbar
+              view={view}
+              disabled={disabled}
+              noWeekYet={noWeekYet}
+              isWeekLive={isWeekLive}
+              onViewChange={onViewChange}
+              onRefresh={onRefresh}
+              isRefreshing={isRefreshing}
+            />
+            <NavMenu
+              season={season}
+              week={week}
+              pagesDisabled={pagesDisabled}
+            />
+          </>
+        }
+      >
+        {page}
+      </PageFrame>
+    </NavbarContext.Provider>
   );
+}
+
+/** For a page with no week to show, so the navbar holds its shape. */
+export function useNoWeekNavbar() {
+  useAppNavbar(NO_WEEK);
 }

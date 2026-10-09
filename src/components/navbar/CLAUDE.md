@@ -1,7 +1,8 @@
 # navbar
 
-- `AppNavbar`: `PageLayout` with the logo, `ScoresNavbar` and `NavMenu`, for
-  the home page and `ResultsFrame`.
+- `AppNavbar`: the layout route above every page. One `PageFrame` with the
+  logo, `ScoresNavbar` and `NavMenu`, mounted across every route change. A page
+  sets the bar through `useAppNavbar`, before paint and only on a change.
 - `Navbar`: `<header>` with `left`/`right` `ReactNode` slots, solid primary fill.
   `.navbar__divider` marks a group split, reused by `ScoresNavbar` and `NavMenu`.
 - `ScoresNavbar`: the results routes' scoreboard/picks switch, led by a live

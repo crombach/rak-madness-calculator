@@ -1,7 +1,7 @@
 # pageLayout
 
-`PageLayout`: the chrome every page shares, documented on the component itself.
-Its `pull` prop arms `usePullToRefresh` on the scrolling area and draws
+`PageFrame`: the box `AppNavbar` draws once, navbar included. `PageLayout`: one
+page's main area inside it. Its `pull` prop arms `usePullToRefresh` on the scrolling area and draws
 `PullIndicator`, the puck a pull brings out from under the navbar.
 
 It also holds the note covering a phone turned on its side, on every page. A

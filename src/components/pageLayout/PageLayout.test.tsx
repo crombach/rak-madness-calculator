@@ -7,7 +7,7 @@ const SCROLLED = 120;
 function layout(scrollKey: string) {
   return (
     <MemoryRouter>
-      <PageLayout title="Page" navbarLeft={null} scrollKey={scrollKey}>
+      <PageLayout title="Page" scrollKey={scrollKey}>
         content
       </PageLayout>
     </MemoryRouter>
