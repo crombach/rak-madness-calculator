@@ -68,12 +68,6 @@
   cursor: pointer;
   // The key's travel and the edge it stands on are timed with its fill, so a
   // press is one move rather than a color easing while the face jumps.
-  //
-  // This order (background-color, color, transform, box-shadow) is read
-  // positionally by every `transition-delay` override below, `--selectable`'s
-  // included, since a custom property cannot carry a delay. One that changes
-  // value on the same state change it delays reads its own stale value, and
-  // never delays anything.
   transition:
     background-color var(--rak-duration-fast) var(--rak-ease-standard),
     color var(--rak-duration-fast) var(--rak-ease-standard),
@@ -132,31 +126,8 @@
     // primary, and the offset gap shows that fill too.
     --rak-focus-ring: var(--rak-on-solid);
 
-    // A key that can be chosen (`selected` was passed at all, whether or not
-    // it is right now) gets a pause before its release plays. The browser
-    // drops `:active` the instant the pointer lifts, a render tick before
-    // React can add `--selected`. Without the pause, letting go of the key
-    // that is about to be chosen springs it back to rest and then down again,
-    // instead of staying down. `:active` and `--selected` both clear the
-    // pause below, so pressing, and a key already chosen, still move at once.
-    //
-    // Only under the pointer or keyboard focus, which is where a release
-    // happens. A key coming out of `:disabled` on its own rises with every
-    // other key, not a pause behind them. Nor a key pressed while chosen. That
-    // press turns it off, so the pause only makes it slow to rise. `:where`
-    // keeps all three out of the specificity, so the rules below still clear
-    // the pause.
-    &.--selectable:where(:hover, :focus-visible):where(
-        :not([data-was-selected])
-      ) {
-      transition-delay:
-        var(--rak-duration-fast), 0s, var(--rak-duration-fast),
-        var(--rak-duration-fast);
-    }
-
     // Not once a finger has lifted, which Firefox on Android can leave `:active`.
     &:active:not([data-released]) {
-      transition-delay: 0s;
       @include key(var(--rak-key-pressed));
     }
 
@@ -164,7 +135,6 @@
     // does and stays there. After `:active`, so pressing the key already chosen
     // moves nothing.
     &.--selected {
-      transition-delay: 0s;
       @include key(var(--rak-key-pressed));
     }
 
@@ -173,14 +143,12 @@
     // stays down until the work does end. The pointer leaves mid-work more often
     // than not, and `:active` is gone the moment it does.
     &.--busy {
-      transition-delay: 0s;
       @include key(var(--rak-key-pressed));
     }
 
     // A key holding a menu or dialog open stays down until that closes. Base UI
     // sets the attribute on its own triggers, and `popupOpen` on `Button`.
     &[data-popup-open] {
-      transition-delay: 0s;
       @include key(var(--rak-key-pressed));
     }
 

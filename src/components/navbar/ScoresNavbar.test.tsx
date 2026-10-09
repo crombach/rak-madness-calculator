@@ -1,7 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import { act } from "react";
-import { RESULTS_PAGE } from "../results/resultsPath";
+import { Suspense, act, startTransition, use, useState } from "react";
+import { RESULTS_PAGE, ScoresView } from "../results/resultsPath";
 import ScoresNavbar, { COLLAPSE_DURATION_MS } from "./ScoresNavbar";
 
 const props = {
@@ -98,5 +98,54 @@ describe("ScoresNavbar", () => {
     await user.click(screen.getByRole("button", { name: "Refresh" }));
 
     expect(onRefresh).not.toHaveBeenCalled();
+  });
+});
+
+/** The picks page, still on its way: it suspends until `arrive` runs. */
+let arrive: () => void = () => undefined;
+let arrival: Promise<void> = Promise.resolve();
+
+function Page({ view }: { view: ScoresView }) {
+  if (view === RESULTS_PAGE.picks) use(arrival);
+  return null;
+}
+
+/** Changes view in a transition, the way the router swaps pages. */
+function RoutedNavbar() {
+  const [view, setView] = useState<ScoresView>(RESULTS_PAGE.scoreboard);
+  return (
+    <>
+      <ScoresNavbar
+        {...props}
+        view={view}
+        isWeekLive={false}
+        onViewChange={(next) => startTransition(() => setView(next))}
+      />
+      <Suspense fallback={null}>
+        <Page view={view} />
+      </Suspense>
+    </>
+  );
+}
+
+describe("ScoresNavbar, choosing a view", () => {
+  beforeEach(() => {
+    arrival = new Promise((resolve) => (arrive = resolve));
+  });
+
+  it("holds the chosen key down from the click, before its page lands", async () => {
+    render(<RoutedNavbar />);
+    const scoreboard = screen.getByRole("button", { name: "Scoreboard" });
+    const picks = screen.getByRole("button", { name: "Picks" });
+
+    fireEvent.click(picks);
+
+    expect(picks).toHaveClass("--selected");
+    expect(scoreboard).not.toHaveClass("--selected");
+
+    await act(async () => arrive());
+
+    expect(picks).toHaveClass("--selected");
+    expect(scoreboard).not.toHaveClass("--selected");
   });
 });

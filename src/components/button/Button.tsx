@@ -44,10 +44,8 @@ export function buttonClasses({
       "--sm": size === "sm",
       "--icon": iconOnly,
       "--compact": compact,
-      // Set whenever `selected` is passed at all, true or false, not just when
-      // held. `--selected` alone cannot carry this: it disappears the moment
-      // the route deselects the button, which is exactly when the release
-      // delay in `Button.scss`'s `--selectable` rule still needs to apply.
+      // Set whenever `selected` is passed at all, true or false, so an unchosen
+      // key still draws its unlit lamp.
       "--selectable": selected !== undefined,
       "--selected": !!selected,
       "--busy": busy,
@@ -70,17 +68,10 @@ function markReleased(event: PointerEvent<HTMLButtonElement>) {
 
 /**
  * Clears the released mark, so a new press shows, whether a pointer or a key
- * makes it. Marks a key pressed while chosen. That press turns it off, so
- * `Button.scss` lets it rise without the pause that holds a key about to be
- * chosen.
+ * makes it.
  */
 function startPress(event: SyntheticEvent<HTMLButtonElement>) {
-  const key = event.currentTarget;
-  delete key.dataset.released;
-  key.toggleAttribute(
-    "data-was-selected",
-    key.getAttribute("aria-pressed") === "true",
-  );
+  delete event.currentTarget.dataset.released;
 }
 
 /**

@@ -1,4 +1,11 @@
-import { CSSProperties, ReactNode, useEffect, useState } from "react";
+import {
+  CSSProperties,
+  ReactNode,
+  startTransition,
+  useEffect,
+  useOptimistic,
+  useState,
+} from "react";
 import { FactCheckIcon, LeaderboardIcon, UpdateIcon } from "../icon/Icon";
 import Button from "../button/Button";
 import "./ScoresNavbar.scss";
@@ -80,6 +87,16 @@ export default function ScoresNavbar({
     return () => clearTimeout(timer);
   }, [isWeekLive, isLiveMounted]);
 
+  // The chosen key goes down in the click's own render. The router commits the
+  // page in a transition, a tick or more after the finger lifts, and a key that
+  // waited for it would rise in between and then drop again.
+  const [shownView, showView] = useOptimistic(view);
+  const choose = (next: ScoresView) =>
+    startTransition(() => {
+      showView(next);
+      onViewChange(next);
+    });
+
   return (
     // The two views are the only way through the results, so they are navigation
     // rather than a pair of loose buttons.
@@ -118,19 +135,19 @@ export default function ScoresNavbar({
         view={RESULTS_PAGE.scoreboard}
         icon={<LeaderboardIcon />}
         label={RESULTS_PAGE.scoreboard}
-        currentView={view}
+        currentView={shownView}
         noWeekYet={noWeekYet}
         disabled={disabled}
-        onViewChange={onViewChange}
+        onViewChange={choose}
       />
       <ViewButton
         view={RESULTS_PAGE.picks}
         icon={<FactCheckIcon />}
         label={RESULTS_PAGE.picks}
-        currentView={view}
+        currentView={shownView}
         noWeekYet={noWeekYet}
         disabled={disabled}
-        onViewChange={onViewChange}
+        onViewChange={choose}
       />
     </nav>
   );
