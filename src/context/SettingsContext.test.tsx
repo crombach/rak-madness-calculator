@@ -424,4 +424,25 @@ describe("SettingsContext, which readers a change reaches", () => {
     expect(renders.get("Barb Wire")).toBe(before.get("Barb Wire"));
     expect(renders.get("liveAnalysis")).toBe(before.get("liveAnalysis"));
   });
+
+  it("renders no row when a setter is given the value already set", async () => {
+    function SnapshotRow() {
+      const { liveAnalysis } = useSettings();
+      count("snapshot");
+      return <span>{String(liveAnalysis)}</span>;
+    }
+    renders.clear();
+    const user = userEvent.setup();
+    render(
+      <SettingsContextProvider>
+        <Probe />
+        <SnapshotRow />
+      </SettingsContextProvider>,
+    );
+    await user.click(screen.getByRole("button", { name: "hide analysis" }));
+    const before = new Map(renders);
+    await user.click(screen.getByRole("button", { name: "hide analysis" }));
+
+    expect(renders).toEqual(before);
+  });
 });

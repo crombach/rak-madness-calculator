@@ -11,7 +11,7 @@ type OptionProps<T> = {
   render: (item: T) => ReactNode;
 };
 
-/** Ignores `render`'s identity, since every caller passes it inline. */
+/** Compares `item` and `className` only. */
 const Option = memo(
   function Option<T>({ item, className, render }: OptionProps<T>) {
     return (
