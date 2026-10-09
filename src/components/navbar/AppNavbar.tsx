@@ -1,6 +1,7 @@
 import {
   ComponentProps,
   createContext,
+  useCallback,
   useContext,
   useLayoutEffect,
   useMemo,
@@ -98,29 +99,39 @@ export default function AppNavbar() {
   ] = useState(NO_WEEK);
   // Held once, so a change to the navbar does not re-render the page.
   const page = useMemo(() => <Outlet />, []);
+  const goHome = useCallback(() => navigate("/"), [navigate]);
+  const navbarLeft = useMemo(() => <LogoButton onClick={goHome} />, [goHome]);
+  const navbarRight = useMemo(
+    () => (
+      <>
+        <ScoresNavbar
+          view={view}
+          disabled={disabled}
+          noWeekYet={noWeekYet}
+          isWeekLive={isWeekLive}
+          onViewChange={onViewChange}
+          onRefresh={onRefresh}
+          isRefreshing={isRefreshing}
+        />
+        <NavMenu season={season} week={week} pagesDisabled={pagesDisabled} />
+      </>
+    ),
+    [
+      view,
+      disabled,
+      noWeekYet,
+      isWeekLive,
+      onViewChange,
+      onRefresh,
+      isRefreshing,
+      season,
+      week,
+      pagesDisabled,
+    ],
+  );
   return (
     <NavbarContext.Provider value={setState}>
-      <PageFrame
-        navbarLeft={<LogoButton onClick={() => navigate("/")} />}
-        navbarRight={
-          <>
-            <ScoresNavbar
-              view={view}
-              disabled={disabled}
-              noWeekYet={noWeekYet}
-              isWeekLive={isWeekLive}
-              onViewChange={onViewChange}
-              onRefresh={onRefresh}
-              isRefreshing={isRefreshing}
-            />
-            <NavMenu
-              season={season}
-              week={week}
-              pagesDisabled={pagesDisabled}
-            />
-          </>
-        }
-      >
+      <PageFrame navbarLeft={navbarLeft} navbarRight={navbarRight}>
         {page}
       </PageFrame>
     </NavbarContext.Provider>
