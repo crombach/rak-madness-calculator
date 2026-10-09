@@ -1,9 +1,28 @@
 import { Combobox } from "@base-ui/react/combobox";
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { memo, ReactNode, useEffect, useRef, useState } from "react";
 import { UnfoldMoreIcon } from "../icon/Icon";
 import { DIALOG_POPUP_CLASS } from "./DialogShell";
 import "./DialogCombobox.scss";
 import getClasses from "../../utils/getClasses";
+
+type OptionProps<T> = {
+  item: T;
+  className: string;
+  render: (item: T) => ReactNode;
+};
+
+/** Ignores `render`'s identity, since every caller passes it inline. */
+const Option = memo(
+  function Option<T>({ item, className, render }: OptionProps<T>) {
+    return (
+      <Combobox.Item value={item} className={className}>
+        {render(item)}
+      </Combobox.Item>
+    );
+  },
+  (previous, next) =>
+    previous.item === next.item && previous.className === next.className,
+) as <T>(props: OptionProps<T>) => ReactNode;
 
 /**
  * The search a dialog is pointed at one of its subjects with.
@@ -61,6 +80,7 @@ export default function DialogCombobox<T>({
    * input, and `overlay` styles it the way `renderValue` styles a choice.
    */
   unlisted?: { text: string; overlay: ReactNode };
+  /** Reads the item alone. An entry is drawn again only when its item changes. */
   renderOption: (item: T) => ReactNode;
   /** Focuses the input as it mounts. */
   focusOnMount?: boolean;
@@ -200,16 +220,15 @@ export default function DialogCombobox<T>({
             </Combobox.Empty>
             <Combobox.List>
               {(item: T) => (
-                <Combobox.Item
+                <Option
                   key={itemKey(item)}
-                  value={item}
+                  item={item}
                   className={getClasses(
                     "dialog__option",
                     optionClassName?.(item),
                   )}
-                >
-                  {renderOption(item)}
-                </Combobox.Item>
+                  render={renderOption}
+                />
               )}
             </Combobox.List>
           </Combobox.Popup>
