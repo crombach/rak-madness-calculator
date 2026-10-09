@@ -67,8 +67,8 @@ export function useAppNavbar(state: NavbarState) {
 
 /**
  * The layout route above every page: the logo home, the view switch with its
- * refresh, and the menu. Mounted once, so an open menu closes the same way on
- * every page it leads to. Each page sets what it shows through `useAppNavbar`.
+ * refresh, and the menu. Mounted once, so the navbar and its open menu persist
+ * across route changes. Each page sets what it shows through `useAppNavbar`.
  */
 export default function AppNavbar() {
   const navigate = useNavigate();
