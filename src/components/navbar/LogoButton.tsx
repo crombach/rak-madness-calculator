@@ -1,4 +1,4 @@
-import { useSettings } from "../../context/SettingsContext";
+import { useSetting } from "../../context/SettingsContext";
 import Button from "../button/Button";
 import "./LogoButton.scss";
 
@@ -23,7 +23,7 @@ export const BETA_MARK = "β";
 export const BETA_WORD = "beta";
 
 export default function LogoButton({ onClick }: { onClick: () => void }) {
-  const { experimentalFeatures } = useSettings();
+  const experimentalFeatures = useSetting("experimentalFeatures");
   return (
     <>
       <Button

@@ -5,6 +5,22 @@ import PlayerStatusIcon from "../table/playerName/PlayerStatusIcon";
 import type { PlayerOption } from "./playerOptions";
 import "./PlayerAnalysisDialog.scss";
 
+/**
+ * An entry carries the status icon the tables give the same player, in the hue
+ * they fill that player's cell with.
+ */
+function renderPlayerOption(option: PlayerOption) {
+  return (
+    <>
+      <span className="player-analysis__option-name">{option.name}</span>
+      <PlayerStatusIcon
+        isKnockedOut={option.isKnockedOut}
+        hasNameConflict={option.hasNameConflict}
+      />
+    </>
+  );
+}
+
 /** A search over the week's players, each entry marked the way the tables mark them. */
 export default function PlayerCombobox({
   ariaLabel,
@@ -72,17 +88,7 @@ export default function PlayerCombobox({
           : undefined
       }
       focusOnMount={focusOnMount}
-      // An entry carries the status icon the tables give the same player, in
-      // the hue they fill that player's cell with.
-      renderOption={(option) => (
-        <>
-          <span className="player-analysis__option-name">{option.name}</span>
-          <PlayerStatusIcon
-            isKnockedOut={option.isKnockedOut}
-            hasNameConflict={option.hasNameConflict}
-          />
-        </>
-      )}
+      renderOption={renderPlayerOption}
     />
   );
 }

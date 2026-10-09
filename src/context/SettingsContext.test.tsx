@@ -1,5 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
+import useMyPick from "../hooks/useMyPick";
+import { League } from "../types/League";
+import { RakMadnessScores } from "../types/RakMadnessScores";
+import { pick, player } from "../utils/scoring/scoringTestFixtures";
 import {
   EXPERIMENTAL_FEATURES_KEY,
   LIVE_ANALYSIS_KEY,
@@ -8,6 +12,7 @@ import {
   THEME_KEY,
   Theme,
   useIsMyPlayer,
+  useSetting,
   useSettings,
 } from "./SettingsContext";
 
@@ -42,6 +47,7 @@ function Probe({ candidate = "Linebacher" }: { candidate?: string }) {
         </button>
       ))}
       <button onClick={() => setPlayerName("Linebacher")}>name me</button>
+      <button onClick={() => setPlayerName("Barb Wire")}>rename me</button>
     </>
   );
 }
@@ -371,6 +377,128 @@ describe("SettingsContext, the transitions a theme change would ease", () => {
       expect(document.documentElement.dataset.themeSwitching).toBeUndefined();
     } finally {
       dark.restore();
+    }
+  });
+});
+
+describe("SettingsContext, which readers a change reaches", () => {
+  const renders = new Map<string, number>();
+  const count = (label: string) =>
+    renders.set(label, (renders.get(label) ?? 0) + 1);
+
+  function NameRow({ name }: { name: string }) {
+    const isMine = useIsMyPlayer(name);
+    count(name);
+    return <span>{`${name} ${isMine}`}</span>;
+  }
+
+  function LiveAnalysisRow() {
+    const liveAnalysis = useSetting("liveAnalysis");
+    count("liveAnalysis");
+    return <span>{String(liveAnalysis)}</span>;
+  }
+
+  const scores: RakMadnessScores = {
+    scores: [player({ name: "Linebacher", pro: [pick("BUF")] })],
+  };
+  const game = { label: "P1", league: League.PRO, name: "KC at BUF" };
+
+  function MyPickRow() {
+    const myPick = useMyPick(scores, game);
+    count("myPick");
+    return <span>{String(myPick)}</span>;
+  }
+
+  function mountRows() {
+    renders.clear();
+    const user = userEvent.setup();
+    render(
+      <SettingsContextProvider>
+        <Probe />
+        <NameRow name="Linebacher" />
+        <NameRow name="Barb Wire" />
+        <LiveAnalysisRow />
+        <MyPickRow />
+      </SettingsContextProvider>,
+    );
+    return user;
+  }
+
+  it("leaves every row alone on a theme change", async () => {
+    const user = mountRows();
+    const before = new Map(renders);
+    await user.click(screen.getByRole("button", { name: "dark" }));
+
+    expect(renders).toEqual(before);
+  });
+
+  it("renders only the row a new name makes the reader's own", async () => {
+    const user = mountRows();
+    const before = new Map(renders);
+    await user.click(screen.getByRole("button", { name: "name me" }));
+
+    expect(renders.get("Linebacher")).toBe(before.get("Linebacher")! + 1);
+    expect(renders.get("Barb Wire")).toBe(before.get("Barb Wire"));
+    expect(renders.get("liveAnalysis")).toBe(before.get("liveAnalysis"));
+  });
+
+  it("renders the row a rename leaves, and the row it lands on", async () => {
+    const user = mountRows();
+    await user.click(screen.getByRole("button", { name: "name me" }));
+    const before = new Map(renders);
+    await user.click(screen.getByRole("button", { name: "rename me" }));
+
+    expect(renders.get("Linebacher")).toBe(before.get("Linebacher")! + 1);
+    expect(renders.get("Barb Wire")).toBe(before.get("Barb Wire")! + 1);
+    expect(screen.getByText("Linebacher false")).toBeInTheDocument();
+    expect(screen.getByText("Barb Wire true")).toBeInTheDocument();
+  });
+
+  it("finds the reader's pick once named, and leaves it alone on a theme change", async () => {
+    const user = mountRows();
+    await user.click(screen.getByRole("button", { name: "name me" }));
+    expect(screen.getByText("BUF")).toBeInTheDocument();
+
+    const before = new Map(renders);
+    await user.click(screen.getByRole("button", { name: "dark" }));
+
+    expect(renders.get("myPick")).toBe(before.get("myPick"));
+  });
+
+  it("renders no row when a setter is given the value already set", async () => {
+    function SnapshotRow() {
+      const { liveAnalysis } = useSettings();
+      count("snapshot");
+      return <span>{String(liveAnalysis)}</span>;
+    }
+    renders.clear();
+    const user = userEvent.setup();
+    render(
+      <SettingsContextProvider>
+        <Probe />
+        <SnapshotRow />
+      </SettingsContextProvider>,
+    );
+    await user.click(screen.getByRole("button", { name: "hide analysis" }));
+    const before = new Map(renders);
+    await user.click(screen.getByRole("button", { name: "hide analysis" }));
+
+    expect(renders).toEqual(before);
+  });
+
+  it("writes nothing to storage when a setter is given the value already set", async () => {
+    const user = mountProbe();
+    await user.click(screen.getByRole("button", { name: "hide analysis" }));
+    const setItem = vi.spyOn(Storage.prototype, "setItem");
+    const removeItem = vi.spyOn(Storage.prototype, "removeItem");
+    try {
+      await user.click(screen.getByRole("button", { name: "hide analysis" }));
+
+      expect(setItem).not.toHaveBeenCalled();
+      expect(removeItem).not.toHaveBeenCalled();
+    } finally {
+      setItem.mockRestore();
+      removeItem.mockRestore();
     }
   });
 });

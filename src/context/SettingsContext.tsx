@@ -1,11 +1,11 @@
 import {
   createContext,
   PropsWithChildren,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
+  useSyncExternalStore,
 } from "react";
 import doNothing from "../utils/doNothing";
 import { PREFIX, readSetting, writeSetting } from "../utils/settingsStore";
@@ -43,39 +43,32 @@ const THEME_COLOR: Record<"light" | "dark", string> = {
   dark: "#4f4f4f",
 };
 
-type Settings = {
+type SettingValues = {
   theme: Theme;
-  setTheme: (theme: Theme) => void;
   /**
    * What the reader is called in the picks sheet, or the empty string for a reader
    * who has not said. Kept as typed, since it is theirs to read back.
    */
   playerName: string;
-  setPlayerName: (name: string) => void;
   /**
    * Whether a week still being played says where each player stands. Off, the
    * tables mark nobody and open nothing until the week is decided, for a reader
    * who would rather watch the games than be told how they end.
    */
   liveAnalysis: boolean;
-  setLiveAnalysis: (enabled: boolean) => void;
   /** Whether the reader opted into work-in-progress features. */
   experimentalFeatures: boolean;
-  setExperimentalFeatures: (enabled: boolean) => void;
 };
 
-// Defaults rather than a throw, following `PlayerAnalysisContext`. The tables read
-// this per row and both suites mount them on their own, with no provider above.
-const SettingsContext = createContext<Settings>({
-  theme: DEFAULT_THEME,
-  setTheme: doNothing,
-  playerName: "",
-  setPlayerName: doNothing,
-  liveAnalysis: true,
-  setLiveAnalysis: doNothing,
-  experimentalFeatures: false,
-  setExperimentalFeatures: doNothing,
-});
+type SettingKey = keyof SettingValues;
+
+type SetterName<K extends SettingKey> = `set${Capitalize<K>}`;
+
+type SettingSetters = {
+  [K in SettingKey as SetterName<K>]: (value: SettingValues[K]) => void;
+};
+
+type Settings = SettingValues & SettingSetters;
 
 /** How a setting is read off its stored string and written back as one. */
 type Codec<T> = {
@@ -108,22 +101,84 @@ const EXPERIMENTAL_FEATURES_CODEC: Codec<boolean> = {
   write: (enabled) => (enabled ? EXPERIMENTAL_FEATURES_ON : ""),
 };
 
-/** A setting held in state, read once from storage and written through on every change. */
-function useStoredSetting<T>(
-  key: string,
-  codec: Codec<T>,
-): [T, (next: T) => void] {
-  const [value, setValue] = useState<T>(() => codec.read(readSetting(key)));
-  const set = useCallback(
-    (next: T) => {
-      setValue(next);
-      writeSetting(key, codec.write(next));
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [key],
-  );
-  return [value, set];
+const STORED: {
+  [K in SettingKey]: { name: string; codec: Codec<SettingValues[K]> };
+} = {
+  theme: { name: THEME_SETTING, codec: THEME_CODEC },
+  playerName: { name: PLAYER_NAME_SETTING, codec: PLAYER_NAME_CODEC },
+  liveAnalysis: { name: LIVE_ANALYSIS_SETTING, codec: LIVE_ANALYSIS_CODEC },
+  experimentalFeatures: {
+    name: EXPERIMENTAL_FEATURES_SETTING,
+    codec: EXPERIMENTAL_FEATURES_CODEC,
+  },
+};
+
+const SETTING_KEYS = Object.keys(STORED) as Array<SettingKey>;
+
+function setterName<K extends SettingKey>(key: K): SetterName<K> {
+  return `set${key[0].toUpperCase()}${key.slice(1)}` as SetterName<K>;
 }
+
+function readValues(
+  lookup: (name: string) => string | undefined,
+): SettingValues {
+  const read = <K extends SettingKey>(key: K) =>
+    STORED[key].codec.read(lookup(STORED[key].name));
+  return Object.fromEntries(
+    SETTING_KEYS.map((key) => [key, read(key)]),
+  ) as SettingValues;
+}
+
+/** A setter for every setting, each one `setter` makes for its key. */
+function eachSetter(
+  setter: <K extends SettingKey>(key: K) => (value: SettingValues[K]) => void,
+): SettingSetters {
+  return Object.fromEntries(
+    SETTING_KEYS.map((key) => [setterName(key), setter(key)]),
+  ) as SettingSetters;
+}
+
+/**
+ * The settings, held outside React so a reader subscribes to the one value it
+ * reads. A context value would render every reader on every change.
+ */
+type SettingsStore = {
+  get: () => SettingValues;
+  subscribe: (listener: () => void) => () => void;
+  setters: SettingSetters;
+};
+
+/** Read once from storage, and written through on every change. */
+function createSettingsStore(): SettingsStore {
+  let values = readValues(readSetting);
+  const listeners = new Set<() => void>();
+  const setter =
+    <K extends SettingKey>(key: K) =>
+    (next: SettingValues[K]) => {
+      if (Object.is(values[key], next)) return;
+      writeSetting(STORED[key].name, STORED[key].codec.write(next));
+      values = { ...values, [key]: next };
+      listeners.forEach((listener) => listener());
+    };
+  return {
+    get: () => values,
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    setters: eachSetter(setter),
+  };
+}
+
+const DEFAULT_VALUES = readValues(() => undefined);
+
+// Defaults rather than a throw, following `PlayerAnalysisContext`. The tables read
+// this per row and both suites mount them on their own, with no provider above.
+const SettingsContext = createContext<SettingsStore>({
+  get: () => DEFAULT_VALUES,
+  subscribe: () => doNothing,
+  setters: eachSetter(() => doNothing),
+});
 
 export const DARK_QUERY = "(prefers-color-scheme: dark)";
 
@@ -195,19 +250,8 @@ function applyThemeColor(theme: Theme): void {
 }
 
 export function SettingsContextProvider({ children }: PropsWithChildren) {
-  const [theme, setTheme] = useStoredSetting(THEME_SETTING, THEME_CODEC);
-  const [playerName, setPlayerName] = useStoredSetting(
-    PLAYER_NAME_SETTING,
-    PLAYER_NAME_CODEC,
-  );
-  const [liveAnalysis, setLiveAnalysis] = useStoredSetting(
-    LIVE_ANALYSIS_SETTING,
-    LIVE_ANALYSIS_CODEC,
-  );
-  const [experimentalFeatures, setExperimentalFeatures] = useStoredSetting(
-    EXPERIMENTAL_FEATURES_SETTING,
-    EXPERIMENTAL_FEATURES_CODEC,
-  );
+  const [store] = useState(createSettingsStore);
+  const theme = useSyncExternalStore(store.subscribe, () => store.get().theme);
 
   useEffect(() => {
     applyTheme(theme);
@@ -230,38 +274,35 @@ export function SettingsContextProvider({ children }: PropsWithChildren) {
     return () => dark.removeEventListener("change", follow);
   }, [theme]);
 
-  const value = useMemo(
-    () => ({
-      theme,
-      setTheme,
-      playerName,
-      setPlayerName,
-      liveAnalysis,
-      setLiveAnalysis,
-      experimentalFeatures,
-      setExperimentalFeatures,
-    }),
-    [
-      theme,
-      setTheme,
-      playerName,
-      setPlayerName,
-      liveAnalysis,
-      setLiveAnalysis,
-      experimentalFeatures,
-      setExperimentalFeatures,
-    ],
-  );
-
   return (
-    <SettingsContext.Provider value={value}>
+    <SettingsContext.Provider value={store}>
       {children}
     </SettingsContext.Provider>
   );
 }
 
+/** Every setting, rendering on a change to any of them. */
 export function useSettings(): Settings {
-  return useContext(SettingsContext);
+  const store = useContext(SettingsContext);
+  const values = useSyncExternalStore(store.subscribe, store.get);
+  return useMemo(() => ({ ...values, ...store.setters }), [values, store]);
+}
+
+/**
+ * What `select` reads off the settings, rendering only when its answer changes.
+ * Held to a primitive, because `useSyncExternalStore` compares answers with
+ * `Object.is` and a fresh object would render forever.
+ */
+function useSelected<T extends string | boolean>(
+  select: (values: SettingValues) => T,
+): T {
+  const store = useContext(SettingsContext);
+  return useSyncExternalStore(store.subscribe, () => select(store.get()));
+}
+
+/** One setting, rendering only when it changes. */
+export function useSetting<K extends SettingKey>(key: K): SettingValues[K] {
+  return useSelected((values) => values[key]);
 }
 
 /**
@@ -273,7 +314,7 @@ export function useSettings(): Settings {
  * value against something a reader typed from memory.
  */
 export function useIsMyPlayer(name: string): boolean {
-  return isMyPlayer(name, useSettings().playerName);
+  return useSelected(({ playerName }) => isMyPlayer(name, playerName));
 }
 
 /** `useIsMyPlayer` against a name already read, for a caller matching many. */

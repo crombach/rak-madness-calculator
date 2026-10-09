@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { isMyPlayer, useSettings } from "../../context/SettingsContext";
+import { isMyPlayer, useSetting } from "../../context/SettingsContext";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import differingGames, { sameGames } from "../../utils/scoring/differingGames";
 import { playerOptions } from "../playerAnalysis/playerOptions";
@@ -121,7 +121,7 @@ export default function ComparePlayers({
 }: {
   scores?: RakMadnessScores;
 }) {
-  const { playerName } = useSettings();
+  const playerName = useSetting("playerName");
   const options = useMemo(() => playerOptions(scores), [scores]);
   const [slots, setSlots] = useState(() =>
     startingSlots(scores?.scores ?? [], playerName),

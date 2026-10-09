@@ -7,7 +7,7 @@ import {
   useIsWeekSettled,
   useKnockouts,
 } from "../../context/AppDataContext";
-import { useSettings } from "../../context/SettingsContext";
+import { useSetting } from "../../context/SettingsContext";
 import cssMediaQuery from "../../hooks/cssMediaQuery";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import getClasses from "../../utils/getClasses";
@@ -138,7 +138,7 @@ export default function NavMenu({
   const isWeekSettled = useIsWeekSettled();
   const knockouts = useKnockouts();
   const playerCount = useScores()?.scores.length;
-  const { experimentalFeatures } = useSettings();
+  const experimentalFeatures = useSetting("experimentalFeatures");
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   // Mounted once its chunk is in, so the chunk waits for a menu to open and the
   // dialog is already there, closed, for its first open to animate from.

@@ -32,6 +32,15 @@ function GameName({ game }: { game: WeekGame }) {
   );
 }
 
+function renderGameOption(game: WeekGame) {
+  return (
+    <>
+      <GameName game={game} />
+      <GameMark game={game} status={game.result?.status} />
+    </>
+  );
+}
+
 /**
  * How a game in the week on screen is going, opened from a pick cell in the picks
  * table.
@@ -139,12 +148,7 @@ export default function GameStatusDialog({
             )
           }
           renderValue={(chosen) => <GameName game={chosen} />}
-          renderOption={(option) => (
-            <>
-              <GameName game={option} />
-              <GameMark game={option} status={option.result?.status} />
-            </>
-          )}
+          renderOption={renderGameOption}
         />
       }
     >
