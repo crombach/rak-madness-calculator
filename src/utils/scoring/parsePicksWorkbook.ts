@@ -1,3 +1,4 @@
+import cachedImport from "../cachedImport";
 import debugLog from "../debugLog";
 import { LEAGUE_PREFIX } from "./gameColumns";
 import parsePick from "./parsePick";
@@ -44,8 +45,10 @@ const parsed = new WeakMap<ArrayBuffer, Promise<ParsedPicks>>();
 
 /**
  * `xlsx-js-style` is over half the bundle, and nothing on the first paint needs
- * it, so it is fetched when a workbook actually turns up.
+ * it, so it stays out of the entry chunk.
  */
+export const loadXlsx = cachedImport(() => import("xlsx-js-style"));
+
 export default function parsePicksWorkbook(
   picksBuffer: ArrayBuffer,
 ): Promise<ParsedPicks> {
@@ -57,7 +60,7 @@ export default function parsePicksWorkbook(
 }
 
 async function parseWorkbook(picksBuffer: ArrayBuffer): Promise<ParsedPicks> {
-  const XLSX = await import("xlsx-js-style");
+  const XLSX = await loadXlsx();
   const workbook = XLSX.read(picksBuffer, { type: "array" });
   const picksSheet = workbook.Sheets[Object.keys(workbook.Sheets)[0]];
   const rows: Array<PicksRow> = XLSX.utils.sheet_to_json(picksSheet);

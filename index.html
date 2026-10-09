@@ -141,6 +141,15 @@
       } catch (error) {
         // A browser refusing storage has no saved theme to honour anyway.
       }
+      // The chrome bar's colour for the theme in effect. The static meta above
+      // is right only for dark. Keep in sync with THEME_COLOR in
+      // src/context/SettingsContext.tsx.
+      var shown =
+        document.documentElement.dataset.theme ||
+        (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document
+        .querySelector('meta[name="theme-color"]')
+        .setAttribute("content", shown === "dark" ? "#4f4f4f" : "#eaeaea");
     </script>
   </head>
   <body>

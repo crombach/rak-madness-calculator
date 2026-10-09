@@ -8,6 +8,7 @@ import {
 import { League, SeasonType, WeekInfo } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import { toLeagueResult } from "../getLeagueResults";
+import { loadXlsx } from "./parsePicksWorkbook";
 
 /**
  * The size of the worst week, since every game and every player costs the scoring
@@ -150,7 +151,7 @@ export function benchHeader(): Array<string> {
  * the measured parse is the one a published workbook gets.
  */
 export async function benchPicksBuffer(): Promise<ArrayBuffer> {
-  const XLSX = await import("xlsx-js-style");
+  const XLSX = await loadXlsx();
   const sheet = XLSX.utils.json_to_sheet(benchRows(), {
     header: benchHeader(),
   });
