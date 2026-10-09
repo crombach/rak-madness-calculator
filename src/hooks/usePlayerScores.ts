@@ -37,8 +37,19 @@ import scoreChanges, {
  */
 export const WIPE_LIFETIME_MS = 350;
 
+/**
+ * How old an answer a rescore takes in place of a fetch. Under `POLL_MS`, so only
+ * a view opened, or a rescore asked, seconds after the last fetch is spared one.
+ */
+export const RESCORE_MAX_AGE_MS = 10_000;
+
 /** The season and week a scoring attempt has finished, however it turned out. */
 type LastAttempt = { season: number; weekNumber: number };
+
+/** What the held scores and games are filed under. */
+function weekKey(season: number, weekNumber: number): string {
+  return `${season}:${weekNumber}`;
+}
 
 /** What a failed scoring pass says, in its toast and on the page it left empty. */
 export function scoringFailedMessage(weekNumber: number | string): string {
@@ -162,11 +173,16 @@ export default function usePlayerScores(
   const previousScores = useRef<
     { key: string; scores: RakMadnessScores } | undefined
   >(undefined);
-  // The games the scores on screen were built from, keyed the same way. Both the
-  // leagues a pass did not fetch and the baseline `hasMoved` measures against come
-  // from here.
+  // The games the scores on screen were built from, keyed the same way, and when
+  // each league was last asked for. Both the leagues a pass did not fetch and the
+  // baseline `hasMoved` measures against come from here.
   const heldResults = useRef<
-    { key: string; results: LeagueResults } | undefined
+    | {
+        key: string;
+        results: LeagueResults;
+        askedAt: Record<LeagueKey, number>;
+      }
+    | undefined
   >(undefined);
   // Runs for the length of a wipe, and drops the changes behind it.
   const wipeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -220,7 +236,7 @@ export default function usePlayerScores(
       setScoresLoading(true);
 
       const attempted = { season, weekNumber: selectedWeek.value };
-      const key = `${attempted.season}:${attempted.weekNumber}`;
+      const key = weekKey(attempted.season, attempted.weekNumber);
 
       // A reader's pass turns the button before it reads anything, so a refresh
       // waiting on the sheet still says so while a poll pass runs beside it. A
@@ -247,10 +263,9 @@ export default function usePlayerScores(
         const buffer = await step("load", loadPicks);
         setPicksBuffer(buffer);
 
-        const held =
-          heldResults.current?.key === key
-            ? heldResults.current.results
-            : undefined;
+        const heldForWeek =
+          heldResults.current?.key === key ? heldResults.current : undefined;
+        const held = heldForWeek?.results;
         const asked = Date.now();
         passes.beginFetching(leagues);
         const fetched = await step("fetch", async () => {
@@ -277,9 +292,22 @@ export default function usePlayerScores(
           }
         });
 
+        // A league the fetch took from `held` keeps the time it was asked for.
+        const holdFetched = () => {
+          const askedAt = Object.fromEntries(
+            LEAGUES.map((league) => [
+              league,
+              heldForWeek == null || leagues.includes(league)
+                ? asked
+                : heldForWeek.askedAt[league],
+            ]),
+          ) as Record<LeagueKey, number>;
+          heldResults.current = { key, results: fetched, askedAt };
+        };
+
         if (gateOnMovement && !hasMoved(leagues, held, fetched)) {
           // Nothing to score, so the week on screen already stands for this fetch.
-          heldResults.current = { key, results: fetched };
+          holdFetched();
           return fetched;
         }
         turn.start();
@@ -293,7 +321,7 @@ export default function usePlayerScores(
         // against. A pass whose scoring threw leaves the baseline where it was,
         // so the next one sees the move again rather than gating the week behind
         // a failure.
-        heldResults.current = { key, results: fetched };
+        holdFetched();
         const before =
           previousScores.current?.key === key
             ? previousScores.current.scores
@@ -470,15 +498,9 @@ export default function usePlayerScores(
     }
   }, [scoreWeek, passes]);
 
-  /**
-   * What a poll asks for: the named leagues fetched, and the same workbook scored
-   * against them if anything moved.
-   *
-   * Resolves to the games it fetched, so a caller watching one of them can show a
-   * clock and a down that `hasMoved` deliberately ignores, without a second
-   * request. A pass in flight turns this away, and it resolves to nothing.
-   */
-  const rescore = useCallback(
+  // A rescore a pass turned away runs through here, never off the answer that pass
+  // fetched, since the move it was asked for may have come after that answer.
+  const fetchAndRescore = useCallback(
     async (
       leagues?: ReadonlyArray<League>,
     ): Promise<LeagueResults | undefined> => {
@@ -498,8 +520,38 @@ export default function usePlayerScores(
   );
 
   useEffect(() => {
-    passes.setRescore(rescore);
-  }, [rescore, passes]);
+    passes.setRescore(fetchAndRescore);
+  }, [fetchAndRescore, passes]);
+
+  /**
+   * What a poll asks for: the named leagues fetched, and the same workbook scored
+   * against them if anything moved.
+   *
+   * Resolves to the games it fetched, so a caller watching one of them can show a
+   * clock and a down that `hasMoved` deliberately ignores, without a second
+   * request. A pass in flight turns this away, and it resolves to nothing.
+   *
+   * Where every named league was asked for under `RESCORE_MAX_AGE_MS` ago, resolves
+   * to the games held for the week and fetches nothing.
+   */
+  const rescore = useCallback(
+    async (
+      leagues?: ReadonlyArray<League>,
+    ): Promise<LeagueResults | undefined> => {
+      const held = heldResults.current;
+      const named = leagues?.map((league) => LEAGUE_KEY[league]) ?? LEAGUES;
+      const isFresh =
+        held != null &&
+        selectedWeek != null &&
+        season != null &&
+        held.key === weekKey(season, selectedWeek.value) &&
+        named.every(
+          (league) => Date.now() - held.askedAt[league] < RESCORE_MAX_AGE_MS,
+        );
+      return isFresh ? held.results : fetchAndRescore(leagues);
+    },
+    [fetchAndRescore, selectedWeek, season],
+  );
 
   return useMemo(
     () => ({

@@ -12,7 +12,7 @@ import { getPlayerScores } from "../utils/scoring/getPlayerScores";
 import { liveGame, weekOf } from "../utils/scoring/leagueResultFixtures";
 import { fetchLeagueResults } from "../utils/scoring/leagueResults";
 import { SEASON, week } from "../weekFixtures";
-import usePlayerScores from "./usePlayerScores";
+import usePlayerScores, { RESCORE_MAX_AGE_MS } from "./usePlayerScores";
 
 vi.mock("../utils/scoring/getPlayerScores", () => ({
   getPlayerScores: vi.fn(),
@@ -78,6 +78,11 @@ function scoresWithPick(status: Status): RakMadnessScores {
   };
 }
 
+/** Ages every answer held past what a rescore takes in place of a fetch. */
+function ageAnswers() {
+  vi.setSystemTime(Date.now() + RESCORE_MAX_AGE_MS);
+}
+
 function wrapper({ children }: PropsWithChildren<object>) {
   return <ToastContextProvider>{children}</ToastContextProvider>;
 }
@@ -106,6 +111,10 @@ beforeEach(() => {
   fetchLeagueResultsMock.mockImplementation(async () =>
     movedWeek(fetches++ * 7),
   );
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("usePlayerScores", () => {
@@ -260,6 +269,7 @@ describe("usePlayerScores, refresh", () => {
       .calls.length;
 
     await act(async () => {
+      ageAnswers();
       await result.current.rescore();
     });
 
@@ -275,6 +285,7 @@ describe("usePlayerScores, refresh", () => {
     await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
 
     await act(async () => {
+      ageAnswers();
       await result.current.rescore([League.PRO]);
     });
 
@@ -312,8 +323,11 @@ describe("usePlayerScores, refresh", () => {
     fetchLeagueResultsMock.mockResolvedValue(movedWeek(7));
     await act(async () => {
       // The first of these moves, since the pass before it fetched another score.
+      ageAnswers();
       await result.current.rescore([League.PRO]);
+      ageAnswers();
       await result.current.rescore([League.PRO]);
+      ageAnswers();
       await result.current.rescore([League.PRO]);
     });
 
@@ -334,12 +348,32 @@ describe("usePlayerScores, refresh", () => {
     let first: unknown;
     let second: unknown;
     await act(async () => {
+      ageAnswers();
       first = await result.current.rescore([League.PRO]);
+      ageAnswers();
       second = await result.current.rescore([League.PRO]);
     });
 
     expect(first).toBe(standing);
     expect(second).toBe(standing);
+  });
+
+  it("hands a poll seconds after the last fetch that answer, and fetches nothing", async () => {
+    getPlayerScoresMock.mockResolvedValue(scoresFor(5));
+    const { result } = renderHook(() => usePlayerScores(WEEK_5, SEASON), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.scores).toEqual(scoresFor(5)));
+    const fetchesBefore = fetchLeagueResultsMock.mock.calls.length;
+    const answered = await fetchLeagueResultsMock.mock.results.at(-1)?.value;
+
+    let polled: unknown;
+    await act(async () => {
+      polled = await result.current.rescore([League.PRO]);
+    });
+
+    expect(polled).toBe(answered);
+    expect(fetchLeagueResultsMock).toHaveBeenCalledTimes(fetchesBefore);
   });
 
   it("scores a refresh the reader asked for even where no game moved", async () => {
@@ -404,6 +438,7 @@ describe("usePlayerScores, refresh", () => {
       .calls.length;
 
     await act(async () => {
+      ageAnswers();
       const polled = result.current.rescore();
       await result.current.refresh();
       await polled;
@@ -441,6 +476,7 @@ describe("usePlayerScores, refresh", () => {
     await act(async () => {
       asked = result.current.refresh();
       // Turned away, since the refresh holds the sheet open.
+      ageAnswers();
       await result.current.rescore();
     });
     expect(getPlayerScoresMock).toHaveBeenCalledTimes(scoringCallsBefore);
@@ -479,6 +515,7 @@ describe("usePlayerScores, refresh", () => {
 
     let passes: Promise<unknown> | undefined;
     await act(async () => {
+      ageAnswers();
       const polled = result.current.rescore();
       const asked = result.current.refresh();
       passes = Promise.all([polled, asked]);
@@ -635,6 +672,7 @@ describe("usePlayerScores, refresh", () => {
 
     getPlayerScoresMock.mockRejectedValueOnce(new Error("espn down"));
     await act(async () => {
+      ageAnswers();
       await result.current.rescore([League.PRO]);
     });
 
@@ -659,12 +697,14 @@ describe("usePlayerScores, refresh", () => {
     fetchLeagueResultsMock.mockResolvedValue(movedWeek(7));
     getPlayerScoresMock.mockRejectedValueOnce(new Error("espn down"));
     await act(async () => {
+      ageAnswers();
       await result.current.rescore([League.PRO]);
     });
     const scoringCallsBefore = getPlayerScoresMock.mock.calls.length;
 
     getPlayerScoresMock.mockResolvedValue(scoresFor(6));
     await act(async () => {
+      ageAnswers();
       await result.current.rescore([League.PRO]);
     });
 
