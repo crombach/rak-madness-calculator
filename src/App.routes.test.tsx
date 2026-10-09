@@ -128,6 +128,28 @@ describe("the app: the URL decides which week is fetched, and what shows while i
     expect(resultsCaption()).toHaveTextContent(expected);
   });
 
+  // The shortcut holds the caption's room, since it names no week yet, and hands
+  // the same frame on to the week it lands on.
+  it("keeps one frame from a shortcut URL to the page it lands on", async () => {
+    mountScoreboard("/scoreboard");
+
+    const frame = document.querySelector(".page");
+    expect(frame).toBeInTheDocument();
+    expect(document.querySelector(".results-caption")).toHaveClass("--loading");
+    expect(document.querySelector(".table.--skeleton")).toBeInTheDocument();
+
+    await screen.findByText("MNF Points Pick");
+    expect(document.querySelector(".page")).toBe(frame);
+  });
+
+  it("keeps one frame from a bare week URL to the scoreboard", async () => {
+    mountScoreboard(`/${SEASON}/${CURRENT_WEEK}`);
+
+    const frame = document.querySelector(".page");
+    await screen.findByText("MNF Points Pick");
+    expect(document.querySelector(".page")).toBe(frame);
+  });
+
   // `getByText` reads a hidden node, so the attribute is what has to be asserted.
   it("says the week on screen without saying it twice", async () => {
     await mountScoreboard(`/${SEASON}/${CURRENT_WEEK}/scoreboard`);

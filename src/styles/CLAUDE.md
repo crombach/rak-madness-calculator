@@ -6,8 +6,8 @@ hold keyframes. Design tokens live in `src/index.scss` instead.
 
 The `ui-style` skill maps each piece of UI to its token, mixin, or class.
 
-- `_breakpoints.scss`: `roomy-screen`, `labeled-navbar`, `wide-screen`,
-  `short-screen`, `can-hover`, `phone-landscape`, `touch-screen`,
+- `_breakpoints.scss`: `roomy-screen`, `labeled-navbar` and its negation
+  `unlabeled-navbar`, `wide-screen`, `short-screen`, `can-hover`, `phone-landscape`, `touch-screen`,
   `reduced-motion`. Mixins rather
   than custom properties, because a custom property does not work inside a media
   query. Reach them with `@use "…/styles/breakpoints" as *;`. Every width one is

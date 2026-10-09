@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { Navigate, useParams } from "react-router";
 import useLiveWeek from "../../hooks/useLiveWeek";
 import { GameStatus } from "../../types/ESPN";
 import { League } from "../../types/League";
@@ -12,7 +11,8 @@ import gameSections, {
   POLLED_LEAGUES,
 } from "../games/gameSections";
 import { GameSection } from "../games/SectionTitle";
-import resultsPath, { RESULTS_PAGE } from "../results/resultsPath";
+import ResultsRedirect from "../results/ResultsRedirect";
+import { RESULTS_PAGE } from "../results/resultsPath";
 import KnockoutCard from "./KnockoutCard";
 import "./Knockouts.scss";
 /**
@@ -36,7 +36,6 @@ export default function Knockouts({
     leagues: ReadonlyArray<League>,
   ) => Promise<LeagueResults | undefined>;
 }) {
-  const { season, week } = useParams();
   const { fetched } = useLiveWeek({
     active: true,
     leagues: POLLED_LEAGUES,
@@ -61,12 +60,7 @@ export default function Knockouts({
   if (knockouts == null) return null;
   // No game knocked anyone out and none open can, or the week could not be read.
   if (knockouts.games.length === 0) {
-    return (
-      <Navigate
-        replace
-        to={resultsPath(season, week, RESULTS_PAGE.scoreboard)}
-      />
-    );
+    return <ResultsRedirect to={RESULTS_PAGE.scoreboard} />;
   }
 
   const sections = gameSections(

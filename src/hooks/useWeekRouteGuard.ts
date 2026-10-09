@@ -19,7 +19,8 @@ const SEASON_PATTERN = /^\d{4}$/;
 
 /**
  * Decides whether a `/:season/:week` URL has results to show, and sends the user
- * home when it does not.
+ * home when it does not. Given no season and no week, as on a shortcut route or a
+ * bare week URL on its way to a page, it waits and judges nothing.
  *
  * The waiting rules matter more than the redirect ones. A results URL is opened
  * before the schedule has loaded and before the picks have been looked for, so
@@ -66,7 +67,11 @@ export default function useWeekRouteGuard(
 
   let result: GuardResult;
   let redirect: Redirect | undefined;
-  if (!isKnownSeason) {
+  if (seasonParam == null && weekParam == null) {
+    // A shortcut route such as `/scoreboard`, or a bare week URL, which borrows
+    // the results frame on its way to a page and has no URL to judge yet.
+    result = { status: "loading" };
+  } else if (!isKnownSeason) {
     result = { status: "loading" };
     redirect = {
       header: "Unknown Season",

@@ -22,7 +22,8 @@ The data layer, plus the page measurements. The first four mount once in
 - `cssMediaQuery`: a query off a `--rak-*` token, shared with the navbar menu
 - `usePullToRefresh`: a touch screen's pull on a scrolling box, written to the root
 - `useExportScores`: the scores, as a workbook
-- `useWeekRouteGuard`: whether a `/:season/:week` URL has anything to show
+- `useWeekRouteGuard`: whether a `/:season/:week` URL has anything to show.
+  Judges nothing on a route naming no week
 - `useFillerRows`: the empty rows carrying a table to the viewport bottom
 - `useViewportInsets`: what a keyboard covers, as root properties
 - `useShowPlayerStatus`: whether the tables may say where a player stands

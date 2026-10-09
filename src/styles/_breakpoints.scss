@@ -54,6 +54,16 @@ $breakpoint-short: 540px;
   }
 }
 
+/**
+ * Exactly where `labeled-navbar` does not hold. Its own query negated rather than
+ * a `max-width` 1px under it, so no fractional width falls between the two.
+ */
+@mixin unlabeled-navbar {
+  @media not all and (min-width: $breakpoint-labeled-navbar) {
+    @content;
+  }
+}
+
 /** Room enough to center a dialog, rather than stand it on the bottom edge. */
 @mixin wide-screen {
   @media (min-width: $breakpoint-wide) {

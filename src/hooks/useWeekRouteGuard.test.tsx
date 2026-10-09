@@ -104,6 +104,14 @@ describe("useWeekRouteGuard", () => {
     expect(toastHeader()).toBe("Unknown Season");
   });
 
+  it("has nothing to judge on a route that names no week", () => {
+    const result = guard();
+
+    expect(result).toEqual({ status: "loading" });
+    expect(navigate).not.toHaveBeenCalled();
+    expect(showToast).not.toHaveBeenCalled();
+  });
+
   it("waits, without judging, while the schedule is still loading", () => {
     // The whole point of the guard: a results URL is opened before the schedule
     // and the picks are known, so nothing may be decided on what is missing yet.
