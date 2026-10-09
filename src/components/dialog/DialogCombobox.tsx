@@ -11,18 +11,17 @@ type OptionProps<T> = {
   render: (item: T) => ReactNode;
 };
 
-/** Compares `item` and `className` only. */
-const Option = memo(
-  function Option<T>({ item, className, render }: OptionProps<T>) {
-    return (
-      <Combobox.Item value={item} className={className}>
-        {render(item)}
-      </Combobox.Item>
-    );
-  },
-  (previous, next) =>
-    previous.item === next.item && previous.className === next.className,
-) as <T>(props: OptionProps<T>) => ReactNode;
+const Option = memo(function Option<T>({
+  item,
+  className,
+  render,
+}: OptionProps<T>) {
+  return (
+    <Combobox.Item value={item} className={className}>
+      {render(item)}
+    </Combobox.Item>
+  );
+}) as <T>(props: OptionProps<T>) => ReactNode;
 
 /**
  * The search a dialog is pointed at one of its subjects with.
@@ -80,7 +79,10 @@ export default function DialogCombobox<T>({
    * input, and `overlay` styles it the way `renderValue` styles a choice.
    */
   unlisted?: { text: string; overlay: ReactNode };
-  /** Reads the item alone. An entry is drawn again only when its item changes. */
+  /**
+   * Keep it stable, defined outside the component or held in `useCallback`. Every
+   * entry is drawn again when this changes.
+   */
   renderOption: (item: T) => ReactNode;
   /** Focuses the input as it mounts. */
   focusOnMount?: boolean;
