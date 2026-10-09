@@ -42,10 +42,22 @@ export type ParsedPicks = {
  */
 const parsed = new WeakMap<ArrayBuffer, Promise<ParsedPicks>>();
 
+let xlsxLoad: Promise<typeof import("xlsx-js-style")> | undefined;
+
 /**
  * `xlsx-js-style` is over half the bundle, and nothing on the first paint needs
- * it, so it is fetched when a workbook actually turns up.
+ * it, so it stays out of the entry chunk. Whoever is about to fetch a workbook
+ * starts this too, so the parser arrives beside the picks rather than after them.
+ * One load is shared, and a failed one is dropped so the next call retries.
  */
+export function loadXlsx(): Promise<typeof import("xlsx-js-style")> {
+  xlsxLoad ??= import("xlsx-js-style").catch((error) => {
+    xlsxLoad = undefined;
+    throw error;
+  });
+  return xlsxLoad;
+}
+
 export default function parsePicksWorkbook(
   picksBuffer: ArrayBuffer,
 ): Promise<ParsedPicks> {
@@ -57,7 +69,7 @@ export default function parsePicksWorkbook(
 }
 
 async function parseWorkbook(picksBuffer: ArrayBuffer): Promise<ParsedPicks> {
-  const XLSX = await import("xlsx-js-style");
+  const XLSX = await loadXlsx();
   const workbook = XLSX.read(picksBuffer, { type: "array" });
   const picksSheet = workbook.Sheets[Object.keys(workbook.Sheets)[0]];
   const rows: Array<PicksRow> = XLSX.utils.sheet_to_json(picksSheet);

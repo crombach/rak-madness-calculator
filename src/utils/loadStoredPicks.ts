@@ -1,7 +1,9 @@
-import { WeekInfo } from "../types/League";
+import { League, WeekInfo } from "../types/League";
 import { XLSX_CONTENT_TYPE } from "./buildSpreadsheetBuffer";
 import { contentTypeOf, isContentType } from "./contentType";
+import getLeagueInfo from "./getLeagueInfo";
 import { readCachedPicks, writeCachedPicks } from "./picksCache";
+import { loadXlsx } from "./scoring/parsePicksWorkbook";
 
 /**
  * A week's picks workbook from the API, falling back to whatever this browser
@@ -19,6 +21,9 @@ async function loadWeek(
   season: number,
   weekNumber: number,
 ): Promise<ArrayBuffer> {
+  // The parser is the slowest thing the picks wait on, so it loads while they
+  // download. A failure resurfaces when the parse itself asks for it.
+  loadXlsx().catch(() => {});
   try {
     const response = await fetch(`/api/picks/${season}/${weekNumber}`);
     if (response.status === 404) {
@@ -55,6 +60,9 @@ let prefetched: { key: string; picks: Promise<ArrayBuffer> } | undefined;
 export function prefetchStoredPicks(season: number, weekNumber: number) {
   const key = `${season}:${weekNumber}`;
   if (prefetched?.key === key) return;
+  // The college groups wait on this calendar once scoring starts. The pro one
+  // already starts with the week list.
+  getLeagueInfo(League.COLLEGE, season).catch(() => {});
   const picks = loadWeek(season, weekNumber);
   // Read later, or never, so a failure here is not an unhandled rejection.
   picks.catch(() => {});

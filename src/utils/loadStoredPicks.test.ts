@@ -1,7 +1,15 @@
-import { WeekInfo } from "../types/League";
+import { League, WeekInfo } from "../types/League";
 import { XLSX_CONTENT_TYPE } from "./buildSpreadsheetBuffer";
-import loadStoredPicks from "./loadStoredPicks";
+import getLeagueInfo from "./getLeagueInfo";
+import loadStoredPicks, { prefetchStoredPicks } from "./loadStoredPicks";
 import { readCachedPicks, writeCachedPicks } from "./picksCache";
+
+const xlsxImported = vi.hoisted(() => vi.fn());
+vi.mock("xlsx-js-style", () => {
+  xlsxImported();
+  return {};
+});
+vi.mock("./getLeagueInfo");
 
 const SEASON = 2025;
 const WEEK = { value: 4, label: "Week 4" } as WeekInfo;
@@ -93,5 +101,39 @@ describe("loadStoredPicks", () => {
     await loadStoredPicks(SEASON, WEEK);
 
     expect(bytesOf(readCachedPicks(SEASON, WEEK.value))).toEqual([9]);
+  });
+});
+
+describe("the xlsx parser", () => {
+  it("starts loading while the picks request is still in flight", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => new Promise(() => {})),
+    );
+
+    // A fresh module, since the first load of the parser is shared.
+    vi.resetModules();
+    vi.doMock("xlsx-js-style", () => {
+      xlsxImported();
+      return {};
+    });
+    const fresh = await import("./loadStoredPicks");
+
+    fresh.default(SEASON, WEEK).catch(() => {});
+    await vi.waitFor(() => expect(xlsxImported).toHaveBeenCalled());
+  });
+});
+
+describe("prefetchStoredPicks", () => {
+  it("asks for the college calendar beside the picks", () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => new Promise(() => {})),
+    );
+    vi.mocked(getLeagueInfo).mockResolvedValue(null);
+
+    prefetchStoredPicks(SEASON + 1, 1);
+
+    expect(getLeagueInfo).toHaveBeenCalledWith(League.COLLEGE, SEASON + 1);
   });
 });
