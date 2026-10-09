@@ -262,6 +262,13 @@ export default memo(function ResultsFrame({
     if (!isOpen) setOpened(undefined);
   }, []);
 
+  // The card pages poll, and a poll sets `isRefreshing`, so passing it there would
+  // re-render the navbar on every poll. A refresh begun where the key shows stays
+  // busy until it ends, through the key's collapse too.
+  const [wasKeyBusy, setKeyBusy] = useState(false);
+  const isKeyBusy = isRefreshing && (canRefresh || wasKeyBusy);
+  if (isKeyBusy !== wasKeyBusy) setKeyBusy(isKeyBusy);
+
   useAppNavbar({
     // Rendered while the week loads too, so the navbar's shape won't shift under
     // the pointer once it lands. Disabled until there's anything to switch to.
@@ -270,9 +277,7 @@ export default memo(function ResultsFrame({
     isWeekLive: canRefresh,
     onViewChange,
     onRefresh,
-    // Only where the refresh button shows it. The card pages poll, and a poll
-    // sets this, so passing it there would re-render the navbar on every poll.
-    isRefreshing: canRefresh && isRefreshing,
+    isRefreshing: isKeyBusy,
     season: seasonParam,
     week: weekParam,
     pagesDisabled: !hasWeek,

@@ -21,6 +21,7 @@ import {
 } from "./appTestFixtures";
 import { RESULTS_PAGE } from "./components/results/resultsPath";
 import { League } from "./types/League";
+import doNothing from "./utils/doNothing";
 import {
   pick,
   player,
@@ -115,6 +116,28 @@ describe("the app, results views", () => {
     expect(
       document.querySelector(".toast-slot:not([data-leaving]) .toast"),
     ).not.toBeInTheDocument();
+  });
+
+  it("keeps a refresh in flight busy while its key fades out", async () => {
+    getPlayerScoresMock.mockResolvedValue(openWeekScores);
+    const user = await mountWithScores();
+    await user.click(screen.getByText("View Results"));
+    getPlayerScoresMock.mockReturnValueOnce(new Promise(doNothing));
+    const refresh = screen.getByRole("button", { name: "Refresh" });
+    await user.click(refresh);
+    await waitFor(() => expect(refresh).toHaveAttribute("aria-busy", "true"));
+
+    await user.click(screen.getByRole("button", { name: "Menu" }));
+    await user.click(
+      await screen.findByRole("menuitem", { name: RESULTS_PAGE.games }),
+    );
+
+    await waitFor(() =>
+      expect(document.querySelector(".scores-nav__live")).toHaveClass(
+        "--collapsed",
+      ),
+    );
+    expect(refresh).toHaveAttribute("aria-busy", "true");
   });
 
   it("reports a scoring failure instead of crashing", async () => {
