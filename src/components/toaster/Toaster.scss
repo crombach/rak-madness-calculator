@@ -3,7 +3,7 @@
 $toasterWidth: min(calc(100% - 48px), 400px);
 
 .toaster {
-  // The top of the page's own layers, per `--rak-z-toast`. A dialog sits above it.
+  // The top of the page's own layers. A dialog sits above it.
   z-index: var(--rak-z-toast);
   display: flex;
   flex-direction: column-reverse;

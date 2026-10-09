@@ -88,6 +88,7 @@ export default function Toaster() {
             className="toast-slot"
             data-leaving={isLeaving || undefined}
             aria-hidden={isLeaving || undefined}
+            inert={isLeaving || undefined}
           >
             <div className="toast-slot__inner">
               <div

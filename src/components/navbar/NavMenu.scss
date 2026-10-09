@@ -86,8 +86,7 @@
   min-width: 12rem;
   background-color: var(--rak-nav-fill);
   color: var(--rak-nav-ink);
-  // Timed and eased like the drawer, so the menu opens and closes as the rest
-  // of the overlays do rather than snapping.
+  // Timed and eased like the drawer.
   transition:
     opacity var(--rak-duration-medium) var(--rak-ease-standard),
     transform var(--rak-duration-medium) var(--rak-ease-standard);
@@ -98,7 +97,6 @@
     transform: translateY(calc(-1 * var(--rak-space-1)));
   }
 
-  // A fade in place, as the drawer's.
   @include reduced-motion {
     &[data-starting-style],
     &[data-ending-style] {

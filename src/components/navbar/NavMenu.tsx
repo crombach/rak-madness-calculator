@@ -105,6 +105,14 @@ const settingsDialog = lazyPreloadable(
 );
 const SettingsDialog = settingsDialog.Page;
 
+/** Opens or closes a menu, and fetches Settings as it opens. */
+function warmOnOpen(setOpen: (next: boolean) => void, warm: () => void) {
+  return (next: boolean) => {
+    setOpen(next);
+    if (next) warm();
+  };
+}
+
 const TRIGGER_CLASSES = buttonClasses({ compact: true, iconOnly: true });
 
 /**
@@ -130,6 +138,9 @@ export default function NavMenu({
   const playerCount = useScores()?.scores.length;
   const { experimentalFeatures } = useSettings();
   const [isSettingsOpen, setSettingsOpen] = useState(false);
+  // Mounted once its chunk is in, so the chunk waits for a menu to open and the
+  // dialog is already there, closed, for its first open to animate from.
+  const [isSettingsWarm, setSettingsWarm] = useState(settingsDialog.isLoaded);
   const [hasSeenSettings, markSettingsSeen] = useSettingsSeen();
 
   const context: NavContext = {
@@ -158,7 +169,10 @@ export default function NavMenu({
       markSettingsSeen();
     },
     isUnseen: !hasSeenSettings,
-    warm: () => void settingsDialog.preload().catch(doNothing),
+    warm: () =>
+      void settingsDialog
+        .preload()
+        .then(() => setSettingsWarm(true), doNothing),
   };
 
   return (
@@ -175,7 +189,9 @@ export default function NavMenu({
       ) : (
         <NavPopup links={links} settings={settings} />
       )}
-      <SettingsDialog open={isSettingsOpen} onOpenChange={setSettingsOpen} />
+      {(isSettingsWarm || isSettingsOpen) && (
+        <SettingsDialog open={isSettingsOpen} onOpenChange={setSettingsOpen} />
+      )}
     </>
   );
 }
@@ -241,15 +257,7 @@ function NavPopup({
   // that travel in the browsers that report it, so it hangs off a box that stays.
   const anchorRef = useRef<HTMLSpanElement>(null);
   return (
-    <Menu.Root
-      open={open}
-      onOpenChange={(next) => {
-        setOpen(next);
-        if (next) {
-          settings.warm();
-        }
-      }}
-    >
+    <Menu.Root open={open} onOpenChange={warmOnOpen(setOpen, settings.warm)}>
       <span ref={anchorRef} className="nav-menu__anchor">
         <Menu.Trigger className={TRIGGER_CLASSES} aria-label="Menu">
           <MenuIcon />
@@ -390,12 +398,7 @@ function NavDrawer({
   return (
     <Drawer.Root
       open={open}
-      onOpenChange={(next) => {
-        setOpen(next);
-        if (next) {
-          settings.warm();
-        }
-      }}
+      onOpenChange={warmOnOpen(setOpen, settings.warm)}
       onOpenChangeComplete={(isOpen) => {
         if (!isOpen) setHandingOff(false);
       }}
