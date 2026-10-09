@@ -47,11 +47,14 @@ $toasterWidth: min(calc(100% - 48px), 400px);
   display: grid;
   grid-template-rows: 1fr;
   transition:
-    grid-template-rows var(--rak-duration-medium) var(--rak-ease-standard),
-    opacity var(--rak-duration-medium) var(--rak-ease-standard);
-  animation: rak-toast-in var(--rak-duration-medium) var(--rak-ease-standard);
+    grid-template-rows var(--toast-exit-duration) var(--rak-ease-standard),
+    opacity var(--toast-exit-duration) var(--rak-ease-standard);
+  animation: rak-toast-in var(--toast-exit-duration) var(--rak-ease-standard);
 
   &[data-leaving] {
+    // The entrance would otherwise hold the rows and opacity it sets, so a toast
+    // leaving mid-entrance would grow on, then snap.
+    animation: none;
     grid-template-rows: 0fr;
     opacity: 0;
     pointer-events: none;
@@ -61,7 +64,7 @@ $toasterWidth: min(calc(100% - 48px), 400px);
 .toast-slot__inner {
   // A grid item's automatic minimum is its content, which stops the row collapsing.
   min-height: 0;
-  animation: rak-toast-clip var(--rak-duration-medium) var(--rak-ease-standard);
+  animation: rak-toast-clip var(--toast-exit-duration) var(--rak-ease-standard);
 
   .toast-slot[data-leaving] > & {
     overflow: hidden;

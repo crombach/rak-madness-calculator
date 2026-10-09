@@ -142,7 +142,7 @@
 
   // Settings opens its dialog as the drawer closes, and the dialog's scrim fades
   // in over its own. Two scrims fading at once would dip under the one level.
-  // This one holds through the first half of the close, then fades, so the pair
+  // This one holds for `--rak-duration-fast` of the close, then fades, so the pair
   // never reads lighter than either alone.
   &--handoff[data-ending-style] {
     transition-delay: var(--rak-duration-fast);

@@ -1,4 +1,11 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import {
   Toast,
@@ -69,13 +76,15 @@ describe("Toaster", () => {
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
-  it("keeps a dismissed toast, hidden, until its exit has played", async () => {
+  it("keeps a dismissed toast, inert, until its exit has played", async () => {
     mountToaster(new Toast("neutral", "Alice", "Winner!"));
     await show("Alice");
     const [, closeButton] = screen.getAllByRole("button");
     await userEvent.click(closeButton);
     expect(screen.getByText("Winner!")).toBeInTheDocument();
-    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.getByText("Winner!").closest(".toast-slot")).toHaveAttribute(
+      "inert",
+    );
     await waitFor(() =>
       expect(screen.queryByText("Winner!")).not.toBeInTheDocument(),
     );
@@ -90,5 +99,69 @@ describe("Toaster", () => {
     mountToaster(new Toast(type as ToastType, "Header", "Message"));
     await show("Header");
     expect(screen.getByTestId(iconTestId)).toBeInTheDocument();
+  });
+
+  describe("exits", () => {
+    beforeEach(() => vi.useFakeTimers({ shouldAdvanceTime: false }));
+    afterEach(() => vi.useRealTimers());
+
+    function dismissButton(header: string) {
+      const toast = screen.getByText(header).closest(".toast") as HTMLElement;
+      return within(toast).getByRole("button", { name: "Dismiss" });
+    }
+
+    it("removes each toast 200ms after its own dismissal", () => {
+      const toasts = ["A", "B", "C"].map(
+        (h) => new Toast("neutral", h, `${h} msg`),
+      );
+      render(
+        <ToastContextProvider>
+          {toasts.map((toast) => (
+            <ShowToastButton key={toast.id} toast={toast} />
+          ))}
+          <Toaster />
+        </ToastContextProvider>,
+      );
+      for (const h of ["A", "B", "C"]) {
+        fireEvent.click(screen.getByRole("button", { name: `show ${h}` }));
+      }
+
+      fireEvent.click(dismissButton("A"));
+      act(() => void vi.advanceTimersByTime(150));
+      fireEvent.click(dismissButton("B"));
+      act(() => void vi.advanceTimersByTime(49));
+      expect(screen.getByText("A msg")).toBeInTheDocument();
+      act(() => void vi.advanceTimersByTime(1));
+      expect(screen.queryByText("A msg")).not.toBeInTheDocument();
+      expect(screen.getByText("B msg")).toBeInTheDocument();
+      act(() => void vi.advanceTimersByTime(149));
+      expect(screen.getByText("B msg")).toBeInTheDocument();
+      act(() => void vi.advanceTimersByTime(1));
+      expect(screen.queryByText("B msg")).not.toBeInTheDocument();
+      expect(screen.getByText("C msg")).toBeInTheDocument();
+    });
+
+    it("does not keep a leaving toast mounted while new ones arrive", () => {
+      const early = new Toast("neutral", "Early", "Early msg");
+      const late = Array.from(
+        { length: 6 },
+        (_, i) => new Toast("neutral", `L${i}`, `L${i} msg`),
+      );
+      render(
+        <ToastContextProvider>
+          {[early, ...late].map((toast) => (
+            <ShowToastButton key={toast.id} toast={toast} />
+          ))}
+          <Toaster />
+        </ToastContextProvider>,
+      );
+      fireEvent.click(screen.getByRole("button", { name: "show Early" }));
+      fireEvent.click(dismissButton("Early"));
+      for (let i = 0; i < late.length; i++) {
+        act(() => void vi.advanceTimersByTime(50));
+        fireEvent.click(screen.getByRole("button", { name: `show L${i}` }));
+      }
+      expect(screen.queryByText("Early msg")).not.toBeInTheDocument();
+    });
   });
 });

@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { CSSProperties, ReactNode, useEffect, useRef, useState } from "react";
 import {
   CheckCircleIcon,
   CloseIcon,
@@ -23,7 +23,7 @@ const START_ICON_BY_TYPE: Record<Toast["type"], ReactNode> = {
   danger: <ReportIcon />,
 };
 
-/** How long a dismissed toast stays to play its exit. Keep in sync with `--rak-duration-medium`. */
+/** How long a dismissed toast stays to play its exit. */
 const EXIT_MS = 200;
 
 type Shown = { toast: Toast; isLeaving: boolean };
@@ -36,6 +36,8 @@ function useWithExits(toasts: Array<Toast>): Array<Shown> {
   const [shown, setShown] = useState<Array<Shown>>(() =>
     toasts.map((toast) => ({ toast, isLeaving: false })),
   );
+  // When each leaving toast was first seen leaving, so its exit runs from then.
+  const leftAtById = useRef(new Map<Toast["id"], number>());
   const live = new Set(toasts.map((toast) => toast.id));
   const known = new Set(shown.map(({ toast }) => toast.id));
   const isStale =
@@ -51,15 +53,32 @@ function useWithExits(toasts: Array<Toast>): Array<Shown> {
     ]);
   }
 
-  const hasLeaving = shown.some(({ isLeaving }) => isLeaving);
   useEffect(() => {
-    if (!hasLeaving) return;
+    const leftAtMap = leftAtById.current;
+    const now = Date.now();
+    const leavingIds = shown
+      .filter(({ isLeaving }) => isLeaving)
+      .map(({ toast }) => toast.id);
+    if (leavingIds.length === 0) return;
+    for (const id of leavingIds) if (!leftAtMap.has(id)) leftAtMap.set(id, now);
+    const nextDeadline = Math.min(
+      ...leavingIds.map((id) => (leftAtMap.get(id) ?? now) + EXIT_MS),
+    );
     const timer = window.setTimeout(
-      () => setShown((old) => old.filter(({ isLeaving }) => !isLeaving)),
-      EXIT_MS,
+      () => {
+        const expiredAt = Date.now();
+        const isExpired = (id: Toast["id"]) =>
+          (leftAtMap.get(id) ?? expiredAt) + EXIT_MS <= expiredAt;
+        setShown((old) =>
+          old.filter(
+            ({ toast, isLeaving }) => !(isLeaving && isExpired(toast.id)),
+          ),
+        );
+      },
+      Math.max(0, nextDeadline - now),
     );
     return () => window.clearTimeout(timer);
-  }, [hasLeaving, shown]);
+  }, [shown]);
 
   return shown;
 }
@@ -74,6 +93,7 @@ export default function Toaster() {
     // same tick as its content is one iOS VoiceOver can miss.
     <div
       className="toaster"
+      style={{ "--toast-exit-duration": `${EXIT_MS}ms` } as CSSProperties}
       role="region"
       aria-label="Notifications"
       onPointerEnter={pauseToasts}
@@ -87,7 +107,6 @@ export default function Toaster() {
             key={toast.id}
             className="toast-slot"
             data-leaving={isLeaving || undefined}
-            aria-hidden={isLeaving || undefined}
             inert={isLeaving || undefined}
           >
             <div className="toast-slot__inner">

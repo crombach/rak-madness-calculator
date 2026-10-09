@@ -95,6 +95,8 @@ type SettingsEntry = {
   isUnseen: boolean;
   /** Fetches the dialog ahead of its first open. */
   warm: () => void;
+  /** Settles once the dialog's chunk is in, so a first open never mounts it half-drawn. */
+  ready: () => Promise<void>;
 };
 
 // Out of the entry, since most visits never open it. Fetched when a menu opens, so
@@ -169,10 +171,16 @@ export default function NavMenu({
       markSettingsSeen();
     },
     isUnseen: !hasSeenSettings,
-    warm: () =>
+    warm: () => {
+      if (settingsDialog.isLoaded()) return;
       void settingsDialog
         .preload()
-        .then(() => setSettingsWarm(true), doNothing),
+        .then(() => setSettingsWarm(true), doNothing);
+    },
+    ready: () =>
+      settingsDialog.isLoaded()
+        ? Promise.resolve()
+        : settingsDialog.preload().then(doNothing, doNothing),
   };
 
   return (
@@ -306,7 +314,7 @@ function NavPopup({
               className={getClasses("nav-menu__item", {
                 "nav-menu__settings--unseen": settings.isUnseen,
               })}
-              onClick={settings.onOpen}
+              onClick={() => void settings.ready().then(settings.onOpen)}
             >
               <SettingsIcon />
               {SETTINGS_LABEL}
@@ -469,11 +477,13 @@ function NavDrawer({
                     className={getClasses("nav-drawer__item", {
                       "nav-menu__settings--unseen": settings.isUnseen,
                     })}
-                    onClick={() => {
-                      setHandingOff(true);
-                      setOpen(false);
-                      settings.onOpen();
-                    }}
+                    onClick={() =>
+                      void settings.ready().then(() => {
+                        setHandingOff(true);
+                        setOpen(false);
+                        settings.onOpen();
+                      })
+                    }
                   >
                     <SettingsIcon />
                     {SETTINGS_LABEL}
