@@ -1,4 +1,4 @@
-import { PropsWithChildren, ReactNode, useRef } from "react";
+import { PropsWithChildren, ReactNode, useLayoutEffect, useRef } from "react";
 import usePullToRefresh, { Pull } from "../../hooks/usePullToRefresh";
 import getClasses from "../../utils/getClasses";
 import { ScreenRotationIcon } from "../icon/Icon";
@@ -14,6 +14,7 @@ export default function PageLayout({
   showingResults = false,
   scrollable = true,
   pull,
+  scrollKey,
   children,
 }: PropsWithChildren<{
   /**
@@ -36,8 +37,19 @@ export default function PageLayout({
    * with nothing on it to pull yet.
    */
   pull?: Pull;
+  /**
+   * Names the page on show. The content returns to the top when it changes, and
+   * pages that share a key keep their offset.
+   */
+  scrollKey?: string;
 }>) {
   const contentRef = useRef<HTMLElement>(null);
+  const shownKey = useRef(scrollKey);
+  useLayoutEffect(() => {
+    if (shownKey.current === scrollKey) return;
+    shownKey.current = scrollKey;
+    if (contentRef.current) contentRef.current.scrollTop = 0;
+  }, [scrollKey]);
   const isPullArmed = usePullToRefresh({ scrollRef: contentRef, pull });
 
   return (

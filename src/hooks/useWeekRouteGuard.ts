@@ -66,7 +66,11 @@ export default function useWeekRouteGuard(
 
   let result: GuardResult;
   let redirect: Redirect | undefined;
-  if (!isKnownSeason) {
+  if (seasonParam == null && weekParam == null) {
+    // A shortcut route such as `/scoreboard`, which borrows the results frame
+    // while it works out the week and has no URL to judge.
+    result = { status: "loading" };
+  } else if (!isKnownSeason) {
     result = { status: "loading" };
     redirect = {
       header: "Unknown Season",

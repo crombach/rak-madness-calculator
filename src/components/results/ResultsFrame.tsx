@@ -1,25 +1,29 @@
 import {
+  ComponentProps,
   PropsWithChildren,
   ReactNode,
   Suspense,
   lazy,
+  memo,
   useCallback,
   useEffect,
   useState,
 } from "react";
 import { useNavigate, useParams } from "react-router";
-import { useIsWeekSettled } from "../../context/AppDataContext";
+import {
+  useIsWeekSettled,
+  useScoringStatus,
+} from "../../context/AppDataContext";
+import { useSettings } from "../../context/SettingsContext";
 import { errorToast, useToastActions } from "../../context/ToastContext";
 import { GameStatusContextProvider } from "../../context/GameStatusContext";
 import { PlayerAnalysisContextProvider } from "../../context/PlayerAnalysisContext";
 import { scoringFailedMessage } from "../../hooks/usePlayerScores";
 import useWarmTeamLogos from "../../hooks/useWarmTeamLogos";
-import { League } from "../../types/League";
 import { RakMadnessScores } from "../../types/RakMadnessScores";
 import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import SEPARATOR from "../../utils/separator";
-import { LeagueResults } from "../../utils/scoring/leagueResults";
 import ComparePlayersSkeleton from "../comparePlayers/ComparePlayersSkeleton";
 import GamesSkeleton from "../games/GamesSkeleton";
 import { gamesPage } from "../games/GamesPage";
@@ -57,7 +61,7 @@ const PlayerAnalysisDialog = lazy(loadPlayerAnalysisDialog);
 const GameStatusDialog = lazy(loadGameStatusDialog);
 
 /** The wireframe each page stands as while its week loads. */
-const SKELETONS: Record<ResultsPage, ReactNode> = {
+export const SKELETONS: Record<ResultsPage, ReactNode> = {
   [RESULTS_PAGE.scoreboard]: <SkeletonTable view={RESULTS_PAGE.scoreboard} />,
   [RESULTS_PAGE.picks]: <SkeletonTable view={RESULTS_PAGE.picks} />,
   [RESULTS_PAGE.knockouts]: <KnockoutsSkeleton />,
@@ -105,6 +109,26 @@ function usePageCode(view: ResultsPage): boolean {
   return isIn;
 }
 
+/**
+ * The Game Status dialog, with the poll it drives and the leagues in flight read
+ * here. Their flags change on every poll, and the frame is memoized against that.
+ */
+function GameStatusSlot(
+  props: Omit<
+    ComponentProps<typeof GameStatusDialog>,
+    "fetchingLeagues" | "onPoll"
+  >,
+) {
+  const { fetchingLeagues, rescore } = useScoringStatus();
+  return (
+    <GameStatusDialog
+      {...props}
+      fetchingLeagues={fetchingLeagues}
+      onPoll={rescore}
+    />
+  );
+}
+
 /** What the caption is sized from on a route that does not know the week yet. */
 const CAPTION_STAND_IN = `Scoreboard${SEPARATOR}0000 Season${SEPARATOR}Week 00`;
 
@@ -126,15 +150,13 @@ type Opened =
  * while it works out where it is going. The results arrive in that same
  * wireframe.
  */
-export default function ResultsFrame({
+export default memo(function ResultsFrame({
   view,
   isReady = false,
   hasFailed = false,
   onViewChange = doNothing,
   onRefresh = doNothing,
-  onPoll,
   isRefreshing = false,
-  fetchingLeagues,
   scores,
   children,
 }: PropsWithChildren<{
@@ -145,13 +167,7 @@ export default function ResultsFrame({
   hasFailed?: boolean;
   onViewChange?: (view: ScoresView) => void;
   onRefresh?: () => void;
-  /** Pulls one league, and rescores the week where anything in it moved. */
-  onPoll?: (
-    leagues: ReadonlyArray<League>,
-  ) => Promise<LeagueResults | undefined>;
   isRefreshing?: boolean;
-  /** Which leagues have a request in flight, for the Game Status bar. */
-  fetchingLeagues?: ReadonlySet<League>;
   /** What the player analysis is worked out from. Absent while a week loads. */
   scores?: RakMadnessScores;
 }>) {
@@ -198,13 +214,20 @@ export default function ResultsFrame({
     showToast(errorToast("Failed to open that. Reload the page to try again."));
   }, [showToast]);
 
-  // Fetched as soon as the page is quiet, so opening a dialog waits for neither
-  // fetch nor mount. Skipping this trades everyone's load for a wait openers pay.
+  const { experimentalFeatures } = useSettings();
+
+  // Fetched once the first table has painted and the page is quiet, so opening a
+  // dialog waits for neither fetch nor mount, and the load does not share its
+  // bandwidth. The menu's pages come with them.
   useEffect(() => {
+    if (!isReady) return;
     let isOnScreen = true;
     // A failed fetch leaves both dialogs unmounted, and the click that wants one
     // asks for its module again. `DialogLoadBoundary` holds it if that fails too.
     const warm = () => {
+      gamesPage.preload().catch(doNothing);
+      knockoutsPage.preload().catch(doNothing);
+      if (experimentalFeatures) comparePlayersPage.preload().catch(doNothing);
       Promise.all([loadPlayerAnalysisDialog(), loadGameStatusDialog()])
         .then(() => {
           if (isOnScreen) setHasLoaded(true);
@@ -223,13 +246,7 @@ export default function ResultsFrame({
       isOnScreen = false;
       window.cancelIdleCallback(handle);
     };
-  }, []);
-
-  // Fetched ahead too, so the menu's link lands on the page rather than on a
-  // frame of wireframe while its chunk arrives.
-  useEffect(() => {
-    gamesPage.preload().catch(doNothing);
-  }, []);
+  }, [isReady, experimentalFeatures]);
 
   // Stable, so the memoized tables below do not re-render for a dialog opening.
   const showPlayerAnalysis = useCallback(
@@ -257,6 +274,7 @@ export default function ResultsFrame({
       // in for, so it wants the same content area.
       showingResults
       scrollable={isReady}
+      scrollKey={scoresView ? "scores" : view}
       // This matches the refresh button beside it exactly. Both gate on the
       // same live week, and only once there is a table to pull on.
       pull={isReady && canRefresh ? { onRefresh, isRefreshing } : undefined}
@@ -332,17 +350,15 @@ export default function ResultsFrame({
       {(hasLoaded || hasOpened.game) && (
         <DialogLoadBoundary onError={onDialogLoadError}>
           <Suspense fallback={null}>
-            <GameStatusDialog
+            <GameStatusSlot
               open={opened?.kind === "game"}
               onOpenChange={close}
               gameLabel={opened?.kind === "game" ? opened.label : undefined}
               scores={scores}
-              fetchingLeagues={fetchingLeagues}
-              onPoll={onPoll}
             />
           </Suspense>
         </DialogLoadBoundary>
       )}
     </AppNavbar>
   );
-}
+});

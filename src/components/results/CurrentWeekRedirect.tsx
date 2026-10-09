@@ -1,6 +1,5 @@
 import { Navigate } from "react-router";
 import { useCalendar } from "../../context/AppDataContext";
-import ResultsFrame from "./ResultsFrame";
 import resultsPath, { ScoresView } from "./resultsPath";
 
 /**
@@ -14,8 +13,8 @@ import resultsPath, { ScoresView } from "./resultsPath";
  * week the home page picker opens on, so the two never disagree. A season whose
  * opener is still ahead has no such week, and goes home instead.
  *
- * Shows the wireframe while it waits, because it cannot know where it is going
- * until that schedule has arrived.
+ * Draws nothing while it waits, because it cannot know where it is going until
+ * that schedule has arrived. `ResultsLayout` holds the wireframe beside it.
  */
 export default function CurrentWeekRedirect({ view }: { view: ScoresView }) {
   const { loadedSeason, defaultWeekNumber, weeks, isWeeksLoading } =
@@ -37,5 +36,5 @@ export default function CurrentWeekRedirect({ view }: { view: ScoresView }) {
     );
   }
 
-  return <ResultsFrame view={view} />;
+  return null;
 }

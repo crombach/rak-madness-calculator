@@ -12,12 +12,19 @@
 
 // Below this the icon carries the button on its own, so the app name beside it
 // keeps to two lines. Labeled buttons squeeze it to three. The label is only
-// drawn, never removed: the button is named for a screen reader either way.
+// drawn, never removed: the button is named for a screen reader either way, which
+// `display: none` would undo.
 .scores-nav__label {
-  display: none;
+  @include visually-hidden;
 
   @include labeled-navbar {
-    display: inline;
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
   }
 }
 
