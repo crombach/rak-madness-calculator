@@ -46,9 +46,7 @@ let xlsxLoad: Promise<typeof import("xlsx-js-style")> | undefined;
 
 /**
  * `xlsx-js-style` is over half the bundle, and nothing on the first paint needs
- * it, so it stays out of the entry chunk. Whoever is about to fetch a workbook
- * starts this too, so the parser arrives beside the picks rather than after them.
- * One load is shared, and a failed one is dropped so the next call retries.
+ * it, so it stays out of the entry chunk. One load is shared, and a failed one is dropped so the next call retries.
  */
 export function loadXlsx(): Promise<typeof import("xlsx-js-style")> {
   xlsxLoad ??= import("xlsx-js-style").catch((error) => {

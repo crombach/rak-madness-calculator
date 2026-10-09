@@ -60,8 +60,7 @@ let prefetched: { key: string; picks: Promise<ArrayBuffer> } | undefined;
 export function prefetchStoredPicks(season: number, weekNumber: number) {
   const key = `${season}:${weekNumber}`;
   if (prefetched?.key === key) return;
-  // The college groups wait on this calendar once scoring starts. The pro one
-  // already starts with the week list.
+  // The college calendar is awaited once scoring starts, so start it now.
   getLeagueInfo(League.COLLEGE, season).catch(() => {});
   const picks = loadWeek(season, weekNumber);
   // Read later, or never, so a failure here is not an unhandled rejection.

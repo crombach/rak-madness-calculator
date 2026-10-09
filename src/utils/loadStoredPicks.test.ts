@@ -5,10 +5,11 @@ import loadStoredPicks, { prefetchStoredPicks } from "./loadStoredPicks";
 import { readCachedPicks, writeCachedPicks } from "./picksCache";
 
 const xlsxImported = vi.hoisted(() => vi.fn());
-vi.mock("xlsx-js-style", () => {
+const xlsxStub = vi.hoisted(() => () => {
   xlsxImported();
   return {};
 });
+vi.mock("xlsx-js-style", xlsxStub);
 vi.mock("./getLeagueInfo");
 
 const SEASON = 2025;
@@ -113,10 +114,7 @@ describe("the xlsx parser", () => {
 
     // A fresh module, since the first load of the parser is shared.
     vi.resetModules();
-    vi.doMock("xlsx-js-style", () => {
-      xlsxImported();
-      return {};
-    });
+    vi.doMock("xlsx-js-style", xlsxStub);
     const fresh = await import("./loadStoredPicks");
 
     fresh.default(SEASON, WEEK).catch(() => {});
