@@ -60,11 +60,12 @@ type SettingValues = {
   experimentalFeatures: boolean;
 };
 
+type SettingKey = keyof SettingValues;
+
+type SetterName<K extends SettingKey> = `set${Capitalize<K>}`;
+
 type SettingSetters = {
-  setTheme: (theme: Theme) => void;
-  setPlayerName: (name: string) => void;
-  setLiveAnalysis: (enabled: boolean) => void;
-  setExperimentalFeatures: (enabled: boolean) => void;
+  [K in SettingKey as SetterName<K>]: (value: SettingValues[K]) => void;
 };
 
 type Settings = SettingValues & SettingSetters;
@@ -100,8 +101,6 @@ const EXPERIMENTAL_FEATURES_CODEC: Codec<boolean> = {
   write: (enabled) => (enabled ? EXPERIMENTAL_FEATURES_ON : ""),
 };
 
-type SettingKey = keyof SettingValues;
-
 const STORED: {
   [K in SettingKey]: { name: string; codec: Codec<SettingValues[K]> };
 } = {
@@ -114,17 +113,29 @@ const STORED: {
   },
 };
 
+const SETTING_KEYS = Object.keys(STORED) as Array<SettingKey>;
+
+function setterName<K extends SettingKey>(key: K): SetterName<K> {
+  return `set${key[0].toUpperCase()}${key.slice(1)}` as SetterName<K>;
+}
+
 function readValues(
   lookup: (name: string) => string | undefined,
 ): SettingValues {
   const read = <K extends SettingKey>(key: K) =>
     STORED[key].codec.read(lookup(STORED[key].name));
-  return {
-    theme: read("theme"),
-    playerName: read("playerName"),
-    liveAnalysis: read("liveAnalysis"),
-    experimentalFeatures: read("experimentalFeatures"),
-  };
+  return Object.fromEntries(
+    SETTING_KEYS.map((key) => [key, read(key)]),
+  ) as SettingValues;
+}
+
+/** A setter for every setting, each one `setter` makes for its key. */
+function eachSetter(
+  setter: <K extends SettingKey>(key: K) => (value: SettingValues[K]) => void,
+): SettingSetters {
+  return Object.fromEntries(
+    SETTING_KEYS.map((key) => [setterName(key), setter(key)]),
+  ) as SettingSetters;
 }
 
 /**
@@ -144,8 +155,8 @@ function createSettingsStore(): SettingsStore {
   const setter =
     <K extends SettingKey>(key: K) =>
     (next: SettingValues[K]) => {
-      writeSetting(STORED[key].name, STORED[key].codec.write(next));
       if (Object.is(values[key], next)) return;
+      writeSetting(STORED[key].name, STORED[key].codec.write(next));
       values = { ...values, [key]: next };
       listeners.forEach((listener) => listener());
     };
@@ -155,12 +166,7 @@ function createSettingsStore(): SettingsStore {
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
-    setters: {
-      setTheme: setter("theme"),
-      setPlayerName: setter("playerName"),
-      setLiveAnalysis: setter("liveAnalysis"),
-      setExperimentalFeatures: setter("experimentalFeatures"),
-    },
+    setters: eachSetter(setter),
   };
 }
 
@@ -171,12 +177,7 @@ const DEFAULT_VALUES = readValues(() => undefined);
 const SettingsContext = createContext<SettingsStore>({
   get: () => DEFAULT_VALUES,
   subscribe: () => doNothing,
-  setters: {
-    setTheme: doNothing,
-    setPlayerName: doNothing,
-    setLiveAnalysis: doNothing,
-    setExperimentalFeatures: doNothing,
-  },
+  setters: eachSetter(() => doNothing),
 });
 
 export const DARK_QUERY = "(prefers-color-scheme: dark)";
@@ -289,9 +290,10 @@ export function useSettings(): Settings {
 
 /**
  * What `select` reads off the settings, rendering only when its answer changes.
- * The answer is compared with `Object.is`, so it must not be a fresh object.
+ * Held to a primitive, because `useSyncExternalStore` compares answers with
+ * `Object.is` and a fresh object would render forever.
  */
-export function useSettingsSelector<T>(
+function useSelected<T extends string | boolean>(
   select: (values: SettingValues) => T,
 ): T {
   const store = useContext(SettingsContext);
@@ -300,7 +302,7 @@ export function useSettingsSelector<T>(
 
 /** One setting, rendering only when it changes. */
 export function useSetting<K extends SettingKey>(key: K): SettingValues[K] {
-  return useSettingsSelector((values) => values[key]);
+  return useSelected((values) => values[key]);
 }
 
 /**
@@ -312,7 +314,7 @@ export function useSetting<K extends SettingKey>(key: K): SettingValues[K] {
  * value against something a reader typed from memory.
  */
 export function useIsMyPlayer(name: string): boolean {
-  return useSettingsSelector(({ playerName }) => isMyPlayer(name, playerName));
+  return useSelected(({ playerName }) => isMyPlayer(name, playerName));
 }
 
 /** `useIsMyPlayer` against a name already read, for a caller matching many. */

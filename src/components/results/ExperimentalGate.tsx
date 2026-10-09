@@ -1,5 +1,5 @@
 import { PropsWithChildren } from "react";
-import { useSettings } from "../../context/SettingsContext";
+import { useSetting } from "../../context/SettingsContext";
 import ResultsRedirect from "./ResultsRedirect";
 import { RESULTS_PAGE } from "./resultsPath";
 
@@ -8,7 +8,7 @@ import { RESULTS_PAGE } from "./resultsPath";
  * Anyone else lands on the scoreboard.
  */
 export default function ExperimentalGate({ children }: PropsWithChildren) {
-  const { experimentalFeatures } = useSettings();
+  const experimentalFeatures = useSetting("experimentalFeatures");
   if (!experimentalFeatures) {
     return <ResultsRedirect to={RESULTS_PAGE.scoreboard} />;
   }

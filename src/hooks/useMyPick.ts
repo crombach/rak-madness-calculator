@@ -1,4 +1,5 @@
-import { isMyPlayer, useSettingsSelector } from "../context/SettingsContext";
+import { useMemo } from "react";
+import { isMyPlayer, useSetting } from "../context/SettingsContext";
 import { RakMadnessScores } from "../types/RakMadnessScores";
 import { WeekGame } from "../types/WeekGame";
 import pickFor from "../utils/scoring/pickFor";
@@ -12,7 +13,8 @@ export default function useMyPick(
   scores: RakMadnessScores | undefined,
   game: WeekGame | undefined,
 ): string | undefined {
-  return useSettingsSelector(({ playerName }) => {
+  const playerName = useSetting("playerName");
+  return useMemo(() => {
     if (game == null) return undefined;
     const player = scores?.scores.find(({ name }) =>
       isMyPlayer(name, playerName),
@@ -20,5 +22,5 @@ export default function useMyPick(
     const pick =
       player != null ? pickFor(player, game)?.pick.trim() : undefined;
     return pick || undefined;
-  });
+  }, [scores, game, playerName]);
 }

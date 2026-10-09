@@ -1,4 +1,4 @@
-import { useSettings } from "../../context/SettingsContext";
+import { useSetting } from "../../context/SettingsContext";
 import rangeWithPrefix from "../../utils/rangeWithPrefix";
 import { RESULTS_PAGE } from "../results/resultsPath";
 import SkeletonStatus from "../pageLayout/SkeletonStatus";
@@ -18,7 +18,7 @@ const STAND_IN_GAMES = 8;
  * set gets their pick's line too, which the loaded cards will carry.
  */
 export default function GamesSkeleton() {
-  const { playerName } = useSettings();
+  const playerName = useSetting("playerName");
   const myPick = playerName.trim() ? STAND_IN_PICK : undefined;
   return (
     <>

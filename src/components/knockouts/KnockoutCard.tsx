@@ -1,7 +1,7 @@
 import { ReactNode, memo, useMemo, useRef, useState } from "react";
 import { useShowGameStatus } from "../../context/GameStatusContext";
 import { useShowPlayerAnalysis } from "../../context/PlayerAnalysisContext";
-import { isMyPlayer, useSettings } from "../../context/SettingsContext";
+import { isMyPlayer, useSetting } from "../../context/SettingsContext";
 import { GameStatus } from "../../types/ESPN";
 import { WeekGame } from "../../types/WeekGame";
 import getClasses from "../../utils/getClasses";
@@ -54,7 +54,7 @@ function Side({
   knockedOut: ReadonlySet<string>;
 }) {
   const showPlayerAnalysis = useShowPlayerAnalysis();
-  const { playerName } = useSettings();
+  const playerName = useSetting("playerName");
   const [isExpanded, setIsExpanded] = useState(false);
   const players = useMemo(() => {
     const mine = new Set(
