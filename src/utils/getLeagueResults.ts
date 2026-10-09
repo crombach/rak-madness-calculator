@@ -654,7 +654,9 @@ function inDateOrder(
  *
  * Matchups still being read off the workbook start the scoreboard request beside
  * them, since it asks nothing of the picks. A week that settled the last time this
- * browser scored it waits for them instead, as the cache likely answers it whole.
+ * browser scored it waits for them instead, as the cache likely answers it whole. A
+ * week not marked settled, or with nothing held, sends that request even where the
+ * cache then answers every matchup.
  *
  * @param week week in the season (week 1 is the first NFL week)
  * @param matchups the games the picks describe
