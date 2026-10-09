@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import {
   Toast,
@@ -67,6 +67,18 @@ describe("Toaster", () => {
     const [, closeButton] = screen.getAllByRole("button");
     await userEvent.click(closeButton);
     expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("keeps a dismissed toast, hidden, until its exit has played", async () => {
+    mountToaster(new Toast("neutral", "Alice", "Winner!"));
+    await show("Alice");
+    const [, closeButton] = screen.getAllByRole("button");
+    await userEvent.click(closeButton);
+    expect(screen.getByText("Winner!")).toBeInTheDocument();
+    expect(screen.queryByRole("status")).toBeNull();
+    await waitFor(() =>
+      expect(screen.queryByText("Winner!")).not.toBeInTheDocument(),
+    );
   });
 
   it.each([
