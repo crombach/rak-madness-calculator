@@ -12,6 +12,7 @@ The week's results routes: `/:season/:week/scoreboard`, `/picks`, `/knockouts`,
 - `ScoreboardRoute`, `PicksRoute`: one table each, from context.
 - `ExperimentalGate`: sends a reader without the opt-in to the scoreboard.
 - `ResultsRedirect`: a page's redirect, drawing the destination's wireframe.
+- `resultsSkeletons`: each page's wireframe, for the frame and the redirect.
 - `ResultsFrame`: the page and wireframe `ResultsLayout` renders into, memoized,
   captioned by view and week. Holds both dialogs lazily and the table providers.
   A failed week gets Retry and Home. A lazy page's wireframe stays until its

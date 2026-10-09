@@ -1,5 +1,5 @@
 import { Navigate, useParams } from "react-router";
-import { SKELETONS } from "./ResultsFrame";
+import SKELETONS from "./resultsSkeletons";
 import resultsPath, { ResultsPage } from "./resultsPath";
 
 /**

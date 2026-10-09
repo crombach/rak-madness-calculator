@@ -1,12 +1,12 @@
 import {
   ComponentProps,
   PropsWithChildren,
-  ReactNode,
   Suspense,
   lazy,
   memo,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { useNavigate, useParams } from "react-router";
@@ -24,8 +24,6 @@ import { RakMadnessScores } from "../../types/RakMadnessScores";
 import doNothing from "../../utils/doNothing";
 import getClasses from "../../utils/getClasses";
 import SEPARATOR from "../../utils/separator";
-import ComparePlayersSkeleton from "../comparePlayers/ComparePlayersSkeleton";
-import GamesSkeleton from "../games/GamesSkeleton";
 import { gamesPage } from "../games/GamesPage";
 import { knockoutsPage } from "../knockouts/KnockoutsPage";
 import { comparePlayersPage } from "../comparePlayers/ComparePlayersPage";
@@ -33,8 +31,6 @@ import Button from "../button/Button";
 import AppNavbar from "../navbar/AppNavbar";
 import EmptyState from "../pageLayout/EmptyState";
 import { APP_NAME } from "../navbar/LogoButton";
-import KnockoutsSkeleton from "../knockouts/KnockoutsSkeleton";
-import SkeletonTable from "../table/SkeletonTable";
 import DialogLoadBoundary from "./DialogLoadBoundary";
 import {
   RESULTS_PAGE,
@@ -43,6 +39,7 @@ import {
   isScoresView,
   weekName,
 } from "./resultsPath";
+import SKELETONS from "./resultsSkeletons";
 import "./ResultsFrame.scss";
 
 /*
@@ -59,15 +56,6 @@ const loadPlayerAnalysisDialog = () =>
 const loadGameStatusDialog = () => import("../gameStatus/GameStatusDialog");
 const PlayerAnalysisDialog = lazy(loadPlayerAnalysisDialog);
 const GameStatusDialog = lazy(loadGameStatusDialog);
-
-/** The wireframe each page stands as while its week loads. */
-export const SKELETONS: Record<ResultsPage, ReactNode> = {
-  [RESULTS_PAGE.scoreboard]: <SkeletonTable view={RESULTS_PAGE.scoreboard} />,
-  [RESULTS_PAGE.picks]: <SkeletonTable view={RESULTS_PAGE.picks} />,
-  [RESULTS_PAGE.knockouts]: <KnockoutsSkeleton />,
-  [RESULTS_PAGE.games]: <GamesSkeleton />,
-  [RESULTS_PAGE.comparePlayers]: <ComparePlayersSkeleton />,
-};
 
 /**
  * The pages whose code is fetched apart. The frame holds its own wireframe until
@@ -128,6 +116,9 @@ function GameStatusSlot(
     />
   );
 }
+
+/** The scroll offset the scoreboard and the picks share. */
+const SCORES_SCROLL_KEY = "scores";
 
 /** What the caption is sized from on a route that does not know the week yet. */
 const CAPTION_STAND_IN = `Scoreboard${SEPARATOR}0000 Season${SEPARATOR}Week 00`;
@@ -215,37 +206,45 @@ export default memo(function ResultsFrame({
 
   const { experimentalFeatures } = useSettings();
 
-  // Fetched once the first table has painted and the page is quiet, so opening a
-  // dialog waits for neither fetch nor mount, and the load does not share its
-  // bandwidth. The menu's pages come with them.
+  // Fetched ahead, alongside the week, so the menu's link lands on the page
+  // rather than on a frame of wireframe while its chunk arrives.
   useEffect(() => {
-    if (!isReady) return;
-    let isOnScreen = true;
+    gamesPage.preload().catch(doNothing);
+  }, []);
+
+  // Fetched once the week has painted, or failed to, and the page is quiet. So
+  // opening a dialog waits for neither fetch nor mount, and the load does not
+  // share its bandwidth with the week's. The Knockouts page comes with them. Its
+  // code is as heavy, and its fetch is a second try at the code
+  // `AppDataContext` reads the knockouts with.
+  const canWarm = isReady || hasFailed;
+  const hasWarmed = useRef(false);
+  useEffect(() => {
+    if (!canWarm || hasWarmed.current) return;
     // A failed fetch leaves both dialogs unmounted, and the click that wants one
     // asks for its module again. `DialogLoadBoundary` holds it if that fails too.
     const warm = () => {
-      gamesPage.preload().catch(doNothing);
+      hasWarmed.current = true;
       knockoutsPage.preload().catch(doNothing);
-      if (experimentalFeatures) comparePlayersPage.preload().catch(doNothing);
       Promise.all([loadPlayerAnalysisDialog(), loadGameStatusDialog()])
-        .then(() => {
-          if (isOnScreen) setHasLoaded(true);
-        })
+        .then(() => setHasLoaded(true))
         .catch(doNothing);
     };
     if (typeof window.requestIdleCallback !== "function") {
       const timer = window.setTimeout(warm, 0);
-      return () => {
-        isOnScreen = false;
-        window.clearTimeout(timer);
-      };
+      return () => window.clearTimeout(timer);
     }
     const handle = window.requestIdleCallback(warm);
-    return () => {
-      isOnScreen = false;
-      window.cancelIdleCallback(handle);
-    };
-  }, [isReady, experimentalFeatures]);
+    return () => window.cancelIdleCallback(handle);
+  }, [canWarm]);
+
+  // Apart from the warm above, so turning βeta Mode on fetches only this.
+  const hasWarmedCompare = useRef(false);
+  useEffect(() => {
+    if (!canWarm || !experimentalFeatures || hasWarmedCompare.current) return;
+    hasWarmedCompare.current = true;
+    comparePlayersPage.preload().catch(doNothing);
+  }, [canWarm, experimentalFeatures]);
 
   // Stable, so the memoized tables below do not re-render for a dialog opening.
   const showPlayerAnalysis = useCallback(
@@ -273,7 +272,7 @@ export default memo(function ResultsFrame({
       // in for, so it wants the same content area.
       showingResults
       scrollable={isReady}
-      scrollKey={scoresView ? "scores" : view}
+      scrollKey={scoresView ? SCORES_SCROLL_KEY : view}
       // This matches the refresh button beside it exactly. Both gate on the
       // same live week, and only once there is a table to pull on.
       pull={isReady && canRefresh ? { onRefresh, isRefreshing } : undefined}

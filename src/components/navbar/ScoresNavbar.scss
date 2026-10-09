@@ -14,10 +14,8 @@
 // keeps to two lines. Labeled buttons squeeze it to three. The label is only
 // drawn, never removed: the button is named for a screen reader either way.
 .scores-nav__label {
-  @include visually-hidden;
-
-  @include labeled-navbar {
-    @include visually-hidden-reset;
+  @include unlabeled-navbar {
+    @include visually-hidden;
   }
 }
 

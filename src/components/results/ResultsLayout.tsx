@@ -37,12 +37,17 @@ export default function ResultsLayout({
   const navigate = useNavigate();
   const { refresh, isRefreshing } = useScoringStatus();
   const scores = useScores();
-  const guard = useWeekRouteGuard(seasonParam, weekParam);
 
   // The route decides which view is showing, not component state.
   const segment = useMatch("/:season/:week/:page")?.params.page;
   const view = shortcutView ?? pageForSegment(segment);
   const isBareWeek = shortcutView == null && segment == null;
+  // A bare week URL is judged once it lands on its scoreboard. Judged here as
+  // well, a bad week would redirect twice and a failed one paint its failure.
+  const guard = useWeekRouteGuard(
+    isBareWeek ? undefined : seasonParam,
+    isBareWeek ? undefined : weekParam,
+  );
 
   // Leaving a menu page pushes, so Back returns to it. The menu pushed it, so a
   // replace would leave two entries for the page before it.
@@ -62,7 +67,7 @@ export default function ResultsLayout({
     <>
       <ResultsFrame
         view={view}
-        isReady={guard.status === "ready" && !isBareWeek}
+        isReady={guard.status === "ready"}
         hasFailed={guard.status === "failed"}
         onViewChange={onViewChange}
         onRefresh={refresh}
