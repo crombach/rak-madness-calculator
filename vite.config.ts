@@ -28,7 +28,10 @@ function dropPublicClaudeMd(): Plugin {
 // `xlsx-js-style` inlines the `cpexcel` codepage table, 176 KB gzipped, which
 // only the legacy `.xls` and `.csv` readers use. The app takes `.xlsx` alone, on
 // upload, from storage and on export, and those never reach a codepage.
-function stubXlsxCodepages(): Plugin {
+// CommonJS on purpose: the library guards on `require("./cpexcel.js")` being
+// undefined, and an ES stub makes Rolldown hand back a truthy namespace instead.
+// Applies to `vite build` only. Dev and Vitest load the real table.
+export function stubXlsxCodepages(): Plugin {
   const stubId = "\0xlsx-codepages-stub";
   return {
     name: "stub-xlsx-codepages",
@@ -37,7 +40,7 @@ function stubXlsxCodepages(): Plugin {
       if (/(^|\/)cpexcel(\.js)?$/.test(id)) return stubId;
     },
     load(id) {
-      if (id === stubId) return "export default undefined;";
+      if (id === stubId) return "module.exports = undefined;";
     },
   };
 }

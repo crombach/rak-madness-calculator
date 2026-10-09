@@ -1,3 +1,4 @@
+import cachedImport from "../cachedImport";
 import debugLog from "../debugLog";
 import { LEAGUE_PREFIX } from "./gameColumns";
 import parsePick from "./parsePick";
@@ -42,19 +43,11 @@ export type ParsedPicks = {
  */
 const parsed = new WeakMap<ArrayBuffer, Promise<ParsedPicks>>();
 
-let xlsxLoad: Promise<typeof import("xlsx-js-style")> | undefined;
-
 /**
  * `xlsx-js-style` is over half the bundle, and nothing on the first paint needs
- * it, so it stays out of the entry chunk. One load is shared, and a failed one is dropped so the next call retries.
+ * it, so it stays out of the entry chunk.
  */
-export function loadXlsx(): Promise<typeof import("xlsx-js-style")> {
-  xlsxLoad ??= import("xlsx-js-style").catch((error) => {
-    xlsxLoad = undefined;
-    throw error;
-  });
-  return xlsxLoad;
-}
+export const loadXlsx = cachedImport(() => import("xlsx-js-style"));
 
 export default function parsePicksWorkbook(
   picksBuffer: ArrayBuffer,

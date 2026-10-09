@@ -10,6 +10,7 @@ import {
 } from "./pickStatusFill";
 import rangeWithPrefix from "./rangeWithPrefix";
 import { fillStatus } from "./scoring/getPickResults";
+import { loadXlsx } from "./scoring/parsePicksWorkbook";
 import repeatedNames from "./scoring/repeatedNames";
 import { ranksOnMerit } from "./scoring/comparePlayerScores";
 
@@ -175,7 +176,7 @@ export default async function buildSpreadsheetBuffer(
     showStatus = false,
   }: { season: number; weekNumber: number; showStatus?: boolean },
 ): Promise<ArrayBuffer> {
-  const XLSX = await import("xlsx-js-style");
+  const XLSX = await loadXlsx();
   const workbook = XLSX.utils.book_new();
   const repeated = repeatedNames(scoresObject.scores);
   const ranks = ranksOnMerit(scoresObject.scores);
