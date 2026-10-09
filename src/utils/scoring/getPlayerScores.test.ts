@@ -9,6 +9,14 @@ vi.mock("../getLeagueResults");
 
 const mockGetLeagueResults = vi.mocked(getLeagueResults);
 
+/** The matchups the scoring pass asked `league` about. */
+async function matchupsAskedFor(league: League) {
+  const call = mockGetLeagueResults.mock.calls.find(
+    ([asked]) => asked === league,
+  );
+  return call?.[2];
+}
+
 const WEEK: WeekInfo = {
   value: 5,
   label: "Week 5",
@@ -143,18 +151,13 @@ describe("getPlayerScores, spreadsheet parsing", () => {
         { Name: "Bob", C1: "MICH +3", P1: "KC +7", P2: "PHI +3", Pts: 45 },
       ]),
     );
-    expect(mockGetLeagueResults).toHaveBeenCalledWith(
-      League.COLLEGE,
-      WEEK,
-      [new Set(["OSU", "MICH"])],
-      undefined,
-    );
-    expect(mockGetLeagueResults).toHaveBeenCalledWith(
-      League.PRO,
-      WEEK,
-      [new Set(["BUF", "KC"]), new Set(["DAL", "PHI"])],
-      undefined,
-    );
+    expect(await matchupsAskedFor(League.COLLEGE)).toEqual([
+      new Set(["OSU", "MICH"]),
+    ]);
+    expect(await matchupsAskedFor(League.PRO)).toEqual([
+      new Set(["BUF", "KC"]),
+      new Set(["DAL", "PHI"]),
+    ]);
   });
 
   // A game everybody took the same side of names one team, and that is enough to
@@ -169,12 +172,7 @@ describe("getPlayerScores, spreadsheet parsing", () => {
       ]),
     );
 
-    expect(mockGetLeagueResults).toHaveBeenCalledWith(
-      League.COLLEGE,
-      WEEK,
-      [new Set(["OSU"])],
-      undefined,
-    );
+    expect(await matchupsAskedFor(League.COLLEGE)).toEqual([new Set(["OSU"])]);
     expect(result.scores.map((score) => score.college[0].status)).toEqual([
       "yes",
       "yes",

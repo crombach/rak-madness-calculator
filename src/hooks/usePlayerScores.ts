@@ -21,6 +21,7 @@ import {
 import isWeekSettled from "../utils/scoring/isWeekSettled";
 import parsePicksWorkbook from "../utils/scoring/parsePicksWorkbook";
 import { writeSettledWeek } from "../utils/settledWeeksCache";
+import weekKey from "../utils/weekKey";
 import { createScoringPasses, NO_LEAGUES } from "./scoringPasses";
 import scoreChanges, {
   NO_SCORE_CHANGES,
@@ -38,18 +39,14 @@ import scoreChanges, {
 export const WIPE_LIFETIME_MS = 350;
 
 /**
- * How old an answer a rescore takes in place of a fetch. Under `POLL_MS`, so only
- * a view opened, or a rescore asked, seconds after the last fetch is spared one.
+ * How old a scoreboard answer a rescore takes in place of a fetch. Under
+ * `POLL_MS`, so only a view opened, or a rescore asked, seconds after the last
+ * fetch is spared one.
  */
 export const RESCORE_MAX_AGE_MS = 10_000;
 
 /** The season and week a scoring attempt has finished, however it turned out. */
 type LastAttempt = { season: number; weekNumber: number };
-
-/** What the held scores and games are filed under. */
-function weekKey(season: number, weekNumber: number): string {
-  return `${season}:${weekNumber}`;
-}
 
 /** What a failed scoring pass says, in its toast and on the page it left empty. */
 export function scoringFailedMessage(weekNumber: number | string): string {
@@ -125,6 +122,8 @@ type ScoringRequest = {
   gateOnMovement?: boolean;
   /** Turns the refresh button for as long as the pass runs, floored. */
   turnsButton?: boolean;
+  /** How old a scoreboard answer the fetch may take in place of a request. */
+  reuseWithinMs?: number;
 };
 
 /**
@@ -173,16 +172,11 @@ export default function usePlayerScores(
   const previousScores = useRef<
     { key: string; scores: RakMadnessScores } | undefined
   >(undefined);
-  // The games the scores on screen were built from, keyed the same way, and when
-  // each league was last asked for. Both the leagues a pass did not fetch and the
-  // baseline `hasMoved` measures against come from here.
+  // The games the scores on screen were built from, keyed the same way. Both the
+  // leagues a pass did not fetch and the baseline `hasMoved` measures against come
+  // from here.
   const heldResults = useRef<
-    | {
-        key: string;
-        results: LeagueResults;
-        askedAt: Record<LeagueKey, number>;
-      }
-    | undefined
+    { key: string; results: LeagueResults } | undefined
   >(undefined);
   // Runs for the length of a wipe, and drops the changes behind it.
   const wipeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -228,6 +222,7 @@ export default function usePlayerScores(
       quietFailure = false,
       gateOnMovement = false,
       turnsButton = false,
+      reuseWithinMs,
     }: ScoringRequest): Promise<LeagueResults | undefined> => {
       if (!selectedWeek || season == null) return undefined;
       const attempt = ++latestAttempt.current;
@@ -265,9 +260,10 @@ export default function usePlayerScores(
         const buffer = await step("load", loadPicks);
         setPicksBuffer(buffer);
 
-        const heldForWeek =
-          heldResults.current?.key === key ? heldResults.current : undefined;
-        const held = heldForWeek?.results;
+        const held =
+          heldResults.current?.key === key
+            ? heldResults.current.results
+            : undefined;
         const asked = Date.now();
         passes.beginFetching(leagues);
         const fetched = await step("fetch", async () => {
@@ -285,6 +281,7 @@ export default function usePlayerScores(
                 season,
                 matchups,
                 held,
+                reuseWithinMs,
               }),
               matchups,
             ]);
@@ -294,22 +291,9 @@ export default function usePlayerScores(
           }
         });
 
-        // A league the fetch took from `held` keeps the time it was asked for.
-        const holdFetched = () => {
-          const askedAt = Object.fromEntries(
-            LEAGUES.map((league) => [
-              league,
-              heldForWeek == null || leagues.includes(league)
-                ? asked
-                : heldForWeek.askedAt[league],
-            ]),
-          ) as Record<LeagueKey, number>;
-          heldResults.current = { key, results: fetched, askedAt };
-        };
-
         if (gateOnMovement && !hasMoved(leagues, held, fetched)) {
           // Nothing to score, so the week on screen already stands for this fetch.
-          holdFetched();
+          heldResults.current = { key, results: fetched };
           return fetched;
         }
         turn.start();
@@ -324,7 +308,7 @@ export default function usePlayerScores(
         // against. A pass whose scoring threw leaves the baseline where it was,
         // so the next one sees the move again rather than gating the week behind
         // a failure.
-        holdFetched();
+        heldResults.current = { key, results: fetched };
         const before =
           previousScores.current?.key === key
             ? previousScores.current.scores
@@ -442,6 +426,7 @@ export default function usePlayerScores(
     async (
       refetch: boolean,
       leagues: ReadonlyArray<LeagueKey> = LEAGUES,
+      reuseWithinMs?: number,
     ): Promise<LeagueResults | undefined> => {
       if (selectedWeek == null || season == null) return undefined;
       const inHand = picksBuffer;
@@ -479,6 +464,7 @@ export default function usePlayerScores(
         gateOnMovement: !refetch,
         quietFailure: !refetch,
         turnsButton: true,
+        reuseWithinMs,
       });
     },
     [picksBuffer, season, selectedWeek, attemptScoring, clearToasts],
@@ -507,30 +493,32 @@ export default function usePlayerScores(
     }
   }, [scoreWeek, passes]);
 
-  // A rescore a pass turned away runs through here, never off the answer that pass
-  // fetched, since the move it was asked for may have come after that answer.
-  const fetchAndRescore = useCallback(
+  // Nobody asked for this one, so it yields to anything already running rather
+  // than superseding it. The request is held rather than dropped, and whichever
+  // pass turned it away runs it on its way out. The poll asks once for each state
+  // it finds, so it never asks again for a dropped one. The table would keep the
+  // state before it until the reader refreshed.
+  const rescoreUnlessRunning = useCallback(
     async (
       leagues?: ReadonlyArray<League>,
+      reuseWithinMs?: number,
     ): Promise<LeagueResults | undefined> => {
-      // Nobody asked for this one, so it yields to anything already running rather
-      // than superseding it. The request is held rather than dropped, and whichever
-      // pass turned it away runs it on its way out. The poll asks once for each
-      // state it finds, so it never asks again for a dropped one. The table would
-      // keep the state before it until the reader refreshed.
       if (passes.deferRescore(leagues)) return undefined;
       passes.forgetRescore();
       return scoreWeek(
         false,
         leagues?.map((league) => LEAGUE_KEY[league]) ?? LEAGUES,
+        reuseWithinMs,
       );
     },
     [scoreWeek, passes],
   );
 
+  // A rescore a pass turned away takes no answer already fetched, since the move
+  // it was asked for may have come after the turned-away pass's answer.
   useEffect(() => {
-    passes.setRescore(fetchAndRescore);
-  }, [fetchAndRescore, passes]);
+    passes.setRescore((leagues) => rescoreUnlessRunning(leagues));
+  }, [rescoreUnlessRunning, passes]);
 
   /**
    * What a poll asks for: the named leagues fetched, and the same workbook scored
@@ -540,26 +528,12 @@ export default function usePlayerScores(
    * clock and a down that `hasMoved` deliberately ignores, without a second
    * request. A pass in flight turns this away, and it resolves to nothing.
    *
-   * Where every named league was asked for under `RESCORE_MAX_AGE_MS` ago, resolves
-   * to the games held for the week and fetches nothing.
+   * A scoreboard answer under `RESCORE_MAX_AGE_MS` old stands in for a request.
    */
   const rescore = useCallback(
-    async (
-      leagues?: ReadonlyArray<League>,
-    ): Promise<LeagueResults | undefined> => {
-      const held = heldResults.current;
-      const named = leagues?.map((league) => LEAGUE_KEY[league]) ?? LEAGUES;
-      const isFresh =
-        held != null &&
-        selectedWeek != null &&
-        season != null &&
-        held.key === weekKey(season, selectedWeek.value) &&
-        named.every(
-          (league) => Date.now() - held.askedAt[league] < RESCORE_MAX_AGE_MS,
-        );
-      return isFresh ? held.results : fetchAndRescore(leagues);
-    },
-    [fetchAndRescore, selectedWeek, season],
+    (leagues?: ReadonlyArray<League>) =>
+      rescoreUnlessRunning(leagues, RESCORE_MAX_AGE_MS),
+    [rescoreUnlessRunning],
   );
 
   return useMemo(

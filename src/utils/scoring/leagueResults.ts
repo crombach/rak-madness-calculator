@@ -1,6 +1,7 @@
 import { League, WeekInfo } from "../../types/League";
 import { LeagueResult } from "../../types/LeagueResult";
 import { getLeagueResults } from "../getLeagueResults";
+import { readSettledWeek } from "../settledWeeksCache";
 import { LEAGUES, LeagueKey } from "./gameColumns";
 
 /** Both leagues' games for one week, which is what a scoring pass runs on. */
@@ -39,7 +40,8 @@ function gameState(result: LeagueResult): string {
  * is what stops a week switch being served the week before it.
  *
  * `matchups` may still be on its way, so the scoreboard need not wait on the
- * workbook it is read from.
+ * workbook it is read from. `reuseWithinMs` is how old a scoreboard answer may be
+ * and still be taken in place of a request.
  */
 export async function fetchLeagueResults({
   leagues,
@@ -47,15 +49,16 @@ export async function fetchLeagueResults({
   season,
   matchups,
   held,
+  reuseWithinMs,
 }: {
   leagues: ReadonlyArray<LeagueKey>;
   week: WeekInfo;
   season?: number;
-  matchups:
-    | Record<LeagueKey, Array<Set<string>>>
-    | Promise<Record<LeagueKey, Array<Set<string>>>>;
+  matchups: Promise<Record<LeagueKey, Array<Set<string>>>>;
   held?: LeagueResults;
+  reuseWithinMs?: number;
 }): Promise<LeagueResults> {
+  const mayBeHeld = season != null && readSettledWeek(season, week.value);
   const fetched = await Promise.all(
     LEAGUES.map(async (league): Promise<[LeagueKey, Array<LeagueResult>]> => {
       const kept = held?.[league];
@@ -67,10 +70,9 @@ export async function fetchLeagueResults({
         await getLeagueResults(
           ESPN_LEAGUE[league],
           week,
-          matchups instanceof Promise
-            ? matchups.then((byLeague) => byLeague[league])
-            : matchups[league],
+          matchups.then((byLeague) => byLeague[league]),
           season,
+          { mayBeHeld, reuseWithinMs },
         ),
       ];
     }),

@@ -31,7 +31,10 @@ export async function getPlayerScores(
       leagues: LEAGUES,
       week,
       season,
-      matchups: { college: parsed.collegeMatchups, pro: parsed.proMatchups },
+      matchups: Promise.resolve({
+        college: parsed.collegeMatchups,
+        pro: parsed.proMatchups,
+      }),
     }));
   debugLog("league results", fetched);
 
