@@ -101,6 +101,9 @@ function byId(results: LeagueResults | undefined): Map<string, LeagueResult> {
  * when the view opens is never fetched at all. The leagues still due on a tick are
  * asked in one call, so one rescore answers for all of them.
  *
+ * A tick that comes due in a hidden tab asks nothing and stops the poll. The tab
+ * coming back asks at once, and the poll goes on from there.
+ *
  * `holdForKickoff` false asks every league not yet over on every tick, as a refresh
  * would, kickoffs or not.
  *
@@ -161,6 +164,8 @@ export default function useLiveWeek({
     );
     if (open.length === 0) return;
     let timer = 0;
+    let missedTick = false;
+    let resume: () => void = () => undefined;
     // Missing until the first fetch answers, so the poll always asks once before it
     // waits on anything. The week's own copy of a kickoff is what the scoring pass
     // read, and a game ESPN has already started is exactly the case the first ask
@@ -168,6 +173,10 @@ export default function useLiveWeek({
     const kickoffs = new Map<League, number | null>();
     const stop = latestOnly(async (isCurrent) => {
       const tick = async () => {
+        if (document.hidden) {
+          missedTick = true;
+          return;
+        }
         // A league where nothing has kicked off cannot have moved, so the tick
         // leaves it out. Read across the league rather than off the watched game,
         // or a reader sitting on the Sunday night game would hold up the
@@ -230,11 +239,19 @@ export default function useLiveWeek({
           timer = window.setTimeout(tick, POLL_MS);
         }
       };
+      resume = () => {
+        if (document.hidden || !missedTick) return;
+        missedTick = false;
+        void tick();
+      };
       await tick();
     });
+    const onVisibilityChange = () => resume();
+    document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
       stop();
       window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [active, leagueList, restartOn, holdForKickoff]);
 
