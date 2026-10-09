@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { DARK_QUERY, useSettings } from "../context/SettingsContext";
+import { DARK_QUERY, useSetting } from "../context/SettingsContext";
 import useMediaQuery from "./useMediaQuery";
 
 /** The size directory of an ESPN team logo URL. */
@@ -18,7 +18,7 @@ export function darkLogoUrl(url: string): string {
 
 /** The logo URL for the theme the document is in. */
 export default function useTeamLogoUrl(): (url: string) => string {
-  const { theme } = useSettings();
+  const theme = useSetting("theme");
   const systemDark = useMediaQuery(DARK_QUERY);
   const dark = theme === "dark" || (theme === "auto" && systemDark);
   return useCallback((url) => (dark ? darkLogoUrl(url) : url), [dark]);

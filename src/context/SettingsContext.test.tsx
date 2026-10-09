@@ -8,6 +8,7 @@ import {
   THEME_KEY,
   Theme,
   useIsMyPlayer,
+  useSetting,
   useSettings,
 } from "./SettingsContext";
 
@@ -372,5 +373,55 @@ describe("SettingsContext, the transitions a theme change would ease", () => {
     } finally {
       dark.restore();
     }
+  });
+});
+
+describe("SettingsContext, which readers a change reaches", () => {
+  const renders = new Map<string, number>();
+  const count = (label: string) =>
+    renders.set(label, (renders.get(label) ?? 0) + 1);
+
+  function NameRow({ name }: { name: string }) {
+    const isMine = useIsMyPlayer(name);
+    count(name);
+    return <span>{`${name} ${isMine}`}</span>;
+  }
+
+  function LiveAnalysisRow() {
+    const liveAnalysis = useSetting("liveAnalysis");
+    count("liveAnalysis");
+    return <span>{String(liveAnalysis)}</span>;
+  }
+
+  function mountRows() {
+    renders.clear();
+    const user = userEvent.setup();
+    render(
+      <SettingsContextProvider>
+        <Probe />
+        <NameRow name="Linebacher" />
+        <NameRow name="Barb Wire" />
+        <LiveAnalysisRow />
+      </SettingsContextProvider>,
+    );
+    return user;
+  }
+
+  it("leaves every row alone on a theme change", async () => {
+    const user = mountRows();
+    const before = new Map(renders);
+    await user.click(screen.getByRole("button", { name: "dark" }));
+
+    expect(renders).toEqual(before);
+  });
+
+  it("renders only the row a new name makes the reader's own", async () => {
+    const user = mountRows();
+    const before = new Map(renders);
+    await user.click(screen.getByRole("button", { name: "name me" }));
+
+    expect(renders.get("Linebacher")).toBe(before.get("Linebacher")! + 1);
+    expect(renders.get("Barb Wire")).toBe(before.get("Barb Wire"));
+    expect(renders.get("liveAnalysis")).toBe(before.get("liveAnalysis"));
   });
 });

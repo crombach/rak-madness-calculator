@@ -1,4 +1,4 @@
-import { isMyPlayer, useSettings } from "../context/SettingsContext";
+import { isMyPlayer, useSettingsSelector } from "../context/SettingsContext";
 import { RakMadnessScores } from "../types/RakMadnessScores";
 import { WeekGame } from "../types/WeekGame";
 import pickFor from "../utils/scoring/pickFor";
@@ -12,11 +12,13 @@ export default function useMyPick(
   scores: RakMadnessScores | undefined,
   game: WeekGame | undefined,
 ): string | undefined {
-  const { playerName } = useSettings();
-  if (game == null) return undefined;
-  const player = scores?.scores.find(({ name }) =>
-    isMyPlayer(name, playerName),
-  );
-  const pick = player != null ? pickFor(player, game)?.pick.trim() : undefined;
-  return pick || undefined;
+  return useSettingsSelector(({ playerName }) => {
+    if (game == null) return undefined;
+    const player = scores?.scores.find(({ name }) =>
+      isMyPlayer(name, playerName),
+    );
+    const pick =
+      player != null ? pickFor(player, game)?.pick.trim() : undefined;
+    return pick || undefined;
+  });
 }

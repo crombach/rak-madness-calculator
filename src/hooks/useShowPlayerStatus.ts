@@ -1,5 +1,5 @@
 import { useIsWeekSettled } from "../context/AppDataContext";
-import { useSettings } from "../context/SettingsContext";
+import { useSetting } from "../context/SettingsContext";
 
 /**
  * Whether the tables may say where a player stands, and open the analysis saying
@@ -12,6 +12,6 @@ import { useSettings } from "../context/SettingsContext";
  */
 export default function useShowPlayerStatus(): boolean {
   const isWeekSettled = useIsWeekSettled();
-  const { liveAnalysis } = useSettings();
+  const liveAnalysis = useSetting("liveAnalysis");
   return isWeekSettled || liveAnalysis;
 }
