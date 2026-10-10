@@ -106,22 +106,27 @@ function espnEvent({
 const PLAYS_HOST = "sports.core.api.espn.com";
 const FINISH = "2024-10-06T20:13:01Z";
 
-/** Every scoreboard resolves to `events`, and every game's last play ends at `FINISH`. */
-function mockFetch(events: Array<EspnEvent>) {
+/**
+ * Every scoreboard resolves to `events`, every game summary to `drives`, and every
+ * game's last play ends at `FINISH`.
+ */
+function mockFetch(events: Array<EspnEvent>, drives?: unknown) {
   const fetchMock = vi.fn().mockImplementation(async (url: string) => ({
     ok: true,
     json: async () =>
-      !url.includes(PLAYS_HOST)
-        ? { events }
-        : url.includes("page=")
-          ? { items: [{ wallclock: FINISH, type: { id: "66" } }] }
-          : { pageCount: 188 },
+      url.includes("/summary")
+        ? { drives }
+        : !url.includes(PLAYS_HOST)
+          ? { events }
+          : url.includes("page=")
+            ? { items: [{ wallclock: FINISH, type: { id: "66" } }] }
+            : { pageCount: 188 },
   }));
   stubFetch(fetchMock);
   return fetchMock;
 }
 
-/** The scoreboard requests, leaving out the plays a final game's finish is read off. */
+/** The scoreboard requests, leaving out the plays and game summary requests. */
 function urlsOf(fetchMock: Mock): Array<string> {
   return fetchMock.mock.calls
     .map((call) => call[0])
@@ -530,6 +535,201 @@ describe("getLeagueResults, mapping", () => {
       ]);
       const [result] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
       expect(result.possession.timeout).toBe("KC T/O");
+    });
+
+    const play = (
+      text: string,
+      down?: string,
+      extra: Record<string, unknown> = {},
+      team = "KC",
+    ) => ({
+      type: { text },
+      end: { downDistanceText: down, team: { id: team } },
+      ...extra,
+    });
+
+    /** A BUF timeout the scoreboard gives no side for, with `drives` as the summary. */
+    const readTimeout = async (
+      drives: unknown,
+      situation = {},
+      summaryOk = true,
+    ) => {
+      const fetchMock = mockFetch(
+        [
+          espnEvent({
+            home: "BUF",
+            away: "KC",
+            status: GameStatus.LIVE,
+            situation: {
+              down: 0,
+              lastPlay: {
+                type: { text: "Timeout" },
+                text: "Timeout #1 by BUF at 09:07.",
+              },
+              ...situation,
+            },
+          }),
+        ],
+        drives,
+      );
+      if (!summaryOk) {
+        const answer = fetchMock.getMockImplementation()!;
+        fetchMock.mockImplementation(async (url: string) =>
+          url.includes("/summary") ? { ok: false } : answer(url),
+        );
+      }
+      return {
+        fetchMock,
+        results: await getLeagueResults(League.PRO, WEEK, [BUF_KC]),
+      };
+    };
+
+    it("reads a timeout's down off the last play run", async () => {
+      const drive = {
+        plays: [play("Rush", "3rd & 1 at KC 45"), play("Timeout")],
+      };
+      const { results } = await readTimeout({
+        previous: [{ plays: [play("Rush", "2nd & 7 at KC 39")] }, drive],
+        current: drive,
+      });
+      expect(results[0].possession).toEqual({
+        homeAway: HomeAway.AWAY,
+        downDistanceText: "3rd & 1 @ KC 45",
+        timeout: "BUF T/O",
+      });
+    });
+
+    it("holds a found down while the last play id stays the same", async () => {
+      const drive = {
+        plays: [play("Rush", "3rd & 1 at KC 45"), play("Timeout")],
+      };
+      const fetchMock = mockFetch(
+        [
+          espnEvent({
+            id: "held-timeout",
+            home: "BUF",
+            away: "KC",
+            status: GameStatus.LIVE,
+            situation: {
+              down: 0,
+              lastPlay: {
+                id: "99",
+                type: { text: "Timeout" },
+                text: "Timeout #1 by BUF at 09:07.",
+              },
+            },
+          }),
+        ],
+        { current: drive },
+      );
+      const first = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+      const second = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+      expect(first[0].possession.downDistanceText).toBe("3rd & 1 @ KC 45");
+      expect(second[0].possession.downDistanceText).toBe("3rd & 1 @ KC 45");
+      expect(
+        fetchMock.mock.calls.filter(([url]) => url.includes("/summary")),
+      ).toHaveLength(1);
+    });
+
+    it("asks again once the last play id changes", async () => {
+      const timeoutAt = (id: string) =>
+        espnEvent({
+          id: "moved-timeout",
+          home: "BUF",
+          away: "KC",
+          status: GameStatus.LIVE,
+          situation: {
+            down: 0,
+            lastPlay: {
+              id,
+              type: { text: "Timeout" },
+              text: "Timeout #1 by BUF at 09:07.",
+            },
+          },
+        });
+      mockFetch([timeoutAt("1")], {
+        current: { plays: [play("Rush", "2nd & 7 at KC 39"), play("Timeout")] },
+      });
+      await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+      mockFetch([timeoutAt("2")], {
+        current: { plays: [play("Rush", "3rd & 1 at KC 45"), play("Timeout")] },
+      });
+      const [result] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+      expect(result.possession.downDistanceText).toBe("3rd & 1 @ KC 45");
+    });
+
+    it("does not hold a down off a summary yet to post the timeout", async () => {
+      const lagging = espnEvent({
+        id: "lagging-timeout",
+        home: "BUF",
+        away: "KC",
+        status: GameStatus.LIVE,
+        situation: {
+          down: 0,
+          lastPlay: {
+            id: "7",
+            type: { text: "Timeout" },
+            text: "Timeout #1 by BUF at 09:07.",
+          },
+        },
+      });
+      mockFetch([lagging], {
+        current: { plays: [play("Rush", "2nd & 7 at KC 39")] },
+      });
+      await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+      mockFetch([lagging], {
+        current: { plays: [play("Rush", "3rd & 1 at KC 45"), play("Timeout")] },
+      });
+      const [result] = await getLeagueResults(League.PRO, WEEK, [BUF_KC]);
+      expect(result.possession.downDistanceText).toBe("3rd & 1 @ KC 45");
+    });
+
+    it("leaves the down out when the last real play was a try", async () => {
+      const { results } = await readTimeout({
+        current: {
+          plays: [
+            play("Extra Point Missed", "1st & 10 at KC 15"),
+            play("Timeout"),
+          ],
+        },
+      });
+      expect(results[0].possession).toEqual({ timeout: "BUF T/O" });
+    });
+
+    it("leaves the down out when the last real play scored", async () => {
+      const { results } = await readTimeout({
+        current: {
+          plays: [
+            play("Rush", "3rd & 1 at KC 45", { scoreValue: 6 }),
+            play("Timeout"),
+          ],
+        },
+      });
+      expect(results[0].possession).toEqual({ timeout: "BUF T/O" });
+    });
+
+    it("leaves the down out when the summary answers not ok", async () => {
+      const { results } = await readTimeout(
+        { current: { plays: [play("Rush", "3rd & 1 at KC 45")] } },
+        {},
+        false,
+      );
+      expect(results[0].possession).toEqual({ timeout: "BUF T/O" });
+    });
+
+    it("leaves the down out when the last play ends on neither side", async () => {
+      const { results } = await readTimeout({
+        current: {
+          plays: [play("Rush", "3rd & 1 at KC 45", {}, "XX"), play("Timeout")],
+        },
+      });
+      expect(results[0].possession).toEqual({ timeout: "BUF T/O" });
+    });
+
+    it("skips the summary when the scoreboard gives the side", async () => {
+      const { fetchMock } = await readTimeout({}, { possession: "KC" });
+      const urls = fetchMock.mock.calls.map((call) => call[0]);
+      expect(urls.some((url) => url.includes("/summary"))).toBe(false);
     });
 
     it("says the officials stopped play, and keeps the down", async () => {

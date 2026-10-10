@@ -4,7 +4,8 @@
   `getRegularSeasonWeekCount`, cached. A named season's answer is held five
   minutes. `espnScoreboardUrl` builds both URLs. The scoreboard request starts
   while the picks parse, except for a week the caller's `mayBeHeld` hint marks
-  settled. `reuseWithinMs` takes a scoreboard answer that recent
+  settled. A live game in a timeout also asks ESPN's game summary for its
+  down. `reuseWithinMs` takes a scoreboard answer that recent
 - `buildSpreadsheetBuffer`: the xlsx export and its content type
 - `pickStatusFill`: the export's pick and standing colors, held to the stylesheet
 - `picksCache` / `espnCache` / `settledWeeksCache`: an uploaded workbook, ESPN's

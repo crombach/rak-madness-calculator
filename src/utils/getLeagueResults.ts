@@ -4,6 +4,7 @@ import {
   EspnPlay,
   EspnSituation,
   EspnStatus,
+  EspnTeamRef,
   EspnVenue,
   GameStatus,
   HomeAway,
@@ -19,7 +20,7 @@ import {
   readCachedResults,
   writeCachedResults,
 } from "./espnCache";
-import espnScoreboardUrl from "./espnScoreboardUrl";
+import espnScoreboardUrl, { ESPN_FOOTBALL_API } from "./espnScoreboardUrl";
 import { getRegularSeasonWeekCount } from "./getLeagueInfo";
 import { findMatchup, indexResults } from "./scoring/resultsIndex";
 
@@ -292,6 +293,76 @@ async function openingKicker(
   }
 }
 
+type SummaryPlay = {
+  type?: { text?: string };
+  scoreValue?: number;
+  end?: { downDistanceText?: string; team?: EspnTeamRef };
+};
+type SummaryDrive = { plays?: Array<SummaryPlay> };
+type TimeoutDown = { downDistanceText: string; teamId: string };
+
+/** How long a game summary may take before the timeout's down goes without it. */
+const SUMMARY_TIMEOUT_MS = 5000;
+
+/**
+ * Each timeout's down, by event id, held while the scoreboard's last play stays
+ * the one it was read for.
+ */
+const timeoutDowns = new Map<
+  string,
+  { playId: string; down: TimeoutDown | undefined }
+>();
+
+/**
+ * The down after the last play run, and who has the ball for it, off ESPN's game
+ * summary. The scoreboard drops both during a timeout, and the timeout's own play
+ * holds a down from earlier in the drive.
+ *
+ * Undefined after a score or a try, which leave no down, where no play has one,
+ * and on a failed request. The answer is held for as long as the scoreboard's last
+ * play stays the same.
+ */
+async function lastDown(
+  league: League,
+  eventId: string,
+  playId?: string,
+): Promise<TimeoutDown | undefined> {
+  const held = timeoutDowns.get(eventId);
+  if (playId != null && held?.playId === playId) return held.down;
+  try {
+    const response = await fetch(
+      `${ESPN_FOOTBALL_API}/${league}/summary?event=${eventId}`,
+      { signal: AbortSignal.timeout(SUMMARY_TIMEOUT_MS) },
+    );
+    if (!response.ok) return undefined;
+    const { drives } = await response.json();
+    // The drive being played is also the last of `previous`, and listing it twice
+    // changes nothing about which play came last.
+    const plays = [...(drives?.previous ?? []), drives?.current ?? {}].flatMap(
+      (drive: SummaryDrive) => drive.plays ?? [],
+    );
+    plays.reverse();
+    const last = plays.find((play) => !BREAK_PLAYS.has(play.type?.text ?? ""));
+    const downDistanceText = shortDown(last?.end?.downDistanceText);
+    const teamId = last?.end?.team?.id;
+    const down =
+      downDistanceText &&
+      teamId != null &&
+      !last?.scoreValue &&
+      !TRY_PLAY.test(last?.type?.text ?? "")
+        ? { downDistanceText, teamId }
+        : undefined;
+    // A summary yet to post the timeout may also be missing the play before it,
+    // so only one that has caught up is held.
+    if (playId != null && BREAK_PLAYS.has(plays[0]?.type?.text ?? "")) {
+      timeoutDowns.set(eventId, { playId, down });
+    }
+    return down;
+  } catch {
+    return undefined;
+  }
+}
+
 /** The season record, which ESPN sends beside the home and road splits. */
 const RECORD_TYPE_SEASON = "total";
 
@@ -327,6 +398,10 @@ const TOUCHDOWN_POINTS = 6;
 /** ESPN's `at` before the yard line, said as `@` to save room under the scores. */
 const DOWN_AT = " at ";
 const DOWN_AT_MARK = " @ ";
+
+function shortDown(text?: string): string | undefined {
+  return text?.replace(DOWN_AT, DOWN_AT_MARK);
+}
 /** ESPN's down between a score and the kickoff after it. */
 const AFTER_SCORE_DOWN = -1;
 const OFFICIAL_TIMEOUT = "Official Timeout";
@@ -416,10 +491,7 @@ function readPossession(
 ): Possession {
   const byId = (id?: string) => sides.find((side) => side.id === id);
   const possession: Possession = {
-    downDistanceText: situation?.downDistanceText?.replace(
-      DOWN_AT,
-      DOWN_AT_MARK,
-    ),
+    downDistanceText: shortDown(situation?.downDistanceText),
     homeAway: byId(situation?.possession)?.homeAway,
   };
   const kickOff = (side: EspnCompetitor) =>
@@ -795,6 +867,29 @@ export async function getLeagueResults(
           result.possession = {
             ...result.possession,
             between: `${teamAbbreviation(receiver)} to receive`,
+          };
+        }
+      }
+      if (
+        result != null &&
+        event != null &&
+        result.status === GameStatus.LIVE &&
+        result.possession.timeout != null &&
+        result.possession.homeAway == null
+      ) {
+        const down = await lastDown(
+          league,
+          result.id,
+          event.competitions[0].situation?.lastPlay?.id,
+        );
+        const side = event.competitions[0].competitors.find(
+          ({ id }) => id === down?.teamId,
+        );
+        if (down != null && side != null) {
+          result.possession = {
+            ...result.possession,
+            homeAway: side.homeAway,
+            downDistanceText: down.downDistanceText,
           };
         }
       }
