@@ -573,8 +573,9 @@ function readPossession(
   const holder = byId((play.end?.team ?? play.team)?.id);
   const homeAway = possession.homeAway ?? holder?.homeAway;
   // A touchdown ends the drive, so whatever down ESPN still holds is over. The side
-  // that scored keeps the ball for the try.
-  if (points >= TOUCHDOWN_POINTS) {
+  // that scored keeps the ball for the try. ESPN can mark a return touchdown with the
+  // down after a score while the play still carries no points.
+  if (points >= TOUCHDOWN_POINTS || situation?.down === AFTER_SCORE_DOWN) {
     const between = holder && `${teamAbbreviation(holder)} extra point`;
     return { homeAway, between };
   }

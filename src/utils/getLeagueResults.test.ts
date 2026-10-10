@@ -409,6 +409,23 @@ describe("getLeagueResults, mapping", () => {
       });
     });
 
+    it("has a return touchdown ESPN has yet to score go for the extra point", async () => {
+      const possession = await readLive(
+        {
+          type: { text: "Punt" },
+          text: "#43 M.Chiumento punt 0 yards to the UT08 blocked by #16 D.Okoye",
+          scoreValue: 0,
+          start: { team: { id: "BUF" } },
+          end: { team: { id: "KC" } },
+        },
+        { down: -1 },
+      );
+      expect(possession).toEqual({
+        homeAway: HomeAway.AWAY,
+        between: "KC extra point",
+      });
+    });
+
     it("has the side that missed a try kick off next", async () => {
       const possession = await readLive(
         {
