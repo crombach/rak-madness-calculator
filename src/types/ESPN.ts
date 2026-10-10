@@ -103,6 +103,8 @@ export type EspnSituation = {
 };
 
 export type EspnPlay = {
+  /** ESPN's id for the play, new for every play. */
+  id?: string;
   type?: { text?: string };
   text?: string;
   scoreValue?: number;

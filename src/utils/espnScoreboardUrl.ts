@@ -1,5 +1,9 @@
 import { League } from "../types/League";
 
+/** ESPN's site API for football, which every league's endpoints sit under. */
+export const ESPN_FOOTBALL_API =
+  "https://site.api.espn.com/apis/site/v2/sports/football";
+
 /**
  * The ESPN scoreboard endpoint for a league, with the parameters that are set.
  * Left-out ones are dropped, in the order given.
@@ -16,5 +20,5 @@ export default function espnScoreboardUrl(
   }
   const queryString = query.toString();
   const search = queryString !== "" ? `?${queryString}` : "";
-  return `https://site.api.espn.com/apis/site/v2/sports/football/${league}/scoreboard${search}`;
+  return `${ESPN_FOOTBALL_API}/${league}/scoreboard${search}`;
 }
