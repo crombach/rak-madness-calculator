@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import {
   EXPERIMENTAL_FEATURES_KEY,
@@ -65,6 +65,21 @@ describe("SettingsDialog", () => {
     await user.click(screen.getByRole("button", { name: "Close" }));
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  // `Button.scss` holds no release pause, so a key the click chooses has to be
+  // chosen in the click's own render, or it rises before it goes down.
+  it.each([
+    ["Live Player Analysis", "Off"],
+    ["Theme", "Dark"],
+    ["Beta Mode", "On"],
+  ])("selects the %s key %s in the click's own render", (group, label) => {
+    mountDialog();
+    const key = choice(group, label);
+
+    fireEvent.click(key);
+
+    expect(key).toHaveClass("--selected");
   });
 });
 

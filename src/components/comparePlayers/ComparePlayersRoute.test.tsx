@@ -894,6 +894,25 @@ describe("the compare players route", () => {
     expect(localStorage.getItem(LEADER_KEY)).toBeNull();
   });
 
+  // `Button.scss` holds no release pause, so a key the click chooses has to be
+  // chosen in the click's own render, or it rises before it goes down.
+  it.each(["Leader", "Different"])(
+    "selects the %s key in the click's own render",
+    async (name) => {
+      localStorage.setItem(
+        COMPARED_PLAYERS_KEY,
+        JSON.stringify(["Alice", "Carol"]),
+      );
+      mountApp(COMPARE_PATH);
+      await screen.findByRole("table");
+      const key = screen.getByRole("button", { name });
+
+      fireEvent.click(key);
+
+      expect(key).toHaveClass("--selected");
+    },
+  );
+
   it("adds the winner once the week is complete", async () => {
     getPlayerScoresMock.mockResolvedValue(
       week(

@@ -1,11 +1,13 @@
 # navbar
 
-- `AppNavbar`: `PageLayout` with the logo, `ScoresNavbar` and `NavMenu`, for
-  the home page and `ResultsFrame`.
+- `AppNavbar`: the layout route above every page. One `PageFrame` with the
+  logo, `ScoresNavbar` and `NavMenu`, mounted across every route change. A page
+  sets the bar through `useAppNavbar`, before paint and only on a change.
 - `Navbar`: `<header>` with `left`/`right` `ReactNode` slots, solid primary fill.
   `.navbar__divider` marks a group split, reused by `ScoresNavbar` and `NavMenu`.
 - `ScoresNavbar`: the results routes' scoreboard/picks switch, led by a live
-  week's refresh. Clearing `isWeekLive` fades refresh and its divider out,
+  week's refresh. A tapped view shows selected at once, through `useOptimistic`,
+  before the router commits its page. Clearing `isWeekLive` fades refresh and its divider out,
   then unmounts them.
 - `NavMenu`: the hamburger every page mounts. Every `ITEMS` entry, then Settings
   opening `SettingsDialog`. Compare Players shows only with experimental

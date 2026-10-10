@@ -28,8 +28,9 @@ import { gamesPage } from "../games/GamesPage";
 import { knockoutsPage } from "../knockouts/KnockoutsPage";
 import { comparePlayersPage } from "../comparePlayers/ComparePlayersPage";
 import Button from "../button/Button";
-import AppNavbar from "../navbar/AppNavbar";
+import { useAppNavbar } from "../navbar/AppNavbar";
 import EmptyState from "../pageLayout/EmptyState";
+import PageLayout from "../pageLayout/PageLayout";
 import { APP_NAME } from "../navbar/LogoButton";
 import DialogLoadBoundary from "./DialogLoadBoundary";
 import {
@@ -261,8 +262,29 @@ export default memo(function ResultsFrame({
     if (!isOpen) setOpened(undefined);
   }, []);
 
+  // The card pages poll, and a poll sets `isRefreshing`, so passing it there would
+  // re-render the navbar on every poll. A refresh begun where the key shows stays
+  // busy until it ends, through the key's collapse too.
+  const [wasKeyBusy, setKeyBusy] = useState(false);
+  const isKeyBusy = isRefreshing && (canRefresh || wasKeyBusy);
+  if (isKeyBusy !== wasKeyBusy) setKeyBusy(isKeyBusy);
+
+  useAppNavbar({
+    // Rendered while the week loads too, so the navbar's shape won't shift under
+    // the pointer once it lands. Disabled until there's anything to switch to.
+    view: scoresView,
+    disabled: !isReady,
+    isWeekLive: canRefresh,
+    onViewChange,
+    onRefresh,
+    isRefreshing: isKeyBusy,
+    season: seasonParam,
+    week: weekParam,
+    pagesDisabled: !hasWeek,
+  });
+
   return (
-    <AppNavbar
+    <PageLayout
       title={
         hasWeek
           ? `${seasonParam} Week ${weekParam} ${view}`
@@ -276,17 +298,6 @@ export default memo(function ResultsFrame({
       // This matches the refresh button beside it exactly. Both gate on the
       // same live week, and only once there is a table to pull on.
       pull={isReady && canRefresh ? { onRefresh, isRefreshing } : undefined}
-      // Rendered while the week loads too, so the navbar's shape won't shift under
-      // the pointer once it lands. Disabled until there's anything to switch to.
-      view={scoresView}
-      disabled={!isReady}
-      isWeekLive={canRefresh}
-      onViewChange={onViewChange}
-      onRefresh={onRefresh}
-      isRefreshing={isRefreshing}
-      season={seasonParam}
-      week={weekParam}
-      pagesDisabled={!hasWeek}
     >
       <div className="results-scores">
         {/*
@@ -357,6 +368,6 @@ export default memo(function ResultsFrame({
           </Suspense>
         </DialogLoadBoundary>
       )}
-    </AppNavbar>
+    </PageLayout>
   );
 });

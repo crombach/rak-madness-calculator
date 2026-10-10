@@ -19,6 +19,14 @@ import {
   resultsCaption,
   setUpAppTest,
 } from "./appTestFixtures";
+import { RESULTS_PAGE } from "./components/results/resultsPath";
+import { League } from "./types/League";
+import doNothing from "./utils/doNothing";
+import {
+  pick,
+  player,
+  week as scoredWeek,
+} from "./utils/scoring/scoringTestFixtures";
 
 let fetchMock: ReturnType<typeof setUpAppTest>;
 
@@ -110,6 +118,28 @@ describe("the app, results views", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("keeps a refresh in flight busy while its key fades out", async () => {
+    getPlayerScoresMock.mockResolvedValue(openWeekScores);
+    const user = await mountWithScores();
+    await user.click(screen.getByText("View Results"));
+    getPlayerScoresMock.mockReturnValueOnce(new Promise(doNothing));
+    const refresh = screen.getByRole("button", { name: "Refresh" });
+    await user.click(refresh);
+    await waitFor(() => expect(refresh).toHaveAttribute("aria-busy", "true"));
+
+    await user.click(screen.getByRole("button", { name: "Menu" }));
+    await user.click(
+      await screen.findByRole("menuitem", { name: RESULTS_PAGE.games }),
+    );
+
+    await waitFor(() =>
+      expect(document.querySelector(".scores-nav__live")).toHaveClass(
+        "--collapsed",
+      ),
+    );
+    expect(refresh).toHaveAttribute("aria-busy", "true");
+  });
+
   it("reports a scoring failure instead of crashing", async () => {
     getPlayerScoresMock.mockResolvedValue(openWeekScores);
     const user = await mountWithScores();
@@ -128,6 +158,52 @@ describe("the app, results views", () => {
     // A refresh reuses the workbook already in memory, so a transient failure has
     // nothing to fall back to but what was already on screen.
     expect(screen.getByText("MNF Points Pick")).toBeInTheDocument();
+  });
+});
+
+/** Level on points, so P1 decides the week and the knockouts page has a game. */
+function knockoutWeek() {
+  const scored = scoredWeek([
+    player({ name: "Alice", total: 5, pro: [pick("KC -3")] }),
+    player({ name: "Bob", total: 5, pro: [pick("DEN 3")] }),
+  ]);
+  scored.games = [{ label: "P1", league: League.PRO, name: "KC at DEN" }];
+  return scored;
+}
+
+describe("the app, one navbar and one results caption", () => {
+  it("keeps one navbar from home through the results pages and back", async () => {
+    getPlayerScoresMock.mockResolvedValue(knockoutWeek());
+    const user = await mountWithScores();
+    const navbar = document.querySelector(".navbar");
+    expect(navbar).toBeInTheDocument();
+    expect(resultsCaption()).not.toBeInTheDocument();
+
+    await user.click(screen.getByText("View Results"));
+    await screen.findByText("MNF Points Pick");
+    expect(document.querySelector(".navbar")).toBe(navbar);
+    const caption = resultsCaption();
+    expect(caption).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Picks" }));
+    await screen.findByText("College Score");
+    expect(document.querySelector(".navbar")).toBe(navbar);
+    expect(resultsCaption()).toBe(caption);
+
+    for (const page of [RESULTS_PAGE.knockouts, RESULTS_PAGE.games]) {
+      await user.click(screen.getByRole("button", { name: "Menu" }));
+      await user.click(await screen.findByRole("menuitem", { name: page }));
+      await waitFor(() =>
+        expect(resultsCaption()).toHaveTextContent(`${page} • `),
+      );
+      expect(resultsCaption()).toBe(caption);
+      expect(document.querySelector(".navbar")).toBe(navbar);
+    }
+
+    await user.click(document.querySelector(".logo-button") as HTMLElement);
+    await screen.findByText("Use Local Spreadsheet");
+    expect(document.querySelector(".navbar")).toBe(navbar);
+    expect(resultsCaption()).not.toBeInTheDocument();
   });
 });
 

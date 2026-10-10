@@ -8,7 +8,7 @@ The week's results routes: `/:season/:week/scoreboard`, `/picks`, `/knockouts`,
 - `resultsPath`: builds `/season/week/page`. `PAGES` holds each page's segment,
   table and menu-only flags. Every route and link reads it.
 - `ResultsLayout`: the layout route. Runs `useWeekRouteGuard`, reads the page
-  from the URL, holds the navbar.
+  from the URL, holds the frame across every results page.
 - `ScoreboardRoute`, `PicksRoute`: one table each, from context.
 - `ExperimentalGate`: sends a reader without the opt-in to the scoreboard.
 - `ResultsRedirect`: a page's redirect, drawing the destination's wireframe.
