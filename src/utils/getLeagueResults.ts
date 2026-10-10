@@ -479,6 +479,25 @@ function isStale(play: EspnPlay, { period, displayClock }: EspnStatus) {
   return playedAt - now > STALE_PLAY_SECONDS;
 }
 
+/** Plays the side without the ball can score on, like `Punt` or `Interception Return`. */
+const RETURN_PLAYS = /Punt|Interception|Fumble|Blocked/i;
+
+/**
+ * Whether the play scored a touchdown. ESPN can post a return touchdown with the
+ * down after a score while the play still carries no points.
+ */
+function isTouchdown(play: EspnPlay, down?: number): boolean {
+  if ((play.scoreValue ?? 0) >= TOUCHDOWN_POINTS) return true;
+  const ender = play.end?.team?.id;
+  return (
+    down === AFTER_SCORE_DOWN &&
+    !play.scoreValue &&
+    RETURN_PLAYS.test(play.type?.text ?? "") &&
+    ender != null &&
+    ender !== play.start?.team?.id
+  );
+}
+
 /**
  * Who has the ball, and what is happening between plays, like `KC timeout` or
  * `BUF to kick off`. ESPN's `possession` wins where it gives one, else the side that
@@ -514,7 +533,7 @@ function readPossession(
   const tryToCome =
     play != null &&
     !isStale(play, status) &&
-    (play.scoreValue ?? 0) >= TOUCHDOWN_POINTS &&
+    isTouchdown(play, situation?.down) &&
     short >= 0 &&
     short <= MOST_A_TRY_SCORES;
   if (isHalfOver(status) && !(regulation && tryToCome)) {
@@ -573,9 +592,8 @@ function readPossession(
   const holder = byId((play.end?.team ?? play.team)?.id);
   const homeAway = possession.homeAway ?? holder?.homeAway;
   // A touchdown ends the drive, so whatever down ESPN still holds is over. The side
-  // that scored keeps the ball for the try. ESPN can mark a return touchdown with the
-  // down after a score while the play still carries no points.
-  if (points >= TOUCHDOWN_POINTS || situation?.down === AFTER_SCORE_DOWN) {
+  // that scored keeps the ball for the try.
+  if (isTouchdown(play, situation?.down)) {
     const between = holder && `${teamAbbreviation(holder)} extra point`;
     return { homeAway, between };
   }

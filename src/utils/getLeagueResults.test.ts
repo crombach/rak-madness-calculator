@@ -426,6 +426,46 @@ describe("getLeagueResults, mapping", () => {
       });
     });
 
+    it.each([
+      ["a field goal", "Field Goal Good", "KC"],
+      ["a penalty", "Penalty", "KC"],
+      ["a kickoff", "Kickoff", "BUF"],
+      ["a punt its own side kept", "Punt", "KC"],
+    ])(
+      "says no extra point after %s ESPN has yet to score",
+      async (_, text, endTeam) => {
+        const possession = await readLive(
+          {
+            type: { text },
+            scoreValue: 0,
+            start: { team: { id: "KC" } },
+            end: { team: { id: endTeam } },
+          },
+          { down: -1 },
+        );
+        expect(possession.between).toBeUndefined();
+      },
+    );
+
+    it("holds a try to come off a return touchdown ESPN has yet to score as regulation ends", async () => {
+      const possession = await readLive(
+        {
+          type: { text: "Punt" },
+          scoreValue: 0,
+          start: { team: { id: "BUF" } },
+          end: { team: { id: "KC" } },
+          probability: { secondsLeft: 0 },
+        },
+        { down: -1 },
+        { period: 4, displayClock: "0:00" },
+        { homeScore: 20, awayScore: 20 },
+      );
+      expect(possession).toEqual({
+        homeAway: HomeAway.AWAY,
+        between: "KC extra point",
+      });
+    });
+
     it("has the side that missed a try kick off next", async () => {
       const possession = await readLive(
         {
