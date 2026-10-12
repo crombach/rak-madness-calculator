@@ -12,3 +12,5 @@ and the search the first two are pointed with.
 - `DialogCombobox`: the controlled combobox, generic over its option, the caller holding
   the choice and the query. Its list opens wherever Base UI finds room. Choosing hands
   the focus to the dialog, which drops a phone's keyboard.
+- `DialogLoadBoundary`: catches a dialog chunk a deploy replaced.
+  `DIALOG_LOAD_ERROR` is the toast its `onError` shows.

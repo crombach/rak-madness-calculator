@@ -15,7 +15,9 @@ import getClasses from "../../utils/getClasses";
 import lazyPreloadable from "../../utils/lazyPreloadable";
 import doNothing from "../../utils/doNothing";
 import { buttonClasses } from "../button/Button";
-import DialogLoadBoundary from "../results/DialogLoadBoundary";
+import DialogLoadBoundary, {
+  DIALOG_LOAD_ERROR,
+} from "../dialog/DialogLoadBoundary";
 import {
   CloseIcon,
   HomeIcon,
@@ -202,11 +204,13 @@ export default function NavMenu({
       )}
       {(isSettingsWarm || isSettingsOpen) && (
         <DialogLoadBoundary
-          onError={() =>
-            showToast(
-              errorToast("Failed to open that. Reload the page to try again."),
-            )
-          }
+          onError={() => {
+            showToast(errorToast(DIALOG_LOAD_ERROR));
+            // Unmounts the boundary, so the next tap mounts a fresh one that
+            // catches the failure again and says so.
+            setSettingsOpen(false);
+            setSettingsWarm(false);
+          }}
         >
           <SettingsDialog
             open={isSettingsOpen}

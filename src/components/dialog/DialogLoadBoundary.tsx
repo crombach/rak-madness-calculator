@@ -1,5 +1,9 @@
 import { Component, PropsWithChildren } from "react";
 
+/** The toast an `onError` shows, the same for every dialog. */
+export const DIALOG_LOAD_ERROR =
+  "Failed to open that. Reload the page to try again.";
+
 /**
  * Holds a dialog that cannot be fetched, so the failure stays inside it.
  *

@@ -32,7 +32,9 @@ import { useAppNavbar } from "../navbar/AppNavbar";
 import EmptyState from "../pageLayout/EmptyState";
 import PageLayout from "../pageLayout/PageLayout";
 import { APP_NAME } from "../navbar/LogoButton";
-import DialogLoadBoundary from "./DialogLoadBoundary";
+import DialogLoadBoundary, {
+  DIALOG_LOAD_ERROR,
+} from "../dialog/DialogLoadBoundary";
 import {
   RESULTS_PAGE,
   ResultsPage,
@@ -202,7 +204,7 @@ export default memo(function ResultsFrame({
   // Said once, for either dialog. Neither can be retried, so the only way on is a
   // reload.
   const onDialogLoadError = useCallback(() => {
-    showToast(errorToast("Failed to open that. Reload the page to try again."));
+    showToast(errorToast(DIALOG_LOAD_ERROR));
   }, [showToast]);
 
   const experimentalFeatures = useSetting("experimentalFeatures");
