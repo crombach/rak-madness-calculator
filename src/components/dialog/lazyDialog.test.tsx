@@ -2,8 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { ToastContextProvider } from "../../context/ToastContext";
 import Toaster from "../toaster/Toaster";
-import { DIALOG_LOAD_ERROR } from "./DialogLoadBoundary";
-import lazyDialog from "./lazyDialog";
+import lazyDialog, { DIALOG_LOAD_ERROR } from "./lazyDialog";
 
 type Props = { open: boolean; onOpenChange: (open: boolean) => void };
 

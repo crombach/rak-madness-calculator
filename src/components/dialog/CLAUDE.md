@@ -13,5 +13,5 @@ and the search the first two are pointed with.
   the choice and the query. Its list opens wherever Base UI finds room. Choosing hands
   the focus to the dialog, which drops a phone's keyboard.
 - `lazyDialog`: every dialog fetched apart from the entry. `lazyPreloadable` in
-  a `DialogLoadBoundary`. A failed chunk toasts `DIALOG_LOAD_ERROR` and closes
+  a `LoadBoundary`. A failed chunk toasts `DIALOG_LOAD_ERROR` and closes
   the dialog, and each new open tries again.

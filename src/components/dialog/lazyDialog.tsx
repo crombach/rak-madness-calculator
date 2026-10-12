@@ -1,7 +1,11 @@
 import { ComponentType, useState } from "react";
 import { errorToast, useToastActions } from "../../context/ToastContext";
+import LoadBoundary from "../../utils/LoadBoundary";
 import lazyPreloadable from "../../utils/lazyPreloadable";
-import DialogLoadBoundary, { DIALOG_LOAD_ERROR } from "./DialogLoadBoundary";
+
+/** The toast a dialog whose chunk failed shows, the same for every dialog. */
+export const DIALOG_LOAD_ERROR =
+  "Failed to open that. Reload the page to try again.";
 
 type DialogProps = {
   open: boolean;
@@ -35,7 +39,7 @@ export default function lazyDialog<P extends DialogProps>(
     // `lazy` throws again on every render, so nothing renders until a new open.
     if (isHeld) return null;
     return (
-      <DialogLoadBoundary
+      <LoadBoundary
         key={failures}
         onError={() => {
           showToast(errorToast(DIALOG_LOAD_ERROR));
@@ -45,7 +49,7 @@ export default function lazyDialog<P extends DialogProps>(
         }}
       >
         <Page {...props} />
-      </DialogLoadBoundary>
+      </LoadBoundary>
     );
   }
 

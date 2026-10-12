@@ -3,7 +3,7 @@ import { userEvent } from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { ToastContextProvider } from "../../context/ToastContext";
 import { SettingsContextProvider } from "../../context/SettingsContext";
-import { DIALOG_LOAD_ERROR } from "../dialog/DialogLoadBoundary";
+import { DIALOG_LOAD_ERROR } from "../dialog/lazyDialog";
 import Toaster from "../toaster/Toaster";
 import NavMenu from "./NavMenu";
 

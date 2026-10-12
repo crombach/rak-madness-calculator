@@ -30,6 +30,7 @@ import EmptyState from "../pageLayout/EmptyState";
 import PageLayout from "../pageLayout/PageLayout";
 import { APP_NAME } from "../navbar/LogoButton";
 import lazyDialog from "../dialog/lazyDialog";
+import LoadBoundary from "../../utils/LoadBoundary";
 import {
   RESULTS_PAGE,
   ResultsPage,
@@ -116,6 +117,10 @@ function GameStatusSlot(
     />
   );
 }
+
+/** What a page whose chunk failed says in its place. */
+export const PAGE_LOAD_ERROR =
+  "Failed to load this page. Reload the page to try again.";
 
 /** The scroll offset the scoreboard and the picks share. */
 const SCORES_SCROLL_KEY = "scores";
@@ -312,7 +317,24 @@ export default memo(function ResultsFrame({
         <PlayerAnalysisContextProvider showPlayerAnalysis={showPlayerAnalysis}>
           <GameStatusContextProvider showGameStatus={showGameStatus}>
             {isReady && hasPageCode ? (
-              children
+              // Keyed by page, so leaving a page that failed lets the next one
+              // load.
+              <LoadBoundary
+                key={view}
+                fallback={
+                  <div className="results-failure">
+                    <EmptyState>{PAGE_LOAD_ERROR}</EmptyState>
+                    <div className="results-failure__actions">
+                      <Button onClick={() => window.location.reload()}>
+                        Reload
+                      </Button>
+                      <Button onClick={() => navigate("/")}>Home</Button>
+                    </div>
+                  </div>
+                }
+              >
+                {children}
+              </LoadBoundary>
             ) : hasFailed ? (
               <div className="results-failure">
                 <EmptyState>{scoringFailedMessage(weekParam ?? "")}</EmptyState>

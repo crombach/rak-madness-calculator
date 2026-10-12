@@ -1,11 +1,11 @@
 import { render, screen } from "@testing-library/react";
-import DialogLoadBoundary from "./DialogLoadBoundary";
+import LoadBoundary from "./LoadBoundary";
 
 function Throws(): never {
   throw new Error("Failed to fetch dynamically imported module");
 }
 
-describe("DialogLoadBoundary", () => {
+describe("LoadBoundary", () => {
   it("holds a dialog that cannot be fetched, and says so once", () => {
     // React reports a caught error itself, which is noise here rather than a
     // failure.
@@ -13,9 +13,9 @@ describe("DialogLoadBoundary", () => {
     const onError = vi.fn();
 
     const { container } = render(
-      <DialogLoadBoundary onError={onError}>
+      <LoadBoundary onError={onError}>
         <Throws />
-      </DialogLoadBoundary>,
+      </LoadBoundary>,
     );
 
     expect(onError).toHaveBeenCalledTimes(1);
@@ -29,9 +29,9 @@ describe("DialogLoadBoundary", () => {
     const onError = vi.fn();
 
     render(
-      <DialogLoadBoundary onError={onError}>
+      <LoadBoundary onError={onError}>
         <p>Player analysis</p>
-      </DialogLoadBoundary>,
+      </LoadBoundary>,
     );
 
     expect(screen.getByText("Player analysis")).toBeInTheDocument();
