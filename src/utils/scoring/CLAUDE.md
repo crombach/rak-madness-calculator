@@ -2,7 +2,7 @@
 
 The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 
-- `parsePicksWorkbook`: xlsx buffer to rows, keys, matchups
+- `parsePicksWorkbook`: xlsx buffer to rows, keys, matchups. `loadXlsx` lazy-loads the parser
 - `parsePick`: a cell to team and spread
 - `validateSpreads`: rows disagreeing on spread
 - `marginAgainstSpread`: a side's margin, spread applied

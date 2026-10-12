@@ -11,9 +11,9 @@ import { useSetting } from "../../context/SettingsContext";
 import cssMediaQuery from "../../hooks/cssMediaQuery";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import getClasses from "../../utils/getClasses";
-import lazyPreloadable from "../../utils/lazyPreloadable";
 import doNothing from "../../utils/doNothing";
 import { buttonClasses } from "../button/Button";
+import lazyDialog from "../dialog/lazyDialog";
 import {
   CloseIcon,
   HomeIcon,
@@ -101,11 +101,10 @@ type SettingsEntry = {
 
 // Out of the entry, since most visits never open it. Fetched when a menu opens, so
 // the Settings tap that follows finds it in.
-const settingsDialog = lazyPreloadable(
-  () => import("../settings/SettingsDialog"),
-  null,
-);
-const SettingsDialog = settingsDialog.Page;
+const settingsDialog = lazyDialog(() => import("../settings/SettingsDialog"), {
+  reloadOnLostChunk: true,
+});
+const SettingsDialog = settingsDialog.Dialog;
 
 /** Opens or closes a menu, and fetches Settings as it opens. */
 function warmOnOpen(setOpen: (next: boolean) => void, warm: () => void) {
@@ -406,7 +405,11 @@ function NavDrawer({
   return (
     <Drawer.Root
       open={open}
-      onOpenChange={warmOnOpen(setOpen, settings.warm)}
+      onOpenChange={warmOnOpen((next) => {
+        // A reopen drops a hold left over from a close that never completed.
+        if (next) setHandingOff(false);
+        setOpen(next);
+      }, settings.warm)}
       onOpenChangeComplete={(isOpen) => {
         if (!isOpen) setHandingOff(false);
       }}

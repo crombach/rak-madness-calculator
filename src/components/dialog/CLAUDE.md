@@ -12,3 +12,6 @@ and the search the first two are pointed with.
 - `DialogCombobox`: the controlled combobox, generic over its option, the caller holding
   the choice and the query. Its list opens wherever Base UI finds room. Choosing hands
   the focus to the dialog, which drops a phone's keyboard.
+- `lazyDialog`: every dialog fetched apart from the entry. `lazyPreloadable` in
+  a `LoadBoundary`. A failed chunk toasts `DIALOG_LOAD_ERROR` and closes
+  the dialog, and each new open tries again.

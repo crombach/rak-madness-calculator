@@ -50,9 +50,10 @@ export default defineConfig({
   build: {
     // The Cloudflare Pages build serves ./build, and `pages:dev` serves it locally.
     outDir: "build",
-    // Above the `xlsx-js-style` chunk, which is large on purpose and fetched only
-    // when a workbook is read or written. Low enough to still complain if the
-    // chunk the app loads up front grows towards it.
+    // Above the `xlsx-js-style` chunk, which is large on purpose and fetched when
+    // a results page starts loading its picks, or a workbook is read or written.
+    // Low enough to still complain if the chunk the app loads up front grows
+    // towards it.
     chunkSizeWarningLimit: 900,
   },
   // Fail loudly on a busy port rather than sliding to the next one.

@@ -146,6 +146,7 @@ describe("the app: the URL decides which week is fetched, and what shows while i
     mountScoreboard(`/${SEASON}/${CURRENT_WEEK}`);
 
     const frame = document.querySelector(".page");
+    expect(frame).toBeInTheDocument();
     await screen.findByText("MNF Points Pick");
     expect(document.querySelector(".page")).toBe(frame);
   });

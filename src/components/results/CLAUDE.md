@@ -8,15 +8,16 @@ The week's results routes: `/:season/:week/scoreboard`, `/picks`, `/knockouts`,
 - `resultsPath`: builds `/season/week/page`. `PAGES` holds each page's segment,
   table and menu-only flags. Every route and link reads it.
 - `ResultsLayout`: the layout route. Runs `useWeekRouteGuard`, reads the page
-  from the URL, holds the frame across every results page.
+  from the URL, holds the frame across every results page. Sends a bare
+  `/:season/:week` URL to its scoreboard.
 - `ScoreboardRoute`, `PicksRoute`: one table each, from context.
 - `ExperimentalGate`: sends a reader without the opt-in to the scoreboard.
 - `ResultsRedirect`: a page's redirect, drawing the destination's wireframe.
 - `resultsSkeletons`: each page's wireframe, for the frame and the redirect.
 - `ResultsFrame`: the page and wireframe `ResultsLayout` renders into, memoized,
   captioned by view and week. Holds both dialogs lazily and the table providers.
-  A failed week gets Retry and Home. A lazy page's wireframe stays until its
+  A failed week gets Retry and Home. A page that fails to load or throws gets
+  `PAGE_ERROR`, Reload, and Home. A lazy page's wireframe stays until its
   code is in too, so it mounts once. `canRefresh` arms refresh and `pull` on a
   live week, off the card pages.
-- `DialogLoadBoundary`: catches a dialog chunk a deploy replaced.
 - `ResultsFrame.scss`: the column table and wireframe share, the caption.

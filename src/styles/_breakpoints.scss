@@ -132,8 +132,8 @@ $touch-screen-query: "(pointer: coarse) and (hover: none)";
 
 /**
  * A reader who has asked for less movement. `index.scss` answers this app-wide by
- * making every animation instant. This is for the two placeholders that have
- * something smarter to do than stop.
+ * making every animation instant. This is for the rules that have something
+ * smarter to do than stop.
  */
 @mixin reduced-motion {
   @media (prefers-reduced-motion: reduce) {

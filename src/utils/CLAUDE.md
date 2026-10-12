@@ -14,7 +14,8 @@
 - `weekKey`: what a season's week is filed under
 - `settingsStore`: the reader's own preferences, kept whatever the caches drop
 - `loadStoredPicks`: a week's workbook from the API, or cache. `prefetchStoredPicks`
-  starts a URL's week before the calendar lands
+  starts a URL's week, the college calendar, and the xlsx parser's load
+  before the calendar lands
 - `contentType`: what a response says it is, and why an `/api` path checks
 - `debugLog`: scoring traces, silent outside a dev server
 - `latestOnly`: drops an async result its effect outlived
@@ -29,6 +30,7 @@
 - `matching`: case-folded substring search, for both dialogs' lists
 - `readFileToBuffer`: an upload's bytes
 - `lazyPreloadable`: a lazy route that can be fetched ahead, and skips its fallback once in
+- `LoadBoundary`: holds a lazy dialog or page whose chunk failed, drawing a fallback
 - `reloadForNewBuild`: reloads a tab whose chunk a deploy removed, at most every 10s
 - `warmImage`: an image into the browser's cache, once, where prefetch does not reach
 

@@ -36,7 +36,8 @@ const DEFAULT_THEME: Theme = "auto";
  *
  * Copied rather than read back off the document, because only one theme's value is
  * resolved there at a time and this has to name the other one too. That makes them
- * two literals to keep in step with the stylesheet by hand.
+ * two literals to keep in step with the stylesheet by hand, and `index.html`'s
+ * first-paint script holds a third copy of each.
  */
 const THEME_COLOR: Record<"light" | "dark", string> = {
   light: "#eaeaea",
