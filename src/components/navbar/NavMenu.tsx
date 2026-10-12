@@ -2,7 +2,6 @@ import { Drawer } from "@base-ui/react/drawer";
 import { Menu } from "@base-ui/react/menu";
 import { ReactNode, useId, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
-import { errorToast, useToastActions } from "../../context/ToastContext";
 import {
   useScores,
   useIsWeekSettled,
@@ -12,12 +11,9 @@ import { useSetting } from "../../context/SettingsContext";
 import cssMediaQuery from "../../hooks/cssMediaQuery";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import getClasses from "../../utils/getClasses";
-import lazyPreloadable from "../../utils/lazyPreloadable";
 import doNothing from "../../utils/doNothing";
 import { buttonClasses } from "../button/Button";
-import DialogLoadBoundary, {
-  DIALOG_LOAD_ERROR,
-} from "../dialog/DialogLoadBoundary";
+import lazyDialog from "../dialog/lazyDialog";
 import {
   CloseIcon,
   HomeIcon,
@@ -105,11 +101,8 @@ type SettingsEntry = {
 
 // Out of the entry, since most visits never open it. Fetched when a menu opens, so
 // the Settings tap that follows finds it in.
-const settingsDialog = lazyPreloadable(
-  () => import("../settings/SettingsDialog"),
-  null,
-);
-const SettingsDialog = settingsDialog.Page;
+const settingsDialog = lazyDialog(() => import("../settings/SettingsDialog"));
+const SettingsDialog = settingsDialog.Dialog;
 
 /** Opens or closes a menu, and fetches Settings as it opens. */
 function warmOnOpen(setOpen: (next: boolean) => void, warm: () => void) {
@@ -148,7 +141,6 @@ export default function NavMenu({
   // dialog is already there, closed, for its first open to animate from.
   const [isSettingsWarm, setSettingsWarm] = useState(settingsDialog.isLoaded);
   const [hasSeenSettings, markSettingsSeen] = useSettingsSeen();
-  const { showToast } = useToastActions();
 
   const context: NavContext = {
     isWeekSettled,
@@ -203,20 +195,7 @@ export default function NavMenu({
         <NavPopup links={links} settings={settings} />
       )}
       {(isSettingsWarm || isSettingsOpen) && (
-        <DialogLoadBoundary
-          onError={() => {
-            showToast(errorToast(DIALOG_LOAD_ERROR));
-            // Unmounts the boundary, so the next tap mounts a fresh one that
-            // catches the failure again and says so.
-            setSettingsOpen(false);
-            setSettingsWarm(false);
-          }}
-        >
-          <SettingsDialog
-            open={isSettingsOpen}
-            onOpenChange={setSettingsOpen}
-          />
-        </DialogLoadBoundary>
+        <SettingsDialog open={isSettingsOpen} onOpenChange={setSettingsOpen} />
       )}
     </>
   );

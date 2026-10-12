@@ -1,8 +1,6 @@
 import {
   ComponentProps,
   PropsWithChildren,
-  Suspense,
-  lazy,
   memo,
   useCallback,
   useEffect,
@@ -15,7 +13,6 @@ import {
   useScoringStatus,
 } from "../../context/AppDataContext";
 import { useSetting } from "../../context/SettingsContext";
-import { errorToast, useToastActions } from "../../context/ToastContext";
 import { GameStatusContextProvider } from "../../context/GameStatusContext";
 import { PlayerAnalysisContextProvider } from "../../context/PlayerAnalysisContext";
 import { scoringFailedMessage } from "../../hooks/usePlayerScores";
@@ -32,9 +29,7 @@ import { useAppNavbar } from "../navbar/AppNavbar";
 import EmptyState from "../pageLayout/EmptyState";
 import PageLayout from "../pageLayout/PageLayout";
 import { APP_NAME } from "../navbar/LogoButton";
-import DialogLoadBoundary, {
-  DIALOG_LOAD_ERROR,
-} from "../dialog/DialogLoadBoundary";
+import lazyDialog from "../dialog/lazyDialog";
 import {
   RESULTS_PAGE,
   ResultsPage,
@@ -51,14 +46,16 @@ import "./ResultsFrame.scss";
   gzipped of the chunk every route waits on, including the home page, which has no
   dialog to open at all.
 
-  Held apart from the loaders below so the warm and the render ask for the same
-  module. `lazy` alone would leave the first click waiting on the fetch.
+  Warmed below, so the first click does not wait on the fetch.
 */
-const loadPlayerAnalysisDialog = () =>
-  import("../playerAnalysis/PlayerAnalysisDialog");
-const loadGameStatusDialog = () => import("../gameStatus/GameStatusDialog");
-const PlayerAnalysisDialog = lazy(loadPlayerAnalysisDialog);
-const GameStatusDialog = lazy(loadGameStatusDialog);
+const playerAnalysisDialog = lazyDialog(
+  () => import("../playerAnalysis/PlayerAnalysisDialog"),
+);
+const gameStatusDialog = lazyDialog(
+  () => import("../gameStatus/GameStatusDialog"),
+);
+const PlayerAnalysisDialog = playerAnalysisDialog.Dialog;
+const GameStatusDialog = gameStatusDialog.Dialog;
 
 /**
  * The pages whose code is fetched apart. The frame holds its own wireframe until
@@ -200,13 +197,6 @@ export default memo(function ResultsFrame({
 
   const hasPageCode = usePageCode(view);
 
-  const { showToast } = useToastActions();
-  // Said once, for either dialog. Neither can be retried, so the only way on is a
-  // reload.
-  const onDialogLoadError = useCallback(() => {
-    showToast(errorToast(DIALOG_LOAD_ERROR));
-  }, [showToast]);
-
   const experimentalFeatures = useSetting("experimentalFeatures");
 
   // Fetched ahead, alongside the week, so the menu's link lands on the page
@@ -222,11 +212,11 @@ export default memo(function ResultsFrame({
   useEffect(() => {
     if (!canWarm || hasWarmed.current) return;
     // A failed fetch leaves both dialogs unmounted, and the click that wants one
-    // asks for its module again. `DialogLoadBoundary` holds it if that fails too.
+    // asks for its module again. `lazyDialog` holds it if that fails too.
     const warm = () => {
       hasWarmed.current = true;
       knockoutsPage.preload().catch(doNothing);
-      Promise.all([loadPlayerAnalysisDialog(), loadGameStatusDialog()])
+      Promise.all([playerAnalysisDialog.preload(), gameStatusDialog.preload()])
         .then(() => setHasLoaded(true))
         .catch(doNothing);
     };
@@ -339,33 +329,22 @@ export default memo(function ResultsFrame({
           </GameStatusContextProvider>
         </PlayerAnalysisContextProvider>
       </div>
-      {/* No fallback. Nothing is on screen to stand in for. A dialog mounts
-          closed, and the click that beats the fetch wants the dialog rather than
-          a spinner where it will be. */}
       {(hasLoaded || hasOpened.player) && (
-        <DialogLoadBoundary onError={onDialogLoadError}>
-          <Suspense fallback={null}>
-            <PlayerAnalysisDialog
-              open={opened?.kind === "player"}
-              onOpenChange={close}
-              player={opened?.kind === "player" ? opened.name : undefined}
-              scores={scores}
-              weekNumber={weekParam != null ? Number(weekParam) : undefined}
-            />
-          </Suspense>
-        </DialogLoadBoundary>
+        <PlayerAnalysisDialog
+          open={opened?.kind === "player"}
+          onOpenChange={close}
+          player={opened?.kind === "player" ? opened.name : undefined}
+          scores={scores}
+          weekNumber={weekParam != null ? Number(weekParam) : undefined}
+        />
       )}
       {(hasLoaded || hasOpened.game) && (
-        <DialogLoadBoundary onError={onDialogLoadError}>
-          <Suspense fallback={null}>
-            <GameStatusSlot
-              open={opened?.kind === "game"}
-              onOpenChange={close}
-              gameLabel={opened?.kind === "game" ? opened.label : undefined}
-              scores={scores}
-            />
-          </Suspense>
-        </DialogLoadBoundary>
+        <GameStatusSlot
+          open={opened?.kind === "game"}
+          onOpenChange={close}
+          gameLabel={opened?.kind === "game" ? opened.label : undefined}
+          scores={scores}
+        />
       )}
     </PageLayout>
   );
