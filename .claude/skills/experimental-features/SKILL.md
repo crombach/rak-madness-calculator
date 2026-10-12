@@ -5,7 +5,7 @@ description: Gate a work-in-progress feature behind the βeta Mode setting, or r
 
 # Experimental features
 
-`experimentalFeatures` from `useSettings()` in `src/context/SettingsContext.tsx` gates every work-in-progress feature. Any reader can turn it on in the settings dialog. Off by default.
+`useSetting("experimentalFeatures")` from `src/context/SettingsContext.tsx` gates every work-in-progress feature. Any reader can turn it on in the settings dialog. Off by default.
 
 - Never add a per-feature flag or a second setting. Every gated feature reads this one value.
 - Never move `useSettingsSeen.ts`'s `SETTINGS_CHANGED_AT` for gating or releasing a feature. The dialog did not change.
@@ -18,7 +18,7 @@ A feature is experimental when it reads `experimentalFeatures`. No registry, no 
    A `NavMenu` item takes `experimental: true` instead. `NavMenu` hides it and marks it β.
 
    ```tsx
-   const { experimentalFeatures } = useSettings();
+   const experimentalFeatures = useSetting("experimentalFeatures");
    return experimentalFeatures && <Link to="compare">Compare Players</Link>;
    ```
 

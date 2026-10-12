@@ -663,8 +663,8 @@ html {
 }
 
 // Anything the app animates is either decoration or a state it also says in
-// words, so all of it can stop. The two placeholders that do something smarter
-// than stopping override this themselves.
+// words, so all of it can stop. A rule that does something smarter than
+// stopping overrides this itself.
 @include reduced-motion {
   *,
   *::before,

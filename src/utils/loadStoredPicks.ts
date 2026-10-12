@@ -55,7 +55,9 @@ let prefetched: { key: string; picks: Promise<ArrayBuffer> } | undefined;
 
 /**
  * Starts loading the week a results URL names, before the calendar that turns it
- * into a `WeekInfo` has arrived. A second call for the same week is a no-op.
+ * into a `WeekInfo` has arrived, and starts that calendar (`getLeagueInfo` for
+ * college) and the xlsx parser's load beside it. A second call for the same week
+ * is a no-op.
  */
 export function prefetchStoredPicks(season: number, weekNumber: number) {
   const key = `${season}:${weekNumber}`;

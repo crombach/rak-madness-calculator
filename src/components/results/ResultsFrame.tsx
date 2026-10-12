@@ -162,7 +162,7 @@ export default memo(function ResultsFrame({
   /** What the player analysis is worked out from. Absent while a week loads. */
   scores?: RakMadnessScores;
 }>) {
-  // Absent on the redirect routes, which render this frame before they know which
+  // Absent on the shortcut routes, which render this frame before they know which
   // week they are headed for.
   const { season: seasonParam, week: weekParam } = useParams();
   const navigate = useNavigate();
@@ -213,11 +213,8 @@ export default memo(function ResultsFrame({
     gamesPage.preload().catch(doNothing);
   }, []);
 
-  // Fetched once the week has painted, or failed to, and the page is quiet. So
-  // opening a dialog waits for neither fetch nor mount, and the load does not
-  // share its bandwidth with the week's. The Knockouts page comes with them. Its
-  // code is as heavy, and its fetch is a second try at the code
-  // `AppDataContext` reads the knockouts with.
+  // Fetched once the week is ready or failed, and the browser is idle, so the
+  // load does not share bandwidth with the week's. Knockouts comes with them.
   const canWarm = isReady || hasFailed;
   const hasWarmed = useRef(false);
   useEffect(() => {

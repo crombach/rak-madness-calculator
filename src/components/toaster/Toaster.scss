@@ -64,6 +64,8 @@ $toasterWidth: min(calc(100% - 48px), 400px);
 .toast-slot__inner {
   // A grid item's automatic minimum is its content, which stops the row collapsing.
   min-height: 0;
+  // The gap above each toast sits inside its slot, so a collapsing slot takes it along.
+  padding-top: var(--rak-space-3);
   animation: rak-toast-clip var(--toast-exit-duration) var(--rak-ease-standard);
 
   .toast-slot[data-leaving] > & {
@@ -72,8 +74,6 @@ $toasterWidth: min(calc(100% - 48px), 400px);
 }
 
 .toast {
-  // The gap above each toast sits inside its slot, so a collapsing slot takes it along.
-  margin-top: var(--rak-space-3);
   display: flex;
   align-items: flex-start;
   gap: var(--rak-space-3);

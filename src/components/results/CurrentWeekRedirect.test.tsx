@@ -80,6 +80,7 @@ describe("CurrentWeekRedirect", () => {
   it("draws nothing rather than guessing while the schedule loads", () => {
     mount(RESULTS_PAGE.scoreboard, { isWeeksLoading: true });
     expect(landedOn()).toBeUndefined();
+    expect(document.querySelector(".page")).not.toBeInTheDocument();
     expect(document.body.firstElementChild).toBeEmptyDOMElement();
   });
 });

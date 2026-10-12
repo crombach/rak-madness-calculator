@@ -2,6 +2,7 @@ import { Drawer } from "@base-ui/react/drawer";
 import { Menu } from "@base-ui/react/menu";
 import { ReactNode, useId, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
+import { errorToast, useToastActions } from "../../context/ToastContext";
 import {
   useScores,
   useIsWeekSettled,
@@ -14,6 +15,7 @@ import getClasses from "../../utils/getClasses";
 import lazyPreloadable from "../../utils/lazyPreloadable";
 import doNothing from "../../utils/doNothing";
 import { buttonClasses } from "../button/Button";
+import DialogLoadBoundary from "../results/DialogLoadBoundary";
 import {
   CloseIcon,
   HomeIcon,
@@ -144,6 +146,7 @@ export default function NavMenu({
   // dialog is already there, closed, for its first open to animate from.
   const [isSettingsWarm, setSettingsWarm] = useState(settingsDialog.isLoaded);
   const [hasSeenSettings, markSettingsSeen] = useSettingsSeen();
+  const { showToast } = useToastActions();
 
   const context: NavContext = {
     isWeekSettled,
@@ -198,7 +201,18 @@ export default function NavMenu({
         <NavPopup links={links} settings={settings} />
       )}
       {(isSettingsWarm || isSettingsOpen) && (
-        <SettingsDialog open={isSettingsOpen} onOpenChange={setSettingsOpen} />
+        <DialogLoadBoundary
+          onError={() =>
+            showToast(
+              errorToast("Failed to open that. Reload the page to try again."),
+            )
+          }
+        >
+          <SettingsDialog
+            open={isSettingsOpen}
+            onOpenChange={setSettingsOpen}
+          />
+        </DialogLoadBoundary>
       )}
     </>
   );
@@ -406,7 +420,11 @@ function NavDrawer({
   return (
     <Drawer.Root
       open={open}
-      onOpenChange={warmOnOpen(setOpen, settings.warm)}
+      onOpenChange={warmOnOpen((next) => {
+        // A reopen drops a hold left over from a close that never completed.
+        if (next) setHandingOff(false);
+        setOpen(next);
+      }, settings.warm)}
       onOpenChangeComplete={(isOpen) => {
         if (!isOpen) setHandingOff(false);
       }}

@@ -49,6 +49,7 @@ const parsed = new WeakMap<ArrayBuffer, Promise<ParsedPicks>>();
  */
 export const loadXlsx = cachedImport(() => import("xlsx-js-style"));
 
+/** The workbook's rows, keys, and matchups, parsed once per buffer. */
 export default function parsePicksWorkbook(
   picksBuffer: ArrayBuffer,
 ): Promise<ParsedPicks> {
