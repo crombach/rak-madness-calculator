@@ -6,6 +6,18 @@ function Throws(): never {
 }
 
 describe("LoadBoundary", () => {
+  it("draws its fallback in place of a page that cannot be fetched", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    render(
+      <LoadBoundary fallback={<p>Failed to show this page.</p>}>
+        <Throws />
+      </LoadBoundary>,
+    );
+
+    expect(screen.getByText("Failed to show this page.")).toBeInTheDocument();
+  });
+
   it("holds a dialog that cannot be fetched, and says so once", () => {
     // React reports a caught error itself, which is noise here rather than a
     // failure.

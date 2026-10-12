@@ -15,15 +15,22 @@ type DialogProps = {
 /**
  * A dialog fetched apart from the entry, which can be fetched ahead of its first
  * open. A chunk that fails to load toasts `DIALOG_LOAD_ERROR` and closes the
- * dialog. Each later open tries again and toasts again.
+ * dialog, so the reader keeps the page. `lazy` keeps its rejection, so a later
+ * open draws the dialog only if a `preload` since has fetched it. Otherwise it
+ * toasts again.
+ *
+ * `reloadOnLostChunk` reloads the page instead for a chunk a deploy removed.
  *
  * No fallback. A dialog mounts closed, and the open that beats the fetch wants
  * the dialog rather than a spinner where it will be.
  */
 export default function lazyDialog<P extends DialogProps>(
   loader: () => Promise<{ default: ComponentType<P> }>,
+  { reloadOnLostChunk = false } = {},
 ) {
-  const { Page, preload, isLoaded } = lazyPreloadable(loader, null);
+  const { Page, preload, isLoaded } = lazyPreloadable(loader, null, {
+    reloadOnLostChunk,
+  });
 
   function Dialog(props: P) {
     const { showToast } = useToastActions();

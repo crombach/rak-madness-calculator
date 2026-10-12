@@ -17,7 +17,7 @@ import {
   spreadsheetResponse,
   setUpAppTest,
 } from "./appTestFixtures";
-import { PAGE_LOAD_ERROR } from "./components/results/ResultsFrame";
+import { PAGE_ERROR } from "./components/results/ResultsFrame";
 
 let fetchMock: MockedFunction<typeof fetch>;
 
@@ -37,13 +37,13 @@ describe("the app: a page whose chunk cannot load", () => {
     fetchMock.mockResolvedValue(spreadsheetResponse());
     mountApp(`/${SEASON}/${CURRENT_WEEK}/games`);
 
-    expect(await screen.findByText(PAGE_LOAD_ERROR)).toBeInTheDocument();
+    expect(await screen.findByText(PAGE_ERROR)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Reload" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Menu" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /scoreboard/i }));
 
     expect(await screen.findByText("MNF Points Pick")).toBeInTheDocument();
-    expect(screen.queryByText(PAGE_LOAD_ERROR)).not.toBeInTheDocument();
+    expect(screen.queryByText(PAGE_ERROR)).not.toBeInTheDocument();
   });
 });

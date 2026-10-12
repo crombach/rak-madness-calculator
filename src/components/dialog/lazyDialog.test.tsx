@@ -24,7 +24,43 @@ function renderDialog(Dialog: (props: Props) => React.ReactNode) {
   return { onOpenChange, setOpen };
 }
 
+const LOST_CHUNK = "Failed to fetch dynamically imported module";
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  sessionStorage.clear();
+});
+
 describe("lazyDialog", () => {
+  it("toasts a chunk a deploy removed, and keeps the page", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const reload = vi.fn();
+    vi.stubGlobal("location", { ...window.location, reload });
+    const { Dialog } = lazyDialog<Props>(() =>
+      Promise.reject(new TypeError(LOST_CHUNK)),
+    );
+    const { setOpen } = renderDialog(Dialog);
+
+    setOpen(true);
+
+    expect(await screen.findByText(DIALOG_LOAD_ERROR)).toBeInTheDocument();
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it("reloads the page for a removed chunk when asked to", async () => {
+    const reload = vi.fn();
+    vi.stubGlobal("location", { ...window.location, reload });
+    const { Dialog } = lazyDialog<Props>(
+      () => Promise.reject(new TypeError(LOST_CHUNK)),
+      { reloadOnLostChunk: true },
+    );
+    const { setOpen } = renderDialog(Dialog);
+
+    setOpen(true);
+
+    await vi.waitFor(() => expect(reload).toHaveBeenCalledOnce());
+  });
+
   it("draws the dialog once its chunk is in", async () => {
     const { Dialog } = lazyDialog<Props>(() =>
       Promise.resolve({

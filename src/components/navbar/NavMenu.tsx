@@ -101,7 +101,9 @@ type SettingsEntry = {
 
 // Out of the entry, since most visits never open it. Fetched when a menu opens, so
 // the Settings tap that follows finds it in.
-const settingsDialog = lazyDialog(() => import("../settings/SettingsDialog"));
+const settingsDialog = lazyDialog(() => import("../settings/SettingsDialog"), {
+  reloadOnLostChunk: true,
+});
 const SettingsDialog = settingsDialog.Dialog;
 
 /** Opens or closes a menu, and fetches Settings as it opens. */

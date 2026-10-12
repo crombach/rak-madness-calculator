@@ -16,8 +16,8 @@ The week's results routes: `/:season/:week/scoreboard`, `/picks`, `/knockouts`,
 - `resultsSkeletons`: each page's wireframe, for the frame and the redirect.
 - `ResultsFrame`: the page and wireframe `ResultsLayout` renders into, memoized,
   captioned by view and week. Holds both dialogs lazily and the table providers.
-  A failed week gets Retry and Home. A page whose chunk failed gets
-  `PAGE_LOAD_ERROR`, Reload, and Home. A lazy page's wireframe stays until its
+  A failed week gets Retry and Home. A page that fails to load or throws gets
+  `PAGE_ERROR`, Reload, and Home. A lazy page's wireframe stays until its
   code is in too, so it mounts once. `canRefresh` arms refresh and `pull` on a
   live week, off the card pages.
 - `ResultsFrame.scss`: the column table and wireframe share, the caption.

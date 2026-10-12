@@ -118,9 +118,26 @@ function GameStatusSlot(
   );
 }
 
-/** What a page whose chunk failed says in its place. */
-export const PAGE_LOAD_ERROR =
-  "Failed to load this page. Reload the page to try again.";
+/** What a page says in its place when its chunk fails to load, or it throws. */
+export const PAGE_ERROR =
+  "Failed to show this page. Reload the page to try again.";
+
+/** A failure in place of the page, with `children` as the way on and Home. */
+function ResultsFailure({
+  message,
+  children,
+}: PropsWithChildren<{ message: string }>) {
+  const navigate = useNavigate();
+  return (
+    <div className="results-failure">
+      <EmptyState>{message}</EmptyState>
+      <div className="results-failure__actions">
+        {children}
+        <Button onClick={() => navigate("/")}>Home</Button>
+      </div>
+    </div>
+  );
+}
 
 /** The scroll offset the scoreboard and the picks share. */
 const SCORES_SCROLL_KEY = "scores";
@@ -169,7 +186,6 @@ export default memo(function ResultsFrame({
   // Absent on the shortcut routes, which render this frame before they know which
   // week they are headed for.
   const { season: seasonParam, week: weekParam } = useParams();
-  const navigate = useNavigate();
   const hasWeek = Boolean(seasonParam && weekParam);
   const scoresView: ScoresView | null = isScoresView(view) ? view : null;
   // Once every game is final there is nothing left to fetch, so the refresh button
@@ -317,34 +333,26 @@ export default memo(function ResultsFrame({
         <PlayerAnalysisContextProvider showPlayerAnalysis={showPlayerAnalysis}>
           <GameStatusContextProvider showGameStatus={showGameStatus}>
             {isReady && hasPageCode ? (
-              // Keyed by page, so leaving a page that failed lets the next one
-              // load.
+              // Keyed by page and week, so moving on from one that failed draws
+              // the next afresh.
               <LoadBoundary
-                key={view}
+                key={`${view}:${seasonParam}:${weekParam}`}
                 fallback={
-                  <div className="results-failure">
-                    <EmptyState>{PAGE_LOAD_ERROR}</EmptyState>
-                    <div className="results-failure__actions">
-                      <Button onClick={() => window.location.reload()}>
-                        Reload
-                      </Button>
-                      <Button onClick={() => navigate("/")}>Home</Button>
-                    </div>
-                  </div>
+                  <ResultsFailure message={PAGE_ERROR}>
+                    <Button onClick={() => window.location.reload()}>
+                      Reload
+                    </Button>
+                  </ResultsFailure>
                 }
               >
                 {children}
               </LoadBoundary>
             ) : hasFailed ? (
-              <div className="results-failure">
-                <EmptyState>{scoringFailedMessage(weekParam ?? "")}</EmptyState>
-                <div className="results-failure__actions">
-                  <Button onClick={onRefresh} busy={isRefreshing}>
-                    Retry
-                  </Button>
-                  <Button onClick={() => navigate("/")}>Home</Button>
-                </div>
-              </div>
+              <ResultsFailure message={scoringFailedMessage(weekParam ?? "")}>
+                <Button onClick={onRefresh} busy={isRefreshing}>
+                  Retry
+                </Button>
+              </ResultsFailure>
             ) : (
               SKELETONS[view]
             )}
