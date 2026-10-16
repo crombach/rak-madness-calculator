@@ -4,17 +4,20 @@ import {
   SettingsContextProvider,
 } from "../../context/SettingsContext";
 import LogoButton, { APP_NAME, BETA_WORD } from "./LogoButton";
+import { setExperimentalFeaturesOffered } from "../../context/experimentalFeaturesOfferedMock";
 
-const offered = vi.hoisted(() => ({ value: false }));
-vi.mock("../../context/experimentalFeaturesOffered", () => ({
-  get EXPERIMENTAL_FEATURES_OFFERED() {
-    return offered.value;
-  },
-}));
+vi.mock(
+  "../../context/experimentalFeaturesOffered",
+  () => import("../../context/experimentalFeaturesOfferedMock"),
+);
 
 beforeEach(() => {
   localStorage.clear();
-  offered.value = true;
+  setExperimentalFeaturesOffered(true);
+});
+
+afterEach(() => {
+  setExperimentalFeaturesOffered(false);
 });
 
 describe("LogoButton", () => {
@@ -43,7 +46,7 @@ describe("LogoButton", () => {
   });
 
   it("leaves the name plain while no feature is offered", () => {
-    offered.value = false;
+    setExperimentalFeaturesOffered(false);
     localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
     render(
       <SettingsContextProvider>

@@ -7,14 +7,13 @@ import {
   SettingsContextProvider,
   THEME_KEY,
 } from "../../context/SettingsContext";
+import { setExperimentalFeaturesOffered } from "../../context/experimentalFeaturesOfferedMock";
 import SettingsDialog from "./SettingsDialog";
 
-const offered = vi.hoisted(() => ({ value: false }));
-vi.mock("../../context/experimentalFeaturesOffered", () => ({
-  get EXPERIMENTAL_FEATURES_OFFERED() {
-    return offered.value;
-  },
-}));
+vi.mock(
+  "../../context/experimentalFeaturesOffered",
+  () => import("../../context/experimentalFeaturesOfferedMock"),
+);
 
 function mountDialog(onOpenChange = () => undefined) {
   const user = userEvent.setup();
@@ -228,11 +227,11 @@ describe("SettingsDialog, the live player analysis", () => {
 
 describe("SettingsDialog, the experimental features", () => {
   beforeEach(() => {
-    offered.value = true;
+    setExperimentalFeaturesOffered(true);
   });
 
   afterEach(() => {
-    offered.value = false;
+    setExperimentalFeaturesOffered(false);
   });
 
   it("asks for them last", () => {

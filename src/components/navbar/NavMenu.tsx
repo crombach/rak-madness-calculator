@@ -38,7 +38,7 @@ type NavContext = {
   playerCount?: number;
 };
 
-type NavItem = {
+export type NavItem = {
   label: string;
   icon: ReactNode;
   path: (season: Week, week: Week) => string;
@@ -115,6 +115,14 @@ function warmOnOpen(setOpen: (next: boolean) => void, warm: () => void) {
 
 const TRIGGER_CLASSES = buttonClasses({ compact: true, iconOnly: true });
 
+/** The items to list, an experimental one only with the opt-in. */
+export function shownItems(
+  items: Array<NavItem>,
+  experimentalFeatures: boolean,
+) {
+  return items.filter((item) => experimentalFeatures || !item.experimental);
+}
+
 /**
  * The hamburger every page opens beside the scoreboard/picks switch. A drawer
  * from the right edge on a touch screen, a popup menu anywhere else. An
@@ -148,9 +156,7 @@ export default function NavMenu({
     knockouts,
     playerCount,
   };
-  const shown = ITEMS.filter(
-    (item) => experimentalFeatures || !item.experimental,
-  );
+  const shown = shownItems(ITEMS, experimentalFeatures);
   const links = shown.map((item) => {
     const path = item.path(season, week);
     const isHeldOff = pagesDisabled && item !== HOME;
@@ -211,7 +217,7 @@ type NavLink = Omit<NavItem, "path" | "disabled" | "disabledReason"> & {
   disabledReason?: string;
 };
 
-function ItemName({
+export function ItemName({
   label,
   experimental,
 }: {

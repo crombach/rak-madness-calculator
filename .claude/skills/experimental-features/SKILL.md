@@ -5,7 +5,7 @@ description: Gate a work-in-progress feature behind the βeta Mode setting, or r
 
 # Experimental features
 
-`useSetting("experimentalFeatures")` from `src/context/SettingsContext.tsx` gates every work-in-progress feature. Any reader can turn it on in the settings dialog. Off by default.
+`useSetting("experimentalFeatures")` from `src/context/SettingsContext.tsx` gates every work-in-progress feature. A reader can turn it on in the settings dialog while `EXPERIMENTAL_FEATURES_OFFERED` is true. Off by default.
 
 `EXPERIMENTAL_FEATURES_OFFERED` in `src/context/experimentalFeaturesOffered.ts` parks the setting. False hides the dialog row and reads the setting as off, stored `"on"` included. True only while a feature is gated.
 
@@ -39,7 +39,7 @@ A feature is experimental when it reads `experimentalFeatures`. No registry, no 
 
 3. Skip work only the feature needs when false, such as a memoized derivation in a context. Return the value the feature's empty state already handles.
 4. Test both states. Opt in by seeding `EXPERIMENTAL_FEATURES_KEY` from `SettingsContext` as `"on"` in `localStorage`, in `beforeEach` or before the mount. Leave it unset for off. Assert the entry point is absent and the route redirects when off.
-   The setting's own tests (`SettingsContext`, `SettingsDialog`, `LogoButton`) mock the constant with a `vi.hoisted` getter, so they pass with it either way.
+   The setting's own tests (`SettingsContext`, `SettingsDialog`, `LogoButton`) swap its module for `experimentalFeaturesOfferedMock.ts` and flip it with `setExperimentalFeaturesOffered`, so they pass with it either way.
 
 ## Release a feature to everyone
 

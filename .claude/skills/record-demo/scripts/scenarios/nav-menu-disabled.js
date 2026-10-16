@@ -3,12 +3,7 @@ import {
   makeGame,
   registerAppMocks,
 } from "../lib/mocks.js";
-import {
-  SEASON,
-  WEEK,
-  THEME_KEY,
-  EXPERIMENTAL_FEATURES_KEY,
-} from "../lib/constants.js";
+import { SEASON, WEEK, THEME_KEY } from "../lib/constants.js";
 
 /** `light` or `dark`. */
 const THEME = process.env.NAV_THEME ?? "light";
@@ -59,11 +54,10 @@ export default async function run({ page, context, baseUrl }) {
   const url = `${baseUrl}/${SEASON}/${WEEK}/scoreboard`;
   await page.goto(url);
   await page.evaluate(
-    ([key, theme, flagKey]) => {
+    ([key, theme]) => {
       localStorage.setItem(key, theme);
-      localStorage.setItem(flagKey, "on");
     },
-    [THEME_KEY, THEME, EXPERIMENTAL_FEATURES_KEY],
+    [THEME_KEY, THEME],
   );
   await page.goto(url);
 

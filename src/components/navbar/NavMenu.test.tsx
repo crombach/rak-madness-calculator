@@ -10,7 +10,8 @@ import {
 import { SettingsContextProvider } from "../../context/SettingsContext";
 import { KnockoutGame } from "../../utils/scoring/getKnockouts";
 import { SETTINGS_SEEN_KEY } from "../settings/useSettingsSeen";
-import NavMenu from "./NavMenu";
+import { BETA_MARK, BETA_WORD } from "./LogoButton";
+import NavMenu, { ItemName, NavItem, shownItems } from "./NavMenu";
 
 vi.mock("../../context/AppDataContext", () => ({
   useScores: vi.fn(),
@@ -570,5 +571,24 @@ describe("NavMenu", () => {
       );
       await waitFor(() => expect(trigger()).toHaveFocus());
     });
+  });
+});
+
+describe("NavMenu, an experimental item", () => {
+  const PLAIN: NavItem = { label: "Plain", icon: null, path: () => "/" };
+  const BETA: NavItem = { ...PLAIN, label: "Beta", experimental: true };
+
+  it("is left out without the opt-in", () => {
+    expect(shownItems([PLAIN, BETA], false)).toEqual([PLAIN]);
+  });
+
+  it("is listed with the opt-in", () => {
+    expect(shownItems([PLAIN, BETA], true)).toEqual([PLAIN, BETA]);
+  });
+
+  it("ends its name in the β mark, which a screen reader hears as its word", () => {
+    const { container } = render(<ItemName label="Beta" experimental />);
+
+    expect(container.textContent).toBe(`Beta${BETA_MARK} ${BETA_WORD}`);
   });
 });

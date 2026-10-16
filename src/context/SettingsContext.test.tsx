@@ -15,13 +15,12 @@ import {
   useSetting,
   useSettings,
 } from "./SettingsContext";
+import { setExperimentalFeaturesOffered } from "./experimentalFeaturesOfferedMock";
 
-const offered = vi.hoisted(() => ({ value: false }));
-vi.mock("./experimentalFeaturesOffered", () => ({
-  get EXPERIMENTAL_FEATURES_OFFERED() {
-    return offered.value;
-  },
-}));
+vi.mock(
+  "./experimentalFeaturesOffered",
+  () => import("./experimentalFeaturesOfferedMock"),
+);
 
 function Probe({ candidate = "Linebacher" }: { candidate?: string }) {
   const {
@@ -262,11 +261,11 @@ describe("SettingsContext, the experimental features unoffered", () => {
 
 describe("SettingsContext, the experimental features", () => {
   beforeEach(() => {
-    offered.value = true;
+    setExperimentalFeaturesOffered(true);
   });
 
   afterEach(() => {
-    offered.value = false;
+    setExperimentalFeaturesOffered(false);
   });
 
   it("is off for a reader who has never opted in", () => {
