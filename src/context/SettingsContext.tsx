@@ -8,6 +8,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import doNothing from "../utils/doNothing";
+import { EXPERIMENTAL_FEATURES_OFFERED } from "./experimentalFeaturesOffered";
 import { PREFIX, readSetting, writeSetting } from "../utils/settingsStore";
 
 export type Theme = "light" | "dark" | "auto";
@@ -98,7 +99,8 @@ const LIVE_ANALYSIS_CODEC: Codec<boolean> = {
 };
 
 const EXPERIMENTAL_FEATURES_CODEC: Codec<boolean> = {
-  read: (saved) => saved === EXPERIMENTAL_FEATURES_ON,
+  read: (saved) =>
+    EXPERIMENTAL_FEATURES_OFFERED && saved === EXPERIMENTAL_FEATURES_ON,
   write: (enabled) => (enabled ? EXPERIMENTAL_FEATURES_ON : ""),
 };
 

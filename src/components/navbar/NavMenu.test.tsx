@@ -7,14 +7,11 @@ import {
   useIsWeekSettled,
   useKnockouts,
 } from "../../context/AppDataContext";
-import {
-  EXPERIMENTAL_FEATURES_KEY,
-  SettingsContextProvider,
-} from "../../context/SettingsContext";
+import { SettingsContextProvider } from "../../context/SettingsContext";
 import { KnockoutGame } from "../../utils/scoring/getKnockouts";
 import { SETTINGS_SEEN_KEY } from "../settings/useSettingsSeen";
 import { BETA_MARK, BETA_WORD } from "./LogoButton";
-import NavMenu from "./NavMenu";
+import NavMenu, { ItemName, NavItem, shownItems } from "./NavMenu";
 
 vi.mock("../../context/AppDataContext", () => ({
   useScores: vi.fn(),
@@ -71,16 +68,9 @@ function trigger() {
   return screen.getByRole("button", { name: "Menu" });
 }
 
-// Compare Players is experimental, so it ends in the β mark, which a screen
-// reader hears as its word.
-const COMPARE_PLAYERS_NAME = `Compare Players ${BETA_WORD}`;
-const COMPARE_PLAYERS_TEXT = `Compare Players${BETA_MARK} ${BETA_WORD}`;
-
 describe("NavMenu", () => {
   beforeEach(() => {
     localStorage.clear();
-    // Compare Players shows only with this opt-in.
-    localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
     mockIsWeekSettled.mockReturnValue(false);
     mockKnockouts.mockReturnValue({ games: [A_KNOCKOUT_GAME] });
     mockScores.mockReturnValue(TWO_PLAYERS);
@@ -103,22 +93,7 @@ describe("NavMenu", () => {
         "Home",
         "Games",
         "Knockouts",
-        COMPARE_PLAYERS_TEXT,
-        "Settings",
-      ]);
-    });
-
-    it("leaves out Compare Players with experimental features off", async () => {
-      localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
-      const user = mount();
-      await user.click(trigger());
-
-      const items = await screen.findAllByRole("menuitem");
-
-      expect(items.map((item) => item.textContent)).toEqual([
-        "Home",
-        "Games",
-        "Knockouts",
+        "Compare Players",
         "Settings",
       ]);
     });
@@ -273,7 +248,7 @@ describe("NavMenu", () => {
       const user = mount();
       await user.click(trigger());
       await user.click(
-        await screen.findByRole("menuitem", { name: COMPARE_PLAYERS_NAME }),
+        await screen.findByRole("menuitem", { name: "Compare Players" }),
       );
 
       expect(await screen.findByTestId("landed")).toHaveTextContent(
@@ -287,7 +262,7 @@ describe("NavMenu", () => {
       await user.click(trigger());
 
       const item = await screen.findByRole("menuitem", {
-        name: COMPARE_PLAYERS_NAME,
+        name: "Compare Players",
       });
 
       expect(item).toHaveAttribute("data-disabled");
@@ -456,7 +431,7 @@ describe("NavMenu", () => {
         within(drawer)
           .getAllByRole("link")
           .map((link) => link.textContent),
-      ).toEqual(["Home", "Games", "Knockouts", COMPARE_PLAYERS_TEXT]);
+      ).toEqual(["Home", "Games", "Knockouts", "Compare Players"]);
       expect(
         within(drawer).getByRole("button", { name: "Settings" }),
       ).toBeInTheDocument();
@@ -596,5 +571,24 @@ describe("NavMenu", () => {
       );
       await waitFor(() => expect(trigger()).toHaveFocus());
     });
+  });
+});
+
+describe("NavMenu, an experimental item", () => {
+  const PLAIN: NavItem = { label: "Plain", icon: null, path: () => "/" };
+  const BETA: NavItem = { ...PLAIN, label: "Beta", experimental: true };
+
+  it("is left out without the opt-in", () => {
+    expect(shownItems([PLAIN, BETA], false)).toEqual([PLAIN]);
+  });
+
+  it("is listed with the opt-in", () => {
+    expect(shownItems([PLAIN, BETA], true)).toEqual([PLAIN, BETA]);
+  });
+
+  it("ends its name in the β mark, which a screen reader hears as its word", () => {
+    const { container } = render(<ItemName label="Beta" experimental />);
+
+    expect(container.textContent).toBe(`Beta${BETA_MARK} ${BETA_WORD}`);
   });
 });

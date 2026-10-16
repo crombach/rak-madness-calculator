@@ -14,10 +14,7 @@ import {
   setUpAppTest,
   spreadsheetResponse,
 } from "../../appTestFixtures";
-import {
-  EXPERIMENTAL_FEATURES_KEY,
-  PLAYER_NAME_KEY,
-} from "../../context/SettingsContext";
+import { PLAYER_NAME_KEY } from "../../context/SettingsContext";
 import { pick, player, week } from "../../utils/scoring/scoringTestFixtures";
 import {
   COMPARED_PLAYERS_KEY,
@@ -106,7 +103,6 @@ async function choose(
 beforeEach(() => {
   setUpAppTest().mockResolvedValue(spreadsheetResponse());
   getPlayerScoresMock.mockResolvedValue(compareScores());
-  localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
 });
 
 afterEach(() => {
@@ -932,18 +928,6 @@ describe("the compare players route", () => {
 
     expect(
       await screen.findByRole("table", { name: "Picks of Bob and Alice" }),
-    ).toBeInTheDocument();
-  });
-
-  it("sends a reader without experimental features to the scoreboard", async () => {
-    localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
-    mountApp(COMPARE_PATH);
-
-    expect(
-      await screen.findByRole("heading", {
-        level: 1,
-        name: `${SEASON} Week ${CURRENT_WEEK} Scoreboard`,
-      }),
     ).toBeInTheDocument();
   });
 });

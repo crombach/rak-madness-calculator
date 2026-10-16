@@ -15,6 +15,12 @@ import {
   useSetting,
   useSettings,
 } from "./SettingsContext";
+import { setExperimentalFeaturesOffered } from "./experimentalFeaturesOfferedMock";
+
+vi.mock(
+  "./experimentalFeaturesOffered",
+  () => import("./experimentalFeaturesOfferedMock"),
+);
 
 function Probe({ candidate = "Linebacher" }: { candidate?: string }) {
   const {
@@ -242,7 +248,26 @@ describe("SettingsContext, the live player analysis", () => {
   });
 });
 
+describe("SettingsContext, the experimental features unoffered", () => {
+  it("reads a stored opt-in as off", () => {
+    localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
+    mountProbe();
+
+    expect(screen.getByTestId("experimentalFeatures")).toHaveTextContent(
+      "false",
+    );
+  });
+});
+
 describe("SettingsContext, the experimental features", () => {
+  beforeEach(() => {
+    setExperimentalFeaturesOffered(true);
+  });
+
+  afterEach(() => {
+    setExperimentalFeaturesOffered(false);
+  });
+
   it("is off for a reader who has never opted in", () => {
     mountProbe();
 

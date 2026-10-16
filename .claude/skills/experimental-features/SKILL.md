@@ -5,7 +5,9 @@ description: Gate a work-in-progress feature behind the βeta Mode setting, or r
 
 # Experimental features
 
-`useSetting("experimentalFeatures")` from `src/context/SettingsContext.tsx` gates every work-in-progress feature. Any reader can turn it on in the settings dialog. Off by default.
+`useSetting("experimentalFeatures")` from `src/context/SettingsContext.tsx` gates every work-in-progress feature. A reader can turn it on in the settings dialog while `EXPERIMENTAL_FEATURES_OFFERED` is true. Off by default.
+
+`EXPERIMENTAL_FEATURES_OFFERED` in `src/context/experimentalFeaturesOffered.ts` parks the setting. False hides the dialog row and reads the setting as off, stored `"on"` included. True only while a feature is gated.
 
 - Never add a per-feature flag or a second setting. Every gated feature reads this one value.
 - Never move `useSettingsSeen.ts`'s `SETTINGS_CHANGED_AT` for gating or releasing a feature. The dialog did not change.
@@ -14,6 +16,7 @@ description: Gate a work-in-progress feature behind the βeta Mode setting, or r
 
 A feature is experimental when it reads `experimentalFeatures`. No registry, no list, no comment marker. That read is how every later step finds it.
 
+0. `EXPERIMENTAL_FEATURES_OFFERED` false: set it true.
 1. Hide every entry point when the value is false: a nav item, a link, a button.
    A `NavMenu` item takes `experimental: true` instead. `NavMenu` hides it and marks it β.
 
@@ -36,6 +39,7 @@ A feature is experimental when it reads `experimentalFeatures`. No registry, no 
 
 3. Skip work only the feature needs when false, such as a memoized derivation in a context. Return the value the feature's empty state already handles.
 4. Test both states. Opt in by seeding `EXPERIMENTAL_FEATURES_KEY` from `SettingsContext` as `"on"` in `localStorage`, in `beforeEach` or before the mount. Leave it unset for off. Assert the entry point is absent and the route redirects when off.
+   The setting's own tests (`SettingsContext`, `SettingsDialog`, `LogoButton`) swap its module for `experimentalFeaturesOfferedMock.ts` and flip it with `setExperimentalFeaturesOffered`, so they pass with it either way.
 
 ## Release a feature to everyone
 
@@ -43,8 +47,8 @@ A feature is experimental when it reads `experimentalFeatures`. No registry, no 
 2. At each one, delete the check and keep the code the true branch ran.
    In `NavMenu.tsx`, keep the filter and delete `experimental: true` from the released item.
 3. Delete the tests of the feature's off state. Keep the on-state tests, without the seeded key.
-4. Keep the setting, its dialog row, and the β when no call site remains. The next gated feature reuses them.
+4. No call site remains: set `EXPERIMENTAL_FEATURES_OFFERED` false. Keep the setting, its dialog row, `ExperimentalGate`, and the β. The next gated feature reuses them.
 
 ## Remove an abandoned feature
 
-Delete the feature's code, its `experimentalFeatures` checks, and its tests. Keep the setting, its dialog row, and the β.
+Delete the feature's code, its `experimentalFeatures` checks, and its tests. Then follow release step 4.
