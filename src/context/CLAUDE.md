@@ -8,6 +8,7 @@
 - `SettingsContext`: theme, name, live analysis, beta opt-in, outside React.
   `useSetting(key)` renders on that setting only, `useSettings()` on any, so
   the dialog alone uses it. Writes `data-theme`, answers `useIsMyPlayer`.
+- `experimentalFeaturesOffered`: whether βeta Mode is offered at all.
 - `ToastContext`: the toast list, split from its actions.
 - `PlayerAnalysisContext`: how a name cell opens the player analysis on that
   player. One callback, a no-op with no provider above.

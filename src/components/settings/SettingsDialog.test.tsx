@@ -9,6 +9,13 @@ import {
 } from "../../context/SettingsContext";
 import SettingsDialog from "./SettingsDialog";
 
+const offered = vi.hoisted(() => ({ value: false }));
+vi.mock("../../context/experimentalFeaturesOffered", () => ({
+  get EXPERIMENTAL_FEATURES_OFFERED() {
+    return offered.value;
+  },
+}));
+
 function mountDialog(onOpenChange = () => undefined) {
   const user = userEvent.setup();
   render(
@@ -45,18 +52,13 @@ beforeEach(() => {
 });
 
 describe("SettingsDialog", () => {
-  it("asks for the name, the analysis, the theme, then the experiments", () => {
+  it("asks for the name, the analysis, then the theme", () => {
     mountDialog();
     const headings = screen
       .getAllByRole("heading", { level: 3 })
       .map((heading) => heading.textContent);
 
-    expect(headings).toEqual([
-      "Player Name",
-      "Live Player Analysis",
-      "Theme",
-      "βeta Mode",
-    ]);
+    expect(headings).toEqual(["Player Name", "Live Player Analysis", "Theme"]);
   });
 
   it("closes from the shell's own close button", async () => {
@@ -72,7 +74,6 @@ describe("SettingsDialog", () => {
   it.each([
     ["Live Player Analysis", "Off"],
     ["Theme", "Dark"],
-    ["Beta Mode", "On"],
   ])("selects the %s key %s in the click's own render", (group, label) => {
     mountDialog();
     const key = choice(group, label);
@@ -226,6 +227,32 @@ describe("SettingsDialog, the live player analysis", () => {
 });
 
 describe("SettingsDialog, the experimental features", () => {
+  beforeEach(() => {
+    offered.value = true;
+  });
+
+  afterEach(() => {
+    offered.value = false;
+  });
+
+  it("asks for them last", () => {
+    mountDialog();
+    const headings = screen
+      .getAllByRole("heading", { level: 3 })
+      .map((heading) => heading.textContent);
+
+    expect(headings.at(-1)).toBe("βeta Mode");
+  });
+
+  it("selects On in the click's own render", () => {
+    mountDialog();
+    const key = choice("Beta Mode", "On");
+
+    fireEvent.click(key);
+
+    expect(key).toHaveClass("--selected");
+  });
+
   it("offers on then off, and starts off", () => {
     mountDialog();
 

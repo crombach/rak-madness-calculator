@@ -12,7 +12,6 @@ import {
   useIsWeekSettled,
   useScoringStatus,
 } from "../../context/AppDataContext";
-import { useSetting } from "../../context/SettingsContext";
 import { GameStatusContextProvider } from "../../context/GameStatusContext";
 import { PlayerAnalysisContextProvider } from "../../context/PlayerAnalysisContext";
 import { scoringFailedMessage } from "../../hooks/usePlayerScores";
@@ -218,8 +217,6 @@ export default memo(function ResultsFrame({
 
   const hasPageCode = usePageCode(view);
 
-  const experimentalFeatures = useSetting("experimentalFeatures");
-
   // Fetched ahead, alongside the week, so the menu's link lands on the page
   // rather than on a frame of wireframe while its chunk arrives.
   useEffect(() => {
@@ -227,7 +224,8 @@ export default memo(function ResultsFrame({
   }, []);
 
   // Fetched once the week is ready or failed, and the browser is idle, so the
-  // load does not share bandwidth with the week's. Knockouts comes with them.
+  // load does not share bandwidth with the week's. Knockouts and Compare Players
+  // come with them.
   const canWarm = isReady || hasFailed;
   const hasWarmed = useRef(false);
   useEffect(() => {
@@ -237,6 +235,7 @@ export default memo(function ResultsFrame({
     const warm = () => {
       hasWarmed.current = true;
       knockoutsPage.preload().catch(doNothing);
+      comparePlayersPage.preload().catch(doNothing);
       Promise.all([playerAnalysisDialog.preload(), gameStatusDialog.preload()])
         .then(() => setHasLoaded(true))
         .catch(doNothing);
@@ -248,14 +247,6 @@ export default memo(function ResultsFrame({
     const handle = window.requestIdleCallback(warm);
     return () => window.cancelIdleCallback(handle);
   }, [canWarm]);
-
-  // Apart from the warm above, so turning βeta Mode on fetches only this.
-  const hasWarmedCompare = useRef(false);
-  useEffect(() => {
-    if (!canWarm || !experimentalFeatures || hasWarmedCompare.current) return;
-    hasWarmedCompare.current = true;
-    comparePlayersPage.preload().catch(doNothing);
-  }, [canWarm, experimentalFeatures]);
 
   // Stable, so the memoized tables below do not re-render for a dialog opening.
   const showPlayerAnalysis = useCallback(

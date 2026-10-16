@@ -1,5 +1,6 @@
 import { useId, useRef } from "react";
 import { Theme, useSettings } from "../../context/SettingsContext";
+import { EXPERIMENTAL_FEATURES_OFFERED } from "../../context/experimentalFeaturesOffered";
 import Button from "../button/Button";
 import DialogShell from "../dialog/DialogShell";
 import { CloseIcon } from "../icon/Icon";
@@ -147,34 +148,36 @@ export default function SettingsDialog({
           </p>
         </section>
 
-        <section className="settings__section">
-          {/* A screen reader says β as "beta", which would make this "beta eta". */}
-          <h3
-            className="settings__label"
-            id={experimentalFeaturesLabelId}
-            aria-label="Beta Mode"
-          >
-            <span className="settings__beta">β</span>eta Mode
-          </h3>
-          <div
-            className="settings__choices"
-            role="group"
-            aria-labelledby={experimentalFeaturesLabelId}
-          >
-            {ON_OFF.map(({ value, label }) => (
-              <Button
-                key={label}
-                compact
-                selected={experimentalFeatures === value}
-                onClick={() => setExperimentalFeatures(value)}
-                className="settings__choice"
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-          <p className="settings__hint">Preview work-in-progress features.</p>
-        </section>
+        {EXPERIMENTAL_FEATURES_OFFERED && (
+          <section className="settings__section">
+            {/* A screen reader says β as "beta", which would make this "beta eta". */}
+            <h3
+              className="settings__label"
+              id={experimentalFeaturesLabelId}
+              aria-label="Beta Mode"
+            >
+              <span className="settings__beta">β</span>eta Mode
+            </h3>
+            <div
+              className="settings__choices"
+              role="group"
+              aria-labelledby={experimentalFeaturesLabelId}
+            >
+              {ON_OFF.map(({ value, label }) => (
+                <Button
+                  key={label}
+                  compact
+                  selected={experimentalFeatures === value}
+                  onClick={() => setExperimentalFeatures(value)}
+                  className="settings__choice"
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+            <p className="settings__hint">Preview work-in-progress features.</p>
+          </section>
+        )}
       </div>
     </DialogShell>
   );

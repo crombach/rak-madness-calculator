@@ -16,6 +16,13 @@ import {
   useSettings,
 } from "./SettingsContext";
 
+const offered = vi.hoisted(() => ({ value: false }));
+vi.mock("./experimentalFeaturesOffered", () => ({
+  get EXPERIMENTAL_FEATURES_OFFERED() {
+    return offered.value;
+  },
+}));
+
 function Probe({ candidate = "Linebacher" }: { candidate?: string }) {
   const {
     theme,
@@ -242,7 +249,26 @@ describe("SettingsContext, the live player analysis", () => {
   });
 });
 
+describe("SettingsContext, the experimental features unoffered", () => {
+  it("reads a stored opt-in as off", () => {
+    localStorage.setItem(EXPERIMENTAL_FEATURES_KEY, "on");
+    mountProbe();
+
+    expect(screen.getByTestId("experimentalFeatures")).toHaveTextContent(
+      "false",
+    );
+  });
+});
+
 describe("SettingsContext, the experimental features", () => {
+  beforeEach(() => {
+    offered.value = true;
+  });
+
+  afterEach(() => {
+    offered.value = false;
+  });
+
   it("is off for a reader who has never opted in", () => {
     mountProbe();
 

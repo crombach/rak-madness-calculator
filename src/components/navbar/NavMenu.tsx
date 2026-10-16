@@ -64,7 +64,6 @@ const COMPARE_PLAYERS: NavItem = {
   icon: <JoinIcon />,
   path: (season, week) =>
     resultsPath(season, week, RESULTS_PAGE.comparePlayers),
-  experimental: true,
   disabled: ({ playerCount }) => playerCount == null,
 };
 
