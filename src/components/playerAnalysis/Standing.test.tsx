@@ -62,6 +62,13 @@ describe("Standing", () => {
     // Level on points and out already, so the lead is Rak's alone.
     rerender(<Standing scores={knockedOut(tied, "Bill")} playerName="Rak" />);
     expect(standingText()).toBe("In the lead • 1 game remaining");
+
+    // Two rows under one name take the week off nobody.
+    const repeated: RakMadnessScores = {
+      scores: [...tied.scores, player("Bill", 0, "KC -3")],
+    };
+    rerender(<Standing scores={repeated} playerName="Rak" />);
+    expect(standingText()).toBe("In the lead • 1 game remaining");
   });
 
   /** The same week with nothing left open, which is a week that has a winner. */
@@ -201,9 +208,7 @@ describe("Standing", () => {
     expect(screen.getByText("Winner")).not.toHaveClass("--knocked-out");
 
     rerender(<Standing scores={scores} playerName="Rak" />);
-    expect(screen.getByText("In the lead")).not.toHaveClass(
-      "--knocked-out",
-    );
+    expect(screen.getByText("In the lead")).not.toHaveClass("--knocked-out");
   });
 
   /** One game nobody could be scored on, which is a hole in a week otherwise done. */
@@ -232,9 +237,7 @@ describe("Standing", () => {
     );
 
     // Not the winner: a week with a hole in it has no result to state yet.
-    expect(standingText()).toBe(
-      "In the lead • 1 game could not be scored",
-    );
+    expect(standingText()).toBe("In the lead • 1 game could not be scored");
   });
 
   it("counts a blank cell as the player's own, not a hole in the week", () => {
