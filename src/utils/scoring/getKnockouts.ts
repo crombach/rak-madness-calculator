@@ -6,7 +6,7 @@ import {
 } from "../../types/RakMadnessScores";
 import applyKnockouts from "./applyKnockouts";
 import comparePlayerScores from "./comparePlayerScores";
-import gameLabels, { LEAGUES, LeagueKey } from "./gameColumns";
+import gameLabels, { LEAGUES, LeagueKey, tiebreakerGame } from "./gameColumns";
 import { getMustWin } from "./getPlayerAnalysis";
 import { hasOutcome, isWeekWon } from "./isWeekSettled";
 import parsePick, { formatPickDisplay } from "./parsePick";
@@ -41,12 +41,14 @@ function columnsOf(players: Array<PlayerScore>): Array<Column> {
   );
 }
 
-/**
- * The game the MNF Points are scored off, the sheet's last, the one before its
- * `Pts` column. It need not kick off last.
- */
-function pointsGameOf(columns: Array<Column>): string | undefined {
-  return columns.at(-1)?.label;
+/** The label of the game the MNF Points are scored off. It need not kick off last. */
+function pointsGameOf(players: Array<PlayerScore>): string | undefined {
+  const [first] = players;
+  if (first == null) return undefined;
+  return tiebreakerGame({
+    college: gameLabels(first, "college"),
+    pro: gameLabels(first, "pro"),
+  });
 }
 
 /**
@@ -239,7 +241,7 @@ function knockoutSides(scores: RakMadnessScores): {
       .map(({ name }) => name),
   );
   // The MNF Points hold until their game reopens.
-  const pointsGame = pointsGameOf(columnsOf(players));
+  const pointsGame = pointsGameOf(players);
   let tiebreakerScore = scores.tiebreaker;
   // Every final game from `at` on, played again.
   let replayed = players.map(withoutVerdict);
@@ -315,7 +317,7 @@ export default function getKnockouts(scores: RakMadnessScores): KnockoutGames {
     ...knockouts.sidesByLabel,
   ]);
   const columns = columnsOf(scores.scores);
-  const pointsGame = pointsGameOf(columns);
+  const pointsGame = pointsGameOf(scores.scores);
 
   const games = columns.flatMap(({ label }): Array<KnockoutGame> => {
     const sides = sidesByLabel.get(label) ?? new Map<string, KnockoutSide>();
