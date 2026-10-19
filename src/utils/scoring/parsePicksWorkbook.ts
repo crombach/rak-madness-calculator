@@ -1,6 +1,6 @@
 import cachedImport from "../cachedImport";
 import debugLog from "../debugLog";
-import { LEAGUE_PREFIX } from "./gameColumns";
+import { LEAGUE_PREFIX, tiebreakerGame } from "./gameColumns";
 import parsePick from "./parsePick";
 import findInconsistentSpreadGames from "./validateSpreads";
 
@@ -95,10 +95,10 @@ async function parseWorkbook(picksBuffer: ArrayBuffer): Promise<ParsedPicks> {
   const proKeys = allKeys.filter(
     (key) => key.startsWith(LEAGUE_PREFIX.pro) && key !== TIEBREAKER_PICK_KEY,
   );
-  // The tiebreaker game is the last one before the tiebreaker score column.
-  const tiebreakerPickIndex = allKeys.indexOf(TIEBREAKER_PICK_KEY);
-  const tiebreakerGameKey =
-    tiebreakerPickIndex > 0 ? allKeys[tiebreakerPickIndex - 1] : undefined;
+  // A sheet with no `Pts` column holds no guesses, so no game decides ties.
+  const tiebreakerGameKey = allKeys.includes(TIEBREAKER_PICK_KEY)
+    ? tiebreakerGame({ college: collegeKeys, pro: proKeys })
+    : undefined;
 
   const matchups: { [gameKey: string]: Set<string> } = {};
   rows.forEach((playerRow) => {

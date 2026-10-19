@@ -284,8 +284,10 @@ function evaluate(
 function provenMustWin(
   mineMask: number,
   read: (outcome: number) => Verdict,
+  // The verdict on every pick landing, for a caller that already read it.
+  best: Verdict = read(mineMask),
 ): number {
-  if (read(mineMask).kind === "loss") return 0;
+  if (best.kind === "loss") return 0;
   let proven = 0;
   for (let bits = mineMask; bits !== 0; bits &= bits - 1) {
     const bit = bits & -bits;
@@ -863,27 +865,42 @@ function readingOf(scores: RakMadnessScores, settled: Settled): Reading {
 /** A must-win game, with the team the player needs it to go to. */
 export type MustWinPick = RemainingPick & { team: string };
 
+/** What no win of a player's can do without. */
+export type MustWin = {
+  games: Array<MustWinPick>;
+  /**
+   * The MNF Points every win needs. Winning every pick is the player's best case,
+   * and a total that loses there loses on every smaller set of them too.
+   */
+  mondayNight?: MondayNightRange;
+};
+
 /**
- * The games no win of this player's can do without, read one game at a time.
+ * The games no win of this player's can do without, read one game at a time, and
+ * the MNF Points none can.
  *
- * Empty for any player the week already answers for, knocked out or clinched, for a
- * name the sheet does not hold, and for a player no set of picks can save. Costs a
+ * Neither for any player the week already answers for, knocked out or clinched, for
+ * a name the sheet does not hold, and for a player no set of picks can save. Costs a
  * verdict per game the player picked, however many games are open.
  */
 export function getMustWin(
   scores: RakMadnessScores,
   playerName: string,
-): Array<MustWinPick> {
+): MustWin {
   const settled = settledAnalysis(scores, playerName);
-  if (settled == null || settled.analysis != null) return [];
-  const { playerIndex, contested, mineMask, read } = readingOf(scores, settled);
-  const proven = provenMustWin(mineMask, read);
-  return contested.flatMap((game, bit) => {
+  if (settled == null || settled.analysis != null) return { games: [] };
+  const { playerIndex, contested, mineMask, read, isMondayNightSettled } =
+    readingOf(scores, settled);
+  const best = read(mineMask);
+  const proven = provenMustWin(mineMask, read, best);
+  const games = contested.flatMap((game, bit) => {
     const cell = game.cells[playerIndex];
     // A bit in `mineMask` always holds a team.
     if ((proven & (1 << bit)) === 0 || cell.team == null) return [];
     return [{ label: game.label, pick: cell.text, team: cell.team }];
   });
+  const outlook = outlookOf(best, isMondayNightSettled);
+  return outlook.kind === "range" ? { games, mondayNight: outlook } : { games };
 }
 
 /**

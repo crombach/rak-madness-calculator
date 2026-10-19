@@ -12,7 +12,8 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 - `resultsIndex`: a week by team and by matchup, built once
 - `leagueResults`: `fetchLeagueResults`, the named leagues fetched and the
   rest kept, and `hasMoved`, whether a fetch costs a rescore
-- `gameColumns`: `LEAGUES`, `LEAGUE_PREFIX`, `gameLabels`
+- `gameColumns`: `LEAGUES`, `LEAGUE_PREFIX`, `gameLabels`, and `tiebreakerGame`,
+  the last game column, which the MNF Points are scored off
 - `pickFor`: one player's cell for a game, by its label
 - `pickSplit`: how many players picked each side of a game
 - `weekGames`: each column, game and line
@@ -33,9 +34,11 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
 - `scoreChanges`: what a refresh changed
 - `getPlayerAnalysis`: what a player must do, plus `getSettledAnalysis`,
   the answers a week already holds, which the dialog asks before it waits,
-  and `getMustWin`, the must-win games proven at n+1 verdicts, no search needed
+  and `getMustWin`, the must-win games proven at n+1 verdicts, no search needed,
+  plus the MNF Points range every win needs
 - `getKnockouts`: those must-win games by game instead of by player, each side
-  keyed by team, plus who each final game knocked out, for the knockouts page
+  keyed by team, who needs each MNF Points range on the Points game, and who
+  each final game knocked out, for the knockouts page
 - `knockoutTypes`: its types, outside the lazy chunk
 - `leagueResultFixtures`: test game builders, and `weekOf`, one league's week
 - `scoringTestFixtures`: player and week builders, shared by `getPlayerAnalysis`'s

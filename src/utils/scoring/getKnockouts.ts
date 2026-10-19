@@ -6,7 +6,7 @@ import {
 } from "../../types/RakMadnessScores";
 import applyKnockouts from "./applyKnockouts";
 import comparePlayerScores from "./comparePlayerScores";
-import gameLabels, { LEAGUES, LeagueKey } from "./gameColumns";
+import gameLabels, { LEAGUES, LeagueKey, tiebreakerGame } from "./gameColumns";
 import { getMustWin } from "./getPlayerAnalysis";
 import { hasOutcome, isWeekWon } from "./isWeekSettled";
 import parsePick, { formatPickDisplay } from "./parsePick";
@@ -16,6 +16,7 @@ import weekShape from "./weekShape";
 import {
   KnockoutGame,
   KnockoutGames,
+  KnockoutMondayNight,
   KnockoutSide,
   KnockoutTiebreaker,
 } from "./knockoutTypes";
@@ -40,17 +41,33 @@ function columnsOf(players: Array<PlayerScore>): Array<Column> {
   );
 }
 
-/** Each side every live player must win, by game, then by team. */
-function mustWinSides(
-  scores: RakMadnessScores,
-): Map<string, Map<string, KnockoutSide>> {
+/** The label of the game the MNF Points are scored off. It need not kick off last. */
+function pointsGameOf(players: Array<PlayerScore>): string | undefined {
+  const [first] = players;
+  if (first == null) return undefined;
+  return tiebreakerGame({
+    college: gameLabels(first, "college"),
+    pro: gameLabels(first, "pro"),
+  });
+}
+
+/**
+ * Each side every live player must win, by game, then by team, and who needs the
+ * MNF Points in a range, by range.
+ */
+function mustWinSides(scores: RakMadnessScores): {
+  sidesByLabel: Map<string, Map<string, KnockoutSide>>;
+  mondayNight: Array<KnockoutMondayNight>;
+} {
   const players = scores.scores;
   const repeated = repeatedNames(players);
   const sidesByLabel = new Map<string, Map<string, KnockoutSide>>();
+  const byRange = new Map<string, KnockoutMondayNight>();
 
   for (const player of players) {
     if (player.status.isKnockedOut || repeated.has(player.name)) continue;
-    for (const game of getMustWin(scores, player.name)) {
+    const mustWin = getMustWin(scores, player.name);
+    for (const game of mustWin.games) {
       let sides = sidesByLabel.get(game.label);
       if (sides == null) {
         sides = new Map();
@@ -67,8 +84,22 @@ function mustWinSides(
         side.players.push(player.name);
       }
     }
+    const points = mustWin.mondayNight;
+    if (points == null) continue;
+    const key = `${points.min}:${points.max}`;
+    const range = byRange.get(key);
+    if (range == null) {
+      byRange.set(key, { points, players: [player.name] });
+    } else {
+      range.players.push(player.name);
+    }
   }
-  return sidesByLabel;
+  const mondayNight = [...byRange.values()].sort(
+    ({ points: a }, { points: b }) =>
+      (a.min ?? 0) - (b.min ?? 0) ||
+      (a.max ?? Number.POSITIVE_INFINITY) - (b.max ?? Number.POSITIVE_INFINITY),
+  );
+  return { sidesByLabel, mondayNight };
 }
 
 /** The pick as it stood before its game was final. */
@@ -209,9 +240,8 @@ function knockoutSides(scores: RakMadnessScores): {
       )
       .map(({ name }) => name),
   );
-  // The MNF Points are scored off the sheet's last game, the one before its `Pts`
-  // column, which need not kick off last. They hold until that game reopens.
-  const pointsGame = columnsOf(players).at(-1)?.label;
+  // The MNF Points hold until their game reopens.
+  const pointsGame = pointsGameOf(players);
   let tiebreakerScore = scores.tiebreaker;
   // Every final game from `at` on, played again.
   let replayed = players.map(withoutVerdict);
@@ -271,7 +301,8 @@ function knockoutSides(scores: RakMadnessScores): {
 
 /**
  * Each open game someone must win, with the players it knocks out whichever way
- * it falls, and each final game with the players it knocked out.
+ * it falls, the open Points game with who needs each MNF Points range, and each
+ * final game with the players it knocked out.
  *
  * The open games are read off `getMustWin`, a verdict per pick per player, never
  * the route search, so they answer above `MAX_SEARCHED_GAMES` too.
@@ -279,40 +310,46 @@ function knockoutSides(scores: RakMadnessScores): {
 export default function getKnockouts(scores: RakMadnessScores): KnockoutGames {
   const open = new Set(remainingGames(scores.scores).map((game) => game.label));
   const knockouts = knockoutSides(scores);
+  // A won week's open games can knock no one else out.
+  const mustWin = isWeekWon(scores) ? undefined : mustWinSides(scores);
   const sidesByLabel = new Map([
-    // A won week's open games can knock no one else out.
-    ...(isWeekWon(scores) ? [] : mustWinSides(scores)),
+    ...(mustWin?.sidesByLabel ?? []),
     ...knockouts.sidesByLabel,
   ]);
+  const columns = columnsOf(scores.scores);
+  const pointsGame = pointsGameOf(scores.scores);
 
-  const games = columnsOf(scores.scores).flatMap(
-    ({ label }): Array<KnockoutGame> => {
-      const sides = sidesByLabel.get(label) ?? new Map<string, KnockoutSide>();
-      const tiers = knockouts.tiebreakersByLabel.get(label);
-      if (sides.size === 0 && tiers == null) return [];
-      const weekGame = scores.games?.find((it) => it.label === label);
-      const away = weekGame?.result?.away.team.abbreviation;
-      const isAway = (side: KnockoutSide) => Number(side.team === away);
-      return [
-        {
-          label,
-          name: weekGame?.name ?? label,
-          isFinal: !open.has(label),
-          sides: [...sides.values()].sort(
+  const games = columns.flatMap(({ label }): Array<KnockoutGame> => {
+    const sides = sidesByLabel.get(label) ?? new Map<string, KnockoutSide>();
+    const tiers = knockouts.tiebreakersByLabel.get(label);
+    const mondayNight =
+      label === pointsGame && open.has(label) && mustWin?.mondayNight.length
+        ? mustWin.mondayNight
+        : undefined;
+    if (sides.size === 0 && tiers == null && mondayNight == null) return [];
+    const weekGame = scores.games?.find((it) => it.label === label);
+    const away = weekGame?.result?.away.team.abbreviation;
+    const isAway = (side: KnockoutSide) => Number(side.team === away);
+    return [
+      {
+        label,
+        name: weekGame?.name ?? label,
+        isFinal: !open.has(label),
+        sides: [...sides.values()].sort(
+          (a, b) =>
+            isAway(b) - isAway(a) || b.players.length - a.players.length,
+        ),
+        ...(tiers && {
+          tiebreakers: [...tiers.values()].sort(
             (a, b) =>
-              isAway(b) - isAway(a) || b.players.length - a.players.length,
+              TIEBREAK_ORDER.indexOf(a.tiebreaker) -
+              TIEBREAK_ORDER.indexOf(b.tiebreaker),
           ),
-          ...(tiers && {
-            tiebreakers: [...tiers.values()].sort(
-              (a, b) =>
-                TIEBREAK_ORDER.indexOf(a.tiebreaker) -
-                TIEBREAK_ORDER.indexOf(b.tiebreaker),
-            ),
-          }),
-        },
-      ];
-    },
-  );
+        }),
+        ...(mondayNight && { mondayNight }),
+      },
+    ];
+  });
 
   return { games };
 }

@@ -1078,13 +1078,49 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
 });
 
 describe("getMustWin", () => {
+  it("names the MNF Points every win needs", () => {
+    // Level on total with the same pick, so only the MNF Points split them.
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 5,
+        pro: [pick("KC")],
+        tiebreakerPick: 40,
+      }),
+      player({ name: "Bob", total: 5, pro: [pick("KC")], tiebreakerPick: 49 }),
+    ]);
+
+    expect(getMustWin(scores, "Alice")).toEqual({
+      games: [],
+      mondayNight: { kind: "range", max: 44 },
+    });
+    expect(getMustWin(scores, "Bob")).toEqual({
+      games: [],
+      mondayNight: { kind: "range", min: 45 },
+    });
+  });
+
+  it("names no MNF Points for a player who can win without them", () => {
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 5,
+        pro: [pick("KC")],
+        tiebreakerPick: 40,
+      }),
+      player({ name: "Bob", total: 5, pro: [pick("DEN")], tiebreakerPick: 49 }),
+    ]);
+
+    expect(getMustWin(scores, "Alice").mondayNight).toBeUndefined();
+  });
+
   it("names the team a player needs on each must-win game", () => {
     const scores = week([
       player({ name: "Alice", total: 5, pro: [pick("KC -3")] }),
       player({ name: "Bob", total: 5, pro: [pick("DEN +3")] }),
     ]);
 
-    expect(getMustWin(scores, "Alice")).toEqual([
+    expect(getMustWin(scores, "Alice").games).toEqual([
       { label: "P1", pick: "KC -3", team: "KC" },
     ]);
   });
@@ -1100,8 +1136,8 @@ describe("getMustWin", () => {
       }),
     ]);
 
-    expect(getMustWin(scores, "Alice")).toEqual([]);
-    expect(getMustWin(scores, "Bob")).toEqual([]);
+    expect(getMustWin(scores, "Alice")).toEqual({ games: [] });
+    expect(getMustWin(scores, "Bob")).toEqual({ games: [] });
   });
 
   it("answers nothing for either side of a clinch the search finds", () => {
@@ -1113,8 +1149,8 @@ describe("getMustWin", () => {
 
     expect(getPlayerAnalysis(scores, "Alice")?.kind).toBe("clinched");
     expect(getPlayerAnalysis(scores, "Bob")?.kind).toBe("knockedOut");
-    expect(getMustWin(scores, "Alice")).toEqual([]);
-    expect(getMustWin(scores, "Bob")).toEqual([]);
+    expect(getMustWin(scores, "Alice")).toEqual({ games: [] });
+    expect(getMustWin(scores, "Bob")).toEqual({ games: [] });
   });
 
   it("answers nothing for players who have clinched a tie", () => {
@@ -1133,7 +1169,7 @@ describe("getMustWin", () => {
       }),
     ]);
 
-    expect(getMustWin(scores, "Alice")).toEqual([]);
-    expect(getMustWin(scores, "Bob")).toEqual([]);
+    expect(getMustWin(scores, "Alice")).toEqual({ games: [] });
+    expect(getMustWin(scores, "Bob")).toEqual({ games: [] });
   });
 });

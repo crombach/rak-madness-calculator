@@ -5,14 +5,7 @@ import {
 import { Section } from "./analysisParts";
 import "./AnalysisSummary.scss";
 import getClasses from "../../utils/getClasses";
-
-/** The totals that win, as a comparison on the scoreboard column's own name. */
-export function mondayNightPoints({ min, max }: MondayNightRange): string {
-  if (min != null && max != null) {
-    return min === max ? `MNF Points = ${min}` : `${min} ≤ MNF Points ≤ ${max}`;
-  }
-  return min != null ? `MNF Points ≥ ${min}` : `MNF Points ≤ ${max}`;
-}
+import mondayNightPoints from "../../utils/mondayNightPoints";
 
 /**
  * The totals that win, set the one way wherever they are named.

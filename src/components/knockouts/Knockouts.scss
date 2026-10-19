@@ -165,6 +165,15 @@ $names-wide-from: 2 * (2 * 192px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
   );
 }
 
+// Set as Player Analysis sets the same totals, not in the heading's label face.
+.knockouts__mnf-points {
+  @include pick-face;
+
+  color: var(--rak-text);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
 .knockouts__more {
   @include fold-toggle;
 }

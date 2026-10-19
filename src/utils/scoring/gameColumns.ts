@@ -16,6 +16,16 @@ export const LEAGUE_PREFIX: Record<LeagueKey, string> = {
   pro: "P",
 };
 
+/**
+ * The game the MNF Points are scored off: the sheet's last game column, read in
+ * `LEAGUES` order. Takes each league's keys or labels, in column order.
+ */
+export function tiebreakerGame<T>(
+  byLeague: Record<LeagueKey, ReadonlyArray<T>>,
+): T | undefined {
+  return LEAGUES.flatMap((league) => byLeague[league]).at(-1);
+}
+
 /** `C1`, `C2`, `P1`: the column label the picks table gives a league's games. */
 export function leagueLabels(count: number, league: LeagueKey): Array<string> {
   return rangeWithPrefix(count, LEAGUE_PREFIX[league]);

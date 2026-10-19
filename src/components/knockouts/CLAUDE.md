@@ -1,8 +1,8 @@
 # knockouts
 
 The `/:season/:week/knockouts` route: each open game, with the players it would
-knock out on either side, grouped by which team they need, and each final game
-with the players it knocked out.
+knock out on either side, grouped by which team or MNF Points range they need,
+and each final game with the players it knocked out.
 
 - `KnockoutsRoute`: hands `Knockouts` the scores, `useKnockouts`, `rescore`
   and `fetchingLeagues`.
@@ -16,6 +16,7 @@ with the players it knocked out.
   lists its players. An open game's names open `useShowPlayerAnalysis`. The sides sit beside
   each other once both fit. A pick side keeps those behind on total. A
   tiebreaker knockout goes under its tier's side, whatever the pick did.
+  The open Points game adds a side per MNF Points range players need.
 - `KnockoutsSkeleton`: `KnockoutCard`s on a stand-in game, text hidden under
   fills, while the route's chunk or the week loads.
 - `useGridColumns`: how many name columns a side's grid lays out, so a fold
