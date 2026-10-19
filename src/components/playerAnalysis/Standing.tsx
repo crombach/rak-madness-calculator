@@ -8,7 +8,7 @@ import weekShape, { WeekShape } from "../../utils/scoring/weekShape";
 // owns and styles.
 import "./AnalysisSummary.scss";
 import getClasses from "../../utils/getClasses";
-import { hasOutcome } from "../../utils/scoring/isWeekSettled";
+import { hasOutcome, standingPlayers } from "../../utils/scoring/isWeekSettled";
 
 /**
  * Everyone the tiers leave tied at the top, which is everyone who won the week.
@@ -50,7 +50,14 @@ function headline(
     return { text: "Knocked out", tone: "--knocked-out" };
   const behind = leader.score.total - player.score.total;
   if (behind > 0) return { text: `${plural(behind, "point")} behind` };
-  if (!isEveryGameSettled && !isClinched) return { text: "Tied for the lead" };
+  if (!isEveryGameSettled && !isClinched) {
+    // Only a rival still able to take the week shares the lead.
+    const isTied = standingPlayers(players).some(
+      ({ player: it }) =>
+        it !== player && it.score.total === player.score.total,
+    );
+    return { text: isTied ? "Tied for the lead" : "In the lead" };
+  }
   const won = winners(players);
   // Level on points and still beaten, which only the tiebreakers can do.
   if (!won.includes(player))
