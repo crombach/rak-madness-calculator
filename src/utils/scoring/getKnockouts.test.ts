@@ -300,6 +300,87 @@ describe("getKnockouts", () => {
     });
   });
 
+  it("lists the players who need MNF Points under the Points game, by range", () => {
+    // P2 is the sheet's last column and so the Points game. Everyone picked alike,
+    // so only the MNF Points split them.
+    const players = (name: string, tiebreakerPick: number) =>
+      player({
+        name,
+        total: 5,
+        pro: [pick("KC"), pick("SF")],
+        tiebreakerPick,
+      });
+    const scores = week([
+      players("Alice", 40),
+      players("Bob", 49),
+      players("Carol", 49),
+    ]);
+
+    expect(getKnockouts(scores).games).toEqual([
+      {
+        label: "P2",
+        name: "P2",
+        isFinal: false,
+        sides: [],
+        mondayNight: [
+          { points: { kind: "range", max: 44 }, players: ["Alice"] },
+          { points: { kind: "range", min: 45 }, players: ["Bob", "Carol"] },
+        ],
+      },
+    ]);
+  });
+
+  it("sorts the MNF Points ranges lowest first, whatever the ranking order", () => {
+    const players = (name: string, tiebreakerPick: number) =>
+      player({ name, total: 5, pro: [pick("KC")], tiebreakerPick });
+    const scores = week([
+      players("Carol", 60),
+      players("Bob", 49),
+      players("Alice", 40),
+    ]);
+
+    expect(getKnockouts(scores).games[0].mondayNight).toEqual([
+      { points: { kind: "range", max: 44 }, players: ["Alice"] },
+      { points: { kind: "range", min: 45, max: 54 }, players: ["Bob"] },
+      { points: { kind: "range", min: 55 }, players: ["Carol"] },
+    ]);
+  });
+
+  it("names no MNF Points range once the Points game is final, nor on another game", () => {
+    // P2, the Points game, is in with no total read yet, so the ranges still stand,
+    // but P1 is the only open game left.
+    const players = (name: string, tiebreakerPick: number) =>
+      player({
+        name,
+        total: 5,
+        pro: [pick("KC"), pick("SF", "yes")],
+        tiebreakerPick,
+      });
+    const scores = week([players("Alice", 40), players("Bob", 49)]);
+
+    expect(getKnockouts(scores).games).toEqual([]);
+  });
+
+  it("names no MNF Points range in a won week", () => {
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 5,
+        pro: [pick("KC")],
+        tiebreakerPick: 40,
+      }),
+      player({
+        name: "Bob",
+        total: 5,
+        pro: [pick("KC")],
+        tiebreakerPick: 49,
+        isKnockedOut: true,
+      }),
+    ]);
+
+    expect(getKnockouts(scores).games).toEqual([]);
+  });
+
   it("puts everyone the MNF Points knocked out under one tier side, whatever their pick did", () => {
     // 2016 week 1, P14 DEN at KC, 41 points. All three end level on total, so the
     // MNF Points settle it whether the pick scored or not.
@@ -640,6 +721,10 @@ describe("getKnockouts", () => {
         name: "P3",
         isFinal: false,
         sides: [{ team: "DEN", pick: "DEN +3", players: ["Carol"] }],
+        // Level with Bob on total even then, so the MNF Points split them.
+        mondayNight: [
+          { points: { kind: "range", min: 31 }, players: ["Carol"] },
+        ],
       },
     ]);
   });

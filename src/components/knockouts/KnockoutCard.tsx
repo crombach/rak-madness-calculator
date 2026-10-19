@@ -5,7 +5,8 @@ import { isMyPlayer, useSetting } from "../../context/SettingsContext";
 import { GameStatus } from "../../types/ESPN";
 import { WeekGame } from "../../types/WeekGame";
 import getClasses from "../../utils/getClasses";
-import plural from "../../utils/plural";
+import mondayNightPoints from "../../utils/mondayNightPoints";
+import plural, { verbFor } from "../../utils/plural";
 import { Tiebreaker } from "../../types/RakMadnessScores";
 import { KnockoutGame } from "../../utils/scoring/knockoutTypes";
 import Button from "../button/Button";
@@ -112,7 +113,10 @@ function Side({
   );
 }
 
-/** One knockout game as a card: its band, then a side per team it knocks out. */
+/**
+ * One knockout game as a card: its band, then a side per team, tier or MNF Points
+ * range.
+ */
 function KnockoutCard({
   game,
   weekGame,
@@ -127,10 +131,11 @@ function KnockoutCard({
 }) {
   const showGameStatus = useShowGameStatus();
   const tiers = game.tiebreakers ?? [];
-  const count = [...game.sides, ...tiers].reduce(
-    (total, side) => total + side.players.length,
-    0,
-  );
+  const ranges = game.mondayNight ?? [];
+  // A player can need a side of the Points game and a range of its total both.
+  const count = new Set(
+    [...game.sides, ...tiers, ...ranges].flatMap((side) => side.players),
+  ).size;
   const players = plural(count, "player");
   const gameName = `${game.label} ${game.name}`;
   const markLabel = weekGame && gameMarkLabel(weekGame, status);
@@ -186,6 +191,19 @@ function KnockoutCard({
             knockedOut={knockedOut}
           />
         ))}
+        {ranges.map((range) => {
+          const points = mondayNightPoints(range.points);
+          return (
+            <Side
+              key={points}
+              heading={`${verbFor(range.players.length, "need")} ${points}`}
+              sideName={points}
+              players={range.players}
+              isFinal={false}
+              knockedOut={knockedOut}
+            />
+          );
+        })}
       </div>
     </li>
   );

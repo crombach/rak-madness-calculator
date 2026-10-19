@@ -151,6 +151,59 @@ describe("Knockouts", () => {
     expect(side.queryByRole("button")).toBeNull();
   });
 
+  it("lists who needs the MNF Points in a range under the Points game, names open", () => {
+    // Level on total with the same picks, so only the MNF Points split them.
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 5,
+        pro: [pick("KC")],
+        tiebreakerPick: 40,
+      }),
+      player({ name: "Bob", total: 5, pro: [pick("KC")], tiebreakerPick: 49 }),
+    ]);
+    render(page(scores));
+
+    expect(
+      screen.getAllByRole("heading", { level: 4 }).map((it) => it.textContent),
+    ).toEqual(["1 needs MNF Points ≤ 44", "1 needs MNF Points ≥ 45"]);
+    expect(screen.getByRole("button", { name: "Alice" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /^Game Status for P1 P1, 2 players/ }),
+    ).toBeInTheDocument();
+  });
+
+  it("counts a player once who needs both a side and a range of the Points game", () => {
+    // Carol must win DEN +3, and even then is level with Bob on total.
+    const scores = week([
+      player({
+        name: "Bob",
+        total: 1,
+        proAgainstTheSpread: 3,
+        pro: [pick("KC"), pick("KC"), pick("KC")],
+        tiebreakerPick: 30,
+      }),
+      player({
+        name: "Alice",
+        total: 2,
+        proAgainstTheSpread: 2,
+        pro: [pick("DEN"), pick("DEN"), pick("DEN +3")],
+        tiebreakerPick: 30,
+      }),
+      player({
+        name: "Carol",
+        total: 0,
+        pro: [pick("KC"), pick("KC -3"), pick("DEN +3")],
+        tiebreakerPick: 31,
+      }),
+    ]);
+    render(page(scores));
+
+    expect(
+      screen.getByRole("button", { name: /^Game Status for P3 P3, 1 player/ }),
+    ).toBeInTheDocument();
+  });
+
   it("heads a College Score side by its tier, not the pick", () => {
     // Level on total and MNF Points, Bob is a college game behind.
     const scores = settled(

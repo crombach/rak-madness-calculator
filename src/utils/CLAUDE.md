@@ -25,6 +25,7 @@
 - `doNothing`: the no-op a default prop or context stands in with
 - `onEnter`: a field's Enter as a submit, skipping an input method's Enter
 - `plural`: a count and its noun, pluralized
+- `mondayNightPoints`: an MNF Points range as text
 - `separator`: what splits facts on one line, `_text.scss`'s `$separator` spaced
 - `rangeWithPrefix`: labeled index arrays (C1, C2…)
 - `matching`: case-folded substring search, for both dialogs' lists

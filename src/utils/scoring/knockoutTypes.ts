@@ -1,3 +1,4 @@
+import { MondayNightRange } from "../../types/PlayerAnalysis";
 import { Tiebreaker } from "../../types/RakMadnessScores";
 
 /**
@@ -28,6 +29,13 @@ export type KnockoutTiebreaker = {
   players: Array<string>;
 };
 
+/** The players out unless the MNF Points land in one range. */
+export type KnockoutMondayNight = {
+  points: MondayNightRange;
+  /** In ranking order. */
+  players: Array<string>;
+};
+
 export type KnockoutGame = {
   label: string;
   name: string;
@@ -44,6 +52,8 @@ export type KnockoutGame = {
   sides: Array<KnockoutSide>;
   /** On a final game, who it knocked out on a tiebreaker, in tiebreak order. */
   tiebreakers?: Array<KnockoutTiebreaker>;
+  /** On the open Points game, who needs the MNF Points in a range, lowest first. */
+  mondayNight?: Array<KnockoutMondayNight>;
 };
 
 export type KnockoutGames = {
