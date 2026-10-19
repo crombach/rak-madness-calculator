@@ -50,7 +50,16 @@ function headline(
     return { text: "Knocked out", tone: "--knocked-out" };
   const behind = leader.score.total - player.score.total;
   if (behind > 0) return { text: `${plural(behind, "point")} behind` };
-  if (!isEveryGameSettled && !isClinched) return { text: "Tied for the lead" };
+  if (!isEveryGameSettled && !isClinched) {
+    // A rival level on points but knocked out has lost the tie already.
+    const isTied = players.some(
+      (it) =>
+        it !== player &&
+        !it.status.isKnockedOut &&
+        it.score.total === player.score.total,
+    );
+    return { text: isTied ? "Tied for the lead" : "In the lead" };
+  }
   const won = winners(players);
   // Level on points and still beaten, which only the tiebreakers can do.
   if (!won.includes(player))

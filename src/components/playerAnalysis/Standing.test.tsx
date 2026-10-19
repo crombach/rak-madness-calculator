@@ -46,10 +46,22 @@ describe("Standing", () => {
     expect(standingText()).toBe("2 points behind • 1 game remaining");
   });
 
-  it("ties the player picked to the lead where they hold it", () => {
+  it("puts the player picked in the lead where they hold it alone", () => {
     render(<Standing scores={scores} playerName="Rak" />);
 
+    expect(standingText()).toBe("In the lead • 1 game remaining");
+  });
+
+  it("ties the player picked for the lead where a live rival shares it", () => {
+    const tied: RakMadnessScores = {
+      scores: [...scores.scores, player("Bill", 3, "KC -3")],
+    };
+    const { rerender } = render(<Standing scores={tied} playerName="Rak" />);
     expect(standingText()).toBe("Tied for the lead • 1 game remaining");
+
+    // Level on points and out already, so the lead is Rak's alone.
+    rerender(<Standing scores={knockedOut(tied, "Bill")} playerName="Rak" />);
+    expect(standingText()).toBe("In the lead • 1 game remaining");
   });
 
   /** The same week with nothing left open, which is a week that has a winner. */
@@ -157,7 +169,7 @@ describe("Standing", () => {
       />,
     );
 
-    expect(standingText()).toBe("Tied for the lead • 1 game remaining");
+    expect(standingText()).toBe("In the lead • 1 game remaining");
   });
 
   /** The same week with one player out of it. */
@@ -189,7 +201,7 @@ describe("Standing", () => {
     expect(screen.getByText("Winner")).not.toHaveClass("--knocked-out");
 
     rerender(<Standing scores={scores} playerName="Rak" />);
-    expect(screen.getByText("Tied for the lead")).not.toHaveClass(
+    expect(screen.getByText("In the lead")).not.toHaveClass(
       "--knocked-out",
     );
   });
@@ -221,7 +233,7 @@ describe("Standing", () => {
 
     // Not the winner: a week with a hole in it has no result to state yet.
     expect(standingText()).toBe(
-      "Tied for the lead • 1 game could not be scored",
+      "In the lead • 1 game could not be scored",
     );
   });
 
