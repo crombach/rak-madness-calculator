@@ -196,7 +196,12 @@ function KnockoutCard({
           return (
             <Side
               key={points}
-              heading={`${verbFor(range.players.length, "need")} ${points}`}
+              heading={
+                <>
+                  {verbFor(range.players.length, "need")}{" "}
+                  <span className="knockouts__mnf-points">{points}</span>
+                </>
+              }
               sideName={points}
               players={range.players}
               isFinal={false}
