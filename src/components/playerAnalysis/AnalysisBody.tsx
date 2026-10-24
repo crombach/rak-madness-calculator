@@ -187,13 +187,18 @@ export default function AnalysisBody({
 
             A count of wins is all the rest of the week reduces to up here, and a
             count is not a scenario: it says nothing about which games make it, so
-            a reader cannot act on it. Only the games are said, and the note below
-            says when the rest arrives. */}
+            a reader cannot act on it. Only the games and the MNF Points every win
+            needs are said, and the note below says when the rest arrives. */}
         {result.mustWin.length > 0 && (
           <Section title="Must win">
             <Picks className="analysis__must-win" games={result.mustWin} />
           </Section>
         )}
+
+        <MondayNight
+          conjoined={result.mustWin.length > 0}
+          outlook={result.mondayNight}
+        />
 
         {/* Why there is nothing more above it, in the place the paths count theirs. */}
         <p className="analysis__note">

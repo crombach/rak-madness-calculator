@@ -191,25 +191,29 @@ function KnockoutCard({
             knockedOut={knockedOut}
           />
         ))}
-        {ranges.map((range) => {
-          const points = mondayNightPoints(range.points);
-          return (
-            <Side
-              key={points}
-              heading={
-                <>
-                  {verbFor(range.players.length, "need")}{" "}
-                  <span className="knockouts__mnf-points">{points}</span>
-                </>
-              }
-              sideName={points}
-              players={range.players}
-              isFinal={false}
-              knockedOut={knockedOut}
-            />
-          );
-        })}
       </div>
+      {ranges.length > 0 && (
+        <div className="knockouts__ranges">
+          {ranges.map((range) => {
+            const points = mondayNightPoints(range.points);
+            return (
+              <Side
+                key={points}
+                heading={
+                  <>
+                    {verbFor(range.players.length, "need")}{" "}
+                    <span className="knockouts__mnf-points">{points}</span>
+                  </>
+                }
+                sideName={points}
+                players={range.players}
+                isFinal={false}
+                knockedOut={knockedOut}
+              />
+            );
+          })}
+        </div>
+      )}
     </li>
   );
 }

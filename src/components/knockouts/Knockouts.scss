@@ -25,6 +25,15 @@ $sides-beside-from: 2 * (2 * 120px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 // Where the wider boxes start: the same sum, at `$name-box-wide-min`.
 $names-wide-from: 2 * (2 * 192px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
 
+// The narrowest an MNF Points range goes, as wide as the sums above give each side,
+// at either box width. Those sums spell these tokens in px, so change both together.
+$range-min: calc(
+  2 * #{$name-box-min} + var(--rak-space-2) + 2 * var(--rak-space-3)
+);
+$range-wide-min: calc(
+  2 * #{$name-box-wide-min} + var(--rak-space-2) + 2 * var(--rak-space-3)
+);
+
 .knockouts {
   @include page-body;
   @include page-body-scroll-fill;
@@ -129,6 +138,32 @@ $names-wide-from: 2 * (2 * 192px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
   }
 }
 
+// The Points game's MNF Points ranges, under its two sides. As many to a row as
+// fit their name boxes, each row filled, since a week can need any number. The
+// gap shows the fill behind as the rule between ranges.
+.knockouts__ranges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rak-border-width-hairline);
+  background-color: var(--rak-divider-soft);
+
+  > .knockouts__side {
+    flex: 1 1 $range-min;
+    min-width: 0;
+    background-color: var(--rak-surface);
+
+    @container (min-width: #{$names-wide-from}) {
+      flex-basis: $range-wide-min;
+    }
+  }
+}
+
+// Ruled off the sides above, unless everyone picked the Points game alike.
+.knockouts__sides:not(:empty) + .knockouts__ranges {
+  border-block-start: var(--rak-border-width-hairline) solid
+    var(--rak-divider-soft);
+}
+
 .knockouts__game-label {
   @include game-card-label;
 }
@@ -144,7 +179,7 @@ $names-wide-from: 2 * (2 * 192px + 8px + 2 * 12px) + 1px + 2 * 2px + 2 * 16px;
   gap: var(--rak-space-2);
   padding: var(--rak-space-3);
 
-  & + & {
+  .knockouts__sides > & + & {
     border-block-start: var(--rak-border-width-hairline) solid
       var(--rak-divider-soft);
 

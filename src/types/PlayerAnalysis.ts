@@ -143,7 +143,8 @@ export type PlayerAnalysis =
     }
   /**
    * Too many games left to work out the routes, so only the games that can be
-   * proven one at a time are named. Nothing here is a way through.
+   * proven one at a time, and the MNF Points every win needs, are named.
+   * Nothing here is a way through.
    */
   | {
       kind: "headline";
@@ -154,6 +155,8 @@ export type PlayerAnalysis =
        * never a part of the list.
        */
       mustWin: Array<RemainingPick>;
+      /** The MNF Points every win needs, read off winning every pick. */
+      mondayNight?: MondayNightRange;
     }
   | ({
       kind: "paths";
