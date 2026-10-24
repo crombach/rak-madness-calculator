@@ -173,6 +173,35 @@ describe("Knockouts", () => {
     ).toBeInTheDocument();
   });
 
+  it("sets the MNF Points ranges in their own section, under the sides", () => {
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 5,
+        pro: [pick("KC")],
+        tiebreakerPick: 40,
+      }),
+      player({ name: "Bob", total: 5, pro: [pick("KC")], tiebreakerPick: 49 }),
+    ]);
+    render(page(scores));
+
+    const headings = screen.getAllByRole("heading", { level: 4 });
+    expect(headings.map((it) => it.textContent)).toEqual([
+      "1 needs MNF Points ≤ 44",
+      "1 needs MNF Points ≥ 45",
+    ]);
+    const sides = document.querySelector(".knockouts__sides");
+    expect(sides).not.toBeNull();
+    for (const heading of headings) {
+      expect(heading.closest(".knockouts__ranges")).not.toBeNull();
+      expect(heading.closest(".knockouts__sides")).toBeNull();
+      expect(
+        sides!.compareDocumentPosition(heading) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    }
+  });
+
   it("counts a player once who needs both a side and a range of the Points game", () => {
     // Carol must win DEN +3, and even then is level with Bob on total.
     const scores = week([

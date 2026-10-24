@@ -262,6 +262,20 @@ describe("AnalysisSummary", () => {
     );
   });
 
+  it("sets the MNF Points alone where a week too big to search proves no game", () => {
+    const result: PlayerAnalysis = {
+      kind: "headline",
+      playerName: "Alice",
+      mustWin: [],
+      mondayNight: { kind: "range", max: 44 },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(
+      screen.getByText("MNF Points ≤ 44").parentElement,
+    ).not.toHaveTextContent("AND");
+  });
+
   it("lists the must-win games and the pool behind them", () => {
     const result: PlayerAnalysis = {
       ...base,

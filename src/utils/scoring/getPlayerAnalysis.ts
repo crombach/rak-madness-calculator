@@ -307,6 +307,15 @@ function outlookOf(verdict: Verdict, isSettled: boolean): MondayNightOutlook {
   };
 }
 
+/** The MNF Points every win needs, where the best case asks for a range. */
+function rangeOf(
+  best: Verdict,
+  isMondayNightSettled: boolean,
+): { mondayNight?: MondayNightRange } {
+  const outlook = outlookOf(best, isMondayNightSettled);
+  return outlook.kind === "range" ? { mondayNight: outlook } : {};
+}
+
 function sameOutlook(a: MondayNightOutlook, b: MondayNightOutlook): boolean {
   if (a.kind !== b.kind) return false;
   if (a.kind !== "range" || b.kind !== "range") return true;
@@ -899,8 +908,7 @@ export function getMustWin(
     if ((proven & (1 << bit)) === 0 || cell.team == null) return [];
     return [{ label: game.label, pick: cell.text, team: cell.team }];
   });
-  const outlook = outlookOf(best, isMondayNightSettled);
-  return outlook.kind === "range" ? { games, mondayNight: outlook } : { games };
+  return { games, ...rangeOf(best, isMondayNightSettled) };
 }
 
 /**
@@ -936,26 +944,24 @@ export default function getPlayerAnalysis(
     isMondayNightSettled,
   } = readingOf(scores, settled);
 
+  // Winning every pick, the player's best case, read once for every answer below.
+  const best = read(mineMask);
+
   // Above the ceiling only the must-win games are answered, which cost a verdict
   // each rather than a search. What is left over is a count of wins, and a count
   // names no games, so there is nothing in it a reader could act on.
-  // The MNF Points every win needs come off the best case, as `getMustWin` reads them.
-  const best = read(mineMask);
   if (games.length > MAX_SEARCHED_GAMES) {
     const mustWin = picksIn(
       provenMustWin(mineMask, read, best),
       contested,
       playerIndex,
     );
-    const outlook = outlookOf(best, isMondayNightSettled);
-    return outlook.kind === "range"
-      ? {
-          kind: "headline",
-          playerName: player.name,
-          mustWin,
-          mondayNight: outlook,
-        }
-      : { kind: "headline", playerName: player.name, mustWin };
+    return {
+      kind: "headline",
+      playerName: player.name,
+      mustWin,
+      ...rangeOf(best, isMondayNightSettled),
+    };
   }
 
   // Winning every pick is the player's best case, so a loss there means no
