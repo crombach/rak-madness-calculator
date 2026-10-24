@@ -205,7 +205,7 @@ describe("the compare players route", () => {
     ).toEqual(["Bob", "Carol"]);
   });
 
-  it("says so when two players picked every game the same", async () => {
+  it("says so when two players picked every game the same, over their tiebreakers", async () => {
     const user = mountApp(COMPARE_PATH);
     await choose(user, "Player 1", "Alice");
     await choose(user, "Player 2", "Bob");
@@ -215,7 +215,12 @@ describe("the compare players route", () => {
     expect(
       await screen.findByText("They picked every game the same"),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    const table = screen.getByRole("table", {
+      name: "Picks where Alice and Bob differ",
+    });
+    expect(
+      within(table).getByRole("columnheader", { name: "MNF Points Pick" }),
+    ).toBeInTheDocument();
   });
 
   it("shows the finished games they split beside the open ones", async () => {
@@ -456,7 +461,7 @@ describe("the compare players route", () => {
     }
   });
 
-  it("says so when the players picked every game differently", async () => {
+  it("says so when the players picked every game differently, over their tiebreakers", async () => {
     getPlayerScoresMock.mockResolvedValue(
       week([
         player({ name: "Alice", pro: [pick("KC -3"), pick("BUF")] }),
@@ -475,7 +480,9 @@ describe("the compare players route", () => {
     expect(
       await screen.findByText("They picked every game differently"),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("table", { name: "Picks where Alice and Carol agree" }),
+    ).toBeInTheDocument();
   });
 
   it("focuses the picker Add Player makes", async () => {

@@ -238,7 +238,8 @@ export default function ComparePlayers({
       {!isReady && (
         <SkeletonTable view={RESULTS_PAGE.comparePlayers} loading={false} />
       )}
-      {isReady && (games == null || games.size > 0) && (
+      {/* Drawn even with no game in scope, for the tiebreakers that still split them. */}
+      {isReady && (
         <PicksTable
           scores={scores}
           caption={captions[canScope ? scope : "all"]}
