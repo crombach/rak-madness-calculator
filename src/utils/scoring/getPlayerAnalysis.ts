@@ -939,17 +939,27 @@ export default function getPlayerAnalysis(
   // Above the ceiling only the must-win games are answered, which cost a verdict
   // each rather than a search. What is left over is a count of wins, and a count
   // names no games, so there is nothing in it a reader could act on.
+  // The MNF Points every win needs come off the best case, as `getMustWin` reads them.
+  const best = read(mineMask);
   if (games.length > MAX_SEARCHED_GAMES) {
-    return {
-      kind: "headline",
-      playerName: player.name,
-      mustWin: picksIn(provenMustWin(mineMask, read), contested, playerIndex),
-    };
+    const mustWin = picksIn(
+      provenMustWin(mineMask, read, best),
+      contested,
+      playerIndex,
+    );
+    const outlook = outlookOf(best, isMondayNightSettled);
+    return outlook.kind === "range"
+      ? {
+          kind: "headline",
+          playerName: player.name,
+          mustWin,
+          mondayNight: outlook,
+        }
+      : { kind: "headline", playerName: player.name, mustWin };
   }
 
   // Winning every pick is the player's best case, so a loss there means no
   // smaller set saves them, without reading all `2^n` subsets to say so.
-  const best = read(mineMask);
   if (best.kind === "loss") return knockedOut(player);
 
   const { minimal, outright } = search(mineMask, read, best.kind === "win");

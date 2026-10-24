@@ -154,6 +154,8 @@ export type PlayerAnalysis =
        * never a part of the list.
        */
       mustWin: Array<RemainingPick>;
+      /** The MNF Points every win needs, read off winning every pick. */
+      mondayNight?: MondayNightRange;
     }
   | ({
       kind: "paths";

@@ -247,6 +247,21 @@ describe("AnalysisSummary", () => {
     expect(under("Must win")).toEqual(["P3KC -7"]);
   });
 
+  it("names the MNF Points every win needs on a week too big to search", () => {
+    const result: PlayerAnalysis = {
+      kind: "headline",
+      playerName: "Alice",
+      mustWin: [{ label: "P9", pick: "DEN" }],
+      mondayNight: { kind: "range", max: 44 },
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(under("Must win")).toEqual(["P9DEN"]);
+    expect(screen.getByText("MNF Points ≤ 44").parentElement).toHaveTextContent(
+      "AND MNF Points ≤ 44",
+    );
+  });
+
   it("lists the must-win games and the pool behind them", () => {
     const result: PlayerAnalysis = {
       ...base,

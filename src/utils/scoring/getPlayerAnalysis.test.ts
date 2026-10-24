@@ -1064,6 +1064,28 @@ describe("getPlayerAnalysis, weeks too big to search", () => {
     expect(mustWin(result)).toEqual([`P${ABOVE_LIMIT}`]);
   });
 
+  it("names the MNF Points every win needs on a week too big to search", () => {
+    // Alice and Bob picked alike, so only the MNF Points split them. 41 against 48
+    // splits at 44.5. Carol picked the other side of every game, so each is open.
+    const same = opposed(ABOVE_LIMIT, "T", "-3");
+    const scores = week([
+      player({ name: "Alice", pro: same, tiebreakerPick: 41 }),
+      player({ name: "Bob", pro: same, tiebreakerPick: 48 }),
+      player({
+        name: "Carol",
+        pro: opposed(ABOVE_LIMIT, "U", "+3"),
+        tiebreakerPick: 30,
+      }),
+    ]);
+
+    expect(getPlayerAnalysis(scores, "Alice")).toEqual({
+      kind: "headline",
+      playerName: "Alice",
+      mustWin: [],
+      mondayNight: { kind: "range", max: 44 },
+    });
+  });
+
   it("works the routes out at fifteen", () => {
     const count = 15;
     const scores = week([
