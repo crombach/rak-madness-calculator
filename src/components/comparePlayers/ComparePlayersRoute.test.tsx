@@ -213,7 +213,7 @@ describe("the compare players route", () => {
     await showGames(user, "Different");
 
     expect(
-      await screen.findByText("They picked every game the same"),
+      await screen.findByText("All players have identical picks"),
     ).toBeInTheDocument();
     const table = screen.getByRole("table", {
       name: "Picks where Alice and Bob differ",
@@ -824,7 +824,7 @@ describe("the compare players route", () => {
     mountApp(COMPARE_PATH);
 
     expect(
-      await screen.findByText("They picked every game the same"),
+      await screen.findByText("All players have identical picks"),
     ).toBeInTheDocument();
   });
 

@@ -35,7 +35,7 @@ const NAMES = new Intl.ListFormat("en", { type: "conjunction" });
 
 /** What the page says in place of a table the scope leaves no games in. */
 const EMPTY_MESSAGES: Record<Exclude<GameScope, "all">, string> = {
-  different: "They picked every game the same",
+  different: "All players have identical picks",
   same: "They picked every game differently",
 };
 
