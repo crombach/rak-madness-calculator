@@ -6,8 +6,11 @@ import { ranksOnMerit } from "../../../utils/scoring/comparePlayerScores";
 import TableShell, { PLAYER_COL_CLASS, RankCell } from "../TableShell";
 import { SCOREBOARD_COLUMNS } from "../../../utils/scoreboardColumns";
 
+/** Rank and player, the row's heading cells. */
+const ROW_HEAD_COLUMN_COUNT = 2;
+
 /** Rank and player, then the Scoreboard's own. */
-const COLUMN_COUNT = 2 + SCOREBOARD_COLUMNS.length;
+const COLUMN_COUNT = ROW_HEAD_COLUMN_COUNT + SCOREBOARD_COLUMNS.length;
 
 function ScoresTable({ scores }: { scores?: RakMadnessScores | null }) {
   if (scores == null) {
