@@ -215,7 +215,7 @@ export default async function buildSpreadsheetBuffer(
     { wch: 20 },
     { wch: 14 },
     { wch: 10 },
-    { wch: 25 },
+    { wch: 14 },
   ];
   XLSX.utils.book_append_sheet(
     workbook,
