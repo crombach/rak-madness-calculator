@@ -211,10 +211,10 @@ export default async function buildSpreadsheetBuffer(
     { wch: 5 },
     { wch: 22 },
     { wch: 12 },
+    { wch: 16 },
+    { wch: 20 },
     { wch: 14 },
-    { wch: 18 },
-    { wch: 12 },
-    { wch: 9 },
+    { wch: 10 },
     { wch: 25 },
   ];
   XLSX.utils.book_append_sheet(
@@ -258,10 +258,10 @@ export default async function buildSpreadsheetBuffer(
     { wch: 5 },
     { wch: 22 },
     ...rangeWithPrefix(collegeCount).map(() => ({ wch: 10 })),
-    { wch: 12 },
+    { wch: 14 },
     ...rangeWithPrefix(proCount).map(() => ({ wch: 10 })),
-    { wch: 9 },
     { wch: 10 },
+    { wch: 12 },
   ];
   XLSX.utils.book_append_sheet(
     workbook,
