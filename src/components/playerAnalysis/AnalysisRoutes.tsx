@@ -38,9 +38,15 @@ export default function AnalysisRoutes({
             key={route.games.map((game) => game.label).join()}
             className="analysis__route"
           >
-            <Picks games={route.games} />
+            {route.games.length > 0 && <Picks games={route.games} />}
             {showMondayNight && route.mondayNight.kind === "range" && (
-              <MondayNightLine outlook={route.mondayNight} />
+              <MondayNightLine
+                outlook={route.mondayNight}
+                // A route asking no games past the must-win ones has no picks
+                // above the line to hold it to or start under.
+                conjoined={route.games.length > 0}
+                inset={route.games.length > 0}
+              />
             )}
           </li>
         ))}

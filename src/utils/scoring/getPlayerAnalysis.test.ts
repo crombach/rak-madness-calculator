@@ -866,6 +866,120 @@ describe("getPlayerAnalysis, the Monday night tiebreaker", () => {
     });
   });
 
+  it("keeps a bigger way that wins on more totals than the way inside it", () => {
+    // P2 alone ties all three, and Alice wins on 43 or 44 between Bob's 45 and
+    // Carol's 42. Winning P1 as well puts Carol out of reach. Only Bob's guess
+    // is left to beat, so every total up to 44 wins.
+    const scores = week([
+      player({
+        name: "Bob",
+        total: 15,
+        pro: [pick("SEA"), pick("DAL")],
+        tiebreakerPick: 45,
+      }),
+      player({
+        name: "Alice",
+        total: 14,
+        collegeScore: 1,
+        pro: [pick("SEA"), pick("PHI")],
+        tiebreakerPick: 44,
+      }),
+      player({
+        name: "Carol",
+        total: 13,
+        pro: [pick("KC"), pick("PHI")],
+        tiebreakerPick: 42,
+      }),
+    ]);
+
+    const result = paths(getPlayerAnalysis(scores, "Alice"));
+    expect(mustWin(result)).toEqual(["P2"]);
+    expect(result.mondayNight).toBeUndefined();
+    expect(result.routes).toEqual([
+      { games: [], mondayNight: { kind: "range", min: 43, max: 44 } },
+      {
+        games: [{ label: "P1", pick: "SEA" }],
+        mondayNight: { kind: "range", min: undefined, max: 44 },
+      },
+    ]);
+  });
+
+  it("leaves a bigger way kept for its wider range out of the shares", () => {
+    // The week above with four more games, which Alice picked against both
+    // rivals. Six ways win P2 and two of them, four win any three, and six
+    // more add P1 for the wider range, each holding one of the first six.
+    const extras = (team: string) => [
+      pick(team),
+      pick(team),
+      pick(team),
+      pick(team),
+    ];
+    const scores = week([
+      player({
+        name: "Bob",
+        total: 15,
+        pro: [pick("SEA"), pick("DAL"), ...extras("NYG")],
+        tiebreakerPick: 45,
+      }),
+      player({
+        name: "Alice",
+        total: 14,
+        collegeScore: 1,
+        pro: [pick("SEA"), pick("PHI"), ...extras("NYJ")],
+        tiebreakerPick: 44,
+      }),
+      player({
+        name: "Carol",
+        total: 13,
+        pro: [pick("KC"), pick("PHI"), ...extras("NYG")],
+        tiebreakerPick: 42,
+      }),
+    ]);
+
+    const result = paths(getPlayerAnalysis(scores, "Alice"));
+    expect(result.shares?.routeCount).toBe(10);
+    expect(labels(result.shares?.games ?? [])).not.toContain("P1");
+  });
+
+  it("drops a bigger way whose every total a smaller way already wins on", () => {
+    // Lo and Hi each draw level unless Alice wins the game they picked against
+    // her, and Far draws level whatever happens. P1 alone wins down to 37, P2
+    // alone up from 42, so winning both wins on no total either misses.
+    const scores = week([
+      player({
+        name: "Alice",
+        total: 11,
+        pro: [pick("SEA"), pick("PHI")],
+        tiebreakerPick: 44,
+      }),
+      player({
+        name: "Far",
+        total: 11,
+        pro: [pick("SEA"), pick("PHI")],
+        tiebreakerPick: 30,
+      }),
+      player({
+        name: "Lo",
+        total: 10,
+        pro: [pick("DAL"), pick("PHI")],
+        tiebreakerPick: 40,
+      }),
+      player({
+        name: "Hi",
+        total: 10,
+        pro: [pick("SEA"), pick("NYG")],
+        tiebreakerPick: 48,
+      }),
+    ]);
+
+    const result = paths(getPlayerAnalysis(scores, "Alice"));
+    expect(result.routes?.map((route) => labels(route.games))).toEqual([
+      [],
+      ["P1"],
+      ["P2"],
+    ]);
+  });
+
   it("falls to the college score where both guessed the same total", () => {
     const scores = week([
       player({
