@@ -4,9 +4,13 @@ import PlayerName from "../playerName/PlayerName";
 import repeatedNames from "../../../utils/scoring/repeatedNames";
 import { ranksOnMerit } from "../../../utils/scoring/comparePlayerScores";
 import TableShell, { PLAYER_COL_CLASS, RankCell } from "../TableShell";
+import { SCOREBOARD_COLUMNS } from "../../../utils/scoreboardColumns";
 
-/** Rank, player, total, MNF pick, MNF distance, college, pro, and pro ATS. */
-const COLUMN_COUNT = 8;
+/** Rank and player, the row's heading cells. */
+const ROW_HEAD_COLUMN_COUNT = 2;
+
+/** Rank and player, then the Scoreboard's own. */
+const COLUMN_COUNT = ROW_HEAD_COLUMN_COUNT + SCOREBOARD_COLUMNS.length;
 
 function ScoresTable({ scores }: { scores?: RakMadnessScores | null }) {
   if (scores == null) {
@@ -28,12 +32,11 @@ function ScoresTable({ scores }: { scores?: RakMadnessScores | null }) {
           <th className={PLAYER_COL_CLASS} scope="col">
             Player
           </th>
-          <th scope="col">Total Score</th>
-          <th scope="col">MNF Points Pick</th>
-          <th scope="col">MNF Points Distance</th>
-          <th scope="col">College Score</th>
-          <th scope="col">Pro Score</th>
-          <th scope="col">Pro Score ATS</th>
+          {SCOREBOARD_COLUMNS.map((column) => (
+            <th key={column.header} scope="col">
+              {column.header}
+            </th>
+          ))}
         </>
       }
     >
@@ -44,12 +47,9 @@ function ScoresTable({ scores }: { scores?: RakMadnessScores | null }) {
             player={player}
             hasNameConflict={repeated.has(player.name)}
           />
-          <td>{player.score.total}</td>
-          <td>{player.tiebreaker.pick ?? "N/A"}</td>
-          <td>{player.tiebreaker.distance ?? "N/A"}</td>
-          <td>{player.score.college}</td>
-          <td>{player.score.pro}</td>
-          <td>{player.score.proAgainstTheSpread}</td>
+          {SCOREBOARD_COLUMNS.map((column) => (
+            <td key={column.header}>{column.value(player)}</td>
+          ))}
         </tr>
       ))}
     </TableShell>

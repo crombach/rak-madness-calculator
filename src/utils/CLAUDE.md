@@ -7,6 +7,8 @@
   settled. A live game in a timeout also asks ESPN's game summary for its
   down. `reuseWithinMs` takes a scoreboard answer that recent
 - `buildSpreadsheetBuffer`: the xlsx export and its content type
+- `scoreboardColumns`: the Scoreboard's columns after Player, which the table,
+  its wireframe, and the export all read
 - `pickStatusFill`: the export's pick and standing colors, held to the stylesheet
 - `picksCache` / `espnCache` / `settledWeeksCache`: an uploaded workbook, ESPN's
   fixed answers, and which weeks settled, on `localStorageCache`, a capped store
