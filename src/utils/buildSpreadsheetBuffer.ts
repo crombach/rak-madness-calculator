@@ -185,23 +185,23 @@ export default async function buildSpreadsheetBuffer(
     [
       headerCell("Rank"),
       headerCell("Player"),
+      headerCell("Total Score"),
       headerCell("MNF Points Pick"),
       headerCell("MNF Points Distance"),
       headerCell("College Score"),
       headerCell("Pro Score"),
       headerCell("Pro Score ATS"),
-      headerCell("Total Score"),
     ],
     ...scoresObject.scores.map((player, index) => {
       return [
         normalCell({ value: ranks[index], alignment: "left", isBold: true }),
         playerNameCell(player, rowStatusOf(player, repeated, showStatus)),
+        normalCell({ value: player.score.total }),
         normalCell({ value: player.tiebreaker.pick ?? "N/A" }),
         normalCell({ value: player.tiebreaker.distance ?? "N/A" }),
         normalCell({ value: player.score.college }),
         normalCell({ value: player.score.pro }),
         normalCell({ value: player.score.proAgainstTheSpread }),
-        normalCell({ value: player.score.total, isBold: true }),
       ];
     }),
   ];
@@ -210,12 +210,12 @@ export default async function buildSpreadsheetBuffer(
   resultsSheet["!cols"] = [
     { wch: 5 },
     { wch: 22 },
-    { wch: 14 },
-    { wch: 18 },
     { wch: 12 },
-    { wch: 9 },
-    { wch: 25 },
+    { wch: 16 },
+    { wch: 20 },
+    { wch: 14 },
     { wch: 10 },
+    { wch: 14 },
   ];
   XLSX.utils.book_append_sheet(
     workbook,
@@ -258,10 +258,10 @@ export default async function buildSpreadsheetBuffer(
     { wch: 5 },
     { wch: 22 },
     ...rangeWithPrefix(collegeCount).map(() => ({ wch: 10 })),
-    { wch: 12 },
+    { wch: 14 },
     ...rangeWithPrefix(proCount).map(() => ({ wch: 10 })),
-    { wch: 9 },
     { wch: 10 },
+    { wch: 12 },
   ];
   XLSX.utils.book_append_sheet(
     workbook,

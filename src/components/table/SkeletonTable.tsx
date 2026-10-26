@@ -36,7 +36,7 @@ type Column = {
   isPlayer?: boolean;
 };
 
-/** Both views open on these and close on a total. */
+/** Every view opens on these. Scoreboard puts the total next, the others close on it. */
 const RANK_AND_PLAYER: Array<Column> = [
   { header: "Rank" },
   { header: "Player", isPlayer: true },
@@ -45,12 +45,12 @@ const TOTAL_SCORE: Column = { header: "Total Score" };
 
 const SCOREBOARD_COLUMNS: Array<Column> = [
   ...RANK_AND_PLAYER,
+  TOTAL_SCORE,
   { header: "MNF Points Pick" },
   { header: "MNF Points Distance" },
   { header: "College Score" },
   { header: "Pro Score" },
   { header: "Pro Score ATS" },
-  TOTAL_SCORE,
 ];
 
 function leagueColumns(count: number, prefix: string): Array<Column> {
