@@ -44,9 +44,7 @@ function ScoresTable({ scores }: { scores?: RakMadnessScores | null }) {
             player={player}
             hasNameConflict={repeated.has(player.name)}
           />
-          <td>
-            <b>{player.score.total}</b>
-          </td>
+          <td>{player.score.total}</td>
           <td>{player.tiebreaker.pick ?? "N/A"}</td>
           <td>{player.tiebreaker.distance ?? "N/A"}</td>
           <td>{player.score.college}</td>
