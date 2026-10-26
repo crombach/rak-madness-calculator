@@ -362,10 +362,18 @@ function knockedOut(player: PlayerScore): PlayerAnalysis {
   };
 }
 
-type Route = { hits: number; verdict: Verdict };
+type Route = {
+  hits: number;
+  verdict: Verdict;
+  /** No smaller route sits inside it. Off for one kept for a wider range. */
+  isSimplest: boolean;
+};
 
 type Search = {
-  /** The fewest-game ways to win the week, level with everyone or better. */
+  /**
+   * The fewest-game ways to win the week, level with everyone or better, and the
+   * bigger ways that widen the MNF Points range.
+   */
   minimal: Array<Route>;
   /** The same, for the ways that win it alone. Empty where no set of picks does. */
   outright: Array<Route>;
@@ -377,12 +385,33 @@ type Search = {
  * Any winning set has a one-game-smaller winning subset, already read, so dropping
  * one bit at a time is the whole test. `won` is read per list, since a set that only
  * draws level makes a bigger set redundant for the first list and not for the second.
+ *
+ * `range` holds this set to the MNF Points its subsets win on as well. Another win
+ * never narrows the range, so a bigger set whose every total a smaller set already
+ * wins on asks nothing new, and one winning on a total none of them does is a way
+ * through of its own.
  */
-function hasWinningSubset(won: Uint8Array, hits: number): boolean {
+function hasWinningSubset(
+  won: Uint8Array,
+  hits: number,
+  range?: { lo: number; hi: number; los: Float64Array; his: Float64Array },
+): boolean {
+  const covering: Array<[number, number]> = [];
   for (let bits = hits; bits !== 0; bits &= bits - 1) {
-    if (won[hits ^ (bits & -bits)] === 1) return true;
+    const subset = hits ^ (bits & -bits);
+    if (won[subset] !== 1) continue;
+    if (range == null) return true;
+    covering.push([range.los[subset], range.his[subset]]);
   }
-  return false;
+  if (range == null || covering.length === 0) return false;
+  // Every total is a whole number, so a range starting one past where the last
+  // left off joins it.
+  let reach = range.lo - 1;
+  for (const [lo, hi] of covering.sort((a, b) => a[0] - b[0])) {
+    if (lo > reach + 1) break;
+    reach = Math.max(reach, hi);
+  }
+  return reach >= range.hi;
 }
 
 /**
@@ -429,21 +458,24 @@ function grownFrom(
  * no winner worth reading, and those are grown a game at a time off the ones that
  * lost rather than counted out of all `2^n` of them.
  *
- * `seekOutright` keeps reading past a set that only draws level, since a bigger set
- * can win outright where the one inside it cannot. Winning every pick is the best a
- * player can do, so it is only worth asking when that reads as an outright win,
- * which is what the caller hands in.
+ * The search keeps reading past a set that only draws level, since a bigger set can
+ * win on more MNF Points, or win outright, where the one inside it cannot. `best`,
+ * winning every pick, bounds what a bigger set can reach, so a set already drawing
+ * level on its range is read no further.
  */
 function search(
   mineMask: number,
   verdictOf: (hits: number) => Verdict,
-  seekOutright: boolean,
+  best: Verdict,
 ): Search {
   const minimal: Array<Route> = [];
   const outright: Array<Route> = [];
   // Marked where a set is read and leaves the sets above it still to answer for.
   const open = new Uint8Array(mineMask + 1);
   const won = new Uint8Array(mineMask + 1);
+  // The MNF Points range each set in `won` draws level on.
+  const los = new Float64Array(mineMask + 1);
+  const his = new Float64Array(mineMask + 1);
   // Its own record, because a set that only draws level rules a bigger set out of
   // `minimal` and leaves it the smallest way to take the week alone.
   const wonOutright = new Uint8Array(mineMask + 1);
@@ -453,18 +485,32 @@ function search(
   while (candidates.length > 0) {
     for (const hits of candidates) {
       const verdict = verdictOf(hits);
-      const { kind } = verdict;
-      if (kind !== "loss") {
-        if (!hasWinningSubset(won, hits)) minimal.push({ hits, verdict });
+      if (verdict.kind === "win") {
+        if (!hasWinningSubset(won, hits)) {
+          minimal.push({ hits, verdict, isSimplest: true });
+        }
         won[hits] = 1;
-        if (kind === "win") {
-          if (!hasWinningSubset(wonOutright, hits)) {
-            outright.push({ hits, verdict });
-          }
-          wonOutright[hits] = 1;
+        if (!hasWinningSubset(wonOutright, hits)) {
+          outright.push({ hits, verdict, isSimplest: true });
+        }
+        wonOutright[hits] = 1;
+        continue;
+      }
+      if (verdict.kind === "onTotal") {
+        const { lo, hi } = verdict;
+        if (!hasWinningSubset(won, hits, { lo, hi, los, his })) {
+          minimal.push({
+            hits,
+            verdict,
+            isSimplest: !hasWinningSubset(won, hits),
+          });
+        }
+        won[hits] = 1;
+        los[hits] = lo;
+        his[hits] = hi;
+        if (best.kind === "onTotal" && best.lo === lo && best.hi === hi) {
           continue;
         }
-        if (!seekOutright) continue;
       }
       open[hits] = 1;
     }
@@ -479,7 +525,11 @@ type RouteShape = Pick<
 >;
 
 /** One route as the games it asks past the must-win ones, and how it ends. */
-type Rest = { mask: number; outlook: MondayNightOutlook };
+type Rest = {
+  mask: number;
+  outlook: MondayNightOutlook;
+  isSimplest: boolean;
+};
 
 /**
  * Each game the routes ask for, with the routes asking it, most needed first.
@@ -529,7 +579,8 @@ function sharesIn(
 function mostAskedPoints(
   rests: Array<Rest>,
   // Off where a set of games takes the week without a total. `rests` holds the
-  // fewest games that win and such a set asks more, so no route here reports it.
+  // fewest games that win on each MNF Points range and such a set asks more, so no
+  // route here reports it.
   canWinWithout: boolean,
 ): PickShares["mondayNight"] {
   // Keyed by the range itself, so routes asking the same total land together.
@@ -581,6 +632,7 @@ function reduceRoutes(
   const rests: Array<Rest> = minimal.map((route) => ({
     mask: route.hits & ~mustWinMask,
     outlook: outlookOf(route.verdict, isMondayNightSettled),
+    isSimplest: route.isSimplest,
   }));
   const isOneOutlook = rests.every((rest) =>
     sameOutlook(rest.outlook, rests[0].outlook),
@@ -616,11 +668,14 @@ function reduceRoutes(
   // More routes than a list can show whole, so each game is named once against the
   // routes needing it. A list of these would be a sample and a share is not.
   if (rests.length > MAX_LISTED_ROUTES) {
+    // A bigger way kept for its wider range holds a smaller way inside it, and
+    // counted beside it one win would stand twice.
+    const simplest = rests.filter((rest) => rest.isSimplest);
     return {
       mustWin,
       shares: {
-        routeCount: rests.length,
-        games: sharesIn(rests, contested, playerIndex),
+        routeCount: simplest.length,
+        games: sharesIn(simplest, contested, playerIndex),
         // Read off the whole route rather than off `rests`, so it counts the
         // must-win games the block above the table names as well as the games in
         // it. A reader adds up what both ask of them, not what one of them does.
@@ -628,7 +683,7 @@ function reduceRoutes(
         // Held back where the block below says it once.
         mondayNight: isWholeStory
           ? undefined
-          : mostAskedPoints(rests, canWinWithout),
+          : mostAskedPoints(simplest, canWinWithout),
       },
       mondayNight: isWholeStory ? rests[0].outlook : undefined,
     };
@@ -968,7 +1023,7 @@ export default function getPlayerAnalysis(
   // smaller set saves them, without reading all `2^n` subsets to say so.
   if (best.kind === "loss") return knockedOut(player);
 
-  const { minimal, outright } = search(mineMask, read, best.kind === "win");
+  const { minimal, outright } = search(mineMask, read, best);
 
   if (minimal.length === 0) {
     return knockedOut(player);
@@ -988,11 +1043,11 @@ export default function getPlayerAnalysis(
     outright.length > 0 &&
     bitCount(outright[0].hits) > bitCount(minimal[0].hits);
 
-  // `minimal` alone, which is every way to win that asks nothing it does not need.
-  // A way taking the week alone asks more games than one drawing level does, so it
-  // holds a smaller way inside it. Counted beside that smaller way it would be a
-  // second row for the same win, and a share of the rows would move with how many
-  // such rows a game happens to sit in.
+  // `minimal` alone, which is every way to win that asks no game or MNF Points range
+  // it does not need. A way taking the week alone asks more games than one drawing
+  // level does, so it holds a smaller way inside it. Counted beside that smaller
+  // way it would be a second row for the same win, and a share of the rows would
+  // move with how many such rows a game happens to sit in.
   const whole = reduceRoutes(
     minimal,
     contested,

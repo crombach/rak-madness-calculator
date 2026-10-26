@@ -370,6 +370,23 @@ describe("AnalysisSummary", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("drops the AND from a route asking no games past the must-win ones", () => {
+    const result: PlayerAnalysis = {
+      ...base,
+      mustWin: [{ label: "P13", pick: "PHI" }],
+      routes: [
+        { games: [], mondayNight: { kind: "range", min: 43, max: 44 } },
+        {
+          games: [{ label: "P12", pick: "SEA" }],
+          mondayNight: { kind: "range", max: 44 },
+        },
+      ],
+    };
+    render(<AnalysisSummary result={result} />);
+
+    expect(mnfLines()).toEqual(["43 ≤ MNF Points ≤ 44", "AND MNF Points ≤ 44"]);
+  });
+
   it("writes an open-ended range from the end it is bounded on", () => {
     const result: PlayerAnalysis = {
       ...base,
