@@ -196,7 +196,7 @@ export default async function buildSpreadsheetBuffer(
       return [
         normalCell({ value: ranks[index], alignment: "left", isBold: true }),
         playerNameCell(player, rowStatusOf(player, repeated, showStatus)),
-        normalCell({ value: player.score.total, isBold: true }),
+        normalCell({ value: player.score.total }),
         normalCell({ value: player.tiebreaker.pick ?? "N/A" }),
         normalCell({ value: player.tiebreaker.distance ?? "N/A" }),
         normalCell({ value: player.score.college }),
