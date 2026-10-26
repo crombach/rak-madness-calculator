@@ -5,7 +5,7 @@ import repeatedNames from "../../../utils/scoring/repeatedNames";
 import { ranksOnMerit } from "../../../utils/scoring/comparePlayerScores";
 import TableShell, { PLAYER_COL_CLASS, RankCell } from "../TableShell";
 
-/** Rank, player, MNF pick, MNF distance, college, pro, pro ATS, and total. */
+/** Rank, player, total, MNF pick, MNF distance, college, pro, and pro ATS. */
 const COLUMN_COUNT = 8;
 
 function ScoresTable({ scores }: { scores?: RakMadnessScores | null }) {
@@ -28,12 +28,12 @@ function ScoresTable({ scores }: { scores?: RakMadnessScores | null }) {
           <th className={PLAYER_COL_CLASS} scope="col">
             Player
           </th>
+          <th scope="col">Total Score</th>
           <th scope="col">MNF Points Pick</th>
           <th scope="col">MNF Points Distance</th>
           <th scope="col">College Score</th>
           <th scope="col">Pro Score</th>
           <th scope="col">Pro Score ATS</th>
-          <th scope="col">Total Score</th>
         </>
       }
     >
@@ -44,14 +44,14 @@ function ScoresTable({ scores }: { scores?: RakMadnessScores | null }) {
             player={player}
             hasNameConflict={repeated.has(player.name)}
           />
+          <td>
+            <b>{player.score.total}</b>
+          </td>
           <td>{player.tiebreaker.pick ?? "N/A"}</td>
           <td>{player.tiebreaker.distance ?? "N/A"}</td>
           <td>{player.score.college}</td>
           <td>{player.score.pro}</td>
           <td>{player.score.proAgainstTheSpread}</td>
-          <td>
-            <b>{player.score.total}</b>
-          </td>
         </tr>
       ))}
     </TableShell>

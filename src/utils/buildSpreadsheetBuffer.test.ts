@@ -114,19 +114,19 @@ describe("buildSpreadsheetBuffer, results sheet", () => {
     expect(rowsOf(workbook, RESULTS_SHEET)[0]).toEqual([
       "Rank",
       "Player",
+      "Total Score",
       "MNF Points Pick",
       "MNF Points Distance",
       "College Score",
       "Pro Score",
       "Pro Score ATS",
-      "Total Score",
     ]);
   });
 
   it("writes one row per player, ranked in the order given", async () => {
     const rows = rowsOf(await readBack(), RESULTS_SHEET);
-    expect(rows[1]).toEqual([1, "Alice", 41, 0, 1, 2, 1, 3]);
-    expect(rows[2]).toEqual([2, "Bob", 45, 4, 0, 1, 0, 1]);
+    expect(rows[1]).toEqual([1, "Alice", 3, 41, 0, 1, 2, 1]);
+    expect(rows[2]).toEqual([2, "Bob", 1, 45, 4, 0, 1, 0]);
   });
 
   it("gives players tied on merit one rank on both sheets", async () => {
@@ -155,8 +155,8 @@ describe("buildSpreadsheetBuffer, results sheet", () => {
       ],
     });
     const row = rowsOf(workbook, RESULTS_SHEET)[1];
-    expect(row[2]).toBe("N/A");
     expect(row[3]).toBe("N/A");
+    expect(row[4]).toBe("N/A");
   });
 
   it("sets a column width for every results column", async () => {

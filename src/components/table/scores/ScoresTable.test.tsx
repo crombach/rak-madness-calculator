@@ -68,12 +68,12 @@ describe("ScoresTable", () => {
     expect(headers).toEqual([
       "Rank",
       "Player",
+      "Total Score",
       "MNF Points Pick",
       "MNF Points Distance",
       "College Score",
       "Pro Score",
       "Pro Score ATS",
-      "Total Score",
     ]);
   });
 
@@ -91,7 +91,7 @@ describe("ScoresTable", () => {
     const texts = Array.from(cells).map((cell) =>
       (cell.querySelector(".player-name__name") ?? cell).textContent?.trim(),
     );
-    expect(texts).toEqual(["1", "Alice", "41", "0", "1", "2", "1", "3"]);
+    expect(texts).toEqual(["1", "Alice", "3", "41", "0", "1", "2", "1"]);
   });
 
   it("gives players tied on merit one rank", () => {
