@@ -1,5 +1,6 @@
 import { memo } from "react";
 import rangeWithPrefix from "../../utils/rangeWithPrefix";
+import { SCOREBOARD_COLUMNS as SCOREBOARD_SCORE_COLUMNS } from "../../utils/scoreboardColumns";
 import { RESULTS_PAGE, ScoresView } from "../results/resultsPath";
 import SkeletonStatus from "../pageLayout/SkeletonStatus";
 import TableShell, { PICK_COL_CLASS, PLAYER_COL_CLASS } from "./TableShell";
@@ -45,12 +46,7 @@ const TOTAL_SCORE: Column = { header: "Total Score" };
 
 const SCOREBOARD_COLUMNS: Array<Column> = [
   ...RANK_AND_PLAYER,
-  TOTAL_SCORE,
-  { header: "MNF Points Pick" },
-  { header: "MNF Points Distance" },
-  { header: "College Score" },
-  { header: "Pro Score" },
-  { header: "Pro Score ATS" },
+  ...SCOREBOARD_SCORE_COLUMNS.map(({ header }) => ({ header })),
 ];
 
 function leagueColumns(count: number, prefix: string): Array<Column> {
