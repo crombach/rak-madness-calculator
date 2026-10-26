@@ -210,7 +210,7 @@ export default async function buildSpreadsheetBuffer(
   resultsSheet["!cols"] = [
     { wch: 5 },
     { wch: 22 },
-    { wch: 10 },
+    { wch: 12 },
     { wch: 14 },
     { wch: 18 },
     { wch: 12 },
