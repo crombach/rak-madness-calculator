@@ -1,6 +1,6 @@
 import { memo } from "react";
 import rangeWithPrefix from "../../utils/rangeWithPrefix";
-import { SCOREBOARD_COLUMNS as SCOREBOARD_SCORE_COLUMNS } from "../../utils/scoreboardColumns";
+import { SCOREBOARD_COLUMNS } from "../../utils/scoreboardColumns";
 import { RESULTS_PAGE, ScoresView } from "../results/resultsPath";
 import SkeletonStatus from "../pageLayout/SkeletonStatus";
 import TableShell, { PICK_COL_CLASS, PLAYER_COL_CLASS } from "./TableShell";
@@ -37,16 +37,16 @@ type Column = {
   isPlayer?: boolean;
 };
 
-/** Every view opens on these. Scoreboard puts the total next, the others close on it. */
+/** Every view opens on these. Picks and Compare close on the total. */
 const RANK_AND_PLAYER: Array<Column> = [
   { header: "Rank" },
   { header: "Player", isPlayer: true },
 ];
 const TOTAL_SCORE: Column = { header: "Total Score" };
 
-const SCOREBOARD_COLUMNS: Array<Column> = [
+const SCOREBOARD_SKELETON_COLUMNS: Array<Column> = [
   ...RANK_AND_PLAYER,
-  ...SCOREBOARD_SCORE_COLUMNS.map(({ header }) => ({ header })),
+  ...SCOREBOARD_COLUMNS.map(({ header }) => ({ header })),
 ];
 
 function leagueColumns(count: number, prefix: string): Array<Column> {
@@ -85,7 +85,7 @@ const SHAPES: Record<
   { columns: Array<Column>; standInRows: number }
 > = {
   [RESULTS_PAGE.scoreboard]: {
-    columns: SCOREBOARD_COLUMNS,
+    columns: SCOREBOARD_SKELETON_COLUMNS,
     standInRows: PLAYER_COUNT,
   },
   [RESULTS_PAGE.picks]: { columns: PICKS_COLUMNS, standInRows: PLAYER_COUNT },

@@ -10,7 +10,7 @@ export type ScoreboardColumn = {
 
 /**
  * The Scoreboard's columns after Rank and Player, in order. The table, its
- * wireframe, and the export's Scoreboard sheet all read this, so a column moved
+ * wireframe, and the export's Scoreboard sheet all read this. A column moved
  * here moves in all three.
  */
 export const SCOREBOARD_COLUMNS: ReadonlyArray<ScoreboardColumn> = [
