@@ -163,6 +163,16 @@ describe("buildSpreadsheetBuffer, results sheet", () => {
     const workbook = await readBack();
     expect(workbook.Sheets[RESULTS_SHEET]["!cols"]).toHaveLength(8);
   });
+
+  it("makes every column wider than its header, on both sheets", async () => {
+    const workbook = await readBack();
+    for (const sheetName of [RESULTS_SHEET, PICKS_SHEET]) {
+      const widths = workbook.Sheets[sheetName]["!cols"]!.map((col) => col.wch);
+      rowsOf(workbook, sheetName)[0].forEach((header: string, index) => {
+        expect(widths[index]).toBeGreaterThan(header.length);
+      });
+    }
+  });
 });
 
 describe("buildSpreadsheetBuffer, picks sheet", () => {
