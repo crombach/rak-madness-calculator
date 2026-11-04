@@ -33,14 +33,19 @@ export type PlacedGame<T> = {
 
 export type SectionCards<T> = { title: string; cards: Array<T> };
 
+/** A date's time, or `missing` for no date or one that does not parse. */
+function timeOr(date: Date | null | undefined, missing: number): number {
+  const at = date?.getTime();
+  return at != null && Number.isFinite(at) ? at : missing;
+}
+
 function kickoffTime({ kickoff }: PlacedGame<unknown>): number {
-  return kickoff?.getTime() ?? Number.POSITIVE_INFINITY;
+  return timeOr(kickoff, Number.POSITIVE_INFINITY);
 }
 
 /** When a game ended, or its kickoff with no end to read. */
 function finishTime({ finishedAt, kickoff }: PlacedGame<unknown>): number {
-  const at = (finishedAt ?? kickoff)?.getTime();
-  return at != null && Number.isFinite(at) ? at : Number.NEGATIVE_INFINITY;
+  return timeOr(finishedAt ?? kickoff, Number.NEGATIVE_INFINITY);
 }
 
 /**

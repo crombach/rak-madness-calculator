@@ -221,6 +221,34 @@ describe("Games", () => {
     vi.useRealTimers();
   });
 
+  it("puts a game whose kickoff does not parse last under Upcoming", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2024, 9, 6, 9, 0));
+    const at = (id: string, home: string, away: string, date: Date) => ({
+      ...upcomingGame({ home, away }),
+      id,
+      date,
+    });
+    mount({
+      ...scores,
+      games: [
+        column("P7", League.PRO, at("408", "GB", "NYJ", new Date("bad"))),
+        column(
+          "P6",
+          League.PRO,
+          at("407", "SF", "LAR", new Date(2024, 9, 10, 17)),
+        ),
+        column(
+          "P8",
+          League.PRO,
+          at("409", "NE", "MIA", new Date(2024, 9, 11, 17)),
+        ),
+      ],
+    });
+    expect(labelsIn("Upcoming")).toEqual(["P6", "P8", "P7"]);
+    vi.useRealTimers();
+  });
+
   it("leaves out a day with no game to start", () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(proUpcoming.date);
