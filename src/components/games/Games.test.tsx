@@ -272,8 +272,8 @@ describe("Games", () => {
       date: new Date(date),
       finishedAt: finishedAt == null ? null : new Date(finishedAt),
     });
-    // C1 and P5 have no finish, so their kickoffs place them. P4 and P6 finish
-    // together, so they go in reverse table order.
+    // C1 and P5 have no finish, so they go above the rest, the later kickoff
+    // first. P4 and P6 finish together, so they go in reverse table order.
     mount({
       ...scores,
       games: [
@@ -299,7 +299,7 @@ describe("Games", () => {
     expect(
       screen.getAllByRole("heading", { level: 2 }).at(-1),
     ).toHaveTextContent("Completed");
-    expect(labelsIn("Completed")).toEqual(["P6", "P4", "C1", "P5"]);
+    expect(labelsIn("Completed")).toEqual(["C1", "P5", "P6", "P4"]);
   });
 
   it("counts each section's games beside its title", () => {
