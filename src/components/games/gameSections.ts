@@ -31,8 +31,9 @@ function kickoffTime({ kickoff }: PlacedGame<unknown>): number {
 /**
  * A card page's sections, in page order. The games being played first, then those
  * to come by the reader's own calendar day and kickoff, then the finished ones.
- * Live and finished games keep the order they came in. A game with no kickoff to
- * read goes under Upcoming, last. A section with no game is left out.
+ * Live games keep the order they came in, finished ones the reverse, so the last
+ * column comes first. A game with no kickoff to read goes under Upcoming, last.
+ * A section with no game is left out.
  */
 export default function gameSections<T>(
   games: Array<PlacedGame<T>>,
@@ -42,7 +43,9 @@ export default function gameSections<T>(
   const upcoming = games
     .filter(({ status }) => status === GameStatus.UPCOMING)
     .sort((a, b) => kickoffTime(a) - kickoffTime(b));
-  const completed = games.filter(({ status }) => status === GameStatus.FINAL);
+  const completed = games
+    .filter(({ status }) => status === GameStatus.FINAL)
+    .reverse();
   const dayOf = ({ kickoff }: PlacedGame<T>) =>
     kickoff == null ? KickoffDay.LATER : kickoffDay(kickoff, now);
 

@@ -231,7 +231,7 @@ describe("Games", () => {
     vi.useRealTimers();
   });
 
-  it("lists the finished games last, in table order", () => {
+  it("lists the finished games last, in reverse table order", () => {
     const final = (id: string, home: string, away: string, date: Date) => ({
       ...finalGame({ home, away, homeScore: 21, awayScore: 14 }),
       id,
@@ -257,7 +257,7 @@ describe("Games", () => {
     expect(
       screen.getAllByRole("heading", { level: 2 }).at(-1),
     ).toHaveTextContent("Completed");
-    expect(labelsIn("Completed")).toEqual(["C1", "P4", "P5"]);
+    expect(labelsIn("Completed")).toEqual(["P5", "P4", "C1"]);
   });
 
   it("counts each section's games beside its title", () => {
@@ -342,7 +342,7 @@ describe("Games", () => {
     await vi.advanceTimersByTimeAsync(POLL_MS);
     expect(onPoll).toHaveBeenCalledTimes(2);
     await waitFor(() => expect(cards()).toHaveLength(1));
-    expect(labelsIn("Completed")).toEqual(["C1", "P1"]);
+    expect(labelsIn("Completed")).toEqual(["P1", "C1"]);
 
     vi.useRealTimers();
   });
