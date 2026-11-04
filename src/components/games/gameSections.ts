@@ -59,7 +59,9 @@ export default function gameSections<T>(
     .sort((a, b) => compareFinish(b.game, a.game) || b.order - a.order)
     .map(({ game }) => game);
   const dayOf = ({ kickoff }: PlacedGame<T>) =>
-    kickoff == null ? KickoffDay.LATER : kickoffDay(kickoff, now);
+    kickoff == null || validTime(kickoff) == null
+      ? KickoffDay.LATER
+      : kickoffDay(kickoff, now);
 
   return [
     { title: LIVE_TITLE, games: live },
