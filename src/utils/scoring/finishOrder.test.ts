@@ -1,4 +1,4 @@
-import compareFinish, { Finish, timeOr } from "./finishOrder";
+import compareFinish, { Finish, validTime } from "./finishOrder";
 
 const at = (iso: string) => new Date(iso);
 const sorted = (finals: Record<string, Finish>) =>
@@ -6,12 +6,12 @@ const sorted = (finals: Record<string, Finish>) =>
     .sort(([, a], [, b]) => compareFinish(a, b))
     .map(([name]) => name);
 
-describe("timeOr", () => {
-  it("reads a date's time, and gives the fallback for none or one that does not parse", () => {
-    expect(timeOr(at("2024-10-06T17:00Z"), 0)).toBe(Date.UTC(2024, 9, 6, 17));
-    expect(timeOr(undefined, 1)).toBe(1);
-    expect(timeOr(null, 2)).toBe(2);
-    expect(timeOr(new Date("bad"), 3)).toBe(3);
+describe("validTime", () => {
+  it("reads a date's time, and gives none for no date or one that does not parse", () => {
+    expect(validTime(at("2024-10-06T17:00Z"))).toBe(Date.UTC(2024, 9, 6, 17));
+    expect(validTime(undefined)).toBeUndefined();
+    expect(validTime(null)).toBeUndefined();
+    expect(validTime(new Date("bad"))).toBeUndefined();
   });
 });
 

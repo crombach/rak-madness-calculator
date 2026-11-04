@@ -1,7 +1,10 @@
 import { GameStatus } from "../../types/ESPN";
 import { League } from "../../types/League";
 import { LEAGUES as LEAGUE_KEYS } from "../../utils/scoring/gameColumns";
-import compareFinish, { timeOr } from "../../utils/scoring/finishOrder";
+import compareFinish, {
+  Finish,
+  validTime,
+} from "../../utils/scoring/finishOrder";
 import { ESPN_LEAGUE } from "../../utils/scoring/leagueResults";
 import kickoffDay, { KickoffDay } from "./kickoffDay";
 import { COMPLETED_TITLE, DAYS, LIVE_TITLE } from "./sectionTitles";
@@ -21,20 +24,16 @@ export const LIVE_STATUSES: ReadonlySet<GameStatus> = new Set([
 ]);
 
 /**
- * One card, with where its game stands. No `kickoff` is a game with no date. No
- * `finishedAt` is a game not over, or one with no end ESPN has given.
+ * One card, with where its game stands. No `kickoff`, or one that does not
+ * parse, is a game with no date. No `finishedAt` is a game not over, or one
+ * with no end ESPN has given.
  */
-export type PlacedGame<T> = {
-  card: T;
-  status: GameStatus;
-  kickoff?: Date;
-  finishedAt?: Date | null;
-};
+export type PlacedGame<T> = Finish & { card: T; status: GameStatus };
 
 export type SectionCards<T> = { title: string; cards: Array<T> };
 
 function kickoffTime({ kickoff }: PlacedGame<unknown>): number {
-  return timeOr(kickoff, Number.POSITIVE_INFINITY);
+  return validTime(kickoff) ?? Number.POSITIVE_INFINITY;
 }
 
 /**
