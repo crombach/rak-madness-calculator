@@ -8,8 +8,8 @@ each.
 - `GamesRoute`: `Games` on the week's scores. A settled week stays.
 - `Games`: `useLiveWeek` polls every open league, a busy bar under the caption
   while a live one is fetched.
-- `gameSections`: Live, Today, Tomorrow, Upcoming, then Completed in reverse
-  table order, for both card pages. An empty section is left out.
+- `gameSections`: Live, Today, Tomorrow, Upcoming, then Completed latest to
+  finish first, for both card pages. An empty section is left out.
 - `GameCard`: a `GameStatusSummary` banded with its label, name and `GameMark`.
 - `kickoffDay`: a kickoff's day in the reader's time zone.
 - `sectionTitles`: each section's title, apart from `Games` for the skeleton.

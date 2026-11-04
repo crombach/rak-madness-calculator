@@ -19,8 +19,16 @@ export const LIVE_STATUSES: ReadonlySet<GameStatus> = new Set([
   GameStatus.DELAYED,
 ]);
 
-/** One card, with where its game stands. No `kickoff` is a game with no date. */
-export type PlacedGame<T> = { card: T; status: GameStatus; kickoff?: Date };
+/**
+ * One card, with where its game stands. No `kickoff` is a game with no date. No
+ * `finishedAt` is a game not over, or one ESPN gave no last play for.
+ */
+export type PlacedGame<T> = {
+  card: T;
+  status: GameStatus;
+  kickoff?: Date;
+  finishedAt?: Date | null;
+};
 
 export type SectionCards<T> = { title: string; cards: Array<T> };
 
@@ -28,12 +36,17 @@ function kickoffTime({ kickoff }: PlacedGame<unknown>): number {
   return kickoff?.getTime() ?? Number.POSITIVE_INFINITY;
 }
 
+/** When a game ended, or its kickoff with no end to read. */
+function finishTime({ finishedAt, kickoff }: PlacedGame<unknown>): number {
+  return (finishedAt ?? kickoff)?.getTime() ?? Number.NEGATIVE_INFINITY;
+}
+
 /**
  * A card page's sections, in page order. The games being played first, then those
  * to come by the reader's own calendar day and kickoff, then the finished ones.
- * Live games keep the order they came in, finished ones the reverse, so the last
- * column comes first. A game with no kickoff to read goes under Upcoming, last.
- * A section with no game is left out.
+ * Live games keep the order they came in. Finished ones go latest to end first,
+ * by kickoff with no end to read, a tie with the last column first. A game with
+ * no time to read goes last in its section. A section with no game is left out.
  */
 export default function gameSections<T>(
   games: Array<PlacedGame<T>>,
@@ -45,7 +58,8 @@ export default function gameSections<T>(
     .sort((a, b) => kickoffTime(a) - kickoffTime(b));
   const completed = games
     .filter(({ status }) => status === GameStatus.FINAL)
-    .reverse();
+    .reverse()
+    .sort((a, b) => finishTime(b) - finishTime(a));
   const dayOf = ({ kickoff }: PlacedGame<T>) =>
     kickoff == null ? KickoffDay.LATER : kickoffDay(kickoff, now);
 
