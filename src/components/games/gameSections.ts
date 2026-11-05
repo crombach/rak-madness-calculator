@@ -1,6 +1,10 @@
 import { GameStatus } from "../../types/ESPN";
 import { League } from "../../types/League";
 import { LEAGUES as LEAGUE_KEYS } from "../../utils/scoring/gameColumns";
+import compareFinish, {
+  Finish,
+  validTime,
+} from "../../utils/scoring/finishOrder";
 import { ESPN_LEAGUE } from "../../utils/scoring/leagueResults";
 import kickoffDay, { KickoffDay } from "./kickoffDay";
 import { COMPLETED_TITLE, DAYS, LIVE_TITLE } from "./sectionTitles";
@@ -19,20 +23,27 @@ export const LIVE_STATUSES: ReadonlySet<GameStatus> = new Set([
   GameStatus.DELAYED,
 ]);
 
-/** One card, with where its game stands. No `kickoff` is a game with no date. */
-export type PlacedGame<T> = { card: T; status: GameStatus; kickoff?: Date };
+/**
+ * One card, with where its game stands. No `kickoff`, or one that does not
+ * parse, is a game with no date. No `finishedAt` is a game not over, or one
+ * with no end ESPN has given.
+ */
+export type PlacedGame<T> = Finish & { card: T; status: GameStatus };
 
 export type SectionCards<T> = { title: string; cards: Array<T> };
 
 function kickoffTime({ kickoff }: PlacedGame<unknown>): number {
-  return kickoff?.getTime() ?? Number.POSITIVE_INFINITY;
+  return validTime(kickoff) ?? Number.POSITIVE_INFINITY;
 }
 
 /**
  * A card page's sections, in page order. The games being played first, then those
  * to come by the reader's own calendar day and kickoff, then the finished ones.
- * Live and finished games keep the order they came in. A game with no kickoff to
- * read goes under Upcoming, last. A section with no game is left out.
+ * Live games keep the order they came in. Finished ones go in the reverse of
+ * `compareFinish`, the order knockouts are credited in: latest to end first,
+ * with a game ESPN gave no end for above them all. A tie puts the later card
+ * first. A game with no kickoff to read goes under Upcoming, last. A section
+ * with no game is left out.
  */
 export default function gameSections<T>(
   games: Array<PlacedGame<T>>,
@@ -42,9 +53,15 @@ export default function gameSections<T>(
   const upcoming = games
     .filter(({ status }) => status === GameStatus.UPCOMING)
     .sort((a, b) => kickoffTime(a) - kickoffTime(b));
-  const completed = games.filter(({ status }) => status === GameStatus.FINAL);
+  const completed = games
+    .map((game, order) => ({ game, order }))
+    .filter(({ game }) => game.status === GameStatus.FINAL)
+    .sort((a, b) => compareFinish(b.game, a.game) || b.order - a.order)
+    .map(({ game }) => game);
   const dayOf = ({ kickoff }: PlacedGame<T>) =>
-    kickoff == null ? KickoffDay.LATER : kickoffDay(kickoff, now);
+    kickoff == null || validTime(kickoff) == null
+      ? KickoffDay.LATER
+      : kickoffDay(kickoff, now);
 
   return [
     { title: LIVE_TITLE, games: live },

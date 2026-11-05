@@ -40,6 +40,9 @@ The picks-to-scoreboard pipeline, sequenced by `getPlayerScores`.
   keyed by team, who needs each MNF Points range on the Points game, and who
   each final game knocked out, for the knockouts page
 - `knockoutTypes`: its types, outside the lazy chunk
+- `finishOrder`: `compareFinish`, finals earliest to end first. Knockout credit
+  reads it as is and both card pages reverse it. `validTime`, a date's time, or
+  none for a bad date
 - `leagueResultFixtures`: test game builders, and `weekOf`, one league's week
 - `scoringTestFixtures`: player and week builders, shared by `getPlayerAnalysis`'s
   and `getKnockouts`'s tests

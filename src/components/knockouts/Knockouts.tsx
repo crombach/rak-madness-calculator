@@ -75,6 +75,7 @@ export default function Knockouts({
           result?.status ??
           (game.isFinal ? GameStatus.FINAL : GameStatus.UPCOMING),
         kickoff: result?.date,
+        finishedAt: result?.finishedAt,
       };
     }),
     new Date(),

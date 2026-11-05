@@ -7,6 +7,7 @@ import { League } from "../../types/League";
 import { PlayerScore, RakMadnessScores } from "../../types/RakMadnessScores";
 import getKnockouts from "../../utils/scoring/getKnockouts";
 import {
+  finalGame,
   liveGame,
   upcomingGame,
   weekOf,
@@ -111,6 +112,36 @@ describe("Knockouts", () => {
 
     vi.useRealTimers();
   });
+
+  it("lists the finished games the latest to finish first", () => {
+    const final = (home: string, away: string, id: string, end: string) => ({
+      ...finalGame({ home, away, homeScore: 21, awayScore: 14 }),
+      id,
+      finishedAt: new Date(end),
+    });
+    const scores = week([
+      player({ name: "Alice", total: 5, pro: [pick("KC"), pick("SF")] }),
+      player({ name: "Bob", total: 5, pro: [pick("KC"), pick("LAR")] }),
+      player({ name: "Carol", total: 4, pro: [pick("DEN"), pick("SF")] }),
+    ]);
+    scores.games = [
+      {
+        label: "P1",
+        league: League.PRO,
+        name: "KC at DEN",
+        result: final("DEN", "KC", "401", "2024-10-06T23:00Z"),
+      },
+      {
+        label: "P2",
+        league: League.PRO,
+        name: "SF at LAR",
+        result: final("LAR", "SF", "402", "2024-10-06T20:00Z"),
+      },
+    ];
+    render(page(scores));
+    expect(labelsIn("Completed")).toEqual(["P1", "P2"]);
+  });
+
   it("puts everyone the MNF Points knocked out under one side headed by the tier, names plain", () => {
     const scores = settled(
       [

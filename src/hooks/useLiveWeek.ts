@@ -4,6 +4,7 @@ import { League } from "../types/League";
 import { LeagueResult } from "../types/LeagueResult";
 import { WeekGame } from "../types/WeekGame";
 import latestOnly from "../utils/latestOnly";
+import { validTime } from "../utils/scoring/finishOrder";
 import { LeagueResults } from "../utils/scoring/leagueResults";
 
 /** How often a game still being played is asked about again. */
@@ -18,8 +19,7 @@ export const POLL_MS = 20_000;
  */
 export function kickoffAt(result: LeagueResult | null): number | null {
   if (result?.status !== GameStatus.UPCOMING) return null;
-  const kickoff = result.date.getTime();
-  return Number.isFinite(kickoff) ? kickoff : null;
+  return validTime(result.date) ?? null;
 }
 
 /**

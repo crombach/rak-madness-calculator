@@ -221,6 +221,34 @@ describe("Games", () => {
     vi.useRealTimers();
   });
 
+  it("puts a game whose kickoff does not parse last under Upcoming", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2024, 9, 6, 9, 0));
+    const at = (id: string, home: string, away: string, date: Date) => ({
+      ...upcomingGame({ home, away }),
+      id,
+      date,
+    });
+    mount({
+      ...scores,
+      games: [
+        column("P7", League.PRO, at("408", "GB", "NYJ", new Date("bad"))),
+        column(
+          "P6",
+          League.PRO,
+          at("407", "SF", "LAR", new Date(2024, 9, 10, 17)),
+        ),
+        column(
+          "P8",
+          League.PRO,
+          at("409", "NE", "MIA", new Date(2024, 9, 11, 17)),
+        ),
+      ],
+    });
+    expect(labelsIn("Upcoming")).toEqual(["P6", "P8", "P7"]);
+    vi.useRealTimers();
+  });
+
   it("leaves out a day with no game to start", () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(proUpcoming.date);
@@ -231,12 +259,21 @@ describe("Games", () => {
     vi.useRealTimers();
   });
 
-  it("lists the finished games last, in table order", () => {
-    const final = (id: string, home: string, away: string, date: Date) => ({
+  it("lists the finished games last, the latest to finish first", () => {
+    const final = (
+      id: string,
+      home: string,
+      away: string,
+      date: string,
+      finishedAt: string | null,
+    ) => ({
       ...finalGame({ home, away, homeScore: 21, awayScore: 14 }),
       id,
-      date,
+      date: new Date(date),
+      finishedAt: finishedAt == null ? null : new Date(finishedAt),
     });
+    // C1 and P5 have no finish, so they go above the rest, the later kickoff
+    // first. P4 and P6 finish together, so they go in reverse table order.
     mount({
       ...scores,
       games: [
@@ -244,12 +281,17 @@ describe("Games", () => {
         column(
           "P4",
           League.PRO,
-          final("405", "NE", "MIA", new Date(2024, 9, 7, 17)),
+          final("405", "NE", "MIA", "2024-10-07T17:00Z", "2024-10-07T20:00Z"),
         ),
         column(
           "P5",
           League.PRO,
-          final("406", "SF", "LAR", new Date(2024, 9, 6, 13)),
+          final("406", "SF", "LAR", "2024-10-06T13:00Z", null),
+        ),
+        column(
+          "P6",
+          League.PRO,
+          final("407", "GB", "CHI", "2024-10-07T17:00Z", "2024-10-07T20:00Z"),
         ),
       ],
     });
@@ -257,7 +299,7 @@ describe("Games", () => {
     expect(
       screen.getAllByRole("heading", { level: 2 }).at(-1),
     ).toHaveTextContent("Completed");
-    expect(labelsIn("Completed")).toEqual(["C1", "P4", "P5"]);
+    expect(labelsIn("Completed")).toEqual(["C1", "P5", "P6", "P4"]);
   });
 
   it("counts each section's games beside its title", () => {
@@ -342,7 +384,7 @@ describe("Games", () => {
     await vi.advanceTimersByTimeAsync(POLL_MS);
     expect(onPoll).toHaveBeenCalledTimes(2);
     await waitFor(() => expect(cards()).toHaveLength(1));
-    expect(labelsIn("Completed")).toEqual(["C1", "P1"]);
+    expect(labelsIn("Completed")).toEqual(["P1", "C1"]);
 
     vi.useRealTimers();
   });

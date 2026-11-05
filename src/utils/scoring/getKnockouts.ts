@@ -6,6 +6,7 @@ import {
 } from "../../types/RakMadnessScores";
 import applyKnockouts from "./applyKnockouts";
 import comparePlayerScores from "./comparePlayerScores";
+import compareFinish, { Finish } from "./finishOrder";
 import gameLabels, { LEAGUES, LeagueKey, tiebreakerGame } from "./gameColumns";
 import { getMustWin } from "./getPlayerAnalysis";
 import { hasOutcome, isWeekWon } from "./isWeekSettled";
@@ -165,21 +166,10 @@ const isStanding = (
   name: string,
 ): boolean => statuses.get(name)?.isKnockedOut === false;
 
-/**
- * When a game ended, for the order its knockouts are credited in. A game ESPN gave
- * no finish for goes after every game it did, by kickoff, since a kickoff is hours
- * earlier than any finish.
- */
-function finishOf(
-  scores: RakMadnessScores,
-  label: string,
-): { hasFinish: boolean; at: number } {
+/** When a game ended, for the order its knockouts are credited in. */
+function finishOf(scores: RakMadnessScores, label: string): Finish {
   const result = scores.games?.find((game) => game.label === label)?.result;
-  const at = (result?.finishedAt ?? result?.date)?.getTime();
-  return {
-    hasFinish: result?.finishedAt != null,
-    at: at != null && Number.isFinite(at) ? at : Number.POSITIVE_INFINITY,
-  };
+  return { finishedAt: result?.finishedAt, kickoff: result?.date };
 }
 
 /**
@@ -214,13 +204,7 @@ function knockoutSides(scores: RakMadnessScores): {
       order,
       finish: finishOf(scores, column.label),
     }))
-    .sort(
-      (a, b) =>
-        Number(b.finish.hasFinish) - Number(a.finish.hasFinish) ||
-        // Compared, not subtracted: two games with no time are both Infinity.
-        Number(a.finish.at > b.finish.at) - Number(a.finish.at < b.finish.at) ||
-        a.order - b.order,
-    )
+    .sort((a, b) => compareFinish(a.finish, b.finish) || a.order - b.order)
     .map(({ column }) => column);
 
   const repeated = repeatedNames(players);

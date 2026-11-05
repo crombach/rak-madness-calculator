@@ -66,6 +66,7 @@ export default function Games({
       card,
       status: card.result.status,
       kickoff: card.result.date,
+      finishedAt: card.result.finishedAt,
     })),
     new Date(),
   );
