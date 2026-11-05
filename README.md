@@ -16,7 +16,7 @@ This app follows KISS principles for a small, family-and-friends football pool. 
 
 Built with [Vite](https://vite.dev/), React 19, TypeScript, [react-router](https://reactrouter.com/), and [Base UI](https://base-ui.com/).
 
-Picks come from `/api/picks/<season>/<week>` first, then from a cache of anything uploaded in that browser for that season and week. A week with no picks either way sends you home with an explanation. Requires the Node version `.nvmrc` pins, `v22.23` or a later 22.x. Run `nvm use` first.
+Picks come from `/api/picks/<season>/<week>` first, then from a cache of anything uploaded in that browser for that season and week. A week with no picks either way sends you home with an explanation. Requires the Node version `.nvmrc` pins, `v24.22.1` or a later 24.x. Run `nvm use` first.
 
 ```
 make setup      # install dependencies from the lockfile
