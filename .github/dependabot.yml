@@ -40,6 +40,10 @@ updates:
       # this range by hand.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # `packageManager` names the npm that the `.nvmrc` Node bundles. A bump
+      # on its own names an npm that neither CI nor Pages runs. Raise it by
+      # hand with `.nvmrc`.
+      - dependency-name: npm
       # typescript-eslint caps `typescript` at `<6.1.0`, so a major here fails
       # `npm ci` with ERESOLVE. Lift this once its peer range admits 7.
       - dependency-name: typescript

@@ -13,7 +13,7 @@ description: How to build, run, and test this repo. Read before any npm, make, t
 
 - Vite 8, React 19, TypeScript 6, Vitest 5, ESLint 10 flat config, wrangler 4.
 - Base UI for behavior, react-router 8 for routing, SCSS for looks. There is no theme provider. `src/CLAUDE.md` covers the `--rak-*` design tokens, `src/styles/CLAUDE.md` the Sass mixins, `src/components/icon/CLAUDE.md` the icons.
-- Node `v24.22.1` (`.nvmrc`), npm 11 (`packageManager`, `lockfileVersion: 3`). `nvm use` before anything. jsdom 30 needs `^24.15.0` on Node 24, which is why the pin carries a minor. `.npmrc` sets `min-release-age=7`, which npm 10 ignores, so an install on npm 10 skips the age floor. `make setup` fails with an actionable message on an older Node or another major.
+- Node `v24.22.1` (`.nvmrc`), npm 11 (`packageManager`, `lockfileVersion: 3`). `nvm use` before anything. jsdom 30 needs `^24.15.0` on Node 24, which is why the pin carries a minor. `.npmrc` sets `min-release-age=7`, which npm before 11.10 ignores. `make setup` fails with an actionable message on an older Node, another Node major, or an npm below `NPM_MIN`.
 - CI signals on a PR: `check` (`.github/workflows/check.yml`) runs the same `make check` you run locally, `conventional-commit-title` (`.github/workflows/pr-title.yml`) matches the title format, and `Cloudflare Pages` builds from git using the dashboard's own settings. Break `make check` locally and CI breaks the same way.
 
 ## Verified
