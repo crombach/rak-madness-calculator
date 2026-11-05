@@ -34,7 +34,7 @@ updates:
       prefix-development: chore
       include: scope
     ignore:
-      # `.nvmrc` pins Node 22, and `check.yml` feeds that file to setup-node.
+      # `.nvmrc` pins Node 24, and `check.yml` feeds that file to setup-node.
       # A major here would typecheck the code against a newer Node's
       # declarations than anything that runs it. Raise `.nvmrc` first, then
       # this range by hand.

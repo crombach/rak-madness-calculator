@@ -8,10 +8,10 @@ help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "%-12s %s\n", $$1, $$2}'
 
 setup: ## Install dependencies from the lockfile (idempotent)
-	@command -v node >/dev/null || { echo "Missing node. Install $$(cat .nvmrc): brew install node@22"; exit 1; }
+	@command -v node >/dev/null || { echo "Missing node. Install $$(cat .nvmrc): brew install node@24"; exit 1; }
 	@req=$$(sed 's/^v//' .nvmrc); cur=$$(node -v | sed 's/^v//'); \
 	  [ "$${req%%.*}" = "$${cur%%.*}" ] && [ "$$req" = "$$(printf '%s\n%s\n' "$$req" "$$cur" | sort -V | head -1)" ] \
-	  || { echo "Node $$cur found, .nvmrc requires $$req or a later 22.x. Run: nvm install && nvm use"; exit 1; }
+	  || { echo "Node $$cur found, .nvmrc requires $$req or a later 24.x. Run: nvm install && nvm use"; exit 1; }
 	npm ci
 
 build: ## Typecheck, then production build into ./build (what Cloudflare Pages serves)
