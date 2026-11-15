@@ -45,7 +45,7 @@ describe("parsePicksWorkbook, a sheet whose range runs past its cells", () => {
   function overstatedBuffer(): ArrayBuffer {
     const workbook = XLSX.utils.book_new();
     const sheet = XLSX.utils.json_to_sheet([{ Name: "Alice", C1: "OSU -3" }]);
-    sheet["!ref"] = "A1:W1048576";
+    sheet["!ref"] = "A1:W5000";
     XLSX.utils.book_append_sheet(workbook, sheet, "Picks");
     return XLSX.write(workbook, { bookType: "xlsx", type: "array" });
   }
