@@ -1,3 +1,4 @@
+import type { WorkSheet } from "xlsx-js-style";
 import cachedImport from "../cachedImport";
 import debugLog from "../debugLog";
 import { LEAGUE_PREFIX, tiebreakerGame } from "./gameColumns";
@@ -61,13 +62,12 @@ export default function parsePicksWorkbook(
 }
 
 type Xlsx = Awaited<ReturnType<typeof loadXlsx>>;
-type Sheet = ReturnType<Xlsx["utils"]["json_to_sheet"]>;
 
 /**
  * Ends the sheet's range at its last filled row and column. Excel can declare a
  * range to row 1048576, and `sheet_to_json` walks every declared row.
  */
-function trimToCells(XLSX: Xlsx, sheet: Sheet) {
+function trimToCells(XLSX: Xlsx, sheet: WorkSheet) {
   const declared = sheet["!ref"];
   if (declared == null) return;
   const range = XLSX.utils.decode_range(declared);

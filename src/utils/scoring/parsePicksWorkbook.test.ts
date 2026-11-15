@@ -42,7 +42,6 @@ describe("parsePicksWorkbook, memoized by buffer identity", () => {
 });
 
 describe("parsePicksWorkbook, a sheet whose range runs past its cells", () => {
-  // Excel declares this range for a sheet with a whole column formatted.
   function overstatedBuffer(): ArrayBuffer {
     const workbook = XLSX.utils.book_new();
     const sheet = XLSX.utils.json_to_sheet([{ Name: "Alice", C1: "OSU -3" }]);
