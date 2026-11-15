@@ -1,3 +1,4 @@
+import type { WorkSheet } from "xlsx-js-style";
 import cachedImport from "../cachedImport";
 import debugLog from "../debugLog";
 import { LEAGUE_PREFIX, tiebreakerGame } from "./gameColumns";
@@ -60,10 +61,34 @@ export default function parsePicksWorkbook(
   return parsing;
 }
 
+type Xlsx = Awaited<ReturnType<typeof loadXlsx>>;
+
+/**
+ * Ends the sheet's range at its last filled row and column. Excel can declare a
+ * range to row 1048576, and `sheet_to_json` walks every declared row.
+ */
+function trimToCells(XLSX: Xlsx, sheet: WorkSheet) {
+  const declared = sheet["!ref"];
+  if (declared == null) return;
+  const range = XLSX.utils.decode_range(declared);
+  let lastRow = range.s.r;
+  let lastColumn = range.s.c;
+  for (const address of Object.keys(sheet)) {
+    if (address.startsWith("!")) continue;
+    const { r, c } = XLSX.utils.decode_cell(address);
+    lastRow = Math.max(lastRow, r);
+    lastColumn = Math.max(lastColumn, c);
+  }
+  range.e.r = Math.min(range.e.r, lastRow);
+  range.e.c = Math.min(range.e.c, lastColumn);
+  sheet["!ref"] = XLSX.utils.encode_range(range);
+}
+
 async function parseWorkbook(picksBuffer: ArrayBuffer): Promise<ParsedPicks> {
   const XLSX = await loadXlsx();
   const workbook = XLSX.read(picksBuffer, { type: "array" });
   const picksSheet = workbook.Sheets[Object.keys(workbook.Sheets)[0]];
+  trimToCells(XLSX, picksSheet);
   const rows: Array<PicksRow> = XLSX.utils.sheet_to_json(picksSheet);
 
   // From the header row, not from a player's row. `sheet_to_json` leaves a blank

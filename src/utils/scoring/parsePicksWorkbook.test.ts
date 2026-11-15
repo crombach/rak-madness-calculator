@@ -41,6 +41,25 @@ describe("parsePicksWorkbook, memoized by buffer identity", () => {
   });
 });
 
+describe("parsePicksWorkbook, a sheet whose range runs past its cells", () => {
+  function overstatedBuffer(): ArrayBuffer {
+    const workbook = XLSX.utils.book_new();
+    const sheet = XLSX.utils.json_to_sheet([{ Name: "Alice", C1: "OSU -3" }]);
+    sheet["!ref"] = "A1:W5000";
+    XLSX.utils.book_append_sheet(workbook, sheet, "Picks");
+    return XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+  }
+
+  it("reads only as far as the last cell that holds something", async () => {
+    const sheetToJson = vi.spyOn(XLSX.utils, "sheet_to_json");
+
+    const { rows } = await parsePicksWorkbook(overstatedBuffer());
+
+    expect(rows).toEqual([{ Name: "Alice", C1: "OSU -3" }]);
+    expect(sheetToJson.mock.calls[0][0]["!ref"]).toBe("A1:B2");
+  });
+});
+
 describe("parsePicksWorkbook, the tiebreaker game", () => {
   it("is the last game column, wherever the Pts column sits", async () => {
     const { tiebreakerGameKey } = await parsePicksWorkbook(
