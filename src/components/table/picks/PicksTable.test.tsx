@@ -12,7 +12,7 @@ import { League } from "../../../types/League";
 import { LeagueResult } from "../../../types/LeagueResult";
 import { WeekGame } from "../../../types/WeekGame";
 import { MISSING_PICK } from "../../../utils/scoring/getPickResults";
-import { useScoreChanges } from "../../../context/AppDataContext";
+import { useScoreChanges, useScores } from "../../../context/AppDataContext";
 import { GameStatusContextProvider } from "../../../context/GameStatusContext";
 import {
   PLAYER_NAME_KEY,
@@ -26,16 +26,22 @@ import {
 } from "../../../utils/scoring/leagueResultFixtures";
 import { pickChangeKey } from "../../../utils/scoring/gameColumns";
 import { playerScore } from "../../../weekFixtures";
+import { getMustWin } from "../../../utils/scoring/getPlayerAnalysis";
 import PicksTable from "./PicksTable";
 
 vi.mock("../../../context/AppDataContext", () => ({
   useScoreChanges: vi.fn(),
-  useScores: () => undefined,
+  useScores: vi.fn(),
   useIsWeekSettled: () => false,
   useIsWeekWon: () => false,
 }));
+vi.mock("../../../utils/scoring/getPlayerAnalysis", () => ({
+  getMustWin: vi.fn(),
+}));
 
 const mockScoreChanges = useScoreChanges as Mock;
+const mockScores = useScores as Mock;
+const mockGetMustWin = getMustWin as Mock;
 
 function pick(
   label: string,
@@ -731,5 +737,32 @@ describe("PicksTable, live games", () => {
 
     expect(document.querySelector(".table__live-dot")).toBeNull();
     expect(document.querySelector(".table__delay-icon")).toBeNull();
+  });
+});
+
+describe("PicksTable, the reader's must-win games", () => {
+  beforeEach(() => {
+    localStorage.setItem(PLAYER_NAME_KEY, "Alice");
+    mockScores.mockReturnValue(scores);
+    mockGetMustWin.mockReturnValue({
+      games: [{ label: "P2", pick: "KC -3", team: "KC" }],
+    });
+  });
+
+  afterEach(() => {
+    mockScores.mockReturnValue(undefined);
+  });
+
+  it("names a must-win game's heading and no other", async () => {
+    render(
+      <SettingsContextProvider>
+        <PicksTable scores={scores} />
+      </SettingsContextProvider>,
+    );
+
+    expect(
+      await screen.findByRole("button", { name: /P2, must win/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "P1" })).toBeInTheDocument();
   });
 });

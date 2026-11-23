@@ -37,9 +37,9 @@ const FOLDED_ROWS = 3;
 const BASE_COLUMNS = 2;
 
 /**
- * A side's players, the reader first so a fold never hides them. Each is ruled in
- * the tables' hue for whether they can still win. Only an open game's names open
- * Player Analysis.
+ * A side's players, the reader first so a fold never hides them. Each is filled
+ * with the tables' name-cell hue for whether they can still win. Only an open
+ * game's names open Player Analysis.
  */
 function Side({
   heading,

@@ -136,7 +136,7 @@
 // A word naming what follows it rather than saying anything itself.
 .analysis__pick-label {
   @include pick-label;
-  color: var(--rak-pick-ink);
+  color: var(--rak-pick-ink, var(--rak-text-tertiary));
 }
 
 .analysis__pick-label {
@@ -171,7 +171,7 @@
   border-radius: var(--rak-radius-lg);
   background-color: var(--rak-route-fill);
 
-  // Under the chips' own edge rather than under their text.
+  // Under the chips' box rather than under their text.
   .analysis__route-mnf {
     padding-inline-start: 0;
   }

@@ -39,7 +39,8 @@ function labelsFor(
 
 /**
  * The labels of the games the reader's own player must win, as Player Analysis
- * names them. Empty with no name set, no scores yet, or no player by the name.
+ * names them. Empty with no name set, no scores yet, no player by the name, or
+ * the chunk not loaded yet.
  */
 export default function useMyMustWinLabels(): ReadonlySet<string> {
   const playerName = useSetting("playerName");

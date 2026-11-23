@@ -44,10 +44,16 @@ describe("GameId", () => {
 
   it("is plain for a game the reader need not win", async () => {
     localStorage.setItem(PLAYER_NAME_KEY, "Alice");
-    renderId("P2");
-    await Promise.resolve();
+    render(
+      <>
+        <GameId label="P1" className="games__label" />
+        <GameId label="P2" className="games__label" />
+      </>,
+      { wrapper: Settings },
+    );
+    expect(await screen.findByText("must win")).toBeInTheDocument();
     expect(screen.getByText("P2")).not.toHaveClass("--must-win");
-    expect(screen.queryByText("must win")).not.toBeInTheDocument();
+    expect(screen.getByText("P2")).not.toHaveTextContent("must win");
   });
 
   it("is plain with no name set", () => {
