@@ -24,6 +24,7 @@ a touch phone: Playwright `isMobile` and `hasTouch`, no hover, no refresh button
 - [`components/footer/`](components/footer/CLAUDE.md) — bottom links bar
 - [`components/games/`](components/games/CLAUDE.md) — every game of the week, live ones first
 - [`components/gameStatus/`](components/gameStatus/CLAUDE.md) — how one game in the week is going
+- [`components/gameId/`](components/gameId/CLAUDE.md) — a game ID, red where the reader must win
 - [`components/home/`](components/home/CLAUDE.md) — home route: pickers, upload, export
 - [`components/icon/`](components/icon/CLAUDE.md) — SVG icons inlined from Material Design
 - [`components/navbar/`](components/navbar/CLAUDE.md) — top nav bar, view switch, logo button

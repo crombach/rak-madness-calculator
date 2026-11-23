@@ -1,0 +1,10 @@
+@use "../../styles/a11y" as *;
+
+// The element in the selector outranks a place's own one-class label ink.
+span.game-id.--must-win {
+  color: var(--rak-required-on-light);
+}
+
+.game-id__sr-only {
+  @include visually-hidden;
+}

@@ -15,6 +15,7 @@ One concept, one name. Reader means the person viewing, in prose and comments. N
 | One player's call on a game | pick                                       | `pick`                                                                        | bet, vote                        |
 | One football game           | game                                       | `game`                                                                        | matchup                          |
 | Two teams as an index key   | none                                       | `matchup`, `matchupKey` in `getLeagueResults.ts`                              | a game                           |
+| A game's column name ("P3") | game ID                                    | `label`, `GameId`                                                             | game name, code                  |
 | Pool week                   | week                                       | `week` (`WeekInfo`), `weekNumber`, `weekParam`                                | round                            |
 | Year of the pool            | season                                     | `season`                                                                      | year                             |
 | Ranked table page           | Scoreboard                                 | route `scoreboard`, `ScoresTable`, `ScoreboardRoute`, xlsx sheet "Scoreboard" | standings, leaderboard, rankings |

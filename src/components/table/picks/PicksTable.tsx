@@ -16,6 +16,8 @@ import {
   pickChangeKey,
 } from "../../../utils/scoring/gameColumns";
 import { fillStatus } from "../../../utils/scoring/getPickResults";
+import useMyMustWinLabels from "../../../hooks/useMyMustWinLabels";
+import GameId, { MUST_WIN_WORD } from "../../gameId/GameId";
 import PlayerName, { MissingPlayerName } from "../playerName/PlayerName";
 import TableShell, {
   PICK_COL_CLASS,
@@ -80,10 +82,12 @@ const PICK_STATUS_LABEL: Partial<Record<Status, string>> = {
 
 function leagueHeaders({
   labels,
+  mustWin,
   statusByLabel,
   onClick,
 }: {
   labels: Array<string>;
+  mustWin: ReadonlySet<string>;
   /** Where each column's game stands, for the headings a mark is drawn on. */
   statusByLabel: Map<string, GameStatus>;
   onClick: (gameLabel: string) => void;
@@ -107,7 +111,11 @@ function leagueHeaders({
           className="table__cell-button"
           // Screen readers re-announce this heading on every cell below it.
           // aria-label comma-joins the word, since flex spacing runs it into the label.
-          aria-label={[header, heading?.word]
+          aria-label={[
+            header,
+            mustWin.has(header) ? MUST_WIN_WORD : undefined,
+            heading?.word,
+          ]
             .filter((part) => part != null)
             .join(", ")}
           onClick={() => onClick(header)}
@@ -116,7 +124,7 @@ function leagueHeaders({
           {heading?.mark}
           {/* Wrapped so a mark beside it can be centered on the capitals it is
               set in rather than on the line box they sit in. */}
-          <span className="table__heading-label">{header}</span>
+          <GameId label={header} className="table__heading-label" />
         </button>
       </th>
     );
@@ -221,6 +229,7 @@ function PicksTable({
   showsTiebreakers?: boolean;
 }) {
   const showGameStatus = useShowGameStatus();
+  const mustWin = useMyMustWinLabels();
   const { picks: pickChanges } = useScoreChanges();
   const hovered = useRef<ColumnMark>(undefined);
   const pressed = useRef<ColumnMark>(undefined);
@@ -353,12 +362,14 @@ function PicksTable({
           </th>
           {leagueHeaders({
             labels: shownCollege,
+            mustWin,
             statusByLabel: statuses,
             onClick: showGameStatus,
           })}
           <th scope="col">College Score</th>
           {leagueHeaders({
             labels: shownPro,
+            mustWin,
             statusByLabel: statuses,
             onClick: showGameStatus,
           })}

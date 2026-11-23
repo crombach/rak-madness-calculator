@@ -1,6 +1,7 @@
 import { LeagueResult } from "../../types/LeagueResult";
 import { PlayerScore } from "../../types/RakMadnessScores";
 import { WeekGame } from "../../types/WeekGame";
+import GameId from "../gameId/GameId";
 import GameMark from "../gameStatus/GameMark";
 import GameStatusSummary from "../gameStatus/GameStatusSummary";
 import "./Games.scss";
@@ -21,7 +22,7 @@ export default function GameCard({
     <li className="games__game">
       <div className="games__header">
         <h3 className="games__heading">
-          <span className="games__label">{game.label}</span>
+          <GameId label={game.label} className="games__label" />
           <span className="games__name">{game.name}</span>
         </h3>
         <GameMark game={game} status={result.status} />

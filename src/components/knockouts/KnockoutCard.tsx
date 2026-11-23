@@ -11,6 +11,8 @@ import { Tiebreaker } from "../../types/RakMadnessScores";
 import { KnockoutGame } from "../../utils/scoring/knockoutTypes";
 import Button from "../button/Button";
 import CountBadge from "../countBadge/CountBadge";
+import GameId, { MUST_WIN_WORD } from "../gameId/GameId";
+import useMyMustWinLabels from "../../hooks/useMyMustWinLabels";
 import GameMark, {
   PlayerCountMark,
   gameMarkLabel,
@@ -19,7 +21,6 @@ import PickBadge from "../pickBadge/PickBadge";
 import useGridColumns from "./useGridColumns";
 import "./Knockouts.scss";
 
-const MUST_WIN = "must win";
 const KNOCKED_OUT = "knocked out on";
 
 /** Each tier as the Scoreboard heads its column. */
@@ -36,9 +37,9 @@ const FOLDED_ROWS = 3;
 const BASE_COLUMNS = 2;
 
 /**
- * A side's players, the reader first so a fold never hides them. Each is ruled in
- * the tables' hue for whether they can still win. Only an open game's names open
- * Player Analysis.
+ * A side's players, the reader first so a fold never hides them. Each is filled
+ * with the tables' name-cell hue for whether they can still win. Only an open
+ * game's names open Player Analysis.
  */
 function Side({
   heading,
@@ -130,6 +131,7 @@ function KnockoutCard({
   knockedOut: ReadonlySet<string>;
 }) {
   const showGameStatus = useShowGameStatus();
+  const isMyMustWin = useMyMustWinLabels().has(game.label);
   const tiers = game.tiebreakers ?? [];
   const ranges = game.mondayNight ?? [];
   // A player can need a side of the Points game and a range of its total both.
@@ -149,12 +151,17 @@ function KnockoutCard({
         <button
           type="button"
           className="knockouts__game"
-          aria-label={[`Game Status for ${gameName}`, players, markLabel]
+          aria-label={[
+            `Game Status for ${gameName}`,
+            isMyMustWin ? MUST_WIN_WORD : undefined,
+            players,
+            markLabel,
+          ]
             .filter((part) => part != null)
             .join(", ")}
           onClick={() => showGameStatus(game.label)}
         >
-          <span className="knockouts__game-label">{game.label}</span>{" "}
+          <GameId label={game.label} className="knockouts__game-label" />{" "}
           <span className="knockouts__game-matchup">{game.name}</span>
           <span className="knockouts__marks">
             <PlayerCountMark count={count} />
@@ -168,7 +175,7 @@ function KnockoutCard({
             key={side.team}
             heading={
               <>
-                {game.isFinal ? KNOCKED_OUT : MUST_WIN}{" "}
+                {game.isFinal ? KNOCKED_OUT : MUST_WIN_WORD}{" "}
                 <PickBadge
                   pick={side.pick}
                   outcome={game.isFinal ? "missed" : undefined}

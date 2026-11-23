@@ -17,6 +17,7 @@ The data layer, plus the page measurements. The first four mount once in
   A tick missed there asks at once when the tab is visible again
 - `useLiveGame`: one game, off `useLiveWeek` on its league
 - `useMyPick`: the reader's own pick on a game
+- `useMyMustWinLabels`: the games Player Analysis says the reader must win
 - `useArrival`: an outside value, taken as it arrives
 - `useWarmTeamLogos`: the week's logos, fetched before a game is opened
 - `useTeamLogoUrl`: a team logo, or ESPN's dark variant in the dark theme
