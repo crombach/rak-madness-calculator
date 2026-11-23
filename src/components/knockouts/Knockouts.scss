@@ -239,8 +239,10 @@ $range-wide-min: calc(
 }
 
 .knockouts__player {
-  // The fill and ink the tables give an in contention name.
-  background-color: var(--rak-in-contention-300);
+  // The fill and ink the tables give an in contention name. Held in a property so
+  // a button's hover and press fills thin from it rather than from a gray.
+  --rak-player-fill: var(--rak-in-contention-300);
+  background-color: var(--rak-player-fill);
   border-radius: var(--rak-radius-sm);
   display: flex;
   flex-direction: column;
@@ -256,7 +258,7 @@ $range-wide-min: calc(
 
   // The fill the tables give a knocked out name.
   &.--knocked-out {
-    background-color: var(--rak-knocked-out-300);
+    --rak-player-fill: var(--rak-knocked-out-300);
   }
 
   // Edged in the blue the tables rule the reader's own row in, the one chip with
@@ -281,12 +283,195 @@ button.knockouts__player {
   transition: background-color var(--rak-duration-medium)
     var(--rak-ease-standard);
 
+  // Darkened toward black the way the tables darken a cell, so the status hue
+  // stays under the pointer and the ink stays readable.
   @include interactive-fill(
-    var(--rak-fill-muted),
+    color-mix(in srgb, var(--rak-player-fill) var(--rak-hover-strength), black),
     color-mix(
       in srgb,
-      var(--rak-fill-muted) var(--rak-press-strength),
-      var(--rak-text)
+      var(--rak-player-fill) var(--rak-cell-press-strength),
+      black
+    )
+  );
+  @include press-lands-at-once;
+}
+
+// The count and the mark, at the band's end.
+.knockouts__marks {
+  display: flex;
+  align-items: center;
+  gap: var(--rak-space-2);
+  margin-inline-start: auto;
+}
+
+// The sides stacked, then beside each other once each fits its name boxes. A
+// lone side, as on a final game, takes the whole width.
+.knockouts__sides {
+  display: flex;
+  flex-direction: column;
+
+  @container (min-width: #{$sides-beside-from}) {
+    flex-direction: row;
+
+    > * {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+  }
+}
+
+// The Points game's MNF Points ranges, under its two sides. As many to a row as
+// fit their name boxes, each row filled, since a week can need any number. The
+// gap shows the fill behind as the rule between ranges.
+.knockouts__ranges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rak-border-width-hairline);
+  background-color: var(--rak-divider-soft);
+
+  > .knockouts__side {
+    flex: 1 1 $range-min;
+    min-width: 0;
+    background-color: var(--rak-surface);
+
+    @container (min-width: #{$names-wide-from}) {
+      flex-basis: $range-wide-min;
+    }
+  }
+}
+
+// Ruled off the sides above, unless everyone picked the Points game alike.
+.knockouts__sides:not(:empty) + .knockouts__ranges {
+  border-block-start: var(--rak-border-width-hairline) solid
+    var(--rak-divider-soft);
+}
+
+.knockouts__game-label {
+  @include game-card-label;
+}
+
+.knockouts__game-matchup {
+  @include game-card-name;
+  @include truncate-line;
+}
+
+.knockouts__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rak-space-2);
+  padding: var(--rak-space-3);
+
+  .knockouts__sides > & + & {
+    border-block-start: var(--rak-border-width-hairline) solid
+      var(--rak-divider-soft);
+
+    @container (min-width: #{$sides-beside-from}) {
+      border-block-start: 0;
+      border-inline-start: var(--rak-border-width-hairline) solid
+        var(--rak-divider-soft);
+    }
+  }
+}
+
+// Sized so its capitals stand as tall as the pick's, which is set in the other face.
+.knockouts__must-win {
+  @include section-title(sm);
+
+  font-size: calc(
+    var(--rak-text-sm) * #{math.div($cap-share-mono, $cap-share-body)}
+  );
+}
+
+// Set as Player Analysis sets the same totals, not in the heading's label face.
+.knockouts__mnf-points {
+  @include pick-face;
+
+  color: var(--rak-text);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.knockouts__more {
+  @include fold-toggle;
+}
+
+.knockouts__sr-only {
+  @include visually-hidden;
+}
+
+.knockouts__players {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(#{$name-box-min}, 1fr));
+
+  @container (min-width: #{$names-wide-from}) {
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(#{$name-box-wide-min}, 1fr)
+    );
+  }
+  gap: var(--rak-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// Without this a long name's min-content widens the item past its track.
+.knockouts__players > li {
+  min-width: 0;
+}
+
+.knockouts__player {
+  // The fill and ink the tables give an in contention name. Held in a property so
+  // a button's hover and press fills thin from it rather than from a gray.
+  --rak-player-fill: var(--rak-in-contention-300);
+  background-color: var(--rak-player-fill);
+  border-radius: var(--rak-radius-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--rak-touch-target);
+  padding: var(--rak-space-2) var(--rak-space-3);
+  color: var(--rak-text-on-pale);
+  @include player-name-face;
+  font-size: var(--rak-text-cells);
+  text-align: start;
+
+  // The fill the tables give a knocked out name.
+  &.--knocked-out {
+    --rak-player-fill: var(--rak-knocked-out-300);
+  }
+
+  // Edged in the blue the tables rule the reader's own row in, the one chip with
+  // an edge. The edge takes its width out of the padding so the name holds its x.
+  &.--mine {
+    @include my-player-name;
+
+    padding: calc(var(--rak-space-2) - var(--rak-border-width))
+      calc(var(--rak-space-3) - var(--rak-border-width));
+    border: var(--rak-border-width) solid var(--rak-my-row-accent);
+  }
+}
+
+// An open game's name, which opens Player Analysis. A final game's is a plain box.
+button.knockouts__player {
+  @include focus-ring;
+
+  border-block: 0;
+  border-inline-end: 0;
+  border-inline-start: 0;
+  cursor: pointer;
+  transition: background-color var(--rak-duration-medium)
+    var(--rak-ease-standard);
+
+  // Darkened toward the name's ink, so the status hue stays under the pointer.
+  @include interactive-fill(
+    color-mix(in srgb, var(--rak-player-fill) 92%, var(--rak-text-on-pale)),
+    color-mix(
+      in srgb,
+      var(--rak-player-fill) var(--rak-press-strength),
+      var(--rak-text-on-pale)
     )
   );
   @include press-lands-at-once;

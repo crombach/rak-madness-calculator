@@ -80,6 +80,18 @@ describe("useMyMustWinLabels", () => {
     expect(mockGetMustWin).not.toHaveBeenCalled();
   });
 
+  it("is empty, and warns, when getMustWin throws", async () => {
+    localStorage.setItem(PLAYER_NAME_KEY, "Alice");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    mockGetMustWin.mockImplementation(() => {
+      throw new Error("bad picks");
+    });
+    const { result } = renderLabels();
+    await waitFor(() => expect(warn).toHaveBeenCalled());
+    expect(result.current.size).toBe(0);
+    warn.mockRestore();
+  });
+
   it("reads each set of scores and name once, however many callers", async () => {
     localStorage.setItem(PLAYER_NAME_KEY, "Alice");
     const { result: first } = renderLabels();

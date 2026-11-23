@@ -31,7 +31,15 @@ function labelsFor(
   if (byName == null) cache.set(scores, (byName = new Map()));
   let labels = byName.get(name);
   if (labels == null) {
-    labels = new Set(getMustWin(scores, name).games.map(({ label }) => label));
+    // Every game ID in the app reads this, so a throw here must not take the tree.
+    try {
+      labels = new Set(
+        getMustWin(scores, name).games.map(({ label }) => label),
+      );
+    } catch (error) {
+      console.warn("Could not work out the must-win games", error);
+      labels = NO_LABELS;
+    }
     byName.set(name, labels);
   }
   return labels;
