@@ -8,12 +8,8 @@
   // stand under that text rather than under the chip.
   --rak-pick-inset: var(--rak-space-2);
   --rak-pick-gap: var(--rak-space-1-5);
-  // What a block holds its contents off its own rule by. A pool has no box, so
-  // its chips carry this themselves and every block's text starts at one x.
+  // What the shares box holds its contents off its own edge by.
   --rak-block-inset: 10px;
-  // The width a column adds where a chip is its own box: the inset and the rule
-  // both. Zero in a block whose box carries the two for it.
-  --rak-pick-box: 0px;
   // A game label is a league letter and at most two digits. Monospace, so that is a
   // width rather than a guess.
   --rak-pick-label-width: 3ch;
@@ -96,7 +92,7 @@
     minmax(
       calc(
         var(--rak-pick-label-width) + 9ch + var(--rak-pick-gap) +
-          var(--rak-pick-inset) * 2 + var(--rak-pick-box)
+          var(--rak-pick-inset) * 2
       ),
       1fr
     )
@@ -115,41 +111,32 @@
   gap: var(--rak-pick-gap);
   padding: var(--rak-space-1) var(--rak-pick-inset);
   border-radius: var(--rak-radius-sm);
-  background-color: var(--rak-fill-subtle);
+  // Tinted by what the game means to the answer, and its label inked to match:
+  // a way among several, unless a block says the game is required.
+  --rak-pick-rule: #{$rule-option};
+  --rak-pick-ink: var(--rak-option-on-light);
+  --rak-pick-tint: var(--rak-option-tint);
+  background-color: pick-tint(
+    var(--rak-pick-rule),
+    var(--rak-surface-raised),
+    var(--rak-pick-tint)
+  );
   font-weight: var(--rak-weight-semibold);
   white-space: nowrap;
 }
 
-// Choosing one of these is choosing one of the routes below, so an option here
-// carries the mark a route carries. On the chips rather than on the grid: the
-// options are the chips, and one rule down the side of the grid would say the
-// whole block is a single option, which is what `.analysis__must-win` says.
-.analysis__pool {
-  --rak-pick-box: calc(var(--rak-block-inset) + var(--rak-border-width));
-  // The width a box takes out of the row: its rule and an inset at each end. A
-  // boxed list loses that off both sides and divides what is left. This one is
-  // flush at the head, so it all comes off the tail, and the columns land where
-  // a boxed list's columns land rather than a step wider each.
-  padding-inline-end: calc(
-    var(--rak-block-inset) * 2 + var(--rak-border-width)
-  );
-}
-
-.analysis__pool > .analysis__pick {
-  // The box's inset as well as the chip's, since here the chip is the box. The
-  // rule sits outside both, as it does on the box in every block beside this
-  // one, so a pick starts at the x a must-win pick and a route's pick start at.
-  padding-inline-start: calc(var(--rak-block-inset) + var(--rak-pick-inset));
-  @include ruled-block;
-  // Square against the rule, the way a route's box is, so the two read as one
-  // mark rather than as a chip that happens to have an edge.
-  border-start-start-radius: 0;
-  border-end-start-radius: 0;
+// Red against the routes' gold, since these games are what has to happen rather
+// than one way among several of getting there.
+.analysis__must-win > .analysis__pick {
+  --rak-pick-rule: #{$rule-required};
+  --rak-pick-ink: var(--rak-required-on-light);
+  --rak-pick-tint: #{$pick-tint};
 }
 
 // A word naming what follows it rather than saying anything itself.
 .analysis__pick-label {
   @include pick-label;
+  color: var(--rak-pick-ink);
 }
 
 .analysis__pick-label {
@@ -176,29 +163,27 @@
   list-style: none;
 }
 
-.analysis__route,
-.analysis__must-win,
-.analysis__shares {
-  padding: var(--rak-space-2) var(--rak-block-inset);
-  @include ruled-block;
-}
-
+// One way to win, shaded so two routes sharing games still read as two. Neutral:
+// the status color belongs to the chips inside.
 .analysis__route {
   @include stacked(var(--rak-space-1));
+  padding: var(--rak-space-2);
+  border-radius: var(--rak-radius-lg);
+  background-color: var(--rak-route-fill);
+
+  // Under the chips' own edge rather than under their text.
+  .analysis__route-mnf {
+    padding-inline-start: 0;
+  }
 }
 
-// Red against the routes' gold, since these games are what has to happen rather
-// than one way among several of getting there.
-.analysis__must-win {
-  border-inline-start-color: $rule-required;
-}
-
-// One game a row against the routes needing it, standing where a list of those
-// routes would stand, so it takes that list's box.
+// One game a row against the routes needing it, a neutral box of its own since
+// its rows are not picks to be tinted.
 .analysis__shares {
   width: 100%;
-  // The rows carry the block padding, so the box takes none of its own and its
-  // ends stand as far off the text as a route's box does.
+  padding: var(--rak-space-2) var(--rak-block-inset);
+  background-color: var(--rak-fill-subtle);
+  // The rows carry the block padding, so the box takes none of its own.
   padding-block: 0;
   // Separate rather than collapsed, which is the model that drops a table's own
   // padding. Without the box's inline padding a row would start short of the pick

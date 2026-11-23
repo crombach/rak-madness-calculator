@@ -1,14 +1,17 @@
-// How the app sets a pick, and the rule player analysis draws down a block of them.
+// How the app sets a pick, and the colors player analysis tints one with.
 
 // One way among several of getting there.
 $rule-option: var(--rak-gold-500);
 // What has to happen.
 $rule-required: var(--rak-danger-500);
-// A player still standing. The step of their name cell's hue dark enough to read
-// as a rule, which the 300 fill is not.
-$rule-alive: var(--rak-in-contention-on-light);
-// A player knocked out, in the same step of their name cell's hue.
-$rule-out: var(--rak-knocked-out-on-light);
+
+// How much of a status color its tint takes of the surface under it.
+$pick-tint: 14%;
+
+/** A status color thinned into the surface under it, for a chip's fill. */
+@function pick-tint($color, $under, $strength: $pick-tint) {
+  @return color-mix(in srgb, $color $strength, $under);
+}
 
 /** The face and size a list of picks is set in. */
 @mixin pick-type {
@@ -44,13 +47,4 @@ $rule-out: var(--rak-knocked-out-on-light);
 @mixin pick-label {
   color: var(--rak-text-tertiary);
   font-weight: var(--rak-weight-bold);
-}
-
-/**
- * A subtle fill with a rule down its start edge alone, so a stack of them reads
- * as a list rather than as a stack of boxes. Padding is left to the caller.
- */
-@mixin ruled-block($rule: $rule-option) {
-  border-inline-start: var(--rak-border-width) solid $rule;
-  background-color: var(--rak-fill-subtle);
 }

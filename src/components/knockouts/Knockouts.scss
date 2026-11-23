@@ -239,8 +239,9 @@ $range-wide-min: calc(
 }
 
 .knockouts__player {
-  @include ruled-block($rule-alive);
-
+  // The fill and ink the tables give an in contention name.
+  background-color: var(--rak-in-contention-300);
+  border-radius: var(--rak-radius-sm);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -248,21 +249,24 @@ $range-wide-min: calc(
   min-width: 0;
   min-height: var(--rak-touch-target);
   padding: var(--rak-space-2) var(--rak-space-3);
-  color: var(--rak-text);
+  color: var(--rak-text-on-pale);
   @include player-name-face;
   font-size: var(--rak-text-cells);
   text-align: start;
 
-  // In the orange the tables fill a knocked out player's name with.
+  // The fill the tables give a knocked out name.
   &.--knocked-out {
-    border-inline-start-color: $rule-out;
+    background-color: var(--rak-knocked-out-300);
   }
 
-  // In the blue the tables rule the reader's own row in.
+  // Edged in the blue the tables rule the reader's own row in, the one chip with
+  // an edge. The edge takes its width out of the padding so the name holds its x.
   &.--mine {
     @include my-player-name;
 
-    border-inline-start-color: var(--rak-my-row-accent);
+    padding: calc(var(--rak-space-2) - var(--rak-border-width))
+      calc(var(--rak-space-3) - var(--rak-border-width));
+    border: var(--rak-border-width) solid var(--rak-my-row-accent);
   }
 }
 
@@ -272,6 +276,7 @@ button.knockouts__player {
 
   border-block: 0;
   border-inline-end: 0;
+  border-inline-start: 0;
   cursor: pointer;
   transition: background-color var(--rak-duration-medium)
     var(--rak-ease-standard);

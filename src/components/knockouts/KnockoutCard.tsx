@@ -11,6 +11,7 @@ import { Tiebreaker } from "../../types/RakMadnessScores";
 import { KnockoutGame } from "../../utils/scoring/knockoutTypes";
 import Button from "../button/Button";
 import CountBadge from "../countBadge/CountBadge";
+import GameId from "../gameId/GameId";
 import GameMark, {
   PlayerCountMark,
   gameMarkLabel,
@@ -154,7 +155,7 @@ function KnockoutCard({
             .join(", ")}
           onClick={() => showGameStatus(game.label)}
         >
-          <span className="knockouts__game-label">{game.label}</span>{" "}
+          <GameId label={game.label} className="knockouts__game-label" />{" "}
           <span className="knockouts__game-matchup">{game.name}</span>
           <span className="knockouts__marks">
             <PlayerCountMark count={count} />

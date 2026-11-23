@@ -334,6 +334,10 @@
   // way to win the week reads as neither a warning nor a result.
   --rak-gold-500: #d9a02b;
   --rak-gold-700: #8a6415;
+  // Ink for a game ID on the tint of its status: the 500 rules do not reach 4.5:1
+  // on their own tints, so each is the darker step of its hue.
+  --rak-required-on-light: var(--rak-danger-600);
+  --rak-option-on-light: var(--rak-gold-700);
 
   // A player, by whether they can still win. 300 fills their name cell. -on-light
   // is the same hue taken far enough down to read on a white surface, which the
@@ -370,6 +374,10 @@
   --rak-surface-raised: var(--rak-surface);
   --rak-fill-subtle: #f3f3f3;
   --rak-fill-muted: #e5e5e5;
+  // A route's box and how much gold its option chips take. #f3f3f3 under 14%
+  // gold left the chips 1.00 from the box. The ink still clears 4.5:1 at 20%.
+  --rak-route-fill: #f8f8f8;
+  --rak-option-tint: 20%;
   // A control's own boundary, which has to be told from the surface behind it.
   --rak-border: #808080;
   // A rule between two things that are already apart, which does not.
@@ -754,6 +762,7 @@ html {
   --rak-success-400: var(--rak-glass-scored);
   --rak-danger-400: var(--rak-glass-missed);
   --rak-gold-700: #e8b84b;
+  --rak-required-on-light: var(--rak-danger-400);
   --rak-knocked-out-on-light: #ffb069;
   --rak-in-contention-on-light: #74c6f5;
   // The gold light mode fills an unscoreable cell with. Dark mode darkens that
@@ -775,6 +784,8 @@ html {
   --rak-surface-raised: #1d1d1d;
   --rak-fill-subtle: #212121;
   --rak-fill-muted: #292929;
+  --rak-route-fill: var(--rak-fill-subtle);
+  --rak-option-tint: 14%;
   --rak-border: #747474;
   --rak-panel-border: var(--rak-border);
   // 3.61:1 against the raised fill, which two planes this dark can never reach

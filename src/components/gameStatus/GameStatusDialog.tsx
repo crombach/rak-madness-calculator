@@ -10,6 +10,7 @@ import matching from "../../utils/matching";
 import { LeagueResults } from "../../utils/scoring/leagueResults";
 import DialogCombobox from "../dialog/DialogCombobox";
 import DialogShell from "../dialog/DialogShell";
+import GameId from "../gameId/GameId";
 import GameMark from "./GameMark";
 import GameStatusSummary from "./GameStatusSummary";
 import "./GameStatusDialog.scss";
@@ -26,7 +27,7 @@ export function gameSearchText(game: WeekGame): string {
 function GameName({ game }: { game: WeekGame }) {
   return (
     <>
-      <span className="game-status__option-label">{game.label}</span>
+      <GameId label={game.label} className="game-status__option-label" />
       <span className="game-status__option-name">{game.name}</span>
     </>
   );
